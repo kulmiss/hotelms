@@ -16,6 +16,6 @@ class BrandingController extends Controller
         $public = array_intersect_key($all, array_flip(PlatformSetting::PUBLIC));
         $public['logo_url'] = PlatformSettingsController::logoUrl($all['brand_logo_path'] ?? null);
 
-        return response()->json(['data' => $public])->header('Cache-Control', 'public, max-age=60');
+        return response()->json(['data' => $public])->header('Cache-Control', 'no-store');
     }
 }
