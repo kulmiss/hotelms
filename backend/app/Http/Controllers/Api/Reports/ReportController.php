@@ -10,7 +10,6 @@ use App\Models\Payment;
 use App\Models\Reservation;
 use App\Models\ReservationRoomRate;
 use App\Models\Room;
-use App\Models\User;
 use App\Services\Reports\Metrics;
 use App\Support\HotelClock;
 use App\Support\Money;
