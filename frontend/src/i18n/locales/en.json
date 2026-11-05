@@ -14,7 +14,14 @@
     "back": "Back",
     "next": "Next",
     "done": "Done",
-    "previous": "Previous"
+    "previous": "Previous",
+    "actions": "Actions",
+    "delete": "Delete",
+    "on": "On",
+    "off": "Off",
+    "active": "Active",
+    "inactive": "Inactive",
+    "nothingYet": "Nothing here yet."
   },
   "nav": {
     "main": "Main",
@@ -467,6 +474,158 @@
       "receptionist": "Receptionist",
       "housekeeping": "Housekeeping",
       "accountant": "Accountant"
+    }
+  },
+  "settings": {
+    "subtitle": "How your hotel works: profile, money, rules and features.",
+    "sections": {
+      "profile": "Hotel profile",
+      "branches": "Branches",
+      "currencies": "Currencies and rates",
+      "taxes": "Taxes",
+      "payment-methods": "Payment methods",
+      "charges": "Extra charges",
+      "booking-rules": "Booking rules",
+      "cancellation": "Cancellation policies",
+      "modules": "Modules",
+      "attendance": "Attendance",
+      "subscription": "Subscription"
+    },
+    "profile": {
+      "help": "Shown on invoices and receipts.",
+      "uploadLogo": "Upload logo",
+      "name": "Hotel name",
+      "legalName": "Legal (company) name",
+      "tin": "TIN",
+      "vat": "VAT number",
+      "invoices": "Invoices",
+      "prefix": "Invoice number prefix",
+      "prefixHint": "Invoices will be numbered like {{prefix}}-2026-00001.",
+      "footer": "Invoice footer",
+      "footerHint": "A short line at the bottom of every invoice, e.g. bank details or a thank-you."
+    },
+    "branches": {
+      "help": "Each branch has its own rooms, prices and staff. Your plan sets how many branches you can have.",
+      "add": "Add branch",
+      "name": "Branch name",
+      "code": "Short code",
+      "codeHint": "Used in booking numbers, e.g. BOL.",
+      "times": "Check-in / out",
+      "checkIn": "Check-in time",
+      "checkOut": "Check-out time"
+    },
+    "taxes": {
+      "help": "Taxes added to bills. Turn off any that don't apply to your hotel.",
+      "add": "Add tax",
+      "name": "Name",
+      "rate": "Rate",
+      "ratePercent": "Rate (%)",
+      "appliesTo": "Applies to",
+      "all": "Rooms and extras",
+      "rooms": "Rooms only",
+      "extras": "Extras only",
+      "included": "Price",
+      "inPrice": "Included in price",
+      "added": "Added on top",
+      "inclusive": "Prices already include this tax",
+      "inclusiveHint": "Tick if your room prices are quoted with this tax inside.",
+      "example": "Example: a room at {{price}} costs {{total}} with {{names}}."
+    },
+    "payments": {
+      "help": "How guests can pay. Only active methods appear when taking a payment.",
+      "add": "Add payment method",
+      "name": "Name",
+      "type": "Type"
+    },
+    "charges": {
+      "help": "Extras you add to a guest's bill, like laundry or minibar.",
+      "add": "Add charge type",
+      "name": "Name",
+      "nameHint": "e.g. Laundry, Minibar, Airport pickup",
+      "price": "Usual price",
+      "priceHint": "Leave empty to type the price each time.",
+      "askEachTime": "Typed each time"
+    },
+    "cancellation": {
+      "help": "What a guest pays when they cancel or don't show up. The default is used for new bookings.",
+      "add": "Add policy",
+      "name": "Name",
+      "rule": "Rule",
+      "noShow": "No-show",
+      "freeUntil": "Free until {{hours}} h before arrival, then {{fee}}",
+      "neverFree": "Never free: {{fee}}",
+      "feeNights_one": "{{count}} night",
+      "feeNights_other": "{{count}} nights",
+      "freeHours": "Free until (hours before arrival)",
+      "freeHoursHint": "Leave empty for non-refundable.",
+      "penaltyType": "Fee after that",
+      "penaltyValue": "Fee amount",
+      "nights": "Nights",
+      "percent": "Percent of the stay",
+      "fixed": "Fixed amount",
+      "appliesNoShow": "Also charge this fee for no-shows",
+      "isDefault": "Default policy",
+      "isDefaultHint": "Used for new bookings unless a manager picks another."
+    },
+    "currencies": {
+      "help": "{{main}} is your main currency. Add others you accept (e.g. USD) and keep their rate up to date.",
+      "add": "Add currency",
+      "code": "Currency",
+      "codeHint": "3-letter code, e.g. USD, EUR",
+      "symbol": "Symbol",
+      "main": "Main",
+      "rate": "Today's rate",
+      "noRate": "No rate yet",
+      "rateTitle": "Update an exchange rate",
+      "rateHelp": "Rates are entered by hand and kept as history, so old bills keep the rate they used.",
+      "rateFor": "1 {{code}} = how many {{main}}?"
+    },
+    "rules": {
+      "help": "Rules used when taking bookings and checking guests in and out.",
+      "deposit": "Deposit",
+      "depositRequired": "A deposit is needed to confirm a booking",
+      "depositType": "Deposit is",
+      "percent": "A percent of the stay",
+      "fixed": "A fixed amount",
+      "firstNight": "The first night",
+      "amount": "Amount",
+      "pendingHours": "Unconfirmed bookings expire after (hours)",
+      "pendingHint": "Bookings without a deposit are cancelled automatically after this time.",
+      "walkIn": "Walk-in guests pay",
+      "walkInFull": "The full stay up front",
+      "walkInDeposit": "A deposit up front",
+      "fees": "Early check-in and late check-out",
+      "early_check_in": "Early check-in fee",
+      "late_check_out": "Late check-out fee",
+      "percentNight": "Percent of one night",
+      "hourly": "Hourly stays",
+      "minHours": "Minimum hours",
+      "cleaning": "Cleaning time between guests (minutes)",
+      "cleaningHint": "The room is blocked this long after an hourly guest leaves."
+    },
+    "modules": {
+      "help": "Optional features. Your plan decides which ones you can use; turn them on or off any time.",
+      "inPlans": "Included in: {{plans}}",
+      "about": {
+        "housekeeping": "Cleaning tasks, room status board and housekeepers' own task list.",
+        "cashier_close": "Each receptionist opens and closes a cash shift; managers approve the count.",
+        "shifts": "Shift templates and the weekly staff roster.",
+        "attendance": "Clock in and out, with a PIN kiosk or manual entries."
+      }
+    },
+    "attendance": {
+      "help": "How staff clock in and out. You can allow several ways.",
+      "self": "Button after signing in",
+      "selfHint": "Staff clock in from their own account.",
+      "kiosk_pin": "Shared kiosk with PIN",
+      "kiosk_pinHint": "A tablet at the staff entrance; each person types their PIN.",
+      "manual": "Manual entry by a manager",
+      "manualHint": "Managers fix or add times by hand."
+    },
+    "subscription": {
+      "help": "Your HotelMS plan. Contact HotelMS to change it.",
+      "rooms": "Rooms",
+      "unlimited": "{{used}} (unlimited)"
     }
   }
 }

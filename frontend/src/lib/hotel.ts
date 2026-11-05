@@ -6,7 +6,9 @@ import { useMe } from './auth'
 export function useCan() {
   const me = useMe()
   const perms = new Set(me.data?.permissions ?? [])
-  return (permission?: string) => !permission || perms.has(permission)
+  /** One permission, or any of a list. */
+  return (permission?: string | readonly string[]) =>
+    !permission || (typeof permission === 'string' ? perms.has(permission) : permission.some((p) => perms.has(p)))
 }
 
 export type Role = {

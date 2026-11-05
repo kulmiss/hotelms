@@ -9,6 +9,9 @@ import { useCan } from '@/lib/hotel'
 import { BrandMark, useBrand } from '@/lib/brand'
 import { cn } from '@/lib/cn'
 
+/** Sidebar module names → plan module keys. */
+const moduleKey = { cashier: 'cashier_close', housekeeping: 'housekeeping', shifts: 'shifts' } as const
+
 type EntryProps = { item: NavItem; collapsed: boolean; onNavigate?: () => void }
 
 function NavEntry({ item, collapsed, onNavigate }: EntryProps) {
@@ -62,8 +65,11 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapsed }: Sidebar
   const me = useMe()
   const can = useCan()
   const brand = useBrand()
+  const modules = me.data?.hotel?.modules ?? []
   const items = [
-    ...(me.data?.user.is_super_admin ? adminNav : mainNav.filter((item) => can(item.permission))),
+    ...(me.data?.user.is_super_admin
+      ? adminNav
+      : mainNav.filter((item) => can(item.permission) && (!item.module || modules.includes(moduleKey[item.module])))),
     ...(import.meta.env.DEV ? devNav : []),
   ]
 

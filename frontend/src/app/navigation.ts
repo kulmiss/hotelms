@@ -49,7 +49,7 @@ export type NavItem = {
   /** Sidebar group heading (translation key under nav.groups). */
   group?: string
   /** Hidden unless the user's role has this permission. */
-  permission?: string
+  permission?: string | readonly string[]
   /** Build-plan phase that delivers this screen (for placeholders). */
   phase: number
   /** Optional module: hidden when the hotel turns it off (phase 2). */
@@ -71,7 +71,16 @@ export const mainNav: NavItem[] = [
   { key: 'roles', path: '/roles', icon: ShieldCheckIcon, activeIcon: ShieldCheckSolid, group: 'team', phase: 1, permission: 'roles.manage', built: true },
   { key: 'activityLog', path: '/activity-log', icon: ClipboardDocumentListIcon, activeIcon: ClipboardDocumentListSolid, group: 'team', phase: 1, permission: 'activity_log.view', built: true },
   { key: 'reports', path: '/reports', icon: ChartBarIcon, activeIcon: ChartBarSolid, group: 'insights', phase: 6 },
-  { key: 'settings', path: '/settings', icon: Cog6ToothIcon, activeIcon: Cog6ToothSolid, group: 'insights', phase: 2 },
+  {
+    key: 'settings',
+    path: '/settings',
+    icon: Cog6ToothIcon,
+    activeIcon: Cog6ToothSolid,
+    group: 'insights',
+    phase: 2,
+    built: true,
+    permission: ['settings.hotel', 'settings.branches', 'settings.money', 'settings.exchange_rates', 'settings.charges', 'settings.policies', 'settings.modules', 'subscription.view'],
+  },
 ]
 
 export const devNav: NavItem[] = [
