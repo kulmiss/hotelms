@@ -38,3 +38,27 @@ describe('dashboard and reports', () => {
     await waitFor(() => expect(fetchMock.mock.calls.some(([u]) => String(u).includes('metric=room_nights'))).toBe(true))
   })
 })
+
+describe('personal and insight reports', () => {
+  it('shows a receptionist only their own shift summary', async () => {
+    mockApi({
+      'GET /me': { body: makeMe({}, ['reports.my_shift']) },
+      'GET /reports/my-shift': { body: { data: { from: '2026-11-12T08:00:00+03:00', to: '2026-11-12T16:00:00+03:00', session: null, sessions: [], check_ins: 3, check_outs: 2, walk_ins: 1, bookings: 4, payments: [{ method: 'Cash', currency: 'ETB', count: 2, amount: '5000.00', amount_in_base: '5000.00' }], payments_total: '5000.00', discounts: '0.00', max_discount_percent: '5.00', waived: 0, timeline: [], currency: 'ETB' } } },
+    })
+    renderApp('/reports')
+    expect(await screen.findByText('Check-ins')).toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: 'Reports' })).not.toHaveTextContent('Revenue and performance')
+    expect(screen.getAllByText('ETB 5,000.00').length).toBeGreaterThan(0)
+  })
+
+  it('flags people in the staff audit', async () => {
+    mockApi({
+      'GET /me': { body: makeMe({}, ['reports.audit']) },
+      'GET /reports/audit': { body: { data: { rows: [{ user_id: 4, name: 'Hana', discounts: '900.00', discount_count: 6, waived: '0.00', waived_count: 0, voids: 3, void_value: '9000.00', refunds: '0.00', refund_count: 0, cash_short: '-250.00', cash_over: '0.00', flags: ['cash_short', 'voids'] }], from: '2026-11-01', to: '2026-11-12', currency: 'ETB' } } },
+    })
+    renderApp('/reports?report=audit')
+    expect(await screen.findByText('1 person needs a look.')).toBeInTheDocument()
+    expect(screen.getByText('Cash short over 200')).toBeInTheDocument()
+    expect(screen.getByText('Many voids')).toBeInTheDocument()
+  })
+})

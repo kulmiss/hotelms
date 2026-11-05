@@ -14,11 +14,16 @@ import { cn } from '@/lib/cn'
 import { date, money } from '@/lib/format'
 import { addDays, today } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
+import { AccountingReport, AuditReport, DailyReport, ForecastReport, MyShiftReport, MyWorkReport } from './InsightReports'
 import { change, reportFileUrl, useDrilldown, useReport, type Kpis, type ReportFilters } from '@/lib/reports'
 
 /** Report key → permissions (any). Keep in step with ReportController::REPORTS. */
-const LIBRARY: { key: string; perms: string[] }[] = [
+const LIBRARY: { key: string; perms: string[]; module?: string }[] = [
+  { key: 'my_shift', perms: ['reports.my_shift'] },
+  { key: 'my_work', perms: ['reports.my_work'], module: 'housekeeping' },
+  { key: 'daily', perms: ['reports.revenue'] },
   { key: 'performance', perms: ['reports.revenue', 'reports.occupancy'] },
+  { key: 'forecast', perms: ['reports.forecast', 'reports.targets_manage'] },
   { key: 'payments', perms: ['reports.payments'] },
   { key: 'outstanding', perms: ['reports.outstanding'] },
   { key: 'tax', perms: ['reports.tax'] },
@@ -26,7 +31,13 @@ const LIBRARY: { key: string; perms: string[] }[] = [
   { key: 'cancellations', perms: ['reports.cancellations'] },
   { key: 'branches', perms: ['reports.branch_compare'] },
   { key: 'housekeeping', perms: ['reports.occupancy'] },
+  { key: 'audit', perms: ['reports.audit'] },
+  { key: 'accounting', perms: ['reports.accounting_export'] },
 ]
+
+/** Reports with their own period controls (no shared filter bar / export). */
+const OWN_FILTERS = ['my_shift', 'my_work', 'daily', 'forecast', 'outstanding']
+const NO_EXPORT = ['my_shift', 'my_work', 'daily', 'forecast', 'audit', 'accounting']
 
 function presets(): { key: string; from: string; to: string }[] {
   const t = today()
@@ -48,7 +59,8 @@ export function ReportsPage() {
   const me = useMe()
   const branches = me.data?.branches ?? []
   const [params, setParams] = useSearchParams()
-  const allowed = LIBRARY.filter((r) => r.perms.some((p) => can(p)))
+  const modules = me.data?.hotel?.modules ?? []
+  const allowed = LIBRARY.filter((r) => r.perms.some((p) => can(p)) && (!r.module || modules.includes(r.module)))
   const key = allowed.find((r) => r.key === params.get('report'))?.key ?? allowed[0]?.key
   const [f, setF] = useState<ReportFilters>(() => ({ from: presets()[0].from, to: presets()[0].to, compare: 'prev', branch_id: null }))
 
@@ -72,7 +84,7 @@ export function ReportsPage() {
               <PrinterIcon aria-hidden className="size-4" />
               {t('billing.print')}
             </button>
-            {can('reports.export') && (
+            {can('reports.export') && !NO_EXPORT.includes(key) && (
               <>
                 <a className={buttonClass('secondary')} href={reportFileUrl(key, f, 'xlsx')} download>
                   <ArrowDownTrayIcon aria-hidden className="size-4" />
@@ -110,7 +122,13 @@ export function ReportsPage() {
           <h2 className="hidden text-lg font-semibold print:block">
             {t(`reports.names.${key}`)} · {date(f.from)} – {date(f.to)}
           </h2>
-          {key !== 'outstanding' && <Filters f={f} setF={setF} branches={branches} />}
+          {!OWN_FILTERS.includes(key) && <Filters f={f} setF={setF} branches={branches} />}
+          {key === 'my_shift' && <MyShiftReport />}
+          {key === 'my_work' && <MyWorkReport />}
+          {key === 'daily' && <DailyReport branchId={f.branch_id} />}
+          {key === 'forecast' && <ForecastReport branchId={f.branch_id} />}
+          {key === 'audit' && <AuditReport f={f} />}
+          {key === 'accounting' && <AccountingReport f={f} />}
           {key === 'performance' && <Performance f={f} />}
           {key === 'payments' && <Payments f={f} />}
           {key === 'outstanding' && <Outstanding f={f} />}
