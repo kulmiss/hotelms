@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api\Settings;
 
 use App\Http\Controllers\Controller;
-use App\Models\Room;
-use App\Models\RoomType;
 use App\Models\Reservation;
 use App\Models\ReservationRoom;
+use App\Models\Room;
+use App\Models\RoomType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
