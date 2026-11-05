@@ -42,7 +42,7 @@ class Impersonation
         $this->log->log('support.login_as', "Signed in to {$hotel->name} as {$target->name}", null, $props + ['hotel' => $hotel->name]);
         $this->log->log('support.login_as', "HotelMS support ({$admin->name}) signed in as {$target->name}", $target, $props);
 
-        Auth::guard('web')->login($target);
+        $this->switchTo($request, $target);
         $request->session()->put(self::SESSION_KEY, $entry->id);
 
         return $entry;
@@ -63,8 +63,18 @@ class Impersonation
         $this->log->log('support.logout', "HotelMS support ({$entry->superAdmin->name}) left the hotel", $target, ['minutes' => (int) $entry->started_at->diffInMinutes(now())]);
 
         $admin = $entry->superAdmin()->first();
-        Auth::guard('web')->login($admin);
+        $this->switchTo($request, $admin);
 
         return $admin;
+    }
+
+    /**
+     * Signs the session in as another user. Sanctum checks that the session's
+     * stored password matches the user, so store the new user's one.
+     */
+    private function switchTo(Request $request, User $user): void
+    {
+        Auth::guard('web')->login($user);
+        $request->session()->put('password_hash_web', $user->getAuthPassword());
     }
 }

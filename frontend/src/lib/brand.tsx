@@ -10,6 +10,7 @@ export type Branding = {
   support_email: string | null
   support_phone: string | null
   logo_url: string | null
+  demo_public?: boolean
 }
 
 const FALLBACK: Branding = {

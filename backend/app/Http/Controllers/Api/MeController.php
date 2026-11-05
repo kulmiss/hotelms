@@ -55,6 +55,7 @@ class MeController extends Controller
                 'status' => $hotel->status,
                 'default_currency' => $hotel->default_currency,
                 'timezone' => $hotel->timezone,
+                'is_demo' => $hotel->is_demo,
             ] : null,
             'branches' => $user->accessibleBranches()
                 ->map(fn (Branch $branch) => ['id' => $branch->id, 'name' => $branch->name])

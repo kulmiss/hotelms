@@ -292,7 +292,9 @@
       "fromName": "Sender name",
       "fromNameHint": "The name hotels see in their inbox.",
       "footer": "Footer text",
-      "footerHint": "A short line added at the bottom of every email."
+      "footerHint": "A short line added at the bottom of every email.",
+      "demoPublic": "Show \"Try the demo\" on the sign-in page",
+      "demoPublicHint": "Anyone can explore the demo hotel without an account. It is reset every night and never sends real emails."
     }
   },
   "profile": {
@@ -440,5 +442,31 @@
     "settings.attendance": "Attendance methods",
     "subscription.view": "See plan and expiry",
     "activity_log.view": "Activity log"
+  },
+  "support": {
+    "banner": "You are signed in as {{name}} at {{hotel}} for support ({{by}}).",
+    "reason": "Reason: {{reason}}",
+    "return": "Return to admin",
+    "loginAs": "Log in as hotel",
+    "loginAsTitle": "Log in to {{hotel}}",
+    "loginAsHelp": "You'll see the hotel exactly as this user does. No password is needed. The visit, with your reason, is recorded in your log and in the hotel's own activity log.",
+    "reason_label": "Reason",
+    "reasonPlaceholder": "e.g. Help with setting up rooms",
+    "as": "Sign in as",
+    "hotelAdmin": "The Hotel Admin",
+    "enter": "Log in to hotel"
+  },
+  "demo": {
+    "badge": "Demo",
+    "banner": "This is the demo hotel. Feel free to try anything – it starts fresh every night.",
+    "resetNow": "Reset demo now",
+    "tryTitle": "Or try the demo hotel as:",
+    "roles": {
+      "hotel_admin": "Hotel Admin",
+      "branch_manager": "Branch Manager",
+      "receptionist": "Receptionist",
+      "housekeeping": "Housekeeping",
+      "accountant": "Accountant"
+    }
   }
 }

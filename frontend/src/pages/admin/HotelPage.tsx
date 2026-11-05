@@ -1,9 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { ClipboardDocumentIcon, KeyIcon } from '@heroicons/react/24/outline'
+import { ArrowRightEndOnRectangleIcon, ClipboardDocumentIcon, KeyIcon } from '@heroicons/react/24/outline'
 import { CheckIcon } from '@heroicons/react/20/solid'
 import { Alert } from '@/components/ui/Alert'
+import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
@@ -14,6 +15,8 @@ import {
   getQuote,
   useActivateHotel,
   useHotel,
+  useLoginAsHotel,
+  useResetDemo,
   usePlans,
   useRecordPayment,
   useResetUserPassword,
@@ -22,20 +25,23 @@ import {
   type Hotel,
 } from '@/lib/admin'
 import { ApiError } from '@/lib/api'
+import { useMe } from '@/lib/auth'
 import { date, money } from '@/lib/format'
 
-type Panel = 'payment' | 'suspend' | 'trial' | null
+type Panel = 'payment' | 'suspend' | 'trial' | 'loginAs' | null
 
 export function HotelPage() {
   const { t } = useTranslation()
   const id = Number(useParams().id)
   const hotel = useHotel(id)
+  const me = useMe()
   const [panel, setPanel] = useState<Panel>(null)
 
   if (hotel.isPending) return <p className="text-muted">{t('common.loading')}</p>
   if (hotel.isError) return <Alert>{t('common.serverUnreachable')}</Alert>
 
   const h = hotel.data.data
+  const canLoginAs = me.data?.platform?.permissions.includes('hotels.impersonate') ?? false
   const toggle = (p: Panel) => setPanel((cur) => (cur === p ? null : p))
 
   return (
@@ -46,11 +52,19 @@ export function HotelPage() {
         subtitle={
           <span className="flex flex-wrap items-center gap-2">
             <StatusBadge status={h.status} />
+            {h.is_demo && <Badge tone="info">{t('demo.badge')}</Badge>}
             <span>{[h.plan?.name, h.city].filter(Boolean).join(', ')}</span>
           </span>
         }
         actions={
           <>
+            {canLoginAs && (
+              <Button variant="secondary" onClick={() => toggle('loginAs')}>
+                <ArrowRightEndOnRectangleIcon aria-hidden className="size-4 text-icon" />
+                {t('support.loginAs')}
+              </Button>
+            )}
+            {h.is_demo && <ResetDemoButton hotelId={h.id} />}
             <Button onClick={() => toggle('payment')} variant={panel === 'payment' ? 'secondary' : 'primary'}>
               {t('admin.hotel.recordPayment')}
             </Button>
@@ -72,6 +86,7 @@ export function HotelPage() {
         <Alert>{h.suspend_reason ? t('admin.hotel.suspendedBecause', { reason: h.suspend_reason }) : t('admin.hotel.suspendedUnpaid')}</Alert>
       )}
 
+      {panel === 'loginAs' && <LoginAsPanel hotel={h} users={hotel.data.admins} onDone={() => setPanel(null)} />}
       {panel === 'payment' && <PaymentPanel hotel={h} onDone={() => setPanel(null)} />}
       {panel === 'suspend' && <SuspendPanel hotelId={h.id} onDone={() => setPanel(null)} />}
       {panel === 'trial' && <TrialPanel hotel={h} onDone={() => setPanel(null)} />}
@@ -168,6 +183,59 @@ export function HotelPage() {
         )}
       </Card>
     </div>
+  )
+}
+
+function LoginAsPanel({ hotel, users, onDone }: { hotel: Hotel; users: { id: number; name: string; email: string }[]; onDone: () => void }) {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const loginAs = useLoginAsHotel(hotel.id)
+  const [reason, setReason] = useState('')
+  const [userId, setUserId] = useState('')
+  const error = loginAs.error instanceof ApiError ? loginAs.error : null
+  return (
+    <Card>
+      <form
+        noValidate
+        className="grid gap-4 sm:grid-cols-2"
+        onSubmit={(e) => {
+          e.preventDefault()
+          loginAs.mutate({ reason, user_id: userId ? Number(userId) : undefined }, { onSuccess: () => navigate('/', { replace: true }) })
+        }}
+      >
+        <div className="flex flex-col gap-1 sm:col-span-2">
+          <h2 className="text-sm font-semibold">{t('support.loginAsTitle', { hotel: hotel.name })}</h2>
+          <p className="text-[13px] text-muted">{t('support.loginAsHelp')}</p>
+        </div>
+        <Field label={t('admin.hotel.reason')} value={reason} placeholder={t('support.reasonPlaceholder')} onChange={(e) => setReason(e.target.value)} error={error?.field('reason')} />
+        <Select label={t('support.as')} value={userId} onChange={(e) => setUserId(e.target.value)} error={error?.field('user_id')}>
+          <option value="">{t('support.hotelAdmin')}</option>
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.name} ({u.email})
+            </option>
+          ))}
+        </Select>
+        <div className="flex justify-end gap-2 sm:col-span-2">
+          <Button variant="ghost" onClick={onDone}>
+            {t('common.cancel')}
+          </Button>
+          <Button type="submit" disabled={loginAs.isPending || reason.trim().length < 3}>
+            {t('support.enter')}
+          </Button>
+        </div>
+      </form>
+    </Card>
+  )
+}
+
+function ResetDemoButton({ hotelId }: { hotelId: number }) {
+  const { t } = useTranslation()
+  const reset = useResetDemo(hotelId)
+  return (
+    <Button variant="secondary" disabled={reset.isPending} onClick={() => reset.mutate()}>
+      {reset.isPending ? t('common.saving') : t('demo.resetNow')}
+    </Button>
   )
 }
 

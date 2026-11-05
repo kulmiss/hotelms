@@ -50,3 +50,24 @@ export function useChangePassword() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ME_KEY }),
   })
 }
+
+/** Leave a hotel after "Log in as" and go back to the Super Admin account. */
+export function useStopImpersonation() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => post('/impersonation/stop'),
+    onSuccess: () => qc.clear(),
+  })
+}
+
+/** Public "Try the demo": sign in as a demo user of the chosen role. */
+export function useDemoLogin() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (role: string) => {
+      await prepareSession()
+      await post('/demo/login', { role })
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ME_KEY }),
+  })
+}

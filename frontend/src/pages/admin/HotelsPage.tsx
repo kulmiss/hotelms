@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { PlusIcon } from '@heroicons/react/20/solid'
+import { Badge } from '@/components/ui/Badge'
 import { buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -82,7 +83,10 @@ export function HotelsPage() {
               <tr key={h.id} className="border-t border-border transition duration-75 hover:bg-sunken">
                 <td className="px-4 py-2">
                   <Link to={`/admin/hotels/${h.id}`} className="flex min-h-touch flex-col justify-center font-semibold text-text">
-                    {h.name}
+                    <span className="flex items-center gap-2">
+                      {h.name}
+                      {h.is_demo && <Badge tone="info">{t('demo.badge')}</Badge>}
+                    </span>
                     <span className="text-xs font-normal text-muted">{h.city ?? ''}</span>
                   </Link>
                 </td>
