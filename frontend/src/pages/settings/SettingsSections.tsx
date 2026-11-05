@@ -99,7 +99,7 @@ function ProfileForm({ initial }: { initial: Profile }) {
           <span className="flex size-16 items-center justify-center overflow-hidden rounded-xl bg-sunken ring-1 ring-ring">
             {initial.logo_url ? <img src={initial.logo_url} alt="" className="size-full object-contain p-1.5" /> : <PhotoIcon aria-hidden className="size-6 text-icon" />}
           </span>
-          <input ref={input} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="sr-only" aria-label={t('settings.profile.uploadLogo')} onChange={(e) => e.target.files?.[0] && logo.mutate(e.target.files[0])} />
+          <input ref={input} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" aria-label={t('settings.profile.uploadLogo')} onChange={(e) => e.target.files?.[0] && logo.mutate(e.target.files[0])} />
           <Button variant="secondary" disabled={logo.isPending} onClick={() => input.current?.click()}>
             {initial.logo_url ? t('admin.settings.replaceLogo') : t('settings.profile.uploadLogo')}
           </Button>

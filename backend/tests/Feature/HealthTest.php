@@ -12,7 +12,9 @@ class HealthTest extends TestCase
             ->assertOk()
             ->assertJsonPath('status', 'ok')
             ->assertJsonPath('app', 'HotelMS')
-            ->assertJsonPath('checks.database', 'ok');
+            ->assertJsonPath('checks.database', 'ok')
+            ->assertHeader('X-Content-Type-Options', 'nosniff')
+            ->assertHeader('X-Frame-Options', 'DENY');
     }
 
     public function test_root_points_to_the_api(): void

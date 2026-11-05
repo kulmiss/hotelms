@@ -41,7 +41,7 @@ class HotelProfileController extends Controller
 
     public function logo(Request $request): JsonResponse
     {
-        $request->validate(['logo' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp,svg', 'max:1024']]);
+        $request->validate(['logo' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:1024']]); // no SVG: it can carry scripts
         $hotel = $request->user()->hotel;
 
         if ($hotel->logo_path) {

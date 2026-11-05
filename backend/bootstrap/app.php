@@ -10,6 +10,7 @@ use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsurePlatformPermission;
 use App\Http\Middleware\EnsureTwoFactorSetUp;
 use App\Http\Middleware\OneAtATime;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetTenantContext;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // The React app signs in with Sanctum's cookie session.
         $middleware->statefulApi();
+        $middleware->append(SecurityHeaders::class);
 
         // Set the hotel before route model binding, so {role} etc. only find
         // the signed-in user's own hotel's records (after authentication).
