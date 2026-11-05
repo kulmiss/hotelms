@@ -65,6 +65,7 @@ export type PlatformSettings = {
   support_email: string | null
   support_phone: string | null
   demo_public: boolean
+  two_factor_admins?: boolean
   default_trial_days: number
   default_trial_plan_id: number | null
   grace_days: number

@@ -132,7 +132,7 @@ class SecurityTest extends TestCase
         $secret = $this->postJson('/api/v1/me/security/two-factor', ['method' => 'app', 'password' => 'password'])->assertOk()->json('data.secret');
         $this->postJson('/api/v1/me/security/two-factor/confirm', ['code' => Totp::code($secret, intdiv(time(), 30))])->assertOk()->assertJsonCount(8, 'recovery_codes');
         $this->getJson('/api/v1/branches')->assertOk();
-        $this->deleteJson('/api/v1/me/security/two-factor', ['password' => 'password'])->assertUnprocessable(); // required: cannot turn off
+        $this->postJson('/api/v1/me/security/two-factor/disable', ['password' => 'password'])->assertUnprocessable(); // required: cannot turn off
 
         // Staff are not required unless the hotel asks for it.
         $this->actingAs($this->staff)->getJson('/api/v1/branches')->assertOk();

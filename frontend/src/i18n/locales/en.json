@@ -67,7 +67,8 @@
     "roles": "Roles and permissions",
     "activityLog": "Activity log",
     "attendance": "Attendance",
-    "platformReports": "Reports"
+    "platformReports": "Reports",
+    "devices": "Devices"
   },
   "topbar": {
     "search": "Search guests, rooms, bookings",
@@ -99,7 +100,16 @@
     "submit": "Sign in",
     "remember": "Keep me signed in on this device",
     "signingIn": "Signing in…",
-    "tooManyAttempts": "Too many tries. Please wait a minute and try again."
+    "tooManyAttempts": "Too many tries. Please wait a minute and try again.",
+    "codeApp": "Enter the 6-digit code from your authenticator app.",
+    "codeEmail": "We sent a 6-digit code to {{email}}.",
+    "recoveryHelp": "Enter one of your recovery codes (like abcde-12345). Each works once.",
+    "recoveryCode": "Recovery code",
+    "verify": "Continue",
+    "resend": "Send a new code",
+    "codeResent": "A new code was sent.",
+    "useRecovery": "Use a recovery code",
+    "useCode": "Use a code instead"
   },
   "password": {
     "title": "Set a new password",
@@ -341,7 +351,9 @@
       "telegramHelp": "Create a bot with @BotFather in Telegram, then paste its token here. Staff can then link their Telegram in their profile to get reports and alerts.",
       "botToken": "Bot token",
       "botTokenHint": "Kept secret. Leave as is to keep the current token; clear it to turn Telegram off.",
-      "botUsername": "Bot username (without @)"
+      "botUsername": "Bot username (without @)",
+      "twoFactorAdmins": "Two-step sign-in for admins",
+      "twoFactorAdminsHint": "The HotelMS team and every Hotel Admin must use a code from an app or email."
     },
     "reports": {
       "subtitle": "Income, customers and how each hotel is doing.",
@@ -570,7 +582,8 @@
       "cancellation": "Cancellation policies",
       "modules": "Modules",
       "attendance": "Attendance",
-      "subscription": "Subscription"
+      "subscription": "Subscription",
+      "security": "Security"
     },
     "profile": {
       "help": "Shown on invoices and receipts.",
@@ -791,6 +804,18 @@
       "checkIn": "Check-in",
       "checkOut": "Check-out",
       "total": "Total"
+    },
+    "security": {
+      "help": "How staff sign in. Hotel Admins always need two-step sign-in (set by HotelMS).",
+      "require_two_factor_staff": "Two-step sign-in for all staff",
+      "require_two_factor_staffHint": "Everyone needs a code from an app or email when signing in.",
+      "approved_devices_only": "Only approved devices",
+      "approved_devices_onlyHint": "Staff can sign in only on devices you approved in Team → Devices. Admins are never blocked.",
+      "screenLock": "Lock the screen after",
+      "screenLockHint": "On shared reception devices. Unlock with a PIN or password.",
+      "never": "Never",
+      "minutes_one": "{{count}} minute",
+      "minutes_other": "{{count}} minutes"
     }
   },
   "roomStatus": {
@@ -1652,5 +1677,76 @@
       "hours": "Hours",
       "percent": "Percent"
     }
+  },
+  "security": {
+    "twoStep": "Two-step sign-in",
+    "howCodes": "How do you want to get your codes?",
+    "methods": {
+      "app": "Authenticator app",
+      "appHint": "Google or Microsoft Authenticator. Works without internet on the phone.",
+      "email": "Email",
+      "emailHint": "We email a code each time you sign in."
+    },
+    "yourPassword": "Your password",
+    "code": "6-digit code",
+    "turnOn": "Turn on",
+    "turnOff": "Turn off",
+    "newCodes": "New recovery codes",
+    "app": {
+      "step1": "Install an authenticator app on your phone (Google Authenticator or Microsoft Authenticator).",
+      "step2": "In the app, add an account and type this key:",
+      "openOnPhone": "On this phone? Open it in the app",
+      "step3": "Type the 6-digit code the app shows."
+    },
+    "emailSent": "We sent a 6-digit code to {{email}}. It works for 10 minutes.",
+    "recoveryHelp": "Keep these recovery codes somewhere safe (print or write them down). If you lose your phone, each code lets you sign in once.",
+    "copy": "Copy",
+    "savedThem": "I saved them",
+    "onWith": "On – codes by {{method}}.",
+    "requiredHelp": "Required for your account. Turn it on to keep using the system.",
+    "offHelp": "Add a code when you sign in, so a stolen password is not enough.",
+    "codesLeft_one": "{{count}} recovery code left",
+    "codesLeft_other": "{{count}} recovery codes left",
+    "forcedTitle": "Turn on two-step sign-in",
+    "forcedIntro": "Your account needs a second step when you sign in. It takes one minute.",
+    "pin": "PIN",
+    "pinHelp": "4–6 digits. Unlocks a shared reception screen and works at the attendance kiosk.",
+    "pinSet": "Set",
+    "noPin": "Not set",
+    "newPin": "New PIN",
+    "setPin": "Set a PIN",
+    "changePin": "Change PIN",
+    "myDevices": "Your devices",
+    "signOutOthers": "Sign out everywhere else",
+    "thisDevice": "this device",
+    "signOut": "Sign out",
+    "statuses": {
+      "active": "Signed in",
+      "pending": "Waiting for approval",
+      "signed_out": "Signed out",
+      "blocked": "Blocked"
+    }
+  },
+  "devices": {
+    "subtitle": "Every device your staff sign in from. Sign out or block a device you do not know.",
+    "waiting_one": "{{count}} device is waiting for your approval.",
+    "waiting_other": "{{count}} devices are waiting for your approval.",
+    "person": "Person",
+    "device": "Device",
+    "lastSeen": "Last used",
+    "status": "Status",
+    "approved": "Approved hotel device",
+    "approve": "Approve",
+    "block": "Block",
+    "unblock": "Unblock"
+  },
+  "lock": {
+    "title": "Screen locked",
+    "pinHelp": "{{name}}, enter your PIN to continue. Another staff member can enter their own PIN to take over.",
+    "passwordHelp": "{{name}}, enter your password to continue.",
+    "pin": "PIN",
+    "continue": "Continue",
+    "usePassword": "Use password",
+    "usePin": "Use PIN"
   }
 }

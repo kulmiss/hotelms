@@ -504,6 +504,49 @@ export function AttendanceSettings() {
   )
 }
 
+/* ------------------------------------------------------------- security */
+
+type Security = { require_two_factor_staff: boolean; approved_devices_only: boolean; screen_lock_minutes: number }
+
+export function SecuritySettings() {
+  const { t } = useTranslation()
+  const q = useSettingsObject<Security>('/settings/security')
+  const save = useSettingsObjectSave<Security>('/settings/security')
+  const v = q.data?.data
+  const error = save.error instanceof ApiError ? Object.values(save.error.errors)[0]?.[0] : null
+  if (!v) return null
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <h2 className="text-base font-semibold">{t('settings.sections.security')}</h2>
+        <p className="max-w-prose text-[13px] text-muted">{t('settings.security.help')}</p>
+      </div>
+      <Card className="flex flex-col gap-3">
+        {save.isSuccess && <Alert tone="ok">{t('common.saved')}</Alert>}
+        {error && <Alert>{error}</Alert>}
+        {(['require_two_factor_staff', 'approved_devices_only'] as const).map((k) => (
+          <label key={k} className="flex min-h-touch items-start gap-3 text-[13px]">
+            <input type="checkbox" className="mt-0.5 size-4 rounded accent-accent" checked={v[k]} disabled={save.isPending} onChange={(e) => save.mutate({ ...v, [k]: e.target.checked })} />
+            <span className="flex flex-col">
+              <span className="font-medium">{t(`settings.security.${k}`)}</span>
+              <span className="text-muted">{t(`settings.security.${k}Hint`)}</span>
+            </span>
+          </label>
+        ))}
+        <div className="w-60">
+          <Select label={t('settings.security.screenLock')} hint={t('settings.security.screenLockHint')} value={String(v.screen_lock_minutes)} disabled={save.isPending} onChange={(e) => save.mutate({ ...v, screen_lock_minutes: Number(e.target.value) })}>
+            {[0, 5, 10, 15, 30, 60].map((m) => (
+              <option key={m} value={m}>
+                {m === 0 ? t('settings.security.never') : t('settings.security.minutes', { count: m })}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </Card>
+    </div>
+  )
+}
+
 /* ------------------------------------------------------------- subscription */
 
 type Subscription = {

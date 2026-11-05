@@ -80,7 +80,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
             Route::get('/me/security', [SecurityController::class, 'show']);
             Route::post('/me/security/two-factor', [SecurityController::class, 'beginTwoFactor'])->middleware('throttle:two-factor');
             Route::post('/me/security/two-factor/confirm', [SecurityController::class, 'confirmTwoFactor'])->middleware('throttle:two-factor');
-            Route::delete('/me/security/two-factor', [SecurityController::class, 'disableTwoFactor'])->middleware('throttle:two-factor');
+            Route::post('/me/security/two-factor/disable', [SecurityController::class, 'disableTwoFactor'])->middleware('throttle:two-factor');
             Route::post('/me/security/recovery-codes', [SecurityController::class, 'recoveryCodes'])->middleware('throttle:two-factor');
             Route::put('/me/security/pin', [SecurityController::class, 'setPin'])->middleware('throttle:pin');
             Route::post('/me/security/devices/{id}/sign-out', [SecurityController::class, 'signOutMyDevice']);

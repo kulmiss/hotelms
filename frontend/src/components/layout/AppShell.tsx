@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { useSidebarCollapsed } from '@/lib/sidebar'
+import { ScreenLock } from './ScreenLock'
 import { SessionBanner } from './SessionBanner'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
@@ -22,6 +23,7 @@ export function AppShell() {
           </div>
         </main>
       </div>
+      <ScreenLock />
     </div>
   )
 }

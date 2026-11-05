@@ -20,6 +20,8 @@ const HotelPage = lazy(() => pages.hotel().then((m) => ({ default: m.HotelPage }
 const PlansPage = lazy(() => pages.plans().then((m) => ({ default: m.PlansPage })))
 const PlatformSettingsPage = lazy(() => pages.platformSettings().then((m) => ({ default: m.PlatformSettingsPage })))
 const PlatformReportsPage = lazy(() => pages.platformReports().then((m) => ({ default: m.PlatformReportsPage })))
+const TwoStepPage = lazy(() => pages.twoStep().then((m) => ({ default: m.TwoStepPage })))
+const DevicesPage = lazy(() => pages.devices().then((m) => ({ default: m.DevicesPage })))
 const ProfilePage = lazy(() => pages.profile().then((m) => ({ default: m.ProfilePage })))
 const StaffPage = lazy(() => pages.staff().then((m) => ({ default: m.StaffPage })))
 const StaffFormPage = lazy(() => pages.staffForm().then((m) => ({ default: m.StaffFormPage })))
@@ -58,6 +60,7 @@ const SETTINGS_PAGES: Record<string, ReturnType<typeof section>> = {
   taxes: section('TaxesSettings'),
   'payment-methods': section('PaymentMethodsSettings'),
   charges: section('ChargesSettings'),
+  security: section('SecuritySettings'),
   'booking-rules': section('BookingRulesSettings'),
   cancellation: section('CancellationSettings'),
   modules: section('ModulesSettings'),
@@ -93,6 +96,7 @@ export const routes = [
     element: <RequireAuth />,
     children: [
       { path: '/change-password', element: <ChangePasswordPage /> },
+      { path: '/two-step', element: page(<TwoStepPage />) },
       { path: '/setup', element: page(<SetupPage />) },
       {
         element: <RequirePermission permission="attendance.clock" />,
@@ -175,6 +179,10 @@ export const routes = [
               { path: 'staff/new', element: page(<StaffFormPage />) },
               { path: 'staff/:id', element: page(<StaffFormPage />) },
             ],
+          },
+          {
+            element: <RequirePermission permission="staff.manage" />,
+            children: [{ path: 'devices', element: page(<DevicesPage />) }],
           },
           {
             element: <RequirePermission permission="roles.manage" />,

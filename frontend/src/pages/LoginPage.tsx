@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { ApiError } from '@/lib/api'
-import { useDemoLogin, useLogin, useMe } from '@/lib/auth'
+import { useDemoLogin, useLogin, useMe, useResendCode, useTwoFactorLogin } from '@/lib/auth'
 import { BrandMark, useBrand } from '@/lib/brand'
 
 export function LoginPage() {
@@ -19,6 +19,7 @@ export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [remember, setRemember] = useState(true)
+  const [step, setStep] = useState<{ method: 'app' | 'email'; email?: string | null } | null>(null)
 
   const from = (location.state as { from?: string } | null)?.from ?? '/'
 
@@ -35,7 +36,10 @@ export function LoginPage() {
 
   function submit(e: FormEvent) {
     e.preventDefault()
-    login.mutate({ email, password, remember }, { onSuccess: () => navigate(from, { replace: true }) })
+    login.mutate(
+      { email, password, remember },
+      { onSuccess: (r) => (r?.two_factor ? setStep({ method: r.two_factor, email: r.email }) : navigate(from, { replace: true })) },
+    )
   }
 
   return (
@@ -49,6 +53,9 @@ export function LoginPage() {
           <h1 className="text-xl font-semibold tracking-tight">{t('login.title')}</h1>
           <p className="text-sm text-muted">{brand.loginMessage || t('login.subtitle')}</p>
         </div>
+        {step ? (
+          <CodeStep method={step.method} email={step.email} onDone={() => navigate(from, { replace: true })} onBack={() => { setStep(null); setPassword('') }} />
+        ) : (
         <form className="flex flex-col gap-y-6" onSubmit={submit} noValidate>
           {fieldError && <Alert>{fieldError}</Alert>}
           {generalError && <Alert>{generalError}</Alert>}
@@ -82,9 +89,59 @@ export function LoginPage() {
             {login.isPending ? t('login.signingIn') : t('login.submit')}
           </Button>
         </form>
+        )}
       </Card>
       {brand.raw.demo_public && <TryDemo onDone={() => navigate('/', { replace: true })} />}
     </div>
+  )
+}
+
+/** Second step of signing in: a 6-digit code (app or email), or a recovery code. */
+function CodeStep({ method, email, onDone, onBack }: { method: 'app' | 'email'; email?: string | null; onDone: () => void; onBack: () => void }) {
+  const { t } = useTranslation()
+  const verify = useTwoFactorLogin()
+  const resend = useResendCode()
+  const [code, setCode] = useState('')
+  const [recovery, setRecovery] = useState(false)
+  const error = verify.error instanceof ApiError ? (verify.error.field('code') ?? (verify.error.status === 429 ? t('login.tooManyAttempts') : verify.error.message)) : verify.error ? t('common.serverUnreachable') : null
+  const ok = recovery ? code.includes('-') : code.length === 6
+
+  function submit(e: FormEvent) {
+    e.preventDefault()
+    verify.mutate(code.trim(), { onSuccess: onDone })
+  }
+
+  return (
+    <form className="flex flex-col gap-y-5" onSubmit={submit} noValidate>
+      <p className="text-center text-sm text-muted">{recovery ? t('login.recoveryHelp') : method === 'email' ? t('login.codeEmail', { email: email ?? '' }) : t('login.codeApp')}</p>
+      {error && <Alert>{error}</Alert>}
+      {resend.isSuccess && <Alert tone="ok">{t('login.codeResent')}</Alert>}
+      <Field
+        label={recovery ? t('login.recoveryCode') : t('security.code')}
+        inputMode={recovery ? 'text' : 'numeric'}
+        autoComplete="one-time-code"
+        autoFocus
+        maxLength={recovery ? 11 : 6}
+        value={code}
+        onChange={(e) => setCode(recovery ? e.target.value.trim().toLowerCase() : e.target.value.replace(/\D/g, ''))}
+      />
+      <Button type="submit" size="lg" disabled={!ok || verify.isPending}>
+        {t('login.verify')}
+      </Button>
+      <div className="flex flex-wrap justify-between gap-2">
+        <Button variant="ghost" onClick={onBack}>
+          {t('common.back')}
+        </Button>
+        {method === 'email' && !recovery && (
+          <Button variant="ghost" disabled={resend.isPending} onClick={() => resend.mutate()}>
+            {t('login.resend')}
+          </Button>
+        )}
+        <Button variant="ghost" onClick={() => { setRecovery(!recovery); setCode('') }}>
+          {recovery ? t('login.useCode') : t('login.useRecovery')}
+        </Button>
+      </div>
+    </form>
   )
 }
 

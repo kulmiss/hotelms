@@ -11,6 +11,7 @@ import { ApiError, type Me } from '@/lib/api'
 import { useMe } from '@/lib/auth'
 import { useTelegram, useTelegramLink, useTelegramUnlink } from '@/lib/automation'
 import { useUpdateProfile } from '@/lib/profile'
+import { SecurityCards } from './security/SecurityParts'
 
 export function ProfilePage() {
   const { t } = useTranslation()
@@ -32,6 +33,7 @@ export function ProfilePage() {
           {t('topbar.changePassword')}
         </Link>
       </Card>
+      {!me.data?.impersonation && <SecurityCards />}
       {me.data?.hotel && !me.data.impersonation && <TelegramCard />}
     </div>
   )

@@ -136,7 +136,7 @@ class Devices
             ? User::where('hotel_id', $hotel->id)->where('status', 'active')->whereHas('role', fn ($q) => $q->withoutGlobalScope('hotel')->where('key', 'hotel_admin'))->pluck('email')->all()
             : [$user->email];
         $time = $hotel ? HotelClock::local(now(), $hotel)->format('d M Y H:i') : now()->format('d M Y H:i').' UTC';
-        $link = rtrim((string) config('app.frontend_url'), '/').($hotel ? '/team/devices' : '/profile');
+        $link = rtrim((string) config('app.frontend_url'), '/').($hotel ? '/devices' : '/profile');
         foreach (array_filter($to) as $email) {
             try {
                 Mail::to($email)->send(new NewDeviceMail($user->name, $device->name, $device->ip, $time, $waiting, $link));
