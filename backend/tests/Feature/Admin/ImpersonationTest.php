@@ -7,6 +7,7 @@ use App\Models\Branch;
 use App\Models\Hotel;
 use App\Models\ImpersonationLog;
 use App\Models\User;
+use App\Services\Impersonation;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -27,6 +28,12 @@ class ImpersonationTest extends TestCase
         $this->hotelAdmin = User::factory()->withRole($this->hotel, 'hotel_admin')->create(['name' => 'Meron']);
     }
 
+    /** The next request of the same browser: signed in as $user, with the support session. */
+    private function continueAs(User $user): static
+    {
+        return $this->actingAs($user)->withSession([Impersonation::SESSION_KEY => ImpersonationLog::latest('id')->value('id')]);
+    }
+
     public function test_super_admin_signs_in_as_the_hotel_admin_and_returns(): void
     {
         $owner = User::factory()->superAdmin()->create(['name' => 'Owner']);
@@ -35,8 +42,9 @@ class ImpersonationTest extends TestCase
             ->postJson("/api/v1/admin/hotels/{$this->hotel->id}/impersonate", ['reason' => 'Help with setup'])
             ->assertOk()
             ->assertJsonPath('as.name', 'Meron');
+        $this->assertAuthenticatedAs($this->hotelAdmin, 'web');
 
-        $this->getJson('/api/v1/me')
+        $this->continueAs($this->hotelAdmin)->getJson('/api/v1/me')
             ->assertOk()
             ->assertJsonPath('user.name', 'Meron')
             ->assertJsonPath('hotel.name', 'Sheger Hotel')
@@ -44,12 +52,11 @@ class ImpersonationTest extends TestCase
             ->assertJsonPath('impersonation.reason', 'Help with setup');
 
         // The hotel's own data is visible; the admin area is not.
-        $this->getJson('/api/v1/branches')->assertOk()->assertJsonCount(1, 'data');
-        $this->getJson('/api/v1/admin/hotels')->assertForbidden();
+        $this->continueAs($this->hotelAdmin)->getJson('/api/v1/branches')->assertOk()->assertJsonCount(1, 'data');
+        $this->continueAs($this->hotelAdmin)->getJson('/api/v1/admin/hotels')->assertForbidden();
 
-        $this->postJson('/api/v1/impersonation/stop')->assertOk();
-        $this->getJson('/api/v1/me')->assertJsonPath('user.name', 'Owner')->assertJsonPath('impersonation', null);
-
+        $this->continueAs($this->hotelAdmin)->postJson('/api/v1/impersonation/stop')->assertOk();
+        $this->assertAuthenticatedAs($owner, 'web');
         $this->assertNotNull(ImpersonationLog::first()->ended_at);
     }
 
@@ -57,7 +64,7 @@ class ImpersonationTest extends TestCase
     {
         $owner = User::factory()->superAdmin()->create(['name' => 'Owner']);
         $this->actingAs($owner)->postJson("/api/v1/admin/hotels/{$this->hotel->id}/impersonate", ['reason' => 'Check a bill']);
-        $this->postJson('/api/v1/impersonation/stop');
+        $this->continueAs($this->hotelAdmin)->postJson('/api/v1/impersonation/stop')->assertOk();
 
         $hotelLog = app(TenantContext::class)->runAs($this->hotel, fn () => ActivityLog::pluck('description')->all());
         $this->assertContains('HotelMS support (Owner) signed in as Meron', $hotelLog);
@@ -79,7 +86,7 @@ class ImpersonationTest extends TestCase
         $this->actingAs(User::factory()->superAdmin()->create())
             ->postJson("/api/v1/admin/hotels/{$this->hotel->id}/impersonate", ['reason' => 'Help']);
 
-        $this->putJson('/api/v1/me/password', [
+        $this->continueAs($this->hotelAdmin)->putJson('/api/v1/me/password', [
             'current_password' => 'password', 'password' => 'NewPass-2026', 'password_confirmation' => 'NewPass-2026',
         ])->assertForbidden()->assertJsonPath('code', 'impersonating');
     }
