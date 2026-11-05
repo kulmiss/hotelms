@@ -82,7 +82,7 @@ jobs:
       - name: Install packages
         run: |
           git pull --ff-only || true
-          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          if [ -f package-lock.json ]; then npm ci || npm install; else npm install; fi
       - name: Security audit
         run: npm audit --audit-level=high
       - name: Lint

@@ -5,7 +5,14 @@
   "common": {
     "loading": "Loading…",
     "serverUnreachable": "Can't reach the server. Check the internet and try again.",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saved": "Saved.",
+    "saving": "Saving…",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next"
   },
   "nav": {
     "main": "Main",
@@ -19,7 +26,22 @@
     "staff": "Staff and shifts",
     "reports": "Reports",
     "settings": "Settings",
-    "designSystem": "Design system"
+    "designSystem": "Design system",
+    "collapse": "Collapse menu",
+    "expand": "Expand menu",
+    "commandCenter": "Command center",
+    "hotels": "Hotels",
+    "plans": "Plans",
+    "platformSettings": "Settings",
+    "groups": {
+      "frontDesk": "Front desk",
+      "operations": "Operations",
+      "insights": "Insights",
+      "customers": "Customers",
+      "billing": "Billing",
+      "system": "System",
+      "developer": "Developer"
+    }
   },
   "topbar": {
     "search": "Search guests, rooms, bookings",
@@ -31,7 +53,17 @@
     "branch": "Branch",
     "mainBranch": "Main branch",
     "signOut": "Sign out",
-    "superAdmin": "Super Admin"
+    "superAdmin": "Super Admin",
+    "hotelmsTeam": "HotelMS team",
+    "accountMenu": "Account menu",
+    "profile": "My profile",
+    "changePassword": "Change password",
+    "theme": "Theme",
+    "themes": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "Same as device"
+    }
   },
   "login": {
     "title": "Sign in",
@@ -72,5 +104,168 @@
   "notFound": {
     "title": "Page not found",
     "back": "Back to dashboard"
+  },
+  "hotelStatus": {
+    "trial": "Trial",
+    "active": "Active",
+    "grace": "Grace period",
+    "suspended": "Suspended"
+  },
+  "modules": {
+    "housekeeping": "Housekeeping",
+    "cashier_close": "Cashier shift close",
+    "shifts": "Staff shifts",
+    "attendance": "Attendance"
+  },
+  "admin": {
+    "dash": {
+      "subtitle": "Every hotel on HotelMS, at a glance.",
+      "totalHotels": "Hotels",
+      "unpaid": "Unpaid",
+      "incomeThisMonth": "Income this month",
+      "trialsEnding": "Trials ending in 7 days",
+      "needsAttention": "Needs attention",
+      "none": "None",
+      "allGood": "All hotels are paid up.",
+      "emptyTitle": "No hotels yet",
+      "emptyBody": "Create your first hotel. You'll get its Hotel Admin's sign-in details to share, and its free trial starts right away.",
+      "createFirst": "Create the first hotel"
+    },
+    "hotels": {
+      "new": "New hotel",
+      "search": "Search by name, email, phone or city",
+      "filter": "Filter by status",
+      "all": "All",
+      "hotel": "Hotel",
+      "plan": "Plan",
+      "status": "Status",
+      "paidUntil": "Paid until",
+      "branches": "Branches",
+      "trialUntil": "Trial until {{date}}",
+      "empty": "No hotels found."
+    },
+    "newHotel": {
+      "subtitle": "Creates the hotel, its main branch and its Hotel Admin account.",
+      "hotelSection": "Hotel",
+      "planSection": "Plan and free trial",
+      "adminSection": "Hotel Admin",
+      "name": "Hotel name",
+      "city": "City",
+      "email": "Hotel email",
+      "phone": "Hotel phone",
+      "address": "Address",
+      "currency": "Main currency",
+      "billing": "Billing",
+      "trialDays": "Free trial (days)",
+      "trialHint": "Leave empty to use the default ({{days}} days). 0 = no trial.",
+      "adminName": "Full name",
+      "adminEmail": "Email (used to sign in)",
+      "adminPhone": "Phone",
+      "submit": "Create hotel",
+      "created": "{{name}} is ready",
+      "credentialsIntro": "Give these sign-in details to the Hotel Admin. They must choose their own password the first time they sign in.",
+      "tempPassword": "Temporary password",
+      "emailSent": "We also emailed these details to the Hotel Admin.",
+      "emailNotSent": "The email could not be sent – please share the details yourself.",
+      "openHotel": "Open the hotel page",
+      "tab": {
+        "hotel": "Hotel details",
+        "plan": "Plan and trial",
+        "admin": "Hotel Admin"
+      },
+      "adminNote": "They get a temporary password (shown to you and emailed) and choose their own at first sign-in.",
+      "summary": "You are creating",
+      "crumb": "New"
+    },
+    "hotel": {
+      "recordPayment": "Record payment",
+      "changeTrial": "Change trial",
+      "suspend": "Suspend",
+      "activate": "Activate",
+      "suspendedBecause": "Suspended by HotelMS: {{reason}}. The hotel can only view and export.",
+      "suspendedUnpaid": "Suspended because the subscription is unpaid. The hotel can only view and export.",
+      "subscription": "Subscription",
+      "trialEnds": "Trial ends",
+      "contact": "Contact",
+      "staff": "Hotel Admin",
+      "notSignedInYet": "has not signed in yet",
+      "lastLogin": "last sign-in {{date}}",
+      "payments": "Payments",
+      "noPayments": "No payments yet.",
+      "paidOn": "Paid on",
+      "amount": "Amount",
+      "period": "Covers",
+      "method": "Method",
+      "recordedBy": "Recorded by",
+      "months": "Months",
+      "years": "Years",
+      "amountIn": "Amount ({{currency}})",
+      "amountHint": "Suggested from the plan. You can change it.",
+      "reference": "Reference (e.g. bank transaction)",
+      "savePayment": "Save payment",
+      "suspendHelp": "The hotel can still sign in, view and export, but cannot save anything new until you activate it again.",
+      "reason": "Reason",
+      "confirmSuspend": "Suspend hotel",
+      "resetPassword": "Reset password",
+      "resetTitle": "New temporary password for {{name}}",
+      "resetHelp": "Old passwords are stored scrambled and can't be shown. This creates a new temporary password. {{name}} will choose their own at the next sign-in, and is signed out everywhere now.",
+      "emailIt": "Email it to {{email}}",
+      "createPassword": "Create new password",
+      "newPasswordReady": "New temporary password",
+      "copy": "Copy",
+      "copied": "Copied",
+      "resetEmailSent": "Also emailed to {{email}}.",
+      "resetEmailNotSent": "Not emailed – share it yourself."
+    },
+    "billing": {
+      "monthly": "Monthly",
+      "yearly": "Yearly (2 months free)"
+    },
+    "methods": {
+      "bank_transfer": "Bank transfer",
+      "mobile_money": "Mobile money",
+      "cash": "Cash",
+      "other": "Other"
+    },
+    "plans": {
+      "subtitle": "Prices are per room per month, with a minimum. Changes apply to new invoices.",
+      "hidden": "Hidden",
+      "customPrice": "Price agreed per hotel",
+      "priceLine": "{{perRoom}} per room / month · minimum {{minimum}}",
+      "limits": "Rooms: {{rooms}} · Branches: {{branches}} · Staff: {{staff}}",
+      "unlimited": "unlimited",
+      "hotelsOnPlan_one": "{{count}} hotel",
+      "hotelsOnPlan_other": "{{count}} hotels",
+      "name": "Name",
+      "description": "Description",
+      "pricePerRoom": "Price per room per month ({{currency}})",
+      "minimum": "Minimum per month ({{currency}})",
+      "freeMonths": "Free months with yearly billing",
+      "maxRooms": "Max rooms",
+      "maxBranches": "Max branches",
+      "maxStaff": "Max staff accounts",
+      "emptyUnlimited": "Empty = unlimited",
+      "modules": "Optional modules included",
+      "active": "Available for new hotels"
+    },
+    "settings": {
+      "trials": "Free trials and grace period",
+      "trialDays": "Default free trial (days)",
+      "trialDaysHint": "Used for every new hotel unless you set a different length when creating it.",
+      "trialPlan": "Features during the trial",
+      "trialPlanHint": "Which plan's features a hotel can try.",
+      "samePlan": "Same as the hotel's plan",
+      "graceDays": "Grace period after expiry (days)",
+      "graceHint": "After this, the hotel becomes read-only until it pays."
+    }
+  },
+  "profile": {
+    "title": "My profile",
+    "subtitle": "Your name and phone, as your team sees them.",
+    "name": "Full name",
+    "phone": "Phone",
+    "emailHint": "You sign in with this email. Ask your Hotel Admin to change it.",
+    "passwordTitle": "Password",
+    "passwordBody": "Change the password you use to sign in."
   }
 }

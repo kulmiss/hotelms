@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Middleware\EnsureHotelWritable;
 use App\Http\Middleware\EnsurePasswordChanged;
+use App\Http\Middleware\EnsurePlatformPermission;
 use App\Http\Middleware\SetTenantContext;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -22,6 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'tenant' => SetTenantContext::class,
             'password.changed' => EnsurePasswordChanged::class,
+            'hotel.writable' => EnsureHotelWritable::class,
+            'platform' => EnsurePlatformPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

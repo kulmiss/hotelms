@@ -37,6 +37,7 @@ class SuperAdminSeeder extends Seeder
             'must_change_password' => true,
         ]);
         $user->is_super_admin = true;
+        $user->platform_role = 'owner';
         $user->save();
 
         $this->command?->info("Super Admin created: {$email}".($generated ? " / temporary password: {$password}" : ''));

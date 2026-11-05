@@ -27,7 +27,7 @@ export function DesignSystemPage() {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {colors.map((c) => (
             <div key={c} className="flex items-center gap-2 text-sm">
-              <span className="size-8 rounded-lg border border-border" style={{ background: `var(--${c})` }} />
+              <span className="size-8 rounded-xl border border-border" style={{ background: `var(--${c})` }} />
               {c}
             </div>
           ))}

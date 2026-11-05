@@ -1,79 +1,51 @@
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
-import { Bell, LogOut, Menu, Moon, Search, Sun } from 'lucide-react'
-import { Badge } from '@/components/ui/Badge'
-import { useLogout, useMe } from '@/lib/auth'
+import { Bars3Icon, BellIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { useMe } from '@/lib/auth'
 import { useCurrentBranch } from '@/lib/branch'
-import { useTheme } from '@/lib/theme'
+import { UserMenu } from './UserMenu'
 
 export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
   const { t } = useTranslation()
-  const { theme, toggleTheme } = useTheme()
   const me = useMe()
-  const logout = useLogout()
-  const navigate = useNavigate()
   const { branches, current, select } = useCurrentBranch(me.data)
   const iconButton =
-    'flex size-touch shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-muted hover:bg-sunken hover:text-text'
-
-  const signOut = () => logout.mutate(undefined, { onSettled: () => navigate('/login', { replace: true }) })
+    'flex size-touch shrink-0 items-center justify-center rounded-lg text-icon outline-none transition duration-75 hover:bg-sunken hover:text-muted focus-visible:bg-sunken'
 
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-surface/95 px-4 py-3 backdrop-blur">
-      <button type="button" onClick={onOpenMenu} aria-label={t('topbar.openMenu')} className={`${iconButton} lg:hidden`}>
-        <Menu aria-hidden className="size-5" />
+    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-x-4 bg-surface px-4 shadow-sm ring-1 ring-ring md:px-6 lg:px-8">
+      <button type="button" onClick={onOpenMenu} aria-label={t('topbar.openMenu')} className={`${iconButton} -ml-2 lg:hidden`}>
+        <Bars3Icon aria-hidden className="size-6" />
       </button>
 
-      <label className="flex min-h-touch max-w-md flex-1 items-center gap-2 rounded-lg border border-border bg-bg px-3 text-muted">
-        <Search aria-hidden className="size-4 shrink-0" />
+      <label className="flex min-h-touch w-full max-w-sm items-center gap-x-2 rounded-lg bg-surface px-3 shadow-sm ring-1 ring-ring-strong transition duration-75 focus-within:ring-2 focus-within:ring-accent">
+        <MagnifyingGlassIcon aria-hidden className="size-5 shrink-0 text-icon" />
         <span className="sr-only">{t('topbar.search')}</span>
         <input
           type="search"
           placeholder={t('topbar.search')}
-          className="w-full bg-transparent text-base text-text placeholder:text-muted focus:outline-none"
+          className="w-full bg-transparent text-base text-text placeholder:text-icon focus:outline-none sm:text-sm"
         />
       </label>
 
-      <div className="ml-auto flex items-center gap-2">
-        {me.data?.user.is_super_admin && <Badge tone="accent">{t('topbar.superAdmin')}</Badge>}
-
+      <div className="ml-auto flex items-center gap-x-2">
         {branches.length > 0 && (
-          <label className="hidden items-center gap-2 text-sm text-muted md:flex">
-            {t('topbar.branch')}
-            <select
-              value={current?.id ?? ''}
-              onChange={(e) => select(Number(e.target.value))}
-              className="min-h-touch rounded-lg border border-border bg-surface px-3 text-sm text-text"
-            >
-              {branches.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <select
+            value={current?.id ?? ''}
+            onChange={(e) => select(Number(e.target.value))}
+            aria-label={t('topbar.branch')}
+            className="hidden min-h-touch rounded-lg bg-surface px-3 text-sm font-medium text-text shadow-sm ring-1 ring-ring-strong md:block"
+          >
+            {branches.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </select>
         )}
-
-        <button
-          type="button"
-          onClick={toggleTheme}
-          aria-label={theme === 'dark' ? t('topbar.lightMode') : t('topbar.darkMode')}
-          className={iconButton}
-        >
-          {theme === 'dark' ? <Sun aria-hidden className="size-5" /> : <Moon aria-hidden className="size-5" />}
-        </button>
         <button type="button" aria-label={t('topbar.notifications')} className={iconButton}>
-          <Bell aria-hidden className="size-5" />
+          <BellIcon aria-hidden className="size-6" />
         </button>
-
-        {me.data && (
-          <div className="flex items-center gap-2 border-l border-border pl-2">
-            <span className="hidden max-w-40 truncate text-sm font-medium text-text sm:block">{me.data.user.name}</span>
-            <button type="button" onClick={signOut} aria-label={t('topbar.signOut')} className={iconButton}>
-              <LogOut aria-hidden className="size-5" />
-            </button>
-          </div>
-        )}
+        <UserMenu />
       </div>
     </header>
   )

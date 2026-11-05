@@ -37,14 +37,17 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-full items-center justify-center p-4">
-      <Card className="flex w-full max-w-sm flex-col gap-5 p-6">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <img src="/favicon.svg" alt="" className="size-12" />
-          <h1 className="text-xl font-bold">{t('login.title')}</h1>
+    <div className="flex min-h-full flex-col items-center justify-center gap-y-6 px-4 py-12">
+      <span className="flex items-center gap-x-2.5 text-2xl font-bold tracking-tight">
+        <img src="/favicon.svg" alt="" className="size-10" />
+        {t('app.name')}
+      </span>
+      <Card className="flex w-full max-w-md flex-col gap-y-8 p-8 animate-page-in motion-reduce:animate-none">
+        <div className="flex flex-col gap-y-2 text-center">
+          <h1 className="text-2xl font-bold tracking-tight">{t('login.title')}</h1>
           <p className="text-sm text-muted">{t('login.subtitle')}</p>
         </div>
-        <form className="flex flex-col gap-4" onSubmit={submit} noValidate>
+        <form className="flex flex-col gap-y-6" onSubmit={submit} noValidate>
           {fieldError && <Alert>{fieldError}</Alert>}
           {generalError && <Alert>{generalError}</Alert>}
           <Field
@@ -67,7 +70,7 @@ export function LoginPage() {
           <label className="flex min-h-touch items-center gap-3 text-sm text-text">
             <input
               type="checkbox"
-              className="size-5 accent-accent"
+              className="size-5 rounded accent-accent"
               checked={remember}
               onChange={(e) => setRemember(e.target.checked)}
             />
