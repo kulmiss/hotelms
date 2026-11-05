@@ -3,7 +3,7 @@
 # MySQL is already healthy here (docker-compose waits for it).
 set -e
 
-[ -f vendor/autoload.php ] || composer install --no-interaction
+composer install --no-interaction --no-progress
 [ -f .env ] || cp .env.example .env
 grep -q '^APP_KEY=base64' .env || php artisan key:generate --force
 php artisan migrate --force --no-interaction

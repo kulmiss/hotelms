@@ -29,6 +29,13 @@ class MeController extends Controller
                 'is_super_admin' => $user->is_super_admin,
                 'must_change_password' => $user->must_change_password,
             ],
+            'role' => $user->role ? [
+                'id' => $user->role->id,
+                'name' => $user->role->name,
+                'is_hotel_admin' => $user->isHotelAdmin(),
+                'max_discount_percent' => $user->role->max_discount_percent,
+            ] : null,
+            'permissions' => $user->permissionKeys(),
             'hotel' => $hotel ? [
                 'id' => $hotel->id,
                 'name' => $hotel->name,

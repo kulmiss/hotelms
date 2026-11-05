@@ -18,7 +18,7 @@ use Throwable;
  */
 class HotelOnboarding
 {
-    public function __construct(private HotelStatus $status) {}
+    public function __construct(private HotelStatus $status, private DefaultRoles $roles) {}
 
     /**
      * @param  array<string, mixed>  $hotelData
@@ -48,8 +48,11 @@ class HotelOnboarding
                 'email' => $hotel->email,
             ]);
 
+            $roles = $this->roles->ensureFor($hotel);
+
             $admin = User::create([
                 'hotel_id' => $hotel->id,
+                'role_id' => $roles['hotel_admin']->id,
                 'name' => $adminData['name'],
                 'email' => $adminData['email'],
                 'phone' => $adminData['phone'] ?? null,

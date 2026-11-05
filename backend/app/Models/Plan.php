@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 ])]
 class Plan extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     public const MODULES = ['housekeeping', 'cashier_close', 'shifts', 'attendance'];
 

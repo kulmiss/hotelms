@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Hotel;
 use App\Models\User;
+use App\Services\DefaultRoles;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -51,6 +52,14 @@ class UserFactory extends Factory
     public function forHotel(Hotel $hotel): static
     {
         return $this->state(fn () => ['hotel_id' => $hotel->id]);
+    }
+
+    /** A hotel user with one of the default roles (hotel_admin, branch_manager, …). */
+    public function withRole(Hotel $hotel, string $roleKey): static
+    {
+        return $this->forHotel($hotel)->state(fn () => [
+            'role_id' => app(DefaultRoles::class)->ensureFor($hotel)[$roleKey]->id,
+        ]);
     }
 
     public function mustChangePassword(): static

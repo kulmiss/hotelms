@@ -33,7 +33,7 @@ class HotelIsolationTest extends TestCase
 
     public function test_staff_only_see_their_own_hotels_branches(): void
     {
-        $user = User::factory()->forHotel($this->hotelA)->create();
+        $user = User::factory()->withRole($this->hotelA, 'hotel_admin')->create();
 
         $this->actingAs($user)->getJson('/api/v1/branches')
             ->assertOk()
