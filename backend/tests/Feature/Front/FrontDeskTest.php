@@ -357,6 +357,29 @@ class FrontDeskTest extends TestCase
         $today->assertJsonPath('arrivals.0.id', $arriving)->assertJsonPath('arrivals.0.late', true)->assertJsonCount(1, 'in_house');
     }
 
+    public function test_room_board_stays_fast_for_big_hotels(): void
+    {
+        $count = function (): int {
+            \Illuminate\Support\Facades\DB::flushQueryLog();
+            \Illuminate\Support\Facades\DB::enableQueryLog();
+            $this->actingAs($this->admin)->getJson("/api/v1/front-desk/board?branch_id={$this->branch->id}")->assertOk();
+            $this->getJson("/api/v1/front-desk/today?branch_id={$this->branch->id}")->assertOk();
+
+            return count(\Illuminate\Support\Facades\DB::getQueryLog());
+        };
+        $this->checkIn($this->booked(), ['101'])->assertOk();
+        $small = $count();
+
+        $this->inHotel(function () {
+            foreach (range(1, 120) as $i) {
+                Room::create(['branch_id' => $this->branch->id, 'room_type_id' => $i % 2 ? $this->standard->id : $this->deluxe->id, 'number' => (string) (1000 + $i), 'status' => 'available']);
+            }
+        });
+        $this->checkIn($this->booked(), ['102'])->assertOk();
+
+        $this->assertLessThanOrEqual($small + 2, $count(), 'The room board must not run one query per room.');
+    }
+
     public function test_bills_of_another_hotel_are_invisible(): void
     {
         $id = $this->booked();
