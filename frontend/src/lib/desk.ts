@@ -43,7 +43,7 @@ export const useFreeRooms = (branchId: number | null, enabled = true) =>
 export const useCheckInInfo = (id: number, enabled: boolean) => useQuery({ queryKey: ['desk', 'check-in', id], queryFn: () => api<{ data: CheckInInfo }>(`/reservations/${id}/check-in`), enabled })
 export const useCheckOutInfo = (id: number, enabled: boolean) => useQuery({ queryKey: ['desk', 'check-out', id], queryFn: () => api<{ data: CheckOutInfo }>(`/reservations/${id}/check-out`), enabled })
 
-export function useDeskAction<V>(fn: (v: V) => Promise<unknown>) {
+export function useDeskAction<V, R>(fn: (v: V) => Promise<R>) {
   const invalidate = useDeskInvalidate()
   return useMutation({ mutationFn: fn, onSuccess: invalidate })
 }
