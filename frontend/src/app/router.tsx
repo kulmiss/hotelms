@@ -30,6 +30,11 @@ const GuestPage = lazy(() => pages.guests().then((m) => ({ default: m.GuestPage 
 const ReservationsPage = lazy(() => pages.reservations().then((m) => ({ default: m.ReservationsPage })))
 const ReservationPage = lazy(() => pages.reservation().then((m) => ({ default: m.ReservationPage })))
 const ReservationFormPage = lazy(() => pages.reservationForm().then((m) => ({ default: m.ReservationFormPage })))
+const RoomBoardPage = lazy(() => pages.roomBoard().then((m) => ({ default: m.RoomBoardPage })))
+const WalkInPage = lazy(() => pages.walkIn().then((m) => ({ default: m.WalkInPage })))
+const BillingPage = lazy(() => pages.billing().then((m) => ({ default: m.BillingPage })))
+const InvoicePage = lazy(() => pages.invoice().then((m) => ({ default: m.InvoicePage })))
+const InvoicePrintPage = lazy(() => pages.invoicePrint().then((m) => ({ default: m.InvoicePrintPage })))
 const SetupPage = lazy(() => pages.setup().then((m) => ({ default: m.SetupPage })))
 const SettingsLayout = lazy(() => pages.settingsLayout().then((m) => ({ default: m.SettingsLayout })))
 const section = (name: string, load: () => Promise<unknown> = pages.settings) =>
@@ -83,6 +88,10 @@ export const routes = [
       { path: '/change-password', element: <ChangePasswordPage /> },
       { path: '/setup', element: page(<SetupPage />) },
       {
+        element: <RequirePermission permission="invoices.print" />,
+        children: [{ path: '/billing/:id/print', element: page(<InvoicePrintPage />) }],
+      },
+      {
         path: '/',
         element: <AppShell />,
         children: [
@@ -90,6 +99,21 @@ export const routes = [
           ...mainNav
             .filter((item) => !item.built)
             .map((item) => ({ path: item.path.slice(1), element: <PlaceholderPage item={item} /> })),
+          {
+            element: <RequirePermission permission="frontdesk.view" />,
+            children: [{ path: 'rooms', element: page(<RoomBoardPage />) }],
+          },
+          {
+            element: <RequirePermission permission="frontdesk.walk_in" />,
+            children: [{ path: 'rooms/walk-in', element: page(<WalkInPage />) }],
+          },
+          {
+            element: <RequirePermission permission="invoices.view" />,
+            children: [
+              { path: 'billing', element: page(<BillingPage />) },
+              { path: 'billing/:id', element: page(<InvoicePage />) },
+            ],
+          },
           {
             element: <RequirePermission permission="guests.view" />,
             children: [

@@ -25,6 +25,11 @@ export const pages = {
   reservations: () => import('@/pages/reservations/ReservationsPage'),
   reservation: () => import('@/pages/reservations/ReservationPage'),
   reservationForm: () => import('@/pages/reservations/ReservationFormPage'),
+  roomBoard: () => import('@/pages/desk/RoomBoardPage'),
+  walkIn: () => import('@/pages/desk/WalkInPage'),
+  billing: () => import('@/pages/billing/BillingPage'),
+  invoice: () => import('@/pages/billing/InvoicePage'),
+  invoicePrint: () => import('@/pages/billing/InvoicePrintPage'),
 }
 
 const byPath: Record<string, () => Promise<unknown>> = {
@@ -40,6 +45,8 @@ const byPath: Record<string, () => Promise<unknown>> = {
   '/settings': pages.settings,
   '/guests': pages.guests,
   '/reservations': pages.reservations,
+  '/rooms': pages.roomBoard,
+  '/billing': pages.billing,
 }
 
 const done = new Set<string>()

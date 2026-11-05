@@ -104,7 +104,7 @@ class ReservationController extends Controller
     /** Full price of a booking before saving it. */
     public function quote(Request $request): JsonResponse
     {
-        $data = $request->validate(['guest_id' => ['nullable', 'integer'], 'guest_type_id' => ['nullable', 'integer']] + $this->bookingRules());
+        $data = $request->validate(['guest_id' => ['nullable', 'integer'], 'guest_type_id' => ['nullable', 'integer'], 'walk_in' => ['boolean']] + $this->bookingRules());
 
         return response()->json(['data' => $this->service->preview($data, $request->user(), $request->integer('reservation_id') ? $this->find($request, (string) $request->integer('reservation_id')) : null)]);
     }

@@ -371,7 +371,7 @@ export function Line({ label, value, strong }: { label: string; value: string; s
 }
 
 /** Find a guest by name, phone or ID — or add a new one without leaving the booking. */
-function GuestPicker({ value, onChange }: { value: Guest | null; onChange: (g: Guest | null) => void }) {
+export function GuestPicker({ value, onChange }: { value: Guest | null; onChange: (g: Guest | null) => void }) {
   const { t } = useTranslation()
   const can = useCan()
   const [q, setQ] = useState('')

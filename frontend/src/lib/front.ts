@@ -82,6 +82,7 @@ export type ReservationDetail = Omit<ReservationSummary, 'guest' | 'rooms'> & {
     lines: PriceLine[]
     guests: { id: number; name: string }[]
   }[]
+  invoices?: { id: number; number: string; status: string; total: string; paid_total: string; balance: string; reservation_room_id: number | null }[]
   payments: { id: number; type: 'deposit' | 'payment' | 'refund'; amount: string; currency: string; amount_in_base: string; method: string | null; reference: string | null; refund_reason: string | null; paid_at: string; by: string | null }[]
 }
 
@@ -108,6 +109,7 @@ export type BookingInput = StayInput & {
   cancellation_policy_id?: number | null
   source?: string
   notes?: string | null
+  walk_in?: boolean
 }
 
 export type Quote = {

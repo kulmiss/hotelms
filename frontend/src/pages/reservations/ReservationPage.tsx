@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useParams, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
@@ -10,21 +10,26 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { ApiError } from '@/lib/api'
 import { date, money } from '@/lib/format'
-import { localDate, localTime, STATUS_TONES, useCancellationTerms, useCancelReservation, useLookups, useRecordPayment, useReservation, type PaymentInput, type ReservationDetail } from '@/lib/front'
+import { localDate, localTime, STATUS_TONES, today, useCancellationTerms, useCancelReservation, useLookups, useRecordPayment, useReservation, type PaymentInput, type ReservationDetail } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { Line, QuoteSummary } from './ReservationFormPage'
 import { StayText } from './ReservationsPage'
+import { ChangeStayPanel, CheckInPanel, CheckOutPanel } from './StayPanels'
 
 export function ReservationPage() {
   const { t } = useTranslation()
   const { id } = useParams()
   const can = useCan()
   const q = useReservation(Number(id))
-  const [action, setAction] = useState<'pay' | 'cancel' | 'no_show' | null>(null)
+  const [params] = useSearchParams()
+  const [action, setAction] = useState<'pay' | 'cancel' | 'no_show' | 'check_in' | 'check_out' | 'change' | null>(() =>
+    params.get('action') === 'check-in' ? 'check_in' : params.get('action') === 'check-out' ? 'check_out' : null,
+  )
   if (!q.data) return null
   const r = q.data.data
   const editable = r.status === 'pending' || r.status === 'confirmed'
   const arrived = Date.parse(r.check_in_at) <= Date.now()
+  const canArrive = editable && localDate(r.check_in_at) <= today() && localDate(r.check_out_at) >= today()
 
   return (
     <div className="flex flex-col gap-6">
@@ -40,6 +45,21 @@ export function ReservationPage() {
         breadcrumbs={[{ label: t('nav.reservations'), to: '/reservations' }, { label: r.code }]}
         actions={
           <div className="flex flex-wrap gap-2">
+            {canArrive && can('frontdesk.check_in') && action !== 'check_in' && (
+              <Button size="lg" onClick={() => setAction('check_in')}>
+                {t('desk.checkIn')}
+              </Button>
+            )}
+            {r.status === 'checked_in' && can('frontdesk.check_out') && action !== 'check_out' && (
+              <Button size="lg" onClick={() => setAction('check_out')}>
+                {t('desk.checkOut')}
+              </Button>
+            )}
+            {r.status === 'checked_in' && can('frontdesk.room_move') && (
+              <Button variant="secondary" onClick={() => setAction('change')}>
+                {t('desk.changeStay')}
+              </Button>
+            )}
             {editable && can('reservations.edit') && (
               <Link to={`/reservations/${r.id}/edit`} className={buttonClass('secondary')}>
                 {t('common.edit')}
@@ -60,6 +80,9 @@ export function ReservationPage() {
       />
 
       {(action === 'cancel' || action === 'no_show') && <CancelPanel r={r} noShow={action === 'no_show'} onClose={() => setAction(null)} />}
+      {action === 'check_in' && canArrive && <CheckInPanel r={r} onClose={() => setAction(null)} />}
+      {action === 'check_out' && r.status === 'checked_in' && <CheckOutPanel r={r} onClose={() => setAction(null)} />}
+      {action === 'change' && r.status === 'checked_in' && <ChangeStayPanel r={r} onClose={() => setAction(null)} />}
 
       <div className="grid items-start gap-6 lg:grid-cols-[1fr_22rem]">
         <div className="flex flex-col gap-6">
@@ -142,6 +165,16 @@ export function ReservationPage() {
             <Alert tone="info">{t('reservations.depositMissing', { amount: money(String((Number(r.deposit_required) - Number(r.paid_total)).toFixed(2)), r.currency) })}</Alert>
           )}
           {r.policy && <p className="text-xs text-muted">{t('reservations.policyLine', { name: r.policy.name, hours: r.policy.free_until_hours ?? 0, context: r.policy.free_until_hours === null ? 'never' : undefined })}</p>}
+          {(r.invoices?.length ?? 0) > 0 && (
+            <div className="flex flex-col gap-1 border-t border-border pt-2">
+              {r.invoices?.map((i) => (
+                <Link key={i.id} to={`/billing/${i.id}`} className="flex min-h-touch items-center justify-between gap-2 text-accent-text hover:underline">
+                  <span>{i.number}</span>
+                  <span className="tabular-nums text-muted">{money(i.balance, r.currency)}</span>
+                </Link>
+              ))}
+            </div>
+          )}
           <p className="text-xs text-muted">{t('reservations.createdBy', { name: r.created_by ?? '—', date: date(localDate(r.created_at)) })}</p>
         </Card>
       </div>

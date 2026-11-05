@@ -1,0 +1,110 @@
+import { screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { makeMe, mockApi } from './mockApi'
+import { renderApp } from './renderApp'
+
+afterEach(() => vi.unstubAllGlobals())
+
+const DESK = ['frontdesk.view', 'frontdesk.check_in', 'frontdesk.check_out', 'frontdesk.walk_in', 'frontdesk.room_move', 'rooms.change_status', 'fees.waive', 'reservations.view', 'invoices.view', 'invoices.add_charge', 'invoices.print', 'payments.take']
+const me = () => makeMe({}, DESK)
+const stay = { reservation_id: 9, code: 'BL-26-00001', guest: 'Abebe Kebede', check_in_at: '2026-11-12T14:00:00+03:00', check_out_at: '2026-11-14T12:00:00+03:00', balance: '3220.00', overdue: false }
+const board = {
+  data: [
+    { id: 1, number: '101', floor: '1', status: 'occupied', room_type_id: 3, room_type: 'Standard', notes: null, stay, arriving: null },
+    { id: 2, number: '102', floor: '1', status: 'dirty', room_type_id: 3, room_type: 'Standard', notes: null, stay: null, arriving: null },
+  ],
+  counts: { occupied: 1, dirty: 1 },
+  refreshed_at: '2026-11-12T15:00:00+03:00',
+}
+const today = { arrivals: [], departures: [], in_house: [] }
+
+const reservation = {
+  id: 9, code: 'BL-26-00001', status: 'confirmed', stay_type: 'nightly', source: 'phone', branch: { id: 1, name: 'Bole branch' },
+  guest: { id: 5, full_name: 'Abebe Kebede', phone: null }, check_in_at: '2020-01-01T14:00:00+03:00', check_out_at: '2099-01-03T12:00:00+03:00', expires_at: null,
+  adults: 2, children: 0, currency: 'ETB', total: '4600.00', paid_total: '1380.00', deposit_required: '1380.00', notes: null, subtotal: '4000.00',
+  discount_percent: '0.00', discount_amount: '0.00', tax_total: '600.00', balance: '3220.00', cancellation_fee: null, cancellation_policy_id: 2, policy: null,
+  cancelled_at: null, cancel_reason: null, created_by: 'Meron', created_at: '2026-11-10T09:00:00+03:00',
+  rooms: [{ id: 21, room_type_id: 3, room_type: 'Standard', room_id: null, room_number: null, adults: 2, children: 0, total: '4000.00', status: 'confirmed', lines: [], guests: [] }],
+  invoices: [], payments: [],
+}
+
+const invoice = {
+  id: 4, number: 'INV-2026-00001', status: 'partially_paid', reservation: { id: 9, code: 'BL-26-00001' }, guest: { id: 5, full_name: 'Abebe Kebede', phone: null, email: null, id_number: null, nationality: null },
+  branch: { id: 1, name: 'Bole branch' }, currency: 'ETB', total: '4600.00', paid_total: '1380.00', balance: '3220.00', issued_at: '2026-11-12T15:00:00+03:00',
+  subtotal: '4000.00', discount_total: '0.00', tax_total: '600.00', reservation_room_id: null, outstanding_approved_at: null, voided_at: null, void_reason: null,
+  stay: { check_in_at: '2026-11-12T14:00:00+03:00', check_out_at: '2026-11-14T12:00:00+03:00', status: 'checked_in', rooms: [{ id: 21, room_number: '101', room_type: 'Standard' }] },
+  items: [{ id: 1, type: 'room', description: 'Room 101 · Standard · Night', quantity: '1.00', unit_price: '2000.00', amount: '2000.00', is_waived: false, service_date: '2026-11-12', reservation_room_id: 21 }],
+  taxes: [{ name: 'VAT', rate: '15.00', is_inclusive: false, amount: '600.00' }], payments: [],
+  hotel: { name: 'Sheger Hotel', legal_name: null, tin: '0012345678', vat_number: null, address: null, city: 'Addis Ababa', phone: null, email: null, logo_url: null, footer: 'Thank you' },
+}
+
+describe('front desk', () => {
+  it('shows the live room board and marks a dirty room clean', async () => {
+    const fetchMock = mockApi({ 'GET /me': { body: me() }, 'GET /front-desk/board': { body: board }, 'GET /front-desk/today': { body: today }, 'POST /rooms/2/status': { body: { data: {} } } })
+    renderApp('/rooms')
+
+    expect(await screen.findByText('Abebe Kebede')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Room 102, Dirty' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Mark Available' }))
+    await waitFor(() => {
+      const call = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/rooms/2/status'))
+      expect(JSON.parse(String(call?.[1]?.body))).toEqual({ status: 'available' })
+    })
+  })
+
+  it('checks a guest in to a chosen clean room', async () => {
+    const fetchMock = mockApi({
+      'GET /me': { body: me() },
+      'GET /reservations/9': { body: { data: reservation } },
+      'GET /reservations/lookups': { body: { policies: [], payment_methods: [{ id: 1, name: 'Cash', type: 'cash' }], currencies: [] } },
+      'GET /reservations/9/check-in': { body: { data: { reservation, rooms: [{ id: 21, room_type: 'Standard', room_id: null, room_number: null, room_status: null, free_rooms: [{ id: 1, number: '101', floor: '1' }], early_fee: '1000.00' }], deposit_due: '0.00' } } },
+      'POST /reservations/9/check-in': { body: { data: { ...reservation, status: 'checked_in' } } },
+    })
+    renderApp('/reservations/9?action=check-in')
+
+    expect(await screen.findByText('Early check-in fee: ETB 1,000.00')).toBeInTheDocument()
+    await userEvent.selectOptions(screen.getByLabelText('Room number'), '101')
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Waive' }))
+    const buttons = screen.getAllByRole('button', { name: 'Check in' })
+    await userEvent.click(buttons[buttons.length - 1])
+
+    await waitFor(() => {
+      const call = fetchMock.mock.calls.find(([url, init]) => String(url).endsWith('/reservations/9/check-in') && init?.method === 'POST')
+      expect(JSON.parse(String(call?.[1]?.body))).toEqual({ rooms: [{ id: 21, room_id: 1 }], waive_early_fee: true, payment: null })
+    })
+  })
+})
+
+describe('billing', () => {
+  it('adds an extra charge to a bill', async () => {
+    const fetchMock = mockApi({
+      'GET /me': { body: me() },
+      'GET /invoices/4': { body: { data: invoice } },
+      'GET /charge-types': { body: { data: [{ id: 7, name: 'Laundry', default_price: '150.00', currency: 'ETB' }] } },
+      'POST /invoices/4/items': { status: 201, body: { data: invoice } },
+    })
+    renderApp('/billing/4')
+
+    expect(await screen.findByText('Room 101 · Standard · Night')).toBeInTheDocument()
+    expect(screen.getByText('VAT 15%')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Add charge' }))
+    await userEvent.selectOptions(screen.getByLabelText('Charge'), 'Laundry')
+    await userEvent.clear(screen.getByLabelText('Qty'))
+    await userEvent.type(screen.getByLabelText('Qty'), '2')
+    const buttons = screen.getAllByRole('button', { name: 'Add charge' })
+    await userEvent.click(buttons[buttons.length - 1])
+
+    await waitFor(() => {
+      const call = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/invoices/4/items'))
+      expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ type: 'extra', charge_type_id: 7, quantity: '2', unit_price: '150' })
+    })
+  })
+
+  it('prints an invoice with the hotel TIN', async () => {
+    mockApi({ 'GET /me': { body: me() }, 'GET /invoices/4': { body: { data: invoice } } })
+    renderApp('/billing/4/print')
+    expect(await screen.findByText('TIN: 0012345678')).toBeInTheDocument()
+    expect(screen.getByText('Thank you')).toBeInTheDocument()
+  })
+})
