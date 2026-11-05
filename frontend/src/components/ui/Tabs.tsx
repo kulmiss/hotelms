@@ -1,10 +1,10 @@
 import { useRef, type KeyboardEvent, type ReactNode } from 'react'
-import { CheckCircle, WarningCircle } from '@phosphor-icons/react'
+import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/20/solid'
 import { cn } from '@/lib/cn'
 
 export type TabItem = { key: string; label: string; state?: 'done' | 'error' }
 
-/** Accessible tabs (arrow keys move between them), touch-sized. */
+/** Filament-style tabs (arrow keys move between them), touch-sized. */
 export function Tabs({
   items,
   active,
@@ -28,7 +28,7 @@ export function Tabs({
   }
 
   return (
-    <div role="tablist" aria-label={label} className="flex gap-1 overflow-x-auto rounded-2xl bg-sunken p-1">
+    <div role="tablist" aria-label={label} className="panel flex gap-x-1 overflow-x-auto p-2">
       {items.map((item, i) => {
         const selected = item.key === active
         return (
@@ -46,21 +46,13 @@ export function Tabs({
             onClick={() => onChange(item.key)}
             onKeyDown={(e) => onKey(e, i)}
             className={cn(
-              'flex min-h-touch flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold whitespace-nowrap transition-[background-color,color,box-shadow] duration-200',
-              selected ? 'bg-surface text-text shadow-soft' : 'text-muted hover:text-text',
+              'flex min-h-touch flex-1 items-center justify-center gap-x-2 rounded-lg px-3 text-sm font-medium whitespace-nowrap outline-none transition duration-75',
+              selected ? 'bg-sunken text-accent-text' : 'text-muted hover:bg-sunken hover:text-text',
             )}
           >
-            <span
-              className={cn(
-                'flex size-6 items-center justify-center rounded-full text-xs',
-                selected ? 'bg-accent text-on-accent' : 'bg-surface text-muted',
-              )}
-            >
-              {i + 1}
-            </span>
             {item.label}
-            {item.state === 'done' && <CheckCircle aria-label="" weight="fill" className="size-5 text-ok-text" />}
-            {item.state === 'error' && <WarningCircle aria-label="" weight="fill" className="size-5 text-danger-text" />}
+            {item.state === 'done' && <CheckCircleIcon aria-hidden className="size-5 text-ok-text" />}
+            {item.state === 'error' && <ExclamationCircleIcon aria-hidden className="size-5 text-danger-text" />}
           </button>
         )
       })}

@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { Buildings, CheckCircle, HourglassMedium, Plus, WarningCircle } from '@phosphor-icons/react'
+import { BuildingOffice2Icon, CheckCircleIcon, ClockIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { PlusIcon } from '@heroicons/react/20/solid'
+import { buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatTile } from '@/components/ui/StatTile'
@@ -24,19 +26,19 @@ export function AdminDashboardPage() {
         actions={
           <Link
             to="/admin/hotels/new"
-            className="inline-flex min-h-touch items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-on-accent shadow-soft transition-colors hover:bg-accent-hover"
+            className={buttonClass('primary')}
           >
-            <Plus aria-hidden weight="bold" className="size-5" />
+            <PlusIcon aria-hidden className="size-5" />
             {t('admin.hotels.new')}
           </Link>
         }
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatTile label={t('admin.dash.totalHotels')} value={d?.hotels.total} icon={Buildings} />
-        <StatTile label={t('hotelStatus.active')} value={d?.hotels.by_status.active} icon={CheckCircle} tone="ok" />
-        <StatTile label={t('hotelStatus.trial')} value={d?.hotels.by_status.trial} icon={HourglassMedium} tone="info" />
-        <StatTile label={t('admin.dash.unpaid')} value={unpaid} icon={WarningCircle} tone={unpaid ? 'warn' : 'ok'} />
+        <StatTile label={t('admin.dash.totalHotels')} value={d?.hotels.total} icon={BuildingOffice2Icon} />
+        <StatTile label={t('hotelStatus.active')} value={d?.hotels.by_status.active} icon={CheckCircleIcon} tone="ok" />
+        <StatTile label={t('hotelStatus.trial')} value={d?.hotels.by_status.trial} icon={ClockIcon} tone="info" />
+        <StatTile label={t('admin.dash.unpaid')} value={unpaid} icon={ExclamationTriangleIcon} tone={unpaid ? 'warn' : 'ok'} />
       </div>
 
       {d && d.hotels.total === 0 ? (
@@ -45,9 +47,9 @@ export function AdminDashboardPage() {
           <p className="max-w-prose text-muted">{t('admin.dash.emptyBody')}</p>
           <Link
             to="/admin/hotels/new"
-            className="mt-2 inline-flex min-h-touch items-center gap-2 rounded-xl bg-accent px-4 font-semibold text-on-accent shadow-soft hover:bg-accent-hover"
+            className={buttonClass('primary', 'md', 'mt-2')}
           >
-            <Plus aria-hidden weight="bold" className="size-5" />
+            <PlusIcon aria-hidden className="size-5" />
             {t('admin.dash.createFirst')}
           </Link>
         </Card>
@@ -86,7 +88,7 @@ function HotelList({ title, empty, items }: { title: string; empty: string; item
         <ul className="-mx-2 flex flex-col">
           {items.map((h) => (
             <li key={h.id}>
-              <Link to={`/admin/hotels/${h.id}`} className="flex min-h-touch items-center justify-between gap-2 rounded-xl px-2 transition-colors hover:bg-sunken">
+              <Link to={`/admin/hotels/${h.id}`} className="flex min-h-touch items-center justify-between gap-2 rounded-lg px-2 transition duration-75 hover:bg-sunken">
                 <span className="truncate font-medium">{h.name}</span>
                 {h.right}
               </Link>

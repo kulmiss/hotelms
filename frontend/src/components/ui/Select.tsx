@@ -8,15 +8,15 @@ export function Select({ label, hint, error, className, id, children, ...props }
   const selectId = id ?? autoId
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={selectId} className="text-sm font-medium text-muted">
+      <label htmlFor={selectId} className="text-sm font-medium text-text">
         {label}
       </label>
       <select
         id={selectId}
         aria-invalid={error ? true : undefined}
         className={cn(
-          'min-h-touch rounded-xl border border-border bg-surface px-3 text-base text-text focus:border-accent focus:outline-none',
-          error && 'border-danger',
+          'min-h-touch rounded-lg border-0 bg-surface px-3 text-base text-text shadow-sm ring-1 ring-ring-strong sm:text-sm transition duration-75 focus:ring-2 focus:ring-accent focus:outline-none',
+          error && 'ring-danger',
           className,
         )}
         {...props}

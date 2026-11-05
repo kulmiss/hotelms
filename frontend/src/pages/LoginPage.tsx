@@ -37,28 +37,17 @@ export function LoginPage() {
   }
 
   return (
-    <div className="grid min-h-full lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
-      {/* Lobby panel: the same deep teal and brass as the app's sidebar */}
-      <div className="hidden flex-col justify-between bg-lobby p-12 text-lobby-text lg:flex">
-        <span className="flex items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-xl bg-brass text-xl font-bold text-lobby">H</span>
-          <span className="text-lg font-semibold text-white">{t('app.name')}</span>
-        </span>
-        <div className="flex max-w-md flex-col gap-4">
-          <p className="text-3xl leading-snug font-semibold text-white">{t('login.panelTitle')}</p>
-          <p className="text-lobby-muted">{t('login.panelBody')}</p>
-        </div>
-        <span className="h-1 w-16 rounded-full bg-brass" aria-hidden />
-      </div>
-
-      <div className="flex items-center justify-center p-4 sm:p-8">
-      <Card className="flex w-full max-w-sm flex-col gap-6 p-7 animate-page-in motion-reduce:animate-none">
-        <div className="flex flex-col gap-2">
-          <span className="flex size-11 items-center justify-center rounded-xl bg-lobby text-xl font-bold text-brass lg:hidden">H</span>
-          <h1 className="text-2xl font-semibold tracking-tight">{t('login.title')}</h1>
+    <div className="flex min-h-full flex-col items-center justify-center gap-y-6 px-4 py-12">
+      <span className="flex items-center gap-x-2.5 text-2xl font-bold tracking-tight">
+        <img src="/favicon.svg" alt="" className="size-10" />
+        {t('app.name')}
+      </span>
+      <Card className="flex w-full max-w-md flex-col gap-y-8 p-8 animate-page-in motion-reduce:animate-none">
+        <div className="flex flex-col gap-y-2 text-center">
+          <h1 className="text-2xl font-bold tracking-tight">{t('login.title')}</h1>
           <p className="text-sm text-muted">{t('login.subtitle')}</p>
         </div>
-        <form className="flex flex-col gap-4" onSubmit={submit} noValidate>
+        <form className="flex flex-col gap-y-6" onSubmit={submit} noValidate>
           {fieldError && <Alert>{fieldError}</Alert>}
           {generalError && <Alert>{generalError}</Alert>}
           <Field
@@ -81,7 +70,7 @@ export function LoginPage() {
           <label className="flex min-h-touch items-center gap-3 text-sm text-text">
             <input
               type="checkbox"
-              className="size-5 accent-accent"
+              className="size-5 rounded accent-accent"
               checked={remember}
               onChange={(e) => setRemember(e.target.checked)}
             />
@@ -92,7 +81,6 @@ export function LoginPage() {
           </Button>
         </form>
       </Card>
-      </div>
     </div>
   )
 }

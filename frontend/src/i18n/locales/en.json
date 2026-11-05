@@ -33,7 +33,15 @@
     "hotels": "Hotels",
     "plans": "Plans",
     "platformSettings": "Settings",
-    "platform": "Platform admin"
+    "groups": {
+      "frontDesk": "Front desk",
+      "operations": "Operations",
+      "insights": "Insights",
+      "customers": "Customers",
+      "billing": "Billing",
+      "system": "System",
+      "developer": "Developer"
+    }
   },
   "topbar": {
     "search": "Search guests, rooms, bookings",
@@ -49,7 +57,13 @@
     "hotelmsTeam": "HotelMS team",
     "accountMenu": "Account menu",
     "profile": "My profile",
-    "changePassword": "Change password"
+    "changePassword": "Change password",
+    "theme": "Theme",
+    "themes": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "Same as device"
+    }
   },
   "login": {
     "title": "Sign in",
@@ -59,9 +73,7 @@
     "submit": "Sign in",
     "remember": "Keep me signed in on this device",
     "signingIn": "Signing in…",
-    "tooManyAttempts": "Too many tries. Please wait a minute and try again.",
-    "panelTitle": "Run every room, booking and bill from one calm place.",
-    "panelBody": "Front desk, housekeeping, billing and reports for hotels across Ethiopia."
+    "tooManyAttempts": "Too many tries. Please wait a minute and try again."
   },
   "password": {
     "title": "Set a new password",
@@ -162,7 +174,8 @@
         "admin": "Hotel Admin"
       },
       "adminNote": "They get a temporary password (shown to you and emailed) and choose their own at first sign-in.",
-      "summary": "You are creating"
+      "summary": "You are creating",
+      "crumb": "New"
     },
     "hotel": {
       "recordPayment": "Record payment",

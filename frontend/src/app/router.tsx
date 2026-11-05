@@ -1,6 +1,7 @@
 import { lazy, Suspense, type ReactNode } from 'react'
 import { createBrowserRouter, Navigate, Outlet } from 'react-router'
 import { AppShell } from '@/components/layout/AppShell'
+import { ProgressBar } from '@/components/layout/ProgressBar'
 import { RequireAuth } from '@/components/layout/RequireAuth'
 import { useMe } from '@/lib/auth'
 import { ChangePasswordPage } from '@/pages/ChangePasswordPage'
@@ -21,7 +22,7 @@ const ProfilePage = lazy(() => pages.profile().then((m) => ({ default: m.Profile
 const DesignSystemPage = lazy(() => pages.designSystem().then((m) => ({ default: m.DesignSystemPage })))
 
 /** Shown for the split second a screen is still downloading. */
-const page = (node: ReactNode) => <Suspense fallback={<div className="min-h-40" aria-busy="true" />}>{node}</Suspense>
+const page = (node: ReactNode) => <Suspense fallback={<ProgressBar />}>{node}</Suspense>
 
 /** The HotelMS team goes to the Super Admin area; hotel staff to their hotel. */
 function HomeRedirect() {

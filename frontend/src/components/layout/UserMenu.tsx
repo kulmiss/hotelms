@@ -1,10 +1,17 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { CaretDown, Key, Moon, SignOut, Sun, UserCircle } from '@phosphor-icons/react'
+import {
+  ArrowLeftStartOnRectangleIcon,
+  ComputerDesktopIcon,
+  KeyIcon,
+  MoonIcon,
+  SunIcon,
+  UserCircleIcon,
+} from '@heroicons/react/24/outline'
 import { useLogout, useMe } from '@/lib/auth'
 import { cn } from '@/lib/cn'
-import { useTheme } from '@/lib/theme'
+import { useTheme, type ThemeChoice } from '@/lib/theme'
 
 function initials(name: string) {
   return name
@@ -16,15 +23,21 @@ function initials(name: string) {
 }
 
 const item =
-  'flex min-h-touch w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium text-text transition-colors hover:bg-sunken focus-visible:bg-sunken'
+  'flex min-h-touch w-full items-center gap-x-2 rounded-md px-2 text-left text-sm text-text outline-none transition duration-75 hover:bg-sunken focus-visible:bg-sunken'
 
-/** Avatar button in the top bar that opens profile, theme and sign out. */
+const themes: { choice: ThemeChoice; icon: typeof SunIcon }[] = [
+  { choice: 'light', icon: SunIcon },
+  { choice: 'dark', icon: MoonIcon },
+  { choice: 'system', icon: ComputerDesktopIcon },
+]
+
+/** Avatar in the top bar: profile, theme and sign out (Filament user menu). */
 export function UserMenu() {
   const { t } = useTranslation()
   const me = useMe()
   const logout = useLogout()
   const navigate = useNavigate()
-  const { theme, toggleTheme } = useTheme()
+  const { choice, setChoice } = useTheme()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const menuId = useId()
@@ -53,7 +66,7 @@ export function UserMenu() {
   }
 
   return (
-    <div ref={ref} className="relative ml-2 border-l border-border pl-3">
+    <div ref={ref} className="relative">
       <button
         type="button"
         aria-haspopup="menu"
@@ -61,56 +74,68 @@ export function UserMenu() {
         aria-controls={menuId}
         aria-label={t('topbar.accountMenu')}
         onClick={() => setOpen((o) => !o)}
-        className="flex min-h-touch items-center gap-3 rounded-xl px-1.5 transition-colors hover:bg-sunken"
+        className="flex size-touch items-center justify-center rounded-full outline-none"
       >
-        <span aria-hidden className="flex size-10 items-center justify-center rounded-full bg-accent-soft text-sm font-semibold text-accent-text">
+        <span className="flex size-9 items-center justify-center rounded-full bg-accent text-sm font-semibold text-on-accent ring-2 ring-surface transition hover:ring-sunken">
           {initials(user.name)}
         </span>
-        <span className="hidden max-w-44 flex-col text-left leading-tight sm:flex">
-          <span className="truncate text-sm font-semibold text-text">{user.name}</span>
-          <span className="truncate text-xs text-muted">{role}</span>
-        </span>
-        <CaretDown aria-hidden weight="bold" className={cn('size-4 text-muted transition-transform duration-200', open && 'rotate-180')} />
+        <span className="sr-only">{user.name}</span>
       </button>
 
       {open && (
-      <div
-        id={menuId}
-        role="menu"
-        className="absolute top-full right-0 z-50 mt-2 w-72 origin-top-right animate-menu-in rounded-2xl border border-border/70 bg-surface p-2 shadow-lift motion-reduce:animate-none"
-      >
-        <div className="flex items-center gap-3 px-3 py-3">
-          <span aria-hidden className="flex size-11 items-center justify-center rounded-full bg-accent-soft font-semibold text-accent-text">
-            {initials(user.name)}
-          </span>
-          <span className="flex min-w-0 flex-col">
-            <span className="truncate font-semibold">{user.name}</span>
-            <span className="truncate text-sm text-muted">{user.email}</span>
-          </span>
+        <div
+          id={menuId}
+          role="menu"
+          className="absolute top-full right-0 z-50 mt-2 w-64 origin-top-right animate-menu-in divide-y divide-border rounded-lg bg-surface shadow-lg ring-1 ring-ring motion-reduce:animate-none"
+        >
+          <div className="flex items-center gap-x-3 p-3">
+            <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold text-on-accent">
+              {initials(user.name)}
+            </span>
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate text-sm font-medium text-text">{user.name}</span>
+              <span className="truncate text-xs text-muted">{role}</span>
+            </span>
+          </div>
+
+          <div className="flex gap-x-1 p-1" role="group" aria-label={t('topbar.theme')}>
+            {themes.map(({ choice: c, icon: Icon }) => (
+              <button
+                key={c}
+                type="button"
+                role="menuitemradio"
+                aria-checked={choice === c}
+                aria-label={t(`topbar.themes.${c}`)}
+                title={t(`topbar.themes.${c}`)}
+                onClick={() => setChoice(c)}
+                className={cn(
+                  'flex min-h-touch flex-1 items-center justify-center rounded-md outline-none transition duration-75',
+                  choice === c ? 'bg-sunken text-accent-text' : 'text-icon hover:bg-sunken hover:text-muted',
+                )}
+              >
+                <Icon aria-hidden className="size-5" />
+              </button>
+            ))}
+          </div>
+
+          <div className="p-1">
+            <Link role="menuitem" to="/profile" onClick={() => setOpen(false)} className={item}>
+              <UserCircleIcon aria-hidden className="size-5 text-icon" />
+              {t('topbar.profile')}
+            </Link>
+            <Link role="menuitem" to="/change-password" onClick={() => setOpen(false)} className={item}>
+              <KeyIcon aria-hidden className="size-5 text-icon" />
+              {t('topbar.changePassword')}
+            </Link>
+          </div>
+
+          <div className="p-1">
+            <button role="menuitem" type="button" onClick={signOut} className={item}>
+              <ArrowLeftStartOnRectangleIcon aria-hidden className="size-5 text-icon" />
+              {t('topbar.signOut')}
+            </button>
+          </div>
         </div>
-        <div className="my-1 border-t border-border/70" />
-        <Link role="menuitem" to="/profile" onClick={() => setOpen(false)} className={item}>
-          <UserCircle aria-hidden weight="duotone" className="size-5 text-muted" />
-          {t('topbar.profile')}
-        </Link>
-        <Link role="menuitem" to="/change-password" onClick={() => setOpen(false)} className={item}>
-          <Key aria-hidden weight="duotone" className="size-5 text-muted" />
-          {t('topbar.changePassword')}
-        </Link>
-        <button role="menuitem" type="button" onClick={toggleTheme} className={item}>
-          {theme === 'dark' ? (
-            <Sun aria-hidden weight="duotone" className="size-5 text-muted" />
-          ) : (
-            <Moon aria-hidden weight="duotone" className="size-5 text-muted" />
-          )}
-          {theme === 'dark' ? t('topbar.lightMode') : t('topbar.darkMode')}
-        </button>
-        <div className="my-1 border-t border-border/70" />
-        <button role="menuitem" type="button" onClick={signOut} className={cn(item, 'text-danger-text hover:bg-danger-bg')}>
-          <SignOut aria-hidden weight="duotone" className="size-5" />
-          {t('topbar.signOut')}
-        </button>
-      </div>
       )}
     </div>
   )

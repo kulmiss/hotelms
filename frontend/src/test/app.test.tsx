@@ -51,14 +51,14 @@ describe('app shell (signed in)', () => {
     expect(screen.getByText('Coming in phase 3')).toBeInTheDocument()
   })
 
-  it('toggles dark mode and remembers it', async () => {
+  it('switches to dark mode from the account menu and remembers it', async () => {
     mockApi({ 'GET /me': { body: makeMe() }, 'GET /health': healthOk })
     renderApp('/')
     await userEvent.click(await screen.findByRole('button', { name: 'Account menu' }))
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Dark mode' }))
+    await userEvent.click(screen.getByRole('menuitemradio', { name: 'Dark' }))
     await waitFor(() => expect(document.documentElement).toHaveClass('dark'))
     expect(localStorage.getItem('hms-theme')).toBe('dark')
-    expect(screen.getByRole('menuitem', { name: 'Light mode' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitemradio', { name: 'Dark' })).toHaveAttribute('aria-checked', 'true')
   })
 
   it('lets users edit their own profile', async () => {

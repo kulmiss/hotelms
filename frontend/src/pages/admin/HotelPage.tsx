@@ -1,7 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useParams } from 'react-router'
+import { useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, Check, Copy, Key } from '@phosphor-icons/react'
+import { ClipboardDocumentIcon, KeyIcon } from '@heroicons/react/24/outline'
+import { CheckIcon } from '@heroicons/react/20/solid'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -39,17 +40,13 @@ export function HotelPage() {
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
-      <Link to="/admin/hotels" className="inline-flex min-h-touch items-center gap-2 self-start text-sm font-medium text-muted hover:text-text">
-        <ArrowLeft aria-hidden weight="bold" className="size-4" />
-        {t('nav.hotels')}
-      </Link>
       <PageHeader
         title={h.name}
+        breadcrumbs={[{ label: t('nav.hotels'), to: '/admin/hotels' }, { label: h.name }]}
         subtitle={
           <span className="flex flex-wrap items-center gap-2">
             <StatusBadge status={h.status} />
-            {h.plan?.name}
-            {h.city && <>· {h.city}</>}
+            <span>{[h.plan?.name, h.city].filter(Boolean).join(', ')}</span>
           </span>
         }
         actions={
@@ -114,7 +111,7 @@ export function HotelPage() {
                 <div className="flex flex-col">
                   <span className="font-medium">{a.name}</span>
                   <span className="text-muted break-all">
-                    {a.email} · {a.must_change_password ? t('admin.hotel.notSignedInYet') : t('admin.hotel.lastLogin', { date: date(a.last_login_at) })}
+                    {a.email}, {a.must_change_password ? t('admin.hotel.notSignedInYet') : t('admin.hotel.lastLogin', { date: date(a.last_login_at) })}
                   </span>
                 </div>
                 <ResetPassword hotelId={h.id} user={a} />
@@ -142,7 +139,7 @@ export function HotelPage() {
           <p className="p-5 text-sm text-muted">{t('admin.hotel.noPayments')}</p>
         ) : (
           <table className="mt-3 w-full min-w-[640px] text-left text-sm">
-            <thead className="border-y border-border text-muted">
+            <thead className="border-t border-border bg-sunken text-text">
               <tr>
                 <th className="px-5 py-3 font-medium">{t('admin.hotel.paidOn')}</th>
                 <th className="px-5 py-3 font-medium">{t('admin.hotel.amount')}</th>
@@ -153,7 +150,7 @@ export function HotelPage() {
             </thead>
             <tbody>
               {hotel.data.payments.map((p) => (
-                <tr key={p.id} className="border-b border-border last:border-0">
+                <tr key={p.id} className="border-t border-border">
                   <td className="px-5 py-3">{date(p.paid_at)}</td>
                   <td className="px-5 py-3 font-semibold">{money(p.amount, p.currency)}</td>
                   <td className="px-5 py-3">
@@ -161,7 +158,7 @@ export function HotelPage() {
                   </td>
                   <td className="px-5 py-3">
                     {t(`admin.methods.${p.method}`)}
-                    {p.reference && <span className="text-muted"> · {p.reference}</span>}
+                    {p.reference && <span className="block text-xs text-muted">{p.reference}</span>}
                   </td>
                   <td className="px-5 py-3">{p.recorder?.name ?? '—'}</td>
                 </tr>
@@ -184,7 +181,7 @@ function ResetPassword({ hotelId, user }: { hotelId: number; user: { id: number;
   if (!open) {
     return (
       <Button variant="secondary" className="self-start" onClick={() => setOpen(true)}>
-        <Key aria-hidden weight="duotone" className="size-5" />
+        <KeyIcon aria-hidden className="size-5 text-icon" />
         {t('admin.hotel.resetPassword')}
       </Button>
     )
@@ -200,7 +197,7 @@ function ResetPassword({ hotelId, user }: { hotelId: number; user: { id: number;
         <div className="flex items-center justify-between gap-2">
           <span className="font-mono text-base font-semibold break-all">{reset.data.temporary_password}</span>
           <Button variant="secondary" onClick={copy}>
-            {copied ? <Check aria-hidden weight="bold" className="size-4" /> : <Copy aria-hidden weight="duotone" className="size-4" />}
+            {copied ? <CheckIcon aria-hidden className="size-5" /> : <ClipboardDocumentIcon aria-hidden className="size-5 text-icon" />}
             {copied ? t('admin.hotel.copied') : t('admin.hotel.copy')}
           </Button>
         </div>

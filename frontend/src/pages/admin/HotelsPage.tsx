@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { MagnifyingGlass, Plus } from '@phosphor-icons/react'
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { PlusIcon } from '@heroicons/react/20/solid'
+import { buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatusBadge } from '@/components/ui/StatusBadge'
@@ -26,17 +28,17 @@ export function HotelsPage() {
         actions={
           <Link
             to="/admin/hotels/new"
-            className="inline-flex min-h-touch items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-on-accent hover:bg-accent-hover"
+            className={buttonClass('primary')}
           >
-            <Plus aria-hidden weight="bold" className="size-5" />
+            <PlusIcon aria-hidden className="size-5" />
             {t('admin.hotels.new')}
           </Link>
         }
       />
 
       <div className="flex flex-wrap items-center gap-3">
-        <label className="flex min-h-touch max-w-sm flex-1 items-center gap-2 rounded-xl border border-border bg-surface px-3 text-muted">
-          <MagnifyingGlass aria-hidden weight="bold" className="size-4 shrink-0" />
+        <label className="flex min-h-touch max-w-sm flex-1 items-center gap-2 rounded-lg bg-surface px-3 shadow-sm ring-1 ring-ring-strong focus-within:ring-2 focus-within:ring-accent">
+          <MagnifyingGlassIcon aria-hidden className="size-5 shrink-0 text-icon" />
           <span className="sr-only">{t('admin.hotels.search')}</span>
           <input
             type="search"
@@ -54,8 +56,8 @@ export function HotelsPage() {
               aria-pressed={status === f}
               onClick={() => setStatus(f)}
               className={cn(
-                'min-h-touch rounded-full border px-4 text-sm font-medium',
-                status === f ? 'border-accent bg-accent-soft text-accent-text' : 'border-border bg-surface text-muted hover:bg-sunken',
+                'min-h-touch rounded-lg px-3 text-sm font-medium transition duration-75',
+                status === f ? 'bg-surface text-accent-text shadow-sm ring-1 ring-ring' : 'text-muted hover:bg-sunken hover:text-text',
               )}
             >
               {f ? t(`hotelStatus.${f}`) : t('admin.hotels.all')} ({f ? (counts[f] ?? 0) : total})
@@ -66,18 +68,18 @@ export function HotelsPage() {
 
       <Card className="overflow-x-auto p-0">
         <table className="w-full min-w-[640px] text-left text-sm">
-          <thead className="border-b border-border text-muted">
+          <thead className="bg-sunken text-text">
             <tr>
-              <th className="px-4 py-3 font-medium">{t('admin.hotels.hotel')}</th>
-              <th className="px-4 py-3 font-medium">{t('admin.hotels.plan')}</th>
-              <th className="px-4 py-3 font-medium">{t('admin.hotels.status')}</th>
-              <th className="px-4 py-3 font-medium">{t('admin.hotels.paidUntil')}</th>
-              <th className="px-4 py-3 font-medium">{t('admin.hotels.branches')}</th>
+              <th className="px-4 py-3 font-semibold">{t('admin.hotels.hotel')}</th>
+              <th className="px-4 py-3 font-semibold">{t('admin.hotels.plan')}</th>
+              <th className="px-4 py-3 font-semibold">{t('admin.hotels.status')}</th>
+              <th className="px-4 py-3 font-semibold">{t('admin.hotels.paidUntil')}</th>
+              <th className="px-4 py-3 font-semibold">{t('admin.hotels.branches')}</th>
             </tr>
           </thead>
           <tbody>
             {hotels.data?.data.map((h) => (
-              <tr key={h.id} className="border-b border-border last:border-0 hover:bg-sunken">
+              <tr key={h.id} className="border-t border-border transition duration-75 hover:bg-sunken">
                 <td className="px-4 py-2">
                   <Link to={`/admin/hotels/${h.id}`} className="flex min-h-touch flex-col justify-center font-semibold text-text">
                     {h.name}

@@ -32,7 +32,7 @@ export function ChangePasswordPage() {
 
   return (
     <div className="flex min-h-full items-center justify-center p-4">
-      <Card className="flex w-full max-w-sm flex-col gap-5 p-6">
+      <Card className="flex w-full max-w-md flex-col gap-y-6 p-8 animate-page-in motion-reduce:animate-none">
         <div className="flex flex-col gap-2 text-center">
           <h1 className="text-xl font-bold">{t('password.title')}</h1>
           <p className="text-sm text-muted">{forced ? t('password.forcedIntro') : t('password.intro')}</p>

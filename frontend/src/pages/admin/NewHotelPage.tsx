@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
-import { ArrowLeft, ArrowRight } from '@phosphor-icons/react'
+import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'react-i18next'
 import { Alert } from '@/components/ui/Alert'
-import { Button } from '@/components/ui/Button'
+import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -85,7 +85,7 @@ export function NewHotelPage() {
           </Alert>
           <Link
             to={`/admin/hotels/${result.data.id}`}
-            className="inline-flex min-h-touch items-center justify-center rounded-xl bg-accent px-4 font-semibold text-on-accent hover:bg-accent-hover"
+            className={buttonClass('primary')}
           >
             {t('admin.newHotel.openHotel')}
           </Link>
@@ -107,7 +107,11 @@ export function NewHotelPage() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <PageHeader title={t('admin.hotels.new')} subtitle={t('admin.newHotel.subtitle')} />
+      <PageHeader
+        title={t('admin.hotels.new')}
+        subtitle={t('admin.newHotel.subtitle')}
+        breadcrumbs={[{ label: t('nav.hotels'), to: '/admin/hotels' }, { label: t('admin.newHotel.crumb') }]}
+      />
       <form
         onSubmit={(e) => {
           if (tab !== 'admin') {
@@ -133,7 +137,7 @@ export function NewHotelPage() {
 
         {create.error && !error && <Alert>{t('common.serverUnreachable')}</Alert>}
 
-        <Card className="p-6">
+        <Card>
           <TabPanel id="hotel" active={tab}>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
@@ -159,8 +163,8 @@ export function NewHotelPage() {
                     <label
                       key={p.id}
                       className={cn(
-                        'flex cursor-pointer flex-col gap-1 rounded-xl border p-4 transition-[border-color,background-color] duration-150',
-                        String(p.id) === planId ? 'border-accent bg-accent-soft' : 'border-border hover:bg-sunken',
+                        'flex cursor-pointer flex-col gap-1 rounded-lg p-4 shadow-sm ring-1 transition duration-75',
+                        String(p.id) === planId ? 'bg-accent-soft ring-2 ring-accent' : 'ring-ring-strong hover:bg-sunken',
                       )}
                     >
                       <span className="flex items-center gap-3">
@@ -213,29 +217,29 @@ export function NewHotelPage() {
         </Card>
 
         {tab === 'admin' && (
-          <Card className="flex flex-col gap-1 bg-sunken text-sm shadow-none">
+          <div className="flex flex-col gap-1 rounded-lg bg-sunken p-4 text-sm">
             <span className="font-semibold">{t('admin.newHotel.summary')}</span>
             <span className="text-muted">
-              {form.name || '—'} · {plan?.name ?? '—'} · {t(`admin.billing.${form.billing_cycle}`)}
+              {form.name || '—'}, {plan?.name ?? '—'}, {t(`admin.billing.${form.billing_cycle}`)}
             </span>
-          </Card>
+          </div>
         )}
 
         <div className="flex items-center justify-between gap-3">
           {index > 0 ? (
             <Button variant="ghost" onClick={() => setTab(tabs[index - 1])}>
-              <ArrowLeft aria-hidden weight="bold" className="size-4" />
+              <ArrowLeftIcon aria-hidden className="size-5" />
               {t('common.back')}
             </Button>
           ) : (
-            <Link to="/admin/hotels" className="inline-flex min-h-touch items-center rounded-xl px-4 font-semibold text-muted hover:bg-sunken">
+            <Link to="/admin/hotels" className={buttonClass('ghost')}>
               {t('common.cancel')}
             </Link>
           )}
           {tab !== 'admin' ? (
             <Button type="submit">
               {t('common.next')}
-              <ArrowRight aria-hidden weight="bold" className="size-4" />
+              <ArrowRightIcon aria-hidden className="size-5" />
             </Button>
           ) : (
             <Button type="submit" size="lg" disabled={create.isPending || !complete.hotel || !complete.admin}>

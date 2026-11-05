@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { Key } from '@phosphor-icons/react'
+import { KeyIcon } from '@heroicons/react/24/outline'
 import { Alert } from '@/components/ui/Alert'
-import { Button } from '@/components/ui/Button'
+import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -25,9 +25,9 @@ export function ProfilePage() {
         </div>
         <Link
           to="/change-password"
-          className="inline-flex min-h-touch items-center gap-2 rounded-xl border border-border bg-surface px-4 text-sm font-semibold hover:bg-sunken"
+          className={buttonClass('secondary')}
         >
-          <Key aria-hidden weight="duotone" className="size-5" />
+          <KeyIcon aria-hidden className="size-5 text-icon" />
           {t('topbar.changePassword')}
         </Link>
       </Card>
