@@ -5,7 +5,12 @@
   "common": {
     "loading": "Loading…",
     "serverUnreachable": "Can't reach the server. Check the internet and try again.",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saved": "Saved.",
+    "saving": "Saving…",
+    "edit": "Edit"
   },
   "nav": {
     "main": "Main",
@@ -19,7 +24,13 @@
     "staff": "Staff and shifts",
     "reports": "Reports",
     "settings": "Settings",
-    "designSystem": "Design system"
+    "designSystem": "Design system",
+    "collapse": "Collapse menu",
+    "expand": "Expand menu",
+    "commandCenter": "Command center",
+    "hotels": "Hotels",
+    "plans": "Plans",
+    "platformSettings": "Settings"
   },
   "topbar": {
     "search": "Search guests, rooms, bookings",
@@ -72,5 +83,138 @@
   "notFound": {
     "title": "Page not found",
     "back": "Back to dashboard"
+  },
+  "hotelStatus": {
+    "trial": "Trial",
+    "active": "Active",
+    "grace": "Grace period",
+    "suspended": "Suspended"
+  },
+  "modules": {
+    "housekeeping": "Housekeeping",
+    "cashier_close": "Cashier shift close",
+    "shifts": "Staff shifts",
+    "attendance": "Attendance"
+  },
+  "admin": {
+    "dash": {
+      "subtitle": "All hotels at a glance.",
+      "totalHotels": "Hotels",
+      "unpaid": "Unpaid",
+      "incomeThisMonth": "Income this month",
+      "trialsEnding": "Trials ending in 7 days",
+      "needsAttention": "Needs attention",
+      "none": "None",
+      "allGood": "All hotels are paid up."
+    },
+    "hotels": {
+      "new": "New hotel",
+      "search": "Search by name, email, phone or city",
+      "filter": "Filter by status",
+      "all": "All",
+      "hotel": "Hotel",
+      "plan": "Plan",
+      "status": "Status",
+      "paidUntil": "Paid until",
+      "branches": "Branches",
+      "trialUntil": "Trial until {{date}}",
+      "empty": "No hotels found."
+    },
+    "newHotel": {
+      "subtitle": "Creates the hotel, its main branch and its Hotel Admin account.",
+      "hotelSection": "Hotel",
+      "planSection": "Plan and free trial",
+      "adminSection": "Hotel Admin",
+      "name": "Hotel name",
+      "city": "City",
+      "email": "Hotel email",
+      "phone": "Hotel phone",
+      "address": "Address",
+      "currency": "Main currency",
+      "billing": "Billing",
+      "trialDays": "Free trial (days)",
+      "trialHint": "Leave empty to use the default ({{days}} days). 0 = no trial.",
+      "adminName": "Full name",
+      "adminEmail": "Email (used to sign in)",
+      "adminPhone": "Phone",
+      "submit": "Create hotel",
+      "created": "{{name}} is ready",
+      "credentialsIntro": "Give these sign-in details to the Hotel Admin. They must choose their own password the first time they sign in.",
+      "tempPassword": "Temporary password",
+      "emailSent": "We also emailed these details to the Hotel Admin.",
+      "emailNotSent": "The email could not be sent – please share the details yourself.",
+      "openHotel": "Open the hotel page"
+    },
+    "hotel": {
+      "recordPayment": "Record payment",
+      "changeTrial": "Change trial",
+      "suspend": "Suspend",
+      "activate": "Activate",
+      "suspendedBecause": "Suspended by HotelMS: {{reason}}. The hotel can only view and export.",
+      "suspendedUnpaid": "Suspended because the subscription is unpaid. The hotel can only view and export.",
+      "subscription": "Subscription",
+      "trialEnds": "Trial ends",
+      "contact": "Contact",
+      "staff": "Hotel Admin",
+      "notSignedInYet": "has not signed in yet",
+      "lastLogin": "last sign-in {{date}}",
+      "payments": "Payments",
+      "noPayments": "No payments yet.",
+      "paidOn": "Paid on",
+      "amount": "Amount",
+      "period": "Covers",
+      "method": "Method",
+      "recordedBy": "Recorded by",
+      "months": "Months",
+      "years": "Years",
+      "amountIn": "Amount ({{currency}})",
+      "amountHint": "Suggested from the plan. You can change it.",
+      "reference": "Reference (e.g. bank transaction)",
+      "savePayment": "Save payment",
+      "suspendHelp": "The hotel can still sign in, view and export, but cannot save anything new until you activate it again.",
+      "reason": "Reason",
+      "confirmSuspend": "Suspend hotel"
+    },
+    "billing": {
+      "monthly": "Monthly",
+      "yearly": "Yearly (2 months free)"
+    },
+    "methods": {
+      "bank_transfer": "Bank transfer",
+      "mobile_money": "Mobile money",
+      "cash": "Cash",
+      "other": "Other"
+    },
+    "plans": {
+      "subtitle": "Prices are per room per month, with a minimum. Changes apply to new invoices.",
+      "hidden": "Hidden",
+      "customPrice": "Price agreed per hotel",
+      "priceLine": "{{perRoom}} per room / month · minimum {{minimum}}",
+      "limits": "Rooms: {{rooms}} · Branches: {{branches}} · Staff: {{staff}}",
+      "unlimited": "unlimited",
+      "hotelsOnPlan_one": "{{count}} hotel",
+      "hotelsOnPlan_other": "{{count}} hotels",
+      "name": "Name",
+      "description": "Description",
+      "pricePerRoom": "Price per room per month ({{currency}})",
+      "minimum": "Minimum per month ({{currency}})",
+      "freeMonths": "Free months with yearly billing",
+      "maxRooms": "Max rooms",
+      "maxBranches": "Max branches",
+      "maxStaff": "Max staff accounts",
+      "emptyUnlimited": "Empty = unlimited",
+      "modules": "Optional modules included",
+      "active": "Available for new hotels"
+    },
+    "settings": {
+      "trials": "Free trials and grace period",
+      "trialDays": "Default free trial (days)",
+      "trialDaysHint": "Used for every new hotel unless you set a different length when creating it.",
+      "trialPlan": "Features during the trial",
+      "trialPlanHint": "Which plan's features a hotel can try.",
+      "samePlan": "Same as the hotel's plan",
+      "graceDays": "Grace period after expiry (days)",
+      "graceHint": "After this, the hotel becomes read-only until it pays."
+    }
   }
 }
