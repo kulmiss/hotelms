@@ -13,6 +13,13 @@ return [
     // How long a second change to the same booking waits for the first one (OneAtATime middleware).
     'lock_wait_seconds' => (int) env('HOTELMS_LOCK_WAIT_SECONDS', 10),
 
+    // Database backups (php artisan hotelms:backup). Keep the folder outside public_html.
+    'backups' => [
+        'path' => env('BACKUP_PATH', storage_path('app/backups')),
+        'copy_path' => env('BACKUP_COPY_PATH'), // second location (e.g. a mounted disk elsewhere in Ethiopia)
+        'keep_days' => (int) env('BACKUP_KEEP_DAYS', 30),
+    ],
+
     'super_admin' => [
         'email' => env('SUPER_ADMIN_EMAIL', 'admin@hotelms.test'),
         'password' => env('SUPER_ADMIN_PASSWORD', ''),

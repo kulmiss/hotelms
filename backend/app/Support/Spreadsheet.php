@@ -202,12 +202,18 @@ class Spreadsheet
      * @param  list<string>  $headers
      * @param  list<list<string|int|float|null>>  $rows
      */
+    /** Text that Excel would run as a formula (=, +, -, @) gets a leading apostrophe; numbers stay numbers. */
+    public static function safeCell(string $v): string
+    {
+        return $v !== '' && in_array($v[0], ['=', '+', '-', '@', "\t", "\r"], true) && ! is_numeric($v) ? "'".$v : $v;
+    }
+
     public static function csv(array $headers, array $rows): string
     {
         $h = fopen('php://temp', 'r+');
         fwrite($h, "\xEF\xBB\xBF"); // so Excel opens it as UTF-8
         foreach (array_merge([$headers], $rows) as $row) {
-            fputcsv($h, array_map(fn ($v) => (string) $v, $row), ',', '"', '');
+            fputcsv($h, array_map(fn ($v) => self::safeCell((string) $v), $row), ',', '"', '');
         }
         rewind($h);
         $out = (string) stream_get_contents($h);

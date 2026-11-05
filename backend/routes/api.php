@@ -343,6 +343,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
                 Route::middleware('permission:settings.hotel')->group(function () {
                     Route::get('/security', [SecurityController::class, 'settings']);
                     Route::put('/security', [SecurityController::class, 'updateSettings']);
+                    Route::get('/export', [SecurityController::class, 'export']); // Hotel Admin only, checked inside
                 });
             });
             Route::get('/subscription', [HotelSettingsController::class, 'subscription'])->middleware('permission:subscription.view');
@@ -376,6 +377,8 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
             Route::middleware('platform:billing.manage')->group(function () {
                 Route::post('/hotels/{hotel}/suspend', [AdminHotelController::class, 'suspend']);
                 Route::post('/hotels/{hotel}/activate', [AdminHotelController::class, 'activate']);
+                Route::post('/hotels/{hotel}/close', [AdminHotelController::class, 'close']);
+                Route::post('/hotels/{hotel}/reopen', [AdminHotelController::class, 'reopen'])->withTrashed();
                 Route::get('/hotels/{hotel}/payments/quote', [SubscriptionPaymentController::class, 'quote']);
                 Route::post('/hotels/{hotel}/payments', [SubscriptionPaymentController::class, 'store']);
                 Route::post('/plans', [AdminPlanController::class, 'store']);

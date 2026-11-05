@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserDevice;
 use App\Services\ActivityLogger;
+use App\Services\HotelExport;
 use App\Services\HotelSettings;
 use App\Services\Modules\Attendance;
 use App\Services\Security\Devices;
@@ -155,6 +156,20 @@ class SecurityController extends Controller
         $this->log->log('settings.security', 'Security settings changed', null, ['new' => $data]);
 
         return $this->settings($settings);
+    }
+
+    // ------------------------------------------------------------ download all our data
+
+    /** Hotel Admin: one ZIP with all the hotel's data (at any time, also when suspended). */
+    public function export(Request $request, HotelExport $export)
+    {
+        $user = $request->user();
+        abort_unless($user->isHotelAdmin(), 403, 'Only a Hotel Admin can download all data.');
+        $path = $export->zip($user->hotel);
+        $this->log->log('hotel.export', "{$user->name} downloaded all hotel data", $user->hotel);
+        $name = 'hotel-data-'.now()->format('Y-m-d').'.zip';
+
+        return response()->download($path, $name, ['Content-Type' => 'application/zip'])->deleteFileAfterSend();
     }
 
     // ------------------------------------------------------------ helpers
