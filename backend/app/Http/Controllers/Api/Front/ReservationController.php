@@ -208,9 +208,9 @@ class ReservationController extends Controller
         return [
             'branch_id' => ['required', 'integer'],
             'stay_type' => ['required', Rule::in(Reservation::STAY_TYPES)],
-            'check_in' => ['required', 'date'],
-            'check_out' => ['nullable', 'date'],
-            'hours' => ['nullable', 'integer', 'min:1'],
+            'check_in' => ['required', 'date', 'after:2000-01-01', 'before:+2 years'],
+            'check_out' => ['nullable', 'date', 'before:+3 years'],
+            'hours' => ['nullable', 'integer', 'min:1', 'max:24'],
         ];
     }
 

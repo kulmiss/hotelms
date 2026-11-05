@@ -303,6 +303,10 @@ class FrontDesk
             if ($newOut->lte($oldOut)) {
                 throw ValidationException::withMessages(['check_out' => 'Choose a later check-out date.']);
             }
+            $inDay = HotelClock::local($reservation->check_in_at, $hotel)->startOfDay();
+            if ($inDay->diffInDays($newOut) > 90) {
+                throw ValidationException::withMessages(['check_out' => 'A stay can be at most 90 nights. Start a new booking for longer stays.']);
+            }
             $out = $newOut->copy()->setTimeFromTimeString((string) ($branch->check_out_time ?: '12:00'))->utc();
             $until = $out->copy();
         } else {

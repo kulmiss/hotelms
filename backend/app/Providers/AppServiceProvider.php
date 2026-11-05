@@ -27,9 +27,10 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(5)->by('2fa|'.($request->hasSession() ? $request->session()->getId() : '').'|'.$request->ip()),
             Limit::perHour(30)->by('2fa-ip|'.$request->ip()),
         ]);
+        // Per hotel (staff share one network), so a PIN cannot be found by trying them all.
         RateLimiter::for('pin', fn (Request $request) => [
-            Limit::perMinute(5)->by('pin|'.$request->ip()),
-            Limit::perHour(40)->by('pin-ip|'.$request->ip()),
+            Limit::perMinute(5)->by('pin|'.($request->user()?->hotel_id ?? $request->ip())),
+            Limit::perHour(30)->by('pin-h|'.($request->user()?->hotel_id ?? $request->ip())),
         ]);
     }
 }

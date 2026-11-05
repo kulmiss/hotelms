@@ -169,12 +169,13 @@ class ModulesTest extends TestCase
 
     public function test_kiosk_pin_and_manual_entry(): void
     {
-        $this->actingAs($this->manager)->postJson("/api/v1/attendance/pin/{$this->housekeeper->id}", ['pin' => '4321'])->assertOk();
-        $this->postJson("/api/v1/attendance/pin/{$this->receptionist->id}", ['pin' => '4321'])->assertJsonValidationErrors('pin');
+        $this->actingAs($this->manager)->postJson("/api/v1/attendance/pin/{$this->housekeeper->id}", ['pin' => '1234'])->assertJsonValidationErrors('pin'); // too easy
+        $this->postJson("/api/v1/attendance/pin/{$this->housekeeper->id}", ['pin' => '4825'])->assertOk();
+        $this->postJson("/api/v1/attendance/pin/{$this->receptionist->id}", ['pin' => '4825'])->assertJsonValidationErrors('pin');
 
         // The kiosk is the reception tablet, signed in as the receptionist.
         $this->actingAs($this->receptionist)->postJson('/api/v1/attendance/kiosk', ['pin' => '9999'])->assertJsonValidationErrors('pin');
-        $this->postJson('/api/v1/attendance/kiosk', ['pin' => '4321'])->assertOk()->assertJsonPath('name', $this->housekeeper->name)->assertJsonPath('action', 'in');
+        $this->postJson('/api/v1/attendance/kiosk', ['pin' => '4825'])->assertOk()->assertJsonPath('name', $this->housekeeper->name)->assertJsonPath('action', 'in');
 
         $this->actingAs($this->manager)->postJson('/api/v1/attendance/manual', ['user_id' => $this->receptionist->id, 'date' => '2026-11-11', 'clock_in' => '22:00', 'clock_out' => '06:00', 'notes' => 'Paper register'])
             ->assertCreated()->assertJsonPath('data.clock_out_at', '2026-11-12T06:00:00+03:00');

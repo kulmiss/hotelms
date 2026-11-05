@@ -266,6 +266,7 @@ class FrontDeskTest extends TestCase
         $this->postJson("/api/v1/invoices/$invoiceId/items", ['type' => 'discount', 'discount_percent' => '10'])->assertJsonValidationErrors('discount_percent'); // reception max 5%
         $res = $this->postJson("/api/v1/invoices/$invoiceId/items", ['type' => 'discount', 'discount_percent' => '5'])->assertCreated();
         $res->assertJsonPath('data.discount_total', '215.00')->assertJsonPath('data.total', '4697.75'); // (4300 − 215) × 1.15
+        $this->postJson("/api/v1/invoices/$invoiceId/items", ['type' => 'discount', 'discount_percent' => '1'])->assertJsonValidationErrors('discount_percent'); // no stacking past 5%
 
         $extra = collect($res->json('data.items'))->firstWhere('type', 'extra');
         $this->deleteJson("/api/v1/invoices/$invoiceId/items/{$extra['id']}")->assertOk();

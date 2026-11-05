@@ -11,6 +11,7 @@ use App\Models\Payment;
 use App\Services\Billing\InvoiceService;
 use App\Services\Booking\ReservationService;
 use App\Support\HotelClock;
+use App\Models\ReservationRoom;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -60,8 +61,11 @@ class InvoiceController extends Controller
             'unit_price' => ['nullable', 'required_if:type,extra', 'decimal:0,2', 'min:0', 'max:99999999'],
             'discount_percent' => ['nullable', 'required_if:type,discount', 'decimal:0,2', 'gt:0', 'max:100'],
             'reservation_room_id' => ['nullable', 'integer'],
-            'service_date' => ['nullable', 'date'],
+            'service_date' => ['nullable', 'date', 'after:-1 year', 'before:+1 year'],
         ]);
+        if (! empty($data['reservation_room_id']) && ! ReservationRoom::where('reservation_id', $invoice->reservation_id)->whereKey($data['reservation_room_id'])->exists()) {
+            throw ValidationException::withMessages(['reservation_room_id' => 'Choose a room of this booking.']);
+        }
         $permission = $data['type'] === 'discount' ? 'invoices.discount' : 'invoices.add_charge';
         abort_unless($request->user()->hasPermission($permission), 403, 'You may not do this.');
 
@@ -72,7 +76,13 @@ class InvoiceController extends Controller
     {
         $invoice = $this->find($request, $id);
         $line = InvoiceItem::where('invoice_id', $invoice->id)->findOrFail($item);
-        abort_unless($request->user()->hasPermission($line->type === 'discount' ? 'invoices.discount' : 'invoices.add_charge'), 403, 'You may not do this.');
+        // Removing an early/late fee is waiving it: the same permission as waiving at the desk.
+        $permission = match ($line->type) {
+            'discount' => 'invoices.discount',
+            'early_check_in', 'late_check_out' => 'fees.waive',
+            default => 'invoices.add_charge',
+        };
+        abort_unless($request->user()->hasPermission($permission), 403, 'You may not do this.');
 
         return response()->json(['data' => InvoicePresenter::detail($this->invoices->removeLine($invoice, $line), $request->user()->hotel)]);
     }

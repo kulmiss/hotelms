@@ -158,8 +158,8 @@ class FrontDeskController extends Controller
         $data = $request->validate([
             'branch_id' => ['required', 'integer'],
             'stay_type' => ['required', Rule::in(Reservation::STAY_TYPES)],
-            'check_out' => ['nullable', 'date'],
-            'hours' => ['nullable', 'integer', 'min:1'],
+            'check_out' => ['nullable', 'date', 'before:+3 years'],
+            'hours' => ['nullable', 'integer', 'min:1', 'max:24'],
             'guest_id' => ['required', 'integer'],
             'rooms' => ['required', 'array', 'min:1', 'max:10'],
             'rooms.*.room_type_id' => ['required', 'integer'],
@@ -206,7 +206,7 @@ class FrontDeskController extends Controller
 
     public function extend(Request $request, string $id): JsonResponse
     {
-        $data = $request->validate(['check_out' => ['nullable', 'date'], 'hours' => ['nullable', 'integer', 'between:1,24']]);
+        $data = $request->validate(['check_out' => ['nullable', 'date', 'before:+3 years'], 'hours' => ['nullable', 'integer', 'between:1,24']]);
         $reservation = $this->desk->extend($this->reservation($request, $id), $data, $request->user());
 
         return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)]);

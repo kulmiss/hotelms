@@ -33,11 +33,28 @@ class Attendance
 
     public function setPin(User $user, string $pin): void
     {
+        if (self::isWeak($pin)) {
+            throw ValidationException::withMessages(['pin' => 'This PIN is too easy to guess (like 1111 or 1234). Choose another.']);
+        }
         $hash = self::pinHash($pin, (int) $user->hotel_id);
         if (User::where('hotel_id', $user->hotel_id)->where('attendance_pin', $hash)->whereKeyNot($user->id)->exists()) {
             throw ValidationException::withMessages(['pin' => 'Someone else uses this PIN. Choose another.']);
         }
         $user->forceFill(['attendance_pin' => $hash])->save();
+    }
+
+    /** Same digit repeated, or a straight run up or down (1234, 9876). */
+    public static function isWeak(string $pin): bool
+    {
+        $d = array_map('intval', str_split($pin));
+        $same = count(array_unique($d)) === 1;
+        $up = $down = true;
+        for ($i = 1; $i < count($d); $i++) {
+            $up = $up && $d[$i] === ($d[$i - 1] + 1) % 10;
+            $down = $down && $d[$i] === ($d[$i - 1] + 9) % 10;
+        }
+
+        return $same || $up || $down;
     }
 
     public function findByPin(int $hotelId, string $pin): ?User

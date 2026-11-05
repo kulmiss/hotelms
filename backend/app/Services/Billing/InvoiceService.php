@@ -119,6 +119,15 @@ class InvoiceService
                 throw ValidationException::withMessages(['discount_percent' => "Your role allows discounts up to {$max}%."]);
             }
             $base = Money::sum($invoice->items()->whereIn('type', ['room', 'extra', 'early_check_in', 'late_check_out'])->pluck('amount')->map(fn ($v) => (string) $v));
+            // All discounts on one bill together stay within the role's limit (no stacking 5% + 5% + ...).
+            $given = Money::sub('0', Money::sum($invoice->items()->where('type', 'discount')->pluck('amount')->map(fn ($v) => (string) $v)));
+            $new = Money::percentOf($base, $percent);
+            if (Money::compare(Money::add($given, $new), Money::percentOf($base, $max)) > 0) {
+                throw ValidationException::withMessages(['discount_percent' => "All discounts on this bill together can be at most {$max}% for your role."]);
+            }
+            if (! Money::isPositive($base)) {
+                throw ValidationException::withMessages(['discount_percent' => 'There is nothing to discount on this bill yet.']);
+            }
             $this->line($invoice, [
                 'type' => 'discount',
                 'description' => trim(($data['description'] ?? '') ?: 'Discount '.rtrim(rtrim($percent, '0'), '.').'%'),

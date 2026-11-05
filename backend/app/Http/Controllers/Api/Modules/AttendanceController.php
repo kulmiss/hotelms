@@ -44,16 +44,18 @@ class AttendanceController extends Controller
     {
         $data = $request->validate(['pin' => ['required', 'digits_between:4,6']]);
         $hotelId = (int) $request->user()->hotel_id;
-        $key = 'kiosk:'.$hotelId.':'.$request->ip();
-        if (RateLimiter::tooManyAttempts($key, 10)) {
-            throw ValidationException::withMessages(['pin' => 'Too many wrong PINs. Wait a minute.']);
+        // Wrong PINs are counted per hotel and never reset by a right one, so PINs cannot be guessed.
+        $minute = 'kiosk:'.$hotelId.':m';
+        $hour = 'kiosk:'.$hotelId.':h';
+        if (RateLimiter::tooManyAttempts($minute, 10) || RateLimiter::tooManyAttempts($hour, 30)) {
+            throw ValidationException::withMessages(['pin' => 'Too many wrong PINs. Wait a few minutes.']);
         }
         $staff = $this->attendance->findByPin($hotelId, $data['pin']);
         if (! $staff) {
-            RateLimiter::hit($key, 60);
+            RateLimiter::hit($minute, 60);
+            RateLimiter::hit($hour, 3600);
             throw ValidationException::withMessages(['pin' => 'Unknown PIN.']);
         }
-        RateLimiter::clear($key);
         $record = $this->attendance->clock($staff, 'kiosk_pin');
 
         return response()->json(['data' => $this->row($record, $request), 'name' => $staff->name, 'action' => $record->clock_out_at ? 'out' : 'in']);

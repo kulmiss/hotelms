@@ -197,12 +197,12 @@ class SecurityTest extends TestCase
         $sara = User::factory()->withRole($this->hotel, 'receptionist')->create(['name' => 'Sara']);
         $this->inHotel(function () use ($sara) {
             app(Attendance::class)->setPin($sara, '4821');
-            app(Attendance::class)->setPin($this->admin, '1111');
+            app(Attendance::class)->setPin($this->admin, '1357');
         });
         $this->login('hana@sheger.test')->assertOk();
 
         $this->postJson('/api/v1/auth/pin-switch', ['pin' => '9999'])->assertUnprocessable();
-        $this->postJson('/api/v1/auth/pin-switch', ['pin' => '1111'])->assertUnprocessable(); // not for admins
+        $this->postJson('/api/v1/auth/pin-switch', ['pin' => '1357'])->assertUnprocessable(); // not for admins
         $this->postJson('/api/v1/auth/pin-switch', ['pin' => '4821'])->assertOk();
         $this->freshGuards();
         $this->getJson('/api/v1/me')->assertJsonPath('user.name', 'Sara');
