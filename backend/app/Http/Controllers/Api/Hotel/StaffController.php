@@ -270,8 +270,8 @@ class StaffController extends Controller
 
     private function email(User $user, string $password, bool $isReset, bool $send): bool
     {
-        if (! $send) {
-            return false;
+        if (! $send || $user->hotel?->is_demo) {
+            return false; // the demo hotel never sends real emails
         }
 
         try {

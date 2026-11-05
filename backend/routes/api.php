@@ -3,17 +3,20 @@
 use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Api\Admin\HotelController as AdminHotelController;
 use App\Http\Controllers\Api\Admin\HotelUserController;
+use App\Http\Controllers\Api\Admin\ImpersonationController;
 use App\Http\Controllers\Api\Admin\PlanController as AdminPlanController;
 use App\Http\Controllers\Api\Admin\PlatformSettingsController;
 use App\Http\Controllers\Api\Admin\SubscriptionPaymentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\BrandingController;
+use App\Http\Controllers\Api\DemoController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\Hotel\ActivityLogController;
 use App\Http\Controllers\Api\Hotel\PermissionController;
 use App\Http\Controllers\Api\Hotel\RoleController;
 use App\Http\Controllers\Api\Hotel\StaffController;
+use App\Http\Controllers\Api\ImpersonationStopController;
 use App\Http\Controllers\Api\MeController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,12 +28,14 @@ Route::get('/health', HealthController::class)->name('api.health');
 Route::get('/branding', BrandingController::class);
 
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
+Route::post('/demo/login', [DemoController::class, 'login'])->middleware('throttle:login');
 
 Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/me', [MeController::class, 'show']);
-    Route::put('/me/password', [MeController::class, 'updatePassword']);
-    Route::put('/me', [MeController::class, 'update'])->middleware('password.changed');
+    Route::put('/me/password', [MeController::class, 'updatePassword'])->middleware('not.impersonating');
+    Route::put('/me', [MeController::class, 'update'])->middleware(['password.changed', 'not.impersonating']);
+    Route::post('/impersonation/stop', ImpersonationStopController::class);
 
     // Everything below needs a password the user chose themselves.
     Route::middleware('password.changed')->group(function () {
@@ -76,6 +81,11 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
                 Route::put('/hotels/{hotel}', [AdminHotelController::class, 'update']);
                 Route::post('/hotels/{hotel}/trial', [AdminHotelController::class, 'setTrial']);
             });
+
+            Route::post('/hotels/{hotel}/impersonate', [ImpersonationController::class, 'start'])
+                ->middleware('platform:hotels.impersonate');
+            Route::post('/hotels/{hotel}/demo/reset', [DemoController::class, 'reset'])
+                ->middleware('platform:hotels.create');
 
             Route::post('/hotels/{hotel}/users/{user}/reset-password', [HotelUserController::class, 'resetPassword'])
                 ->middleware('platform:users.reset_password');

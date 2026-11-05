@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable([
     'name', 'email', 'phone', 'address', 'city', 'logo_path',
     'default_currency', 'timezone', 'status', 'plan_id', 'subscription_ends_at',
-    'trial_ends_at', 'trial_plan_id', 'billing_cycle', 'custom_price', 'suspended_at', 'suspend_reason',
+    'trial_ends_at', 'trial_plan_id', 'billing_cycle', 'custom_price', 'suspended_at', 'suspend_reason', 'is_demo',
 ])]
 class Hotel extends Model
 {
@@ -34,6 +34,7 @@ class Hotel extends Model
             'trial_ends_at' => 'date',
             'custom_price' => 'decimal:2',
             'suspended_at' => 'datetime',
+            'is_demo' => 'boolean',
         ];
     }
 

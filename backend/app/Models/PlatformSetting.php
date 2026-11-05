@@ -16,6 +16,7 @@ class PlatformSetting extends Model
         'platform_name' => 'HotelMS',
         'support_email' => null,
         'support_phone' => null,
+        'demo_public' => false,
         // Trials and billing
         'default_trial_days' => 30,
         'default_trial_plan_id' => null,
@@ -30,7 +31,7 @@ class PlatformSetting extends Model
     ];
 
     /** Settings anyone may read (shown on the sign-in page before login). */
-    public const PUBLIC = ['platform_name', 'brand_color', 'login_message', 'support_email', 'support_phone'];
+    public const PUBLIC = ['platform_name', 'brand_color', 'login_message', 'support_email', 'support_phone', 'demo_public'];
 
     protected function casts(): array
     {

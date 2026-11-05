@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\Impersonation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,8 +41,9 @@ class AuthController extends Controller
         return response()->json(['message' => 'Signed in.']);
     }
 
-    public function logout(Request $request): JsonResponse
+    public function logout(Request $request, Impersonation $impersonation): JsonResponse
     {
+        $impersonation->stop($request); // ends a support session properly, if any
         Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
