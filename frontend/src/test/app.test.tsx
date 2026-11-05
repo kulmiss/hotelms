@@ -46,9 +46,9 @@ describe('app shell (signed in)', () => {
   it('opens a planned screen as a placeholder', async () => {
     mockApi({ 'GET /me': { body: makeMe() }, 'GET /health': healthOk })
     renderApp('/')
-    await userEvent.click(await screen.findByRole('link', { name: 'Reservations' }))
-    expect(screen.getByRole('heading', { name: 'Reservations' })).toBeInTheDocument()
-    expect(screen.getByText('Coming in phase 3')).toBeInTheDocument()
+    await userEvent.click(await screen.findByRole('link', { name: 'Reports' }))
+    expect(screen.getByRole('heading', { name: 'Reports' })).toBeInTheDocument()
+    expect(screen.getByText('Coming in phase 6')).toBeInTheDocument()
   })
 
   it('switches to dark mode from the account menu and remembers it', async () => {
