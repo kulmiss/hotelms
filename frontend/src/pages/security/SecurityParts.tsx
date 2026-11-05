@@ -128,7 +128,6 @@ export function RecoveryCodes({ codes, onDone }: { codes: string[]; onDone: () =
 
 /** Profile → two-step sign-in, PIN and your devices. */
 export function SecurityCards() {
-  const { t } = useTranslation()
   const me = useMe()
   const q = useMySecurity()
   const s = q.data?.data
