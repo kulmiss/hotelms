@@ -86,7 +86,7 @@ class Guest extends Model
         $like = '%'.str_replace(['%', '_'], ['\%', '\_'], $term).'%';
         $digits = preg_replace('/\D+/', '', $term);
 
-        return $q->where(function (Builder $w) use ($like, $digits) {
+        return $q->where(function (Builder $w) use ($like, $digits, $term) {
             $w->where('first_name', 'like', $like)->orWhere('last_name', 'like', $like)
                 ->orWhereRaw("CONCAT(first_name, ' ', COALESCE(last_name, '')) like ?", [$like])
                 ->orWhere('email', 'like', $like)->orWhere('id_number_hash', self::idHash($term));

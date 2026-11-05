@@ -60,7 +60,7 @@ class SecurityTest extends TestCase
         $this->freshGuards();
         auth()->guard('web')->logout();
         $this->freshGuards();
-        $req = $device ? $this->withCookie(Devices::COOKIE, $device) : $this;
+        $req = $device ? $this->withCredentials()->withCookie(Devices::COOKIE, $device) : $this;
 
         return $req->postJson('/api/v1/auth/login', ['email' => $email, 'password' => 'password']);
     }
