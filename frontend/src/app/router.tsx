@@ -35,6 +35,11 @@ const WalkInPage = lazy(() => pages.walkIn().then((m) => ({ default: m.WalkInPag
 const BillingPage = lazy(() => pages.billing().then((m) => ({ default: m.BillingPage })))
 const InvoicePage = lazy(() => pages.invoice().then((m) => ({ default: m.InvoicePage })))
 const InvoicePrintPage = lazy(() => pages.invoicePrint().then((m) => ({ default: m.InvoicePrintPage })))
+const CashierPage = lazy(() => pages.cashier().then((m) => ({ default: m.CashierPage })))
+const HousekeepingPage = lazy(() => pages.housekeeping().then((m) => ({ default: m.HousekeepingPage })))
+const ShiftsPage = lazy(() => pages.shifts().then((m) => ({ default: m.ShiftsPage })))
+const AttendancePage = lazy(() => pages.attendance().then((m) => ({ default: m.AttendancePage })))
+const KioskPage = lazy(() => pages.kiosk().then((m) => ({ default: m.KioskPage })))
 const SetupPage = lazy(() => pages.setup().then((m) => ({ default: m.SetupPage })))
 const SettingsLayout = lazy(() => pages.settingsLayout().then((m) => ({ default: m.SettingsLayout })))
 const section = (name: string, load: () => Promise<unknown> = pages.settings) =>
@@ -69,7 +74,7 @@ function HomeRedirect() {
 }
 
 /** Hotel screens: only for users whose role has the permission. */
-function RequirePermission({ permission }: { permission: string }) {
+function RequirePermission({ permission }: { permission: string | string[] }) {
   const can = useCan()
   return can(permission) ? <Outlet /> : <Navigate to="/" replace />
 }
@@ -88,6 +93,10 @@ export const routes = [
       { path: '/change-password', element: <ChangePasswordPage /> },
       { path: '/setup', element: page(<SetupPage />) },
       {
+        element: <RequirePermission permission="attendance.clock" />,
+        children: [{ path: '/kiosk', element: page(<KioskPage />) }],
+      },
+      {
         element: <RequirePermission permission="invoices.print" />,
         children: [{ path: '/billing/:id/print', element: page(<InvoicePrintPage />) }],
       },
@@ -99,6 +108,22 @@ export const routes = [
           ...mainNav
             .filter((item) => !item.built)
             .map((item) => ({ path: item.path.slice(1), element: <PlaceholderPage item={item} /> })),
+          {
+            element: <RequirePermission permission={['cashier.own_shift', 'cashier.view_all']} />,
+            children: [{ path: 'cashier', element: page(<CashierPage />) }],
+          },
+          {
+            element: <RequirePermission permission="housekeeping.view" />,
+            children: [{ path: 'housekeeping', element: page(<HousekeepingPage />) }],
+          },
+          {
+            element: <RequirePermission permission="shifts.view_own" />,
+            children: [{ path: 'shifts', element: page(<ShiftsPage />) }],
+          },
+          {
+            element: <RequirePermission permission={['attendance.clock', 'attendance.report']} />,
+            children: [{ path: 'attendance', element: page(<AttendancePage />) }],
+          },
           {
             element: <RequirePermission permission="frontdesk.view" />,
             children: [{ path: 'rooms', element: page(<RoomBoardPage />) }],

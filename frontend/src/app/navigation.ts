@@ -9,6 +9,7 @@ import {
   ClockIcon,
   Cog6ToothIcon,
   DocumentTextIcon,
+  FingerPrintIcon,
   HomeIcon,
   SparklesIcon,
   ShieldCheckIcon,
@@ -28,6 +29,7 @@ import {
   ClockIcon as ClockSolid,
   Cog6ToothIcon as Cog6ToothSolid,
   DocumentTextIcon as DocumentTextSolid,
+  FingerPrintIcon as FingerPrintSolid,
   HomeIcon as HomeSolid,
   SparklesIcon as SparklesSolid,
   ShieldCheckIcon as ShieldCheckSolid,
@@ -53,7 +55,7 @@ export type NavItem = {
   /** Build-plan phase that delivers this screen (for placeholders). */
   phase: number
   /** Optional module: hidden when the hotel turns it off (phase 2). */
-  module?: 'cashier' | 'housekeeping' | 'shifts'
+  module?: 'cashier' | 'housekeeping' | 'shifts' | 'attendance'
   /** Real screen exists (not a placeholder). */
   built?: boolean
 }
@@ -64,9 +66,10 @@ export const mainNav: NavItem[] = [
   { key: 'reservations', path: '/reservations', icon: CalendarDaysIcon, activeIcon: CalendarDaysSolid, group: 'frontDesk', phase: 3, permission: 'reservations.view', built: true },
   { key: 'guests', path: '/guests', icon: UsersIcon, activeIcon: UsersSolid, group: 'frontDesk', phase: 3, permission: 'guests.view', built: true },
   { key: 'billing', path: '/billing', icon: DocumentTextIcon, activeIcon: DocumentTextSolid, group: 'frontDesk', phase: 4, permission: 'invoices.view', built: true },
-  { key: 'cashier', path: '/cashier', icon: BanknotesIcon, activeIcon: BanknotesSolid, group: 'operations', phase: 5, module: 'cashier', permission: 'cashier.own_shift' },
-  { key: 'housekeeping', path: '/housekeeping', icon: SparklesIcon, activeIcon: SparklesSolid, group: 'operations', phase: 5, module: 'housekeeping', permission: 'housekeeping.view' },
-  { key: 'shifts', path: '/shifts', icon: ClockIcon, activeIcon: ClockSolid, group: 'operations', phase: 5, module: 'shifts', permission: 'shifts.view_own' },
+  { key: 'cashier', path: '/cashier', icon: BanknotesIcon, activeIcon: BanknotesSolid, group: 'operations', phase: 5, module: 'cashier', permission: ['cashier.own_shift', 'cashier.view_all'], built: true },
+  { key: 'housekeeping', path: '/housekeeping', icon: SparklesIcon, activeIcon: SparklesSolid, group: 'operations', phase: 5, module: 'housekeeping', permission: 'housekeeping.view', built: true },
+  { key: 'shifts', path: '/shifts', icon: ClockIcon, activeIcon: ClockSolid, group: 'operations', phase: 5, module: 'shifts', permission: 'shifts.view_own', built: true },
+  { key: 'attendance', path: '/attendance', icon: FingerPrintIcon, activeIcon: FingerPrintSolid, group: 'operations', phase: 5, module: 'attendance', permission: ['attendance.clock', 'attendance.report'], built: true },
   { key: 'staff', path: '/staff', icon: UserGroupIcon, activeIcon: UserGroupSolid, group: 'team', phase: 1, permission: 'staff.view', built: true },
   { key: 'roles', path: '/roles', icon: ShieldCheckIcon, activeIcon: ShieldCheckSolid, group: 'team', phase: 1, permission: 'roles.manage', built: true },
   { key: 'activityLog', path: '/activity-log', icon: ClipboardDocumentListIcon, activeIcon: ClipboardDocumentListSolid, group: 'team', phase: 1, permission: 'activity_log.view', built: true },

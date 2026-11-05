@@ -65,7 +65,8 @@
     },
     "shifts": "Shifts and attendance",
     "roles": "Roles and permissions",
-    "activityLog": "Activity log"
+    "activityLog": "Activity log",
+    "attendance": "Attendance"
   },
   "topbar": {
     "search": "Search guests, rooms, bookings",
@@ -1192,5 +1193,134 @@
     "billTo": "Bill to",
     "guestSignature": "Guest signature",
     "cashierSignature": "Cashier"
+  },
+  "cashier": {
+    "subtitle": "Your cash drawer: start, take cash, count and close.",
+    "openTitle": "Open your cashier shift",
+    "openHelp": "Count the cash in the drawer before you start. Cash you take is added to this shift.",
+    "startingCash": "Starting cash ({{currency}})",
+    "open": "Open shift",
+    "myShift": "My shift",
+    "openedAt": "Opened {{time}}",
+    "opening": "Start",
+    "cashIn": "Taken",
+    "cashOut": "Refunded",
+    "inDrawer": "Should be in drawer",
+    "cashTaken": "Cash taken",
+    "noCash": "No cash taken yet.",
+    "closeTitle": "Close shift",
+    "closeHelp": "At the end of your shift, count the drawer.",
+    "countDrawer": "Count the drawer",
+    "counted": "Counted ({{currency}})",
+    "short": "Short by {{amount}}",
+    "over": "Over by {{amount}}",
+    "matches": "Matches",
+    "why": "Why is it different?",
+    "close": "Close shift",
+    "allShifts": "All cashier shifts",
+    "pastShifts": "My past shifts",
+    "onlyShort": "Only shortages",
+    "person": "Person",
+    "when": "When",
+    "difference": "Difference",
+    "approve": "Approve",
+    "noShifts": "No cashier shifts yet.",
+    "statuses": {
+      "open": "Open",
+      "closed": "Waiting for approval",
+      "approved": "Approved"
+    }
+  },
+  "housekeeping": {
+    "subtitle": "Rooms to clean and who is cleaning them.",
+    "tabs": {
+      "tasks": "My tasks",
+      "board": "Rooms",
+      "assign": "Assign tasks"
+    },
+    "types": {
+      "cleaning": "Cleaning",
+      "inspection": "Inspection",
+      "maintenance": "Maintenance"
+    },
+    "priorities": {
+      "high": "Urgent",
+      "normal": "Normal",
+      "low": "Low"
+    },
+    "statuses": {
+      "pending": "To do",
+      "in_progress": "In progress",
+      "done": "Done"
+    },
+    "due": "by {{time}}",
+    "assignedTo": "For {{name}}",
+    "start": "Start",
+    "done": "Done",
+    "allDone": "Nothing to do. All rooms are clean.",
+    "nobody": "Anyone",
+    "type": "Task",
+    "priority": "Priority",
+    "person": "Person",
+    "addTask": "Add task"
+  },
+  "shifts": {
+    "subtitle": "Who works when.",
+    "tabs": {
+      "mine": "My shifts",
+      "roster": "Roster",
+      "templates": "Shift types"
+    },
+    "noneMine": "No shifts planned for you in the next two weeks.",
+    "person": "Person",
+    "off": "Off",
+    "addTemplatesFirst": "Add shift types (e.g. Morning 06:00–14:00) first.",
+    "templatesHelp": "The shifts your hotel works, per branch.",
+    "addTemplate": "Add shift type",
+    "name": "Name",
+    "hours": "Hours",
+    "start": "Starts",
+    "end": "Ends"
+  },
+  "attendance": {
+    "subtitle": "Clock in and out, and see who came to work.",
+    "openKiosk": "Open kiosk",
+    "inSince": "Clocked in since {{time}}.",
+    "notIn": "You are not clocked in.",
+    "clockIn": "Clock in",
+    "clockOut": "Clock out",
+    "myPin": "My kiosk PIN",
+    "pinSet": "Your PIN is set. Type it on the kiosk to clock in or out.",
+    "pinHelp": "Choose a 4–6 digit PIN for the shared kiosk.",
+    "newPin": "New PIN",
+    "pinSaved": "PIN saved.",
+    "manualTitle": "Enter from the paper register",
+    "manualHelp": "For days without the kiosk or app. Night shifts can end after midnight.",
+    "in": "In",
+    "out": "Out",
+    "auto": "Work it out",
+    "report": "Attendance report",
+    "hours": "Hours",
+    "noRecords": "No attendance in these dates.",
+    "statuses": {
+      "present": "Present",
+      "late": "Late",
+      "absent": "Absent",
+      "leave": "Leave"
+    },
+    "methods": {
+      "self": "App",
+      "kiosk_pin": "Kiosk",
+      "manual": "Manual"
+    }
+  },
+  "kiosk": {
+    "help": "Type your PIN to clock in or out.",
+    "pin": "PIN",
+    "delete": "Delete",
+    "ok": "OK",
+    "welcome": "Welcome, {{name}}! You are clocked in.",
+    "bye": "Goodbye, {{name}}. You are clocked out.",
+    "exit": "Leave kiosk"
   }
 }

@@ -164,7 +164,7 @@ class ModulesTest extends TestCase
         $this->postJson('/api/v1/attendance/clock')->assertOk()->assertJsonPath('data.clock_out_at', '2026-11-12T17:00:00+03:00');
 
         $this->actingAs($this->manager)->getJson('/api/v1/attendance/report?from=2026-11-12&to=2026-11-12')
-            ->assertJsonPath('summary.0.late', 1)->assertJsonPath('summary.0.hours', 8.0);
+            ->assertJsonPath('summary.0.late', 1)->assertJsonPath('summary.0.hours', 8);
     }
 
     public function test_kiosk_pin_and_manual_entry(): void

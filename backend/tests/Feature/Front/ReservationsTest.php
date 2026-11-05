@@ -42,7 +42,7 @@ class ReservationsTest extends TestCase
         // Tuesday 10 Nov 2026, 09:00 in Addis Ababa.
         $this->travelTo(Carbon::parse('2026-11-10 09:00', 'Africa/Addis_Ababa'));
 
-        $this->hotel = Hotel::factory()->create(['plan_id' => Plan::factory()->create(['max_rooms' => null])->id, 'default_currency' => 'ETB']);
+        $this->hotel = Hotel::factory()->create(['plan_id' => Plan::factory()->create(['max_rooms' => null, 'modules' => []])->id, 'default_currency' => 'ETB']);
         $this->branch = Branch::factory()->for($this->hotel)->create(['name' => 'Bole', 'code' => 'BL', 'check_in_time' => '14:00', 'check_out_time' => '12:00']);
         app(HotelDefaults::class)->apply($this->hotel);
         $this->admin = User::factory()->withRole($this->hotel, 'hotel_admin')->create();
