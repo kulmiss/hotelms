@@ -45,8 +45,8 @@ export function SavedViews({ reportKey, f, apply }: { reportKey: string; f: Repo
   const views = useSavedViews(reportKey)
   const save = useSaveView()
   const remove = useDeleteView()
-  const roles = useRoles(naming && can('roles.manage'))
   const [naming, setNaming] = useState(false)
+  const roles = useRoles(naming && can('roles.manage'))
   const [name, setName] = useState('')
   const [shareRole, setShareRole] = useState('')
 
