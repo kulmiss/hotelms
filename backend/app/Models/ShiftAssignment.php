@@ -7,7 +7,6 @@ use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['hotel_id', 'branch_id', 'user_id', 'shift_id', 'date', 'status'])]
 class ShiftAssignment extends Model

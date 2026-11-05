@@ -7,7 +7,6 @@ use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['hotel_id', 'branch_id', 'user_id', 'shift_assignment_id', 'date', 'clock_in_at', 'clock_out_at', 'method', 'recorded_by', 'status', 'notes'])]
 class Attendance extends Model
