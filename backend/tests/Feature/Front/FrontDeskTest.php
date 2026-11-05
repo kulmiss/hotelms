@@ -17,6 +17,7 @@ use App\Services\HotelSettings;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class FrontDeskTest extends TestCase
@@ -89,7 +90,7 @@ class FrontDeskTest extends TestCase
         return $id;
     }
 
-    private function checkIn(int $id, array $rooms, array $extra = []): \Illuminate\Testing\TestResponse
+    private function checkIn(int $id, array $rooms, array $extra = []): TestResponse
     {
         $stays = $this->getJson("/api/v1/reservations/$id")->json('data.rooms');
         $payload = ['rooms' => array_map(fn ($stay, $n) => ['id' => $stay['id'], 'room_id' => $this->rooms[$n]], $stays, $rooms)] + $extra;

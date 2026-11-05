@@ -3,20 +3,18 @@
 namespace App\Http\Controllers\Api\Front;
 
 use App\Http\Controllers\Controller;
+use App\Http\Presenters\ReservationPresenter;
 use App\Models\CancellationPolicy;
-use App\Models\Hotel;
 use App\Models\HotelCurrency;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Reservation;
 use App\Models\ReservationRoom;
 use App\Models\Room;
-use App\Http\Presenters\ReservationPresenter;
 use App\Services\Booking\Availability;
 use App\Services\Booking\ReservationService;
 use App\Services\Booking\StayQuote;
 use App\Support\HotelClock;
-use App\Support\Money;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
