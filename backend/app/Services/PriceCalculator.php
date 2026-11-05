@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use App\Support\Tenancy\TenantContext;
 use App\Models\RateRule;
 use App\Models\RoomType;
 use App\Support\Money;
+use App\Support\Tenancy\TenantContext;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;

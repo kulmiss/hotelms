@@ -3,8 +3,8 @@
 namespace App\Services\Billing;
 
 use App\Models\Tax;
-use App\Support\Tenancy\TenantContext;
 use App\Support\Money;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Support\Collection;
 
 /**

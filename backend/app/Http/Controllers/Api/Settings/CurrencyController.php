@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api\Settings;
 
 use App\Models\ExchangeRate;
 use App\Models\HotelCurrency;
-use Illuminate\Database\Eloquent\Model;
 use App\Support\HotelClock;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
