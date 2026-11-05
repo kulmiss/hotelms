@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeMe, mockApi } from './mockApi'
@@ -77,9 +77,11 @@ describe('Super Admin area', () => {
     renderApp('/admin/hotels/new')
 
     await userEvent.type(await screen.findByLabelText('Hotel name'), 'Sheger Hotel')
-    await userEvent.type(screen.getByLabelText('Full name'), 'Meron')
+    await userEvent.click(screen.getByRole('button', { name: /Next/ }))
+    expect(await screen.findByRole('radio', { name: 'Standard' })).toBeChecked()
+    await userEvent.click(screen.getByRole('button', { name: /Next/ }))
+    await userEvent.type(await screen.findByLabelText('Full name'), 'Meron')
     await userEvent.type(screen.getByLabelText('Email (used to sign in)'), 'meron@sheger.test')
-    await waitFor(() => expect(screen.getByRole('option', { name: 'Standard' })).toBeInTheDocument())
     await userEvent.click(screen.getByRole('button', { name: 'Create hotel' }))
 
     expect(await screen.findByText('Tmp4Pass9xyz')).toBeInTheDocument()

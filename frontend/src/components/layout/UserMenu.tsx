@@ -73,10 +73,10 @@ export function UserMenu() {
         <CaretDown aria-hidden weight="bold" className={cn('size-4 text-muted transition-transform duration-200', open && 'rotate-180')} />
       </button>
 
+      {open && (
       <div
         id={menuId}
         role="menu"
-        hidden={!open}
         className="absolute top-full right-0 z-50 mt-2 w-72 origin-top-right animate-menu-in rounded-2xl border border-border/70 bg-surface p-2 shadow-lift motion-reduce:animate-none"
       >
         <div className="flex items-center gap-3 px-3 py-3">
@@ -111,6 +111,7 @@ export function UserMenu() {
           {t('topbar.signOut')}
         </button>
       </div>
+      )}
     </div>
   )
 }

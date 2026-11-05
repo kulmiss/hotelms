@@ -10,7 +10,9 @@
     "save": "Save",
     "saved": "Saved.",
     "saving": "Saving…",
-    "edit": "Edit"
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next"
   },
   "nav": {
     "main": "Main",
@@ -153,7 +155,14 @@
       "tempPassword": "Temporary password",
       "emailSent": "We also emailed these details to the Hotel Admin.",
       "emailNotSent": "The email could not be sent – please share the details yourself.",
-      "openHotel": "Open the hotel page"
+      "openHotel": "Open the hotel page",
+      "tab": {
+        "hotel": "Hotel details",
+        "plan": "Plan and trial",
+        "admin": "Hotel Admin"
+      },
+      "adminNote": "They get a temporary password (shown to you and emailed) and choose their own at first sign-in.",
+      "summary": "You are creating"
     },
     "hotel": {
       "recordPayment": "Record payment",
