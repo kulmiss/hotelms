@@ -1,0 +1,127 @@
+@import 'tailwindcss';
+
+/* Dark mode is controlled by the .dark class on <html> (see lib/theme.tsx). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * HotelMS design tokens (teal). Same names in light and dark,
+ * so components never hard-code colours.
+ */
+:root {
+  --bg: #f5f7f7;
+  --surface: #ffffff;
+  --sunken: #f0f3f3;
+  --border: #e3e7e7;
+  --text: #0f1720;
+  --muted: #56616b;
+  --accent: #0f766e;
+  --accent-hover: #0d655e;
+  --accent-soft: #e3f2ef;
+  --accent-text: #0f5f58;
+  --on-accent: #ffffff;
+  --ok-bg: #e7f4ea;
+  --ok-text: #166534;
+  --warn-bg: #fcf0db;
+  --warn-text: #854a0b;
+  --info-bg: #e6edfc;
+  --info-text: #1e40af;
+  --danger-bg: #fbe9e9;
+  --danger-text: #991b1b;
+  --danger: #b91c1c;
+  --grey-bg: #eef0f1;
+  --grey-text: #4b5563;
+  --room-occupied: #0f766e;
+  --room-available: #16a34a;
+  --room-dirty: #d97706;
+  --room-clean: #2563eb;
+  --room-maintenance: #9ca3af;
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #0e1214;
+  --surface: #161b1e;
+  --sunken: #1c2226;
+  --border: #2a3136;
+  --text: #eef2f3;
+  --muted: #9aa5ad;
+  --accent: #2dd4bf;
+  --accent-hover: #5eead4;
+  --accent-soft: #123430;
+  --accent-text: #5eead4;
+  --on-accent: #042f2e;
+  --ok-bg: #12301b;
+  --ok-text: #86efac;
+  --warn-bg: #3a2a10;
+  --warn-text: #fcd34d;
+  --info-bg: #172243;
+  --info-text: #93c5fd;
+  --danger-bg: #3a1616;
+  --danger-text: #fca5a5;
+  --danger: #f87171;
+  --grey-bg: #24292d;
+  --grey-text: #d1d5db;
+  --room-occupied: #2dd4bf;
+  --room-available: #4ade80;
+  --room-dirty: #fbbf24;
+  --room-clean: #60a5fa;
+  --room-maintenance: #6b7280;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-text: var(--accent-text);
+  --color-on-accent: var(--on-accent);
+  --color-ok-bg: var(--ok-bg);
+  --color-ok-text: var(--ok-text);
+  --color-warn-bg: var(--warn-bg);
+  --color-warn-text: var(--warn-text);
+  --color-info-bg: var(--info-bg);
+  --color-info-text: var(--info-text);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-text: var(--danger-text);
+  --color-danger: var(--danger);
+  --color-grey-bg: var(--grey-bg);
+  --color-grey-text: var(--grey-text);
+  --color-room-occupied: var(--room-occupied);
+  --color-room-available: var(--room-available);
+  --color-room-dirty: var(--room-dirty);
+  --color-room-clean: var(--room-clean);
+  --color-room-maintenance: var(--room-maintenance);
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Touch rule: every tap target is at least 44px (11 × 4px). */
+  --spacing-touch: 2.75rem;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-bg font-sans text-text antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+}
