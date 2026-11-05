@@ -3,6 +3,7 @@
 namespace App\Services\Modules;
 
 use App\Models\Attendance as AttendanceRecord;
+use App\Models\Branch;
 use App\Models\ShiftAssignment;
 use App\Models\User;
 use App\Services\HotelSettings;
@@ -73,13 +74,18 @@ class Attendance
         $open = AttendanceRecord::where('user_id', $user->id)->whereNotNull('clock_in_at')->whereNull('clock_out_at')
             ->where('clock_in_at', '>=', now()->subHours(20))->latest('clock_in_at')->first();
         if ($open) {
+            // A double tap (or a second PIN entry right away) must not clock straight back out.
+            if ($open->clock_in_at->gt(now()->subMinutes(2))) {
+                return $open;
+            }
             $open->update(['clock_out_at' => now()]);
 
             return $open->fresh();
         }
 
         $assignment = ShiftAssignment::with('shift')->where('user_id', $user->id)->where('date', $today)->where('status', '!=', 'cancelled')->first();
-        $branch = $branchId ?? $assignment?->branch_id ?? $user->accessibleBranches()->first()?->id;
+        $mine = $user->accessibleBranches()->pluck('id');
+        $branch = ($branchId && $mine->contains($branchId) ? $branchId : null) ?? $assignment?->branch_id ?? $mine->first();
         if (! $branch) {
             throw ValidationException::withMessages(['branch_id' => 'You are not linked to a branch.']);
         }
@@ -110,7 +116,7 @@ class Attendance
         $status = $data['status'] ?? ($in && $this->lateness($assignment, $in, $hotel) ? 'late' : 'present');
 
         return AttendanceRecord::create([
-            'branch_id' => $data['branch_id'] ?? $assignment?->branch_id ?? $staff->accessibleBranches()->first()?->id,
+            'branch_id' => (! empty($data['branch_id']) && Branch::whereKey($data['branch_id'])->exists() ? (int) $data['branch_id'] : null) ?? $assignment?->branch_id ?? $staff->accessibleBranches()->first()?->id,
             'user_id' => $staff->id, 'shift_assignment_id' => $assignment?->id, 'date' => $data['date'],
             'clock_in_at' => $in, 'clock_out_at' => $out, 'method' => 'manual', 'recorded_by' => $manager->id,
             'status' => $status, 'notes' => $data['notes'] ?? null,

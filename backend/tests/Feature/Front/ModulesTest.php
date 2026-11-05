@@ -159,6 +159,7 @@ class ModulesTest extends TestCase
 
         $this->actingAs($this->receptionist)->getJson('/api/v1/shifts/mine')->assertJsonPath('data.0.shift.name', 'Morning');
         $this->postJson('/api/v1/attendance/clock')->assertOk()->assertJsonPath('data.status', 'late'); // 09:00 > 08:10
+        $this->postJson('/api/v1/attendance/clock')->assertOk()->assertJsonPath('data.clock_out_at', null); // a double tap does not clock out
         $this->getJson('/api/v1/attendance/status')->assertJsonPath('clocked_in_at', '2026-11-12T09:00:00+03:00');
         $this->travel(8)->hours();
         $this->postJson('/api/v1/attendance/clock')->assertOk()->assertJsonPath('data.clock_out_at', '2026-11-12T17:00:00+03:00');
