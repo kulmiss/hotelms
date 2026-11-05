@@ -29,7 +29,8 @@ export function GuestForm({ guest, compact = false, onSaved, onCancel }: { guest
       { ...f, guest_type_id: f.guest_type_id ? Number(f.guest_type_id) : null },
       {
         onSuccess: (res) => {
-          if ('possible_duplicate' in res && res.possible_duplicate) setDuplicate(res.possible_duplicate)
+          const dup = (res as { possible_duplicate?: { id: number; name: string } | null }).possible_duplicate
+          if (dup) setDuplicate(dup)
           onSaved(res.data)
         },
       },
