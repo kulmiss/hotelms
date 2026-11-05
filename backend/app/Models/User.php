@@ -20,7 +20,7 @@ use Laravel\Sanctum\HasApiTokens;
  * so this model is not tenant-scoped. Staff lists must filter by hotel_id.
  */
 #[Fillable(['hotel_id', 'role_id', 'name', 'email', 'phone', 'password', 'status', 'must_change_password'])]
-#[Hidden(['password', 'remember_token', 'attendance_pin'])]
+#[Hidden(['password', 'remember_token', 'attendance_pin', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -37,6 +37,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_super_admin' => 'boolean',
             'must_change_password' => 'boolean',
+            'two_factor_confirmed_at' => 'datetime',
         ];
     }
 

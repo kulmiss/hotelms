@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Admin\PlatformReportController;
 use App\Http\Controllers\Api\Admin\PlatformSettingsController;
 use App\Http\Controllers\Api\Admin\SubscriptionPaymentController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\SecurityController;
 use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\BrandingController;
 use App\Http\Controllers\Api\DemoController;
@@ -56,9 +57,13 @@ Route::get('/branding', BrandingController::class);
 
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
 Route::post('/demo/login', [DemoController::class, 'login'])->middleware('throttle:login');
+Route::post('/auth/two-factor', [AuthController::class, 'twoFactor'])->middleware('throttle:two-factor');
+Route::post('/auth/two-factor/resend', [AuthController::class, 'resendCode'])->middleware('throttle:two-factor');
 
-Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
+Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::post('/auth/unlock', [AuthController::class, 'unlock'])->middleware('throttle:pin');
+    Route::post('/auth/pin-switch', [AuthController::class, 'pinSwitch'])->middleware(['throttle:pin', 'not.impersonating']);
     Route::get('/me', [MeController::class, 'show']);
     Route::put('/me/password', [MeController::class, 'updatePassword'])->middleware('not.impersonating');
     Route::put('/me', [MeController::class, 'update'])->middleware(['password.changed', 'not.impersonating']);
@@ -69,7 +74,18 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
     Route::get('/setup', [SetupController::class, 'show']); // before the password change too (step 1 is the password)
 
     // Everything below needs a password the user chose themselves.
-    Route::middleware('password.changed')->group(function () {
+    Route::middleware(['password.changed', 'two.factor'])->group(function () {
+        // Your own security (open before two-step sign-in is set up: see EnsureTwoFactorSetUp).
+        Route::middleware('not.impersonating')->group(function () {
+            Route::get('/me/security', [SecurityController::class, 'show']);
+            Route::post('/me/security/two-factor', [SecurityController::class, 'beginTwoFactor'])->middleware('throttle:two-factor');
+            Route::post('/me/security/two-factor/confirm', [SecurityController::class, 'confirmTwoFactor'])->middleware('throttle:two-factor');
+            Route::delete('/me/security/two-factor', [SecurityController::class, 'disableTwoFactor'])->middleware('throttle:two-factor');
+            Route::post('/me/security/recovery-codes', [SecurityController::class, 'recoveryCodes'])->middleware('throttle:two-factor');
+            Route::put('/me/security/pin', [SecurityController::class, 'setPin'])->middleware('throttle:pin');
+            Route::post('/me/security/devices/{id}/sign-out', [SecurityController::class, 'signOutMyDevice']);
+            Route::post('/me/security/devices/sign-out-others', [SecurityController::class, 'signOutOtherDevices']);
+        });
 
         // Hotel staff. A suspended hotel is read-only.
         Route::middleware('hotel.writable')->group(function () {
@@ -95,6 +111,8 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
                 Route::post('/staff/{user}/disable', [StaffController::class, 'disable']);
                 Route::post('/staff/{user}/enable', [StaffController::class, 'enable']);
                 Route::post('/staff/{user}/reset-password', [StaffController::class, 'resetPassword']);
+                Route::get('/devices', [SecurityController::class, 'hotelDevices']);
+                Route::post('/devices/{id}/{action}', [SecurityController::class, 'deviceAction']);
             });
 
             // Guests (shared by all branches).
@@ -321,6 +339,10 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
                 Route::middleware('permission:settings.attendance')->group(function () {
                     Route::get('/attendance', [HotelSettingsController::class, 'attendance']);
                     Route::put('/attendance', [HotelSettingsController::class, 'updateAttendance']);
+                });
+                Route::middleware('permission:settings.hotel')->group(function () {
+                    Route::get('/security', [SecurityController::class, 'settings']);
+                    Route::put('/security', [SecurityController::class, 'updateSettings']);
                 });
             });
             Route::get('/subscription', [HotelSettingsController::class, 'subscription'])->middleware('permission:subscription.view');

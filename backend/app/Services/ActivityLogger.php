@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ActivityLogger
 {
-    private const HIDDEN = ['password', 'remember_token', 'attendance_pin'];
+    private const HIDDEN = ['password', 'remember_token', 'attendance_pin', 'two_factor_secret', 'two_factor_recovery_codes'];
 
     public function __construct(private TenantContext $tenant) {}
 

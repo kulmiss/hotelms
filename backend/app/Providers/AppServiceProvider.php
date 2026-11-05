@@ -22,5 +22,14 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('login', fn (Request $request) => Limit::perMinute(5)->by(
             strtolower((string) $request->input('email')).'|'.$request->ip()
         ));
+        // Codes and PINs are short, so guess attempts are tightly limited (per session and per address).
+        RateLimiter::for('two-factor', fn (Request $request) => [
+            Limit::perMinute(5)->by('2fa|'.($request->hasSession() ? $request->session()->getId() : '').'|'.$request->ip()),
+            Limit::perHour(30)->by('2fa-ip|'.$request->ip()),
+        ]);
+        RateLimiter::for('pin', fn (Request $request) => [
+            Limit::perMinute(5)->by('pin|'.$request->ip()),
+            Limit::perHour(40)->by('pin-ip|'.$request->ip()),
+        ]);
     }
 }

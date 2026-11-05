@@ -99,7 +99,7 @@ class GuestController extends Controller
                     $q->orWhere('phone', $data['phone']);
                 }
                 if (! empty($data['id_number'])) {
-                    $q->orWhere('id_number', $data['id_number']);
+                    $q->orWhere('id_number_hash', Guest::idHash($data['id_number']));
                 }
             })->first();
 

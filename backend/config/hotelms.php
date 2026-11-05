@@ -7,6 +7,9 @@ return [
     | The password is temporary: it must be changed at first sign-in.
     | Leave the password empty in production to get a random one.
     */
+    // Default of the "two-step sign-in for admins" switch until the Super Admin changes it (tests turn it off).
+    'two_factor_admins' => (bool) env('HOTELMS_TWO_FACTOR_ADMINS', true),
+
     'super_admin' => [
         'email' => env('SUPER_ADMIN_EMAIL', 'admin@hotelms.test'),
         'password' => env('SUPER_ADMIN_PASSWORD', ''),

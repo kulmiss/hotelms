@@ -29,6 +29,13 @@ class HotelSettings
         'invoice_footer' => null,
     ];
 
+    /** Sign-in security (decisions.md W7). screen_lock_minutes 0 = never lock. */
+    public const SECURITY_DEFAULTS = [
+        'require_two_factor_staff' => false,
+        'approved_devices_only' => false,
+        'screen_lock_minutes' => 15,
+    ];
+
     public const ATTENDANCE_DEFAULTS = [
         'attendance_methods' => ['self', 'kiosk_pin', 'manual'],
     ];

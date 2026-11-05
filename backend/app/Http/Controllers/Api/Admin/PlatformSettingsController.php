@@ -23,6 +23,7 @@ class PlatformSettingsController extends Controller
             'support_email' => ['sometimes', 'nullable', 'email', 'max:120'],
             'support_phone' => ['sometimes', 'nullable', 'string', 'max:30'],
             'demo_public' => ['sometimes', 'boolean'],
+            'two_factor_admins' => ['sometimes', 'boolean'],
             'default_trial_days' => ['sometimes', 'integer', 'between:0,365'],
             'default_trial_plan_id' => ['sometimes', 'nullable', 'exists:plans,id'],
             'grace_days' => ['sometimes', 'integer', 'between:0,30'],
