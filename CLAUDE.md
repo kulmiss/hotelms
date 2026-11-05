@@ -12,8 +12,9 @@ Multi-tenant hotel SaaS for Ethiopia. Plans and decisions live in the claude.ai 
 - `frontend/`: React 19 + TypeScript + Vite, Tailwind v4, React Router, TanStack Query, react-i18next.
 
 ## Conventions
+- **Tenancy in code:** hotel-owned models use the `BelongsToHotel` trait (auto-scope + auto-fill `hotel_id`, fails closed when no hotel is set). The hotel comes from the signed-in user via the `tenant` middleware, never from the client. Jobs/seeders use `TenantContext::runAs($hotel, fn)`; Super Admin platform views use `acrossAllHotels(fn)`. `User` is not scoped (login is platform-wide) — filter staff lists by `hotel_id`.
 - **Tenancy:** every hotel-owned table has `hotel_id` (and `branch_id` where relevant); queries are always scoped. A data leak between hotels is the worst possible bug — test it.
-- **Money:** integer minor units + currency code; never floats.
+- **Money:** `decimal(14,2)` + currency code in the database (as approved in database-schema.md); strings in JSON (`"4662.50"`); never floats in PHP/JS maths.
 - **Strings:** every UI string goes through `t()` (`frontend/src/i18n/locales/en.json`).
 - **Design:** use the colour tokens in `frontend/src/index.css` (`bg-surface`, `text-muted`, `bg-accent`…), never raw hex. Light and dark must both work.
 - **Touch:** every tap target ≥ 44px (`min-h-touch` / `size-touch`); main reception actions use `size="lg"` (52px).

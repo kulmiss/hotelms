@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Hotel;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -31,6 +32,27 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
         ];
+    }
+
+    public function superAdmin(): static
+    {
+        return $this->state(fn () => ['hotel_id' => null])
+            ->afterMaking(fn (User $user) => $user->is_super_admin = true);
+    }
+
+    public function forHotel(Hotel $hotel): static
+    {
+        return $this->state(fn () => ['hotel_id' => $hotel->id]);
+    }
+
+    public function mustChangePassword(): static
+    {
+        return $this->state(fn () => ['must_change_password' => true]);
+    }
+
+    public function disabled(): static
+    {
+        return $this->state(fn () => ['status' => 'disabled']);
     }
 
     /**

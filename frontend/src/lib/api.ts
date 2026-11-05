@@ -1,25 +1,52 @@
 /**
  * Small fetch wrapper for the HotelMS API (/api/v1).
- * Auth (Sanctum tokens) is added in phase 1.
+ * Signs in with Sanctum's cookie session: the browser keeps the session cookie,
+ * and every change sends the XSRF token Laravel gave us.
  */
-const BASE = (import.meta.env.VITE_API_URL ?? '') + '/api/v1'
+const ROOT = import.meta.env.VITE_API_URL ?? ''
+const BASE = ROOT + '/api/v1'
 
 export class ApiError extends Error {
   readonly status: number
-  readonly body: unknown
+  readonly code?: string
+  readonly errors: Record<string, string[]>
 
   constructor(status: number, message: string, body: unknown) {
     super(message)
     this.name = 'ApiError'
     this.status = status
-    this.body = body
+    const b = (body ?? {}) as { code?: string; errors?: Record<string, string[]> }
+    this.code = b.code
+    this.errors = b.errors ?? {}
+  }
+
+  /** First error message for a form field, if any. */
+  field(name: string): string | undefined {
+    return this.errors[name]?.[0]
   }
 }
 
+function xsrfToken(): string | undefined {
+  const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/)
+  return match ? decodeURIComponent(match[1]) : undefined
+}
+
+/** Asks Laravel for a fresh XSRF cookie (needed before signing in). */
+export async function prepareSession(): Promise<void> {
+  await fetch(ROOT + '/sanctum/csrf-cookie', { credentials: 'include' })
+}
+
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const token = xsrfToken()
   const res = await fetch(BASE + path, {
     ...init,
-    headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...init.headers },
+    credentials: 'include',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      ...(token ? { 'X-XSRF-TOKEN': token } : {}),
+      ...init.headers,
+    },
   })
   const body: unknown = await res.json().catch(() => null)
   if (!res.ok) {
@@ -30,6 +57,12 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   return body as T
 }
 
+export const post = <T>(path: string, data?: unknown) =>
+  api<T>(path, { method: 'POST', body: data === undefined ? undefined : JSON.stringify(data) })
+
+export const put = <T>(path: string, data?: unknown) =>
+  api<T>(path, { method: 'PUT', body: data === undefined ? undefined : JSON.stringify(data) })
+
 export type Health = {
   status: 'ok' | 'degraded'
   app: string
@@ -39,3 +72,16 @@ export type Health = {
 }
 
 export const getHealth = () => api<Health>('/health')
+
+export type Me = {
+  user: {
+    id: number
+    name: string
+    email: string
+    phone: string | null
+    is_super_admin: boolean
+    must_change_password: boolean
+  }
+  hotel: { id: number; name: string; status: string; default_currency: string; timezone: string } | null
+  branches: { id: number; name: string }[]
+}

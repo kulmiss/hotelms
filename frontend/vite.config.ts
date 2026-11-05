@@ -5,7 +5,8 @@ import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
 
 // In development the API is reached through /api (proxied to Laravel),
-// so the browser never needs CORS.
+// so the browser never needs CORS. The Origin header is kept as
+// localhost:5173 so Sanctum treats the app as its own front end.
 const apiTarget = process.env.API_PROXY_TARGET ?? 'http://localhost:8000'
 
 export default defineConfig({
@@ -16,7 +17,10 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
-    proxy: { '/api': { target: apiTarget, changeOrigin: true } },
+    proxy: {
+      '/api': { target: apiTarget },
+      '/sanctum': { target: apiTarget },
+    },
   },
   test: {
     environment: 'jsdom',
