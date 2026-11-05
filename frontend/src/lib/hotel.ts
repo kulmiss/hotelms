@@ -47,7 +47,7 @@ export type ActivityEntry = {
   user: { id: number; name: string } | null
 }
 
-export const useRoles = () => useQuery({ queryKey: ['hotel', 'roles'], queryFn: () => api<{ data: Role[] }>('/roles') })
+export const useRoles = (enabled = true) => useQuery({ queryKey: ['hotel', 'roles'], queryFn: () => api<{ data: Role[] }>('/roles'), enabled })
 export const useRole = (id: number) =>
   useQuery({ queryKey: ['hotel', 'role', id], queryFn: () => api<{ data: Role }>(`/roles/${id}`), enabled: id > 0 })
 export const usePermissionCatalog = () =>

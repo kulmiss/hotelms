@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next'
-import { Bars3Icon, BellIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { Bars3Icon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { useMe } from '@/lib/auth'
 import { useCurrentBranch } from '@/lib/branch'
+import { AlertBell } from './AlertBell'
 import { UserMenu } from './UserMenu'
 
 export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
@@ -42,9 +43,7 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
             ))}
           </select>
         )}
-        <button type="button" aria-label={t('topbar.notifications')} className={iconButton}>
-          <BellIcon aria-hidden className="size-5" />
-        </button>
+        <AlertBell />
         <UserMenu />
       </div>
     </header>

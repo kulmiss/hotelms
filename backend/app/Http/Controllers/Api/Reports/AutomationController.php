@@ -206,17 +206,24 @@ class AutomationController extends Controller
     {
         $user = $request->user();
         $hotel = $user->hotel;
-        $rules = AlertRule::get()->filter(fn (AlertRule $r) => $user->hasPermission('alerts.manage') || in_array($user->id, $r->recipients ?? [], true) || (empty($r->recipients) && $user->isHotelAdmin()))->pluck('id');
-        $events = AlertEvent::whereIn('alert_rule_id', $rules)->when(! $request->boolean('all'), fn ($q) => $q->whereNull('acknowledged_at'))
+        $events = AlertEvent::whereIn('alert_rule_id', $this->visibleRuleIds($user))->when(! $request->boolean('all'), fn ($q) => $q->whereNull('acknowledged_at'))
             ->latest('fired_at')->limit(100)->get()
             ->map(fn (AlertEvent $e) => ['id' => $e->id, 'title' => $e->title, 'link' => $e->link, 'fired_at' => HotelClock::iso($e->fired_at, $hotel), 'acknowledged_at' => HotelClock::iso($e->acknowledged_at, $hotel)]);
 
         return response()->json(['data' => $events, 'unread' => $events->whereNull('acknowledged_at')->count()]);
     }
 
+    /** Alerts a person may see: managers see all; others only rules sent to them (no list = Hotel Admins). */
+    private function visibleRuleIds(User $user): array
+    {
+        return AlertRule::get()
+            ->filter(fn (AlertRule $r) => $user->hasPermission('alerts.manage') || in_array($user->id, array_map('intval', $r->recipients ?? []), true) || (empty($r->recipients) && $user->isHotelAdmin()))
+            ->pluck('id')->all();
+    }
+
     public function acknowledge(Request $request, string $id): JsonResponse
     {
-        $event = AlertEvent::findOrFail($id);
+        $event = AlertEvent::whereIn('alert_rule_id', $this->visibleRuleIds($request->user()))->findOrFail($id);
         $event->update(['acknowledged_by' => $request->user()->id, 'acknowledged_at' => now()]);
 
         return response()->json(['message' => 'Done.']);

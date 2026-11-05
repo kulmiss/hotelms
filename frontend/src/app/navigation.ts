@@ -73,7 +73,7 @@ export const mainNav: NavItem[] = [
   { key: 'staff', path: '/staff', icon: UserGroupIcon, activeIcon: UserGroupSolid, group: 'team', phase: 1, permission: 'staff.view', built: true },
   { key: 'roles', path: '/roles', icon: ShieldCheckIcon, activeIcon: ShieldCheckSolid, group: 'team', phase: 1, permission: 'roles.manage', built: true },
   { key: 'activityLog', path: '/activity-log', icon: ClipboardDocumentListIcon, activeIcon: ClipboardDocumentListSolid, group: 'team', phase: 1, permission: 'activity_log.view', built: true },
-  { key: 'reports', path: '/reports', icon: ChartBarIcon, activeIcon: ChartBarSolid, group: 'insights', phase: 6, built: true, permission: ['reports.revenue', 'reports.occupancy', 'reports.payments', 'reports.outstanding', 'reports.tax', 'reports.guests', 'reports.cancellations', 'reports.branch_compare', 'reports.my_shift', 'reports.my_work', 'reports.forecast', 'reports.audit', 'reports.accounting_export', 'reports.targets_manage'] },
+  { key: 'reports', path: '/reports', icon: ChartBarIcon, activeIcon: ChartBarSolid, group: 'insights', phase: 6, built: true, permission: ['reports.revenue', 'reports.occupancy', 'reports.payments', 'reports.outstanding', 'reports.tax', 'reports.guests', 'reports.cancellations', 'reports.branch_compare', 'reports.my_shift', 'reports.my_work', 'reports.forecast', 'reports.audit', 'reports.accounting_export', 'reports.targets_manage', 'reports.custom', 'reports.schedule', 'alerts.manage'] },
   {
     key: 'settings',
     path: '/settings',
@@ -94,6 +94,7 @@ export const devNav: NavItem[] = [
 export const adminNav: NavItem[] = [
   { key: 'commandCenter', path: '/admin', icon: HomeIcon, activeIcon: HomeSolid, phase: 1 },
   { key: 'hotels', path: '/admin/hotels', icon: BuildingOffice2Icon, activeIcon: BuildingOffice2Solid, group: 'customers', phase: 1 },
+  { key: 'platformReports', path: '/admin/reports', icon: ChartBarIcon, activeIcon: ChartBarSolid, group: 'customers', phase: 1 },
   { key: 'plans', path: '/admin/plans', icon: TagIcon, activeIcon: TagSolid, group: 'billing', phase: 1 },
   { key: 'platformSettings', path: '/admin/settings', icon: AdjustmentsHorizontalIcon, activeIcon: AdjustmentsHorizontalSolid, group: 'system', phase: 1 },
 ]

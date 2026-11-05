@@ -132,6 +132,7 @@ class AutomationTest extends TestCase
         $receptionist = User::factory()->withRole($this->hotel, 'receptionist')->create();
         $this->actingAs($receptionist)->getJson('/api/v1/alert-events')->assertJsonCount(0, 'data');
         $this->getJson('/api/v1/alert-rules')->assertForbidden();
+        $this->postJson("/api/v1/alert-events/{$events[1]['id']}/ack")->assertNotFound(); // not sent to them
     }
 
     public function test_alert_rules_can_be_switched_off(): void

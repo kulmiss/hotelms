@@ -66,7 +66,8 @@
     "shifts": "Shifts and attendance",
     "roles": "Roles and permissions",
     "activityLog": "Activity log",
-    "attendance": "Attendance"
+    "attendance": "Attendance",
+    "platformReports": "Reports"
   },
   "topbar": {
     "search": "Search guests, rooms, bookings",
@@ -309,7 +310,8 @@
         "general": "General",
         "billing": "Trials and billing",
         "branding": "Branding",
-        "emails": "Emails"
+        "emails": "Emails",
+        "telegram": "Telegram"
       },
       "generalHelp": "Your platform's name and how hotels can reach your support team.",
       "platformName": "Platform name",
@@ -335,7 +337,38 @@
       "footer": "Footer text",
       "footerHint": "A short line added at the bottom of every email.",
       "demoPublic": "Show \"Try the demo\" on the sign-in page",
-      "demoPublicHint": "Anyone can explore the demo hotel without an account. It is reset every night and never sends real emails."
+      "demoPublicHint": "Anyone can explore the demo hotel without an account. It is reset every night and never sends real emails.",
+      "telegramHelp": "Create a bot with @BotFather in Telegram, then paste its token here. Staff can then link their Telegram in their profile to get reports and alerts.",
+      "botToken": "Bot token",
+      "botTokenHint": "Kept secret. Leave as is to keep the current token; clear it to turn Telegram off.",
+      "botUsername": "Bot username (without @)"
+    },
+    "reports": {
+      "subtitle": "Income, customers and how each hotel is doing.",
+      "newThisMonth": "New hotels this month",
+      "rooms": "Rooms on the platform",
+      "lost": "Lost or suspended",
+      "trialsEnding": "Trials ending in 14 days",
+      "income": "Income by month",
+      "payments_one": "{{count}} payment",
+      "payments_other": "{{count}} payments",
+      "byStatus": "Hotels by status",
+      "health": "Hotel health",
+      "healthHelp": "Healthy: set up and used in the last 3 days. Watch: quiet for a week, in grace, or no bookings in 30 days. At risk: suspended or quiet for 14+ days. Stuck: setup not finished after 7 days.",
+      "healthStates": {
+        "healthy": "Healthy",
+        "watch": "Watch",
+        "at_risk": "At risk",
+        "stuck": "Stuck in setup"
+      },
+      "hotel": "Hotel",
+      "state": "Health",
+      "setup": "Setup",
+      "lastUsed": "Last used",
+      "bookings30": "Bookings (30 days)",
+      "never": "Never",
+      "daysAgo_one": "{{count}} day ago",
+      "daysAgo_other": "{{count}} days ago"
     }
   },
   "profile": {
@@ -1372,7 +1405,10 @@
       "daily": "Daily manager report",
       "forecast": "Forecast and targets",
       "audit": "Staff audit",
-      "accounting": "Accounting export"
+      "accounting": "Accounting export",
+      "custom": "Build your own",
+      "schedules": "Scheduled reports",
+      "alerts": "Smart alerts"
     },
     "presets": {
       "thisMonth": "This month",
@@ -1503,5 +1539,118 @@
     "account": "Account",
     "debit": "Debit",
     "credit": "Credit"
+  },
+  "alerts": {
+    "title": "Alerts",
+    "none": "No new alerts.",
+    "markDone": "Mark as seen",
+    "bellUnread_one": "Alerts: {{count}} new",
+    "bellUnread_other": "Alerts: {{count}} new"
+  },
+  "telegram": {
+    "title": "Telegram",
+    "body": "Link your Telegram to get scheduled reports and alerts there.",
+    "notSetUp": "Telegram is not set up yet. Ask the HotelMS team.",
+    "linkedAs": "Linked to {{name}}.",
+    "unlink": "Unlink",
+    "link": "Link Telegram",
+    "step": "Open @{{bot}} in Telegram and send this message:",
+    "open": "Open Telegram",
+    "wait": "It can take up to a minute to link. The code works for 30 minutes.",
+    "check": "Check again"
+  },
+  "automation": {
+    "viewName": "View name",
+    "shareWith": "Share with",
+    "onlyMe": "Only me",
+    "saveView": "Save view",
+    "measures": "What to count",
+    "m": {
+      "room_nights": "Room nights",
+      "room_revenue": "Room revenue",
+      "bookings": "Bookings",
+      "booking_value": "Booking value",
+      "cancellations": "Cancellations",
+      "payments": "Payments"
+    },
+    "groupBy": "Group by",
+    "g": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month",
+      "branch": "Branch",
+      "room_type": "Room type",
+      "source": "Booking source",
+      "payment_method": "Payment method",
+      "staff": "Staff"
+    },
+    "show": "Show as",
+    "table": "Table",
+    "bar": "Bar chart",
+    "run": "Run",
+    "reportName": "Name",
+    "update": "Update report",
+    "saveReport": "Save report",
+    "schedulesHelp": "Reports sent by email or Telegram on a schedule. Times are hotel time.",
+    "sent": "Sent.",
+    "report": "Report",
+    "customReport": "Saved custom report",
+    "how": "How often",
+    "freq": {
+      "daily": "Every day",
+      "weekly": "Every week",
+      "monthly": "Every month"
+    },
+    "weekday": "Day",
+    "dayOfMonth": "Day of month (1–28)",
+    "time": "Time",
+    "extraEmails": "Other emails",
+    "extraEmailsHint": "Separate with commas, e.g. the accountant.",
+    "addSchedule": "Add schedule",
+    "ch": {
+      "email": "Email",
+      "telegram": "Telegram",
+      "app": "In the app"
+    },
+    "next": "Next: {{time}}",
+    "sendNow": "Send now",
+    "channels": "Send by",
+    "sendTo": "Send to",
+    "nobodyMeansAdmins": "Nobody picked: goes to Hotel Admins.",
+    "alertsHelp": "We check every 15 minutes and tell the right people when something needs attention.",
+    "alerts": {
+      "cash_short": {
+        "title": "Cash short at close",
+        "text": "When a cashier shift closes {{amount}} or more short."
+      },
+      "unusual_discounts": {
+        "title": "Unusual discounts",
+        "text": "When someone's discounts this week are {{factor}}× the team average."
+      },
+      "slow_booking": {
+        "title": "Slow bookings",
+        "text": "When bookings for the next {{days}} days are {{points}} points behind usual."
+      },
+      "pending_expiring": {
+        "title": "Bookings about to expire",
+        "text": "When unpaid pending bookings expire within {{hours}} hours."
+      },
+      "target_risk": {
+        "title": "Monthly target at risk",
+        "text": "When the month is heading below {{percent}}% of target."
+      },
+      "rate_stale": {
+        "title": "Rates not updated",
+        "text": "When an exchange rate is not updated for {{days}} days."
+      }
+    },
+    "thresholds": {
+      "amount": "Amount",
+      "factor": "Times usual",
+      "points": "Points",
+      "days": "Days",
+      "hours": "Hours",
+      "percent": "Percent"
+    }
   }
 }

@@ -19,17 +19,18 @@ class PlatformReportController extends Controller
     public function platform(): JsonResponse
     {
         $months = collect(range(11, 0))->map(fn ($i) => now()->startOfMonth()->subMonths($i)->format('Y-m'));
-        $income = SubscriptionPayment::query()->join('plans', 'plans.id', '=', 'subscription_payments.plan_id')
+        // Left join: a payment whose plan was deleted still counts. Totals are kept per currency (never mixed).
+        $income = SubscriptionPayment::query()->leftJoin('plans', 'plans.id', '=', 'subscription_payments.plan_id')
             ->where('subscription_payments.paid_at', '>=', now()->startOfMonth()->subMonths(11))
-            ->selectRaw("DATE_FORMAT(subscription_payments.paid_at, '%Y-%m') as m, plans.name as plan, SUM(subscription_payments.amount) as total, COUNT(*) as payments")
-            ->groupBy('m', 'plans.name')->get();
+            ->selectRaw("DATE_FORMAT(subscription_payments.paid_at, '%Y-%m') as m, COALESCE(plans.name, '—') as plan, subscription_payments.currency as currency, SUM(subscription_payments.amount) as total, COUNT(*) as payments")
+            ->groupBy('m', 'plan', 'currency')->get();
         $hotels = Hotel::where('is_demo', false);
 
         return response()->json(['data' => [
             'income' => $months->map(fn ($m) => [
                 'month' => $m,
-                'total' => Money::sum($income->where('m', $m)->pluck('total')->map(fn ($v) => (string) $v)),
-                'by_plan' => $income->where('m', $m)->map(fn ($r) => ['plan' => $r->plan, 'total' => Money::round((string) $r->total), 'payments' => (int) $r->payments])->values(),
+                'totals' => $income->where('m', $m)->groupBy('currency')->map(fn ($rows) => Money::sum($rows->pluck('total')->map(fn ($v) => (string) $v)->all())),
+                'by_plan' => $income->where('m', $m)->map(fn ($r) => ['plan' => $r->plan, 'currency' => $r->currency, 'total' => Money::round((string) $r->total), 'payments' => (int) $r->payments])->values(),
             ])->values(),
             'hotels' => (clone $hotels)->selectRaw('status, COUNT(*) as c')->groupBy('status')->pluck('c', 'status'),
             'trials_ending' => (clone $hotels)->where('status', 'trial')->whereBetween('trial_ends_at', [now()->toDateString(), now()->addDays(14)->toDateString()])

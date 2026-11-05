@@ -14,6 +14,7 @@ import { cn } from '@/lib/cn'
 import { date, money } from '@/lib/format'
 import { addDays, today } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
+import { AlertsReport, CustomReportBuilder, SavedViews, SchedulesReport } from './AutomationReports'
 import { AccountingReport, AuditReport, DailyReport, ForecastReport, MyShiftReport, MyWorkReport } from './InsightReports'
 import { change, reportFileUrl, useDrilldown, useReport, type Kpis, type ReportFilters } from '@/lib/reports'
 
@@ -33,11 +34,14 @@ const LIBRARY: { key: string; perms: string[]; module?: string }[] = [
   { key: 'housekeeping', perms: ['reports.occupancy'] },
   { key: 'audit', perms: ['reports.audit'] },
   { key: 'accounting', perms: ['reports.accounting_export'] },
+  { key: 'custom', perms: ['reports.custom'] },
+  { key: 'schedules', perms: ['reports.schedule'] },
+  { key: 'alerts', perms: ['alerts.manage'] },
 ]
 
 /** Reports with their own period controls (no shared filter bar / export). */
-const OWN_FILTERS = ['my_shift', 'my_work', 'daily', 'forecast', 'outstanding']
-const NO_EXPORT = ['my_shift', 'my_work', 'daily', 'forecast', 'audit', 'accounting']
+const OWN_FILTERS = ['my_shift', 'my_work', 'daily', 'forecast', 'outstanding', 'schedules', 'alerts']
+const NO_EXPORT = ['my_shift', 'my_work', 'daily', 'forecast', 'audit', 'accounting', 'custom', 'schedules', 'alerts']
 
 function presets(): { key: string; from: string; to: string }[] {
   const t = today()
@@ -123,6 +127,10 @@ export function ReportsPage() {
             {t(`reports.names.${key}`)} · {date(f.from)} – {date(f.to)}
           </h2>
           {!OWN_FILTERS.includes(key) && <Filters f={f} setF={setF} branches={branches} />}
+          {!OWN_FILTERS.includes(key) && key !== 'custom' && <SavedViews key={key} reportKey={key} f={f} apply={setF} />}
+          {key === 'custom' && <CustomReportBuilder f={f} />}
+          {key === 'schedules' && <SchedulesReport />}
+          {key === 'alerts' && <AlertsReport />}
           {key === 'my_shift' && <MyShiftReport />}
           {key === 'my_work' && <MyWorkReport />}
           {key === 'daily' && <DailyReport branchId={f.branch_id} />}

@@ -240,7 +240,7 @@ class Automation
         return DB::table('cashier_session_balances as b')->join('cashier_sessions as s', 's.id', '=', 'b.cashier_session_id')->leftJoin('users as u', 'u.id', '=', 's.user_id')
             ->where('s.hotel_id', $hotel->id)->where('s.closed_at', '>=', now()->subDay())->where('b.difference', '<', -abs((float) $t['amount']))
             ->get(['s.id', 'b.currency', 'b.difference', 'u.name'])
-            ->map(fn ($r) => ['fingerprint' => "cash:{$r->id}:{$r->currency}", 'title' => "Cash short {$r->currency} ".abs((float) $r->difference)." on {$r->name}'s shift", 'link' => '/cashier'])->all();
+            ->map(fn ($r) => ['fingerprint' => "cash:{$r->id}:{$r->currency}", 'title' => "Cash short {$r->currency} ".ltrim(Money::round((string) $r->difference), '-')." on {$r->name}'s shift", 'link' => '/cashier'])->all();
     }
 
     private function unusualDiscounts(Hotel $hotel, array $t): array

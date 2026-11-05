@@ -74,6 +74,8 @@ export type PlatformSettings = {
   login_message: string | null
   email_from_name: string
   email_footer: string | null
+  telegram_bot_token: string | null
+  telegram_bot_username: string | null
 }
 
 export type AdminDashboard = {
@@ -200,3 +202,27 @@ export function useLoginAsHotel(hotelId: number) {
 }
 
 export const useResetDemo = (hotelId: number) => useAdminMutation(() => post(`/admin/hotels/${hotelId}/demo/reset`))
+
+export type PlatformReport = {
+  income: { month: string; totals: Record<string, string> | []; by_plan: { plan: string; currency: string; total: string; payments: number }[] }[]
+  hotels: Record<string, number> | []
+  trials_ending: { id: number; name: string; trial_ends_at: string }[]
+  lost: number
+  new_this_month: number
+  rooms: number
+}
+export type HotelHealth = {
+  id: number
+  name: string
+  status: string
+  plan: string | null
+  setup_percent: number
+  setup_completed: boolean
+  last_activity: string | null
+  quiet_days: number | null
+  bookings_30_days: number
+  subscription_ends_at: string | null
+  health: 'healthy' | 'watch' | 'at_risk' | 'stuck'
+}
+export const usePlatformReport = () => useQuery({ queryKey: ['admin', 'reports', 'platform'], queryFn: () => api<{ data: PlatformReport }>('/admin/reports/platform') })
+export const useHotelHealth = () => useQuery({ queryKey: ['admin', 'reports', 'health'], queryFn: () => api<{ data: HotelHealth[]; counts: Record<string, number> | [] }>('/admin/reports/hotel-health') })

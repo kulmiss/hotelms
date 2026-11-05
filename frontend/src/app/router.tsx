@@ -19,6 +19,7 @@ const NewHotelPage = lazy(() => pages.newHotel().then((m) => ({ default: m.NewHo
 const HotelPage = lazy(() => pages.hotel().then((m) => ({ default: m.HotelPage })))
 const PlansPage = lazy(() => pages.plans().then((m) => ({ default: m.PlansPage })))
 const PlatformSettingsPage = lazy(() => pages.platformSettings().then((m) => ({ default: m.PlatformSettingsPage })))
+const PlatformReportsPage = lazy(() => pages.platformReports().then((m) => ({ default: m.PlatformReportsPage })))
 const ProfilePage = lazy(() => pages.profile().then((m) => ({ default: m.ProfilePage })))
 const StaffPage = lazy(() => pages.staff().then((m) => ({ default: m.StaffPage })))
 const StaffFormPage = lazy(() => pages.staffForm().then((m) => ({ default: m.StaffFormPage })))
@@ -205,6 +206,7 @@ export const routes = [
               { path: 'hotels/:id', element: page(<HotelPage />) },
               { path: 'plans', element: page(<PlansPage />) },
               { path: 'settings', element: page(<PlatformSettingsPage />) },
+              { path: 'reports', element: page(<PlatformReportsPage />) },
             ],
           },
           { path: 'profile', element: page(<ProfilePage />) },
