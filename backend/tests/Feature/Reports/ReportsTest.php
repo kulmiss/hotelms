@@ -155,4 +155,69 @@ class ReportsTest extends TestCase
         $stranger = User::factory()->withRole($other, 'hotel_admin')->create();
         $this->actingAs($stranger)->getJson('/api/v1/reports/overview?from=2026-11-12&to=2026-11-14')->assertJsonPath('data.kpis.room_nights', 0)->assertJsonPath('data.kpis.payments', '0.00');
     }
+
+    public function test_daily_manager_report(): void
+    {
+        $d = $this->getJson('/api/v1/reports/daily?date=2026-11-12')->assertOk()->json('data');
+        $this->assertSame(1, $d['arrivals']);
+        $this->assertSame(1, $d['kpis']['room_nights']);
+        $this->assertSame('1380.00', $d['payments'][0]['amount_in_base']);
+        $this->assertSame('2026-11-13', $d['tomorrow']['date']);
+        $this->assertSame(0, $d['last_week']['room_nights']);
+    }
+
+    public function test_forecast_and_targets(): void
+    {
+        $type = $this->inHotel(fn () => RoomType::first());
+        $guest = $this->inHotel(fn () => Guest::first());
+        $this->postJson('/api/v1/reservations', ['branch_id' => $this->branch->id, 'stay_type' => 'nightly', 'check_in' => '2026-11-20', 'check_out' => '2026-11-22', 'guest_id' => $guest->id, 'rooms' => [['room_type_id' => $type->id]]])->assertCreated();
+
+        $days = collect($this->getJson('/api/v1/reports/forecast?days=14')->assertOk()->json('data.days'))->keyBy('date');
+        $this->assertSame(1, $days['2026-11-20']['room_nights']);
+        $this->assertEquals(50, $days['2026-11-20']['occupancy']);
+        $this->assertSame(1, $days['2026-11-20']['arrivals']);
+
+        $this->putJson('/api/v1/reports/targets', ['branch_id' => $this->branch->id, 'month' => '2026-11', 'revenue_target' => '10000'])->assertOk();
+        $row = $this->getJson('/api/v1/reports/targets?month=2026-11')->assertOk()->json('data.rows.0');
+        $this->assertSame('6300.00', $row['earned']);
+        $this->assertSame('4000.00', $row['booked']);
+        $this->assertSame('10300.00', $row['projection']);
+        $this->assertEquals(103, $row['revenue_progress']);
+    }
+
+    public function test_staff_audit_and_timeline(): void
+    {
+        $invoice = $this->getJson("/api/v1/reservations/{$this->reservationId}")->json('data.invoices.0.id');
+        $this->postJson("/api/v1/invoices/$invoice/payments", ['type' => 'refund', 'payment_method_id' => $this->cash, 'amount' => '100', 'refund_reason' => 'Goodwill'])->assertCreated();
+
+        $row = $this->getJson('/api/v1/reports/audit?from=2026-11-01&to=2026-11-30')->assertOk()->json('data.rows.0');
+        $this->assertSame($this->admin->id, $row['user_id']);
+        $this->assertSame('100.00', $row['refunds']);
+        $this->assertSame(1, $row['refund_count']);
+        $this->getJson("/api/v1/reports/audit/{$this->admin->id}/timeline?from=2026-11-01&to=2026-11-30")->assertOk()->assertJsonPath('data.user.id', $this->admin->id);
+    }
+
+    public function test_my_shift_is_always_my_own(): void
+    {
+        $d = $this->getJson('/api/v1/reports/my-shift')->assertOk()->json('data');
+        $this->assertSame(1, $d['check_outs']);
+        $this->assertSame('3565.00', $d['payments_total']);
+
+        $receptionist = User::factory()->withRole($this->hotel, 'receptionist')->create();
+        $receptionist->branches()->attach($this->branch->id);
+        $this->actingAs($receptionist)->getJson('/api/v1/reports/my-shift')->assertOk()->assertJsonPath('data.check_outs', 0)->assertJsonPath('data.payments_total', '0.00');
+        $this->getJson('/api/v1/reports/audit')->assertForbidden();
+        $this->getJson('/api/v1/reports/my-work')->assertForbidden(); // housekeeping module is off
+    }
+
+    public function test_accounting_journal_balances(): void
+    {
+        $lines = collect($this->getJson('/api/v1/reports/accounting?from=2026-11-01&to=2026-11-30')->assertOk()->json('data.lines'));
+        $debit = $lines->sum(fn ($l) => (float) $l['debit']);
+        $credit = $lines->sum(fn ($l) => (float) $l['credit']);
+        $this->assertEqualsWithDelta($debit, $credit, 0.001);
+        $this->assertEqualsWithDelta(4000, $lines->where('account', 'Room revenue')->sum(fn ($l) => (float) $l['credit']), 0.001);
+        $this->assertEqualsWithDelta(645, $lines->where('account', 'Tax payable')->sum(fn ($l) => (float) $l['credit']), 0.001);
+        $this->assertStringStartsWith('PK', $this->get('/api/v1/reports/accounting?from=2026-11-01&to=2026-11-30&format=xlsx')->assertOk()->getContent());
+    }
 }

@@ -108,7 +108,7 @@ class FrontDesk
                 ]);
                 $rr->room->update(['status' => 'occupied']);
             }
-            $reservation->update(['status' => 'checked_in', 'expires_at' => null]);
+            $reservation->update(['status' => 'checked_in', 'expires_at' => null, 'checked_in_by' => $user->id]);
 
             $invoice = $this->invoices->openFor($reservation->fresh(), $user);
             $early = $this->earlyFee($reservation, $now);
@@ -233,7 +233,7 @@ class FrontDesk
                 ]);
                 $rr->room?->update(['status' => 'dirty']);
             }
-            $reservation->update(['status' => 'checked_out']);
+            $reservation->update(['status' => 'checked_out', 'checked_out_by' => $user->id]);
             event(new GuestCheckedOut($reservation->fresh()));
 
             return $reservation->fresh();

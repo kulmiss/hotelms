@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\Modules\AttendanceController;
 use App\Http\Controllers\Api\Modules\CashierController;
 use App\Http\Controllers\Api\Modules\HousekeepingController;
 use App\Http\Controllers\Api\Modules\ShiftController;
+use App\Http\Controllers\Api\Reports\InsightController;
 use App\Http\Controllers\Api\Reports\ReportController;
 use App\Http\Controllers\Api\Settings\BranchSettingsController;
 use App\Http\Controllers\Api\Settings\CancellationPolicyController;
@@ -204,6 +205,15 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
             // Dashboard and reports.
             Route::get('/dashboard', [ReportController::class, 'dashboard'])->middleware('permission:dashboard.view');
             Route::get('/reports/drilldown', [ReportController::class, 'drilldown']);
+            Route::get('/reports/daily', [InsightController::class, 'daily'])->middleware('permission:reports.revenue');
+            Route::get('/reports/forecast', [InsightController::class, 'forecast'])->middleware('permission:reports.forecast');
+            Route::get('/reports/targets', [InsightController::class, 'targets'])->middleware('permission:reports.forecast,reports.targets_manage');
+            Route::put('/reports/targets', [InsightController::class, 'saveTarget'])->middleware('permission:reports.targets_manage');
+            Route::get('/reports/audit', [InsightController::class, 'audit'])->middleware('permission:reports.audit');
+            Route::get('/reports/audit/{user}/timeline', [InsightController::class, 'timeline'])->middleware('permission:reports.audit');
+            Route::get('/reports/my-shift', [InsightController::class, 'myShift'])->middleware('permission:reports.my_shift');
+            Route::get('/reports/my-work', [InsightController::class, 'myWork'])->middleware(['module:housekeeping', 'permission:reports.my_work']);
+            Route::get('/reports/accounting', [InsightController::class, 'accounting'])->middleware('permission:reports.accounting_export');
             Route::get('/reports/{key}', [ReportController::class, 'show']); // per-report permission checked inside
 
             Route::get('/activity-log', [ActivityLogController::class, 'index'])->middleware('permission:activity_log.view');
