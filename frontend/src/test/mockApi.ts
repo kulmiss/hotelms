@@ -26,6 +26,7 @@ export function mockApi(routes: Record<string, Reply>) {
 export const ADMIN_PERMISSIONS = [
   'dashboard.view', 'frontdesk.view', 'reservations.view', 'guests.view', 'invoices.view', 'cashier.own_shift',
   'housekeeping.view', 'shifts.view_own', 'staff.view', 'staff.manage', 'roles.manage', 'activity_log.view',
+  'settings.hotel', 'settings.money', 'settings.policies', 'subscription.view',
 ]
 
 export function makeMe(overrides: Partial<Me['user']> = {}, permissions: string[] = ADMIN_PERMISSIONS): Me {
