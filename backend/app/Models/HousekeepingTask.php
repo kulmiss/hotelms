@@ -7,7 +7,6 @@ use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['hotel_id', 'branch_id', 'room_id', 'reservation_id', 'assigned_to', 'type', 'priority', 'status', 'due_at', 'started_at', 'completed_at', 'completed_by', 'notes', 'created_by'])]
 class HousekeepingTask extends Model
