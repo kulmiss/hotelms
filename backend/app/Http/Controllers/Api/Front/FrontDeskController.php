@@ -10,6 +10,7 @@ use App\Models\ReservationRoom;
 use App\Models\Room;
 use App\Services\Billing\InvoiceService;
 use App\Services\Booking\Availability;
+use App\Services\Billing\TaxCalculator;
 use App\Services\Booking\FrontDesk;
 use App\Services\HotelSettings;
 use App\Support\HotelClock;
@@ -134,7 +135,10 @@ class FrontDeskController extends Controller
         if ($late) {
             foreach ($reservation->rooms()->with('rates')->get() as $rr) {
                 $night = (string) ($rr->rates->last()?->amount ?? '0');
-                $lateAmount = Money::add($lateAmount, $late['type'] === 'fixed' ? Money::round($late['value']) : Money::percentOf($night, $late['value']));
+                $fee = $late['type'] === 'fixed' ? Money::round($late['value']) : Money::percentOf($night, $late['value']);
+                // With the taxes added on top, so "balance + late fee" is exactly what the guest pays.
+                $taxes = collect(app(TaxCalculator::class)->forLine('late_check_out', $fee))->where('is_inclusive', false)->pluck('amount')->all();
+                $lateAmount = Money::add($lateAmount, Money::add($fee, Money::sum($taxes)));
             }
         }
 

@@ -9,6 +9,7 @@ import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { ApiError } from '@/lib/api'
+import { compareMoney, isPositive, subMoney } from '@/lib/decimal'
 import { date, money } from '@/lib/format'
 import { localDate, localTime, STATUS_TONES, today, useCancellationTerms, useCancelReservation, useLookups, useRecordPayment, useReservation, type PaymentInput, type ReservationDetail } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
@@ -161,8 +162,8 @@ export function ReservationPage() {
           <Line label={t('reservations.paid')} value={money(r.paid_total, r.currency)} />
           {r.cancellation_fee !== null && <Line label={t('reservations.cancellationFee')} value={money(r.cancellation_fee, r.currency)} />}
           <Line label={t('reservations.balance')} value={money(r.balance, r.currency)} strong />
-          {r.status === 'pending' && Number(r.deposit_required) > Number(r.paid_total) && (
-            <Alert tone="info">{t('reservations.depositMissing', { amount: money(String((Number(r.deposit_required) - Number(r.paid_total)).toFixed(2)), r.currency) })}</Alert>
+          {r.status === 'pending' && compareMoney(r.deposit_required, r.paid_total) > 0 && (
+            <Alert tone="info">{t('reservations.depositMissing', { amount: money(subMoney(r.deposit_required, r.paid_total), r.currency) })}</Alert>
           )}
           {r.policy && <p className="text-xs text-muted">{t('reservations.policyLine', { name: r.policy.name, hours: r.policy.free_until_hours ?? 0, context: r.policy.free_until_hours === null ? 'never' : undefined })}</p>}
           {(r.invoices?.length ?? 0) > 0 && (
@@ -196,10 +197,14 @@ function PaymentForm({ r, onDone }: { r: ReservationDetail; onDone: () => void }
   const can = useCan()
   const lookups = useLookups()
   const pay = useRecordPayment(r.id)
-  const active = r.status === 'pending' || r.status === 'confirmed' || r.status === 'checked_in'
-  const types = (['deposit', 'payment', 'refund'] as const).filter((x) => (x === 'refund' ? can('payments.refund') : can('payments.take') && active))
-  const due = r.status === 'pending' ? Number(r.deposit_required) - Number(r.paid_total) : Number(r.balance)
-  const [f, setF] = useState<PaymentInput>({ type: types[0] ?? 'deposit', payment_method_id: 0, amount: due > 0 ? due.toFixed(2) : '', currency: r.currency, reference: '', refund_reason: '' })
+  // After check-out, money still owed (approved by a manager) can still be paid here.
+  const active = r.status === 'pending' || r.status === 'confirmed' || r.status === 'checked_in' || isPositive(r.balance)
+  const beforeStay = r.status === 'pending' || r.status === 'confirmed'
+  const types = (['deposit', 'payment', 'refund'] as const).filter((x) =>
+    x === 'refund' ? can('payments.refund') : can('payments.take') && active && (x === 'payment' || beforeStay),
+  )
+  const due = r.status === 'pending' ? subMoney(r.deposit_required, r.paid_total) : r.balance
+  const [f, setF] = useState<PaymentInput>({ type: types[0] ?? 'deposit', payment_method_id: 0, amount: isPositive(due) ? due : '', currency: r.currency, reference: '', refund_reason: '' })
   const methodId = f.payment_method_id || lookups.data?.payment_methods[0]?.id || 0
   const error = pay.error instanceof ApiError ? pay.error : null
 
@@ -272,7 +277,7 @@ function CancelPanel({ r, noShow, onClose }: { r: ReservationDetail; noShow: boo
       {x && (
         <div className="flex flex-col gap-1 text-[13px]">
           <p className="text-muted">{x.free ? t('reservations.cancelFree') : t('reservations.cancelFee', { fee: money(x.fee, r.currency), policy: x.policy?.name ?? '' })}</p>
-          {Number(r.paid_total) > 0 && <p className="text-muted">{t('reservations.refundDue', { amount: money(x.refund_due, r.currency) })}</p>}
+          {isPositive(r.paid_total) && <p className="text-muted">{t('reservations.refundDue', { amount: money(x.refund_due, r.currency) })}</p>}
         </div>
       )}
       <Field label={t('reservations.reason')} value={reason} onChange={(e) => setReason(e.target.value)} error={error?.field('reason')} />

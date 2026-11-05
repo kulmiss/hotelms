@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { ApiError } from '@/lib/api'
+import { subMoney } from '@/lib/decimal'
 import { cn } from '@/lib/cn'
 import { date, money } from '@/lib/format'
 import { localDate, localTime, useLookups } from '@/lib/front'
@@ -68,7 +69,7 @@ function MyShift({ shift }: { shift: CashierSession }) {
   const [notes, setNotes] = useState('')
   const [closing, setClosing] = useState(false)
   const expected = Object.entries(shift.expected ?? {})
-  const diff = (c: string, e: string) => (counted[c] !== undefined && counted[c] !== '' ? Number(counted[c]) - Number(e) : null)
+  const diff = (c: string, e: string) => (counted[c] !== undefined && counted[c] !== '' ? Number(subMoney(counted[c], e)) : null)
   const anyDiff = expected.some(([c, r]) => (diff(c, r.expected) ?? 0) !== 0)
 
   return (

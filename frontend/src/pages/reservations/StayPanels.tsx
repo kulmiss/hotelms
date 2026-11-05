@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { Select } from '@/components/ui/Select'
 import { ApiError } from '@/lib/api'
+import { addMoney, isPositive } from '@/lib/decimal'
 import { money } from '@/lib/format'
 import { useCheckIn, useCheckInInfo, useCheckOut, useCheckOutInfo, useExtend, useFreeRooms, useMoveRoom } from '@/lib/desk'
 import { addDays, localDate, useLookups, type ReservationDetail } from '@/lib/front'
@@ -46,7 +47,7 @@ function usePay() {
     setMethodId,
     payment: (fallback: string) => {
       const a = amount ?? fallback
-      return Number(a) > 0 ? { payment_method_id: methodId || lookups.data?.payment_methods[0]?.id || 0, amount: a } : null
+      return isPositive(a) ? { payment_method_id: methodId || lookups.data?.payment_methods[0]?.id || 0, amount: a } : null
     },
   }
 }
@@ -61,7 +62,7 @@ export function CheckInPanel({ r, onClose }: { r: ReservationDetail; onClose: ()
   const [picks, setPicks] = useState<Record<number, number>>({})
   const [waive, setWaive] = useState(false)
   const d = info.data?.data
-  const early = d?.rooms.reduce((sum, x) => sum + Number(x.early_fee ?? 0), 0) ?? 0
+  const early = addMoney(...(d?.rooms ?? []).map((x) => x.early_fee ?? '0'))
   const due = d?.deposit_due ?? '0.00'
   const roomFor = (stayId: number, fallback: number | null) => picks[stayId] ?? fallback ?? 0
 
@@ -91,9 +92,9 @@ export function CheckInPanel({ r, onClose }: { r: ReservationDetail; onClose: ()
           </div>
         )
       })}
-      {early > 0 && (
+      {isPositive(early) && (
         <label className="flex items-center gap-3 rounded-lg bg-warn-bg/50 px-3 py-2 text-[13px]">
-          <span className="flex-1">{t('desk.earlyFee', { amount: money(early.toFixed(2), r.currency) })}</span>
+          <span className="flex-1">{t('desk.earlyFee', { amount: money(early, r.currency) })}</span>
           {can('fees.waive') && (
             <span className="flex items-center gap-2">
               <input type="checkbox" className="size-4 accent-accent" checked={waive} onChange={(e) => setWaive(e.target.checked)} />
@@ -102,7 +103,7 @@ export function CheckInPanel({ r, onClose }: { r: ReservationDetail; onClose: ()
           )}
         </label>
       )}
-      {Number(due) > 0 && (
+      {isPositive(due) && (
         <div className="flex flex-col gap-2">
           <p className="text-[13px] text-muted">{t('desk.depositDue', { amount: money(due, r.currency) })}</p>
           <PayFields amount={pay.amount ?? due} setAmount={pay.setAmount} methodId={pay.methodId} setMethodId={pay.setMethodId} />
@@ -118,7 +119,7 @@ export function CheckInPanel({ r, onClose }: { r: ReservationDetail; onClose: ()
           disabled={!d || checkIn.isPending}
           onClick={() =>
             checkIn.mutate(
-              { rooms: (d?.rooms ?? []).map((x) => ({ id: x.id, room_id: roomFor(x.id, x.room_id) || null })), waive_early_fee: waive, payment: Number(due) > 0 ? pay.payment(due) : null },
+              { rooms: (d?.rooms ?? []).map((x) => ({ id: x.id, room_id: roomFor(x.id, x.room_id) || null })), waive_early_fee: waive, payment: isPositive(due) ? pay.payment(due) : null },
               { onSuccess: onClose },
             )
           }
@@ -140,15 +141,15 @@ export function CheckOutPanel({ r, onClose }: { r: ReservationDetail; onClose: (
   const [waive, setWaive] = useState(false)
   const [leaveOwing, setLeaveOwing] = useState(false)
   const d = info.data?.data
-  const late = Number(d?.late_fee ?? 0)
-  const balance = (Number(d?.balance ?? 0) + (waive ? 0 : late)).toFixed(2)
+  const late = d?.late_fee ?? '0.00'
+  const balance = addMoney(d?.balance ?? '0', waive ? '0' : late)
 
   return (
     <Card className="flex flex-col gap-4 ring-accent/40 animate-page-in">
       <h2 className="text-sm font-semibold">{t('desk.checkOutTitle')}</h2>
-      {late > 0 && (
+      {isPositive(late) && (
         <label className="flex items-center gap-3 rounded-lg bg-warn-bg/50 px-3 py-2 text-[13px]">
-          <span className="flex-1">{t('desk.lateFee', { amount: money(late.toFixed(2), r.currency) })}</span>
+          <span className="flex-1">{t('desk.lateFee', { amount: money(late, r.currency) })}</span>
           {can('fees.waive') && (
             <span className="flex items-center gap-2">
               <input type="checkbox" className="size-4 accent-accent" checked={waive} onChange={(e) => setWaive(e.target.checked)} />
@@ -157,15 +158,15 @@ export function CheckOutPanel({ r, onClose }: { r: ReservationDetail; onClose: (
           )}
         </label>
       )}
-      <p className="text-sm font-semibold">{Number(balance) > 0 ? t('desk.toPay', { amount: money(balance, r.currency) }) : t('desk.allPaid')}</p>
-      {Number(balance) > 0 && !leaveOwing && <PayFields amount={pay.amount ?? balance} setAmount={pay.setAmount} methodId={pay.methodId} setMethodId={pay.setMethodId} />}
-      {Number(balance) > 0 && can('checkout.approve_balance') && (
+      <p className="text-sm font-semibold">{isPositive(balance) ? t('desk.toPay', { amount: money(balance, r.currency) }) : t('desk.allPaid')}</p>
+      {isPositive(balance) && !leaveOwing && <PayFields amount={pay.amount ?? balance} setAmount={pay.setAmount} methodId={pay.methodId} setMethodId={pay.setMethodId} />}
+      {isPositive(balance) && can('checkout.approve_balance') && (
         <label className="flex items-center gap-2 text-[13px]">
           <input type="checkbox" className="size-4 accent-accent" checked={leaveOwing} onChange={(e) => setLeaveOwing(e.target.checked)} />
           {t('desk.leaveOwing')}
         </label>
       )}
-      {Number(balance) > 0 && !can('checkout.approve_balance') && <p className="text-xs text-muted">{t('desk.managerApproves')}</p>}
+      {isPositive(balance) && !can('checkout.approve_balance') && <p className="text-xs text-muted">{t('desk.managerApproves')}</p>}
       {checkOut.error && <Alert>{firstError(checkOut.error)}</Alert>}
       <div className="flex justify-end gap-2">
         <Button variant="ghost" onClick={onClose}>

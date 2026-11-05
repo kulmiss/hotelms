@@ -247,10 +247,13 @@ class FrontDeskTest extends TestCase
         $this->at('2026-11-14 12:20');
         $this->getJson("/api/v1/reservations/$id/check-out")->assertJsonPath('data.late_fee', null);
         $this->at('2026-11-14 13:00');
-        $this->getJson("/api/v1/reservations/$id/check-out")->assertJsonPath('data.late_fee', '1000.00');
+        $info = $this->getJson("/api/v1/reservations/$id/check-out")->assertJsonPath('data.late_fee', '1150.00')->json('data'); // 1000 + 15% tax
+        $due = bcadd($info['balance'], $info['late_fee'], 2);
 
-        $this->postJson("/api/v1/reservations/$id/check-out", ['approve_balance' => true])->assertOk();
+        // Paying exactly "balance + late fee" settles the bill: no manager needed.
+        $this->actingAs($this->receptionist)->postJson("/api/v1/reservations/$id/check-out", ['payment' => ['payment_method_id' => $this->cash, 'amount' => $due]])->assertOk();
         $this->assertSame('1000.00', collect($this->invoice($id)['items'])->firstWhere('type', 'late_check_out')['amount']);
+        $this->assertSame('paid', $this->invoice($id)['status']);
     }
 
     public function test_extras_and_discounts_on_the_bill(): void
