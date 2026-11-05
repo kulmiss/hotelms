@@ -35,6 +35,7 @@ export const pages = {
   shifts: () => import('@/pages/modules/ShiftsPage'),
   attendance: () => import('@/pages/modules/AttendancePage'),
   kiosk: () => import('@/pages/modules/KioskPage'),
+  reports: () => import('@/pages/reports/ReportsPage'),
 }
 
 const byPath: Record<string, () => Promise<unknown>> = {
@@ -56,6 +57,7 @@ const byPath: Record<string, () => Promise<unknown>> = {
   '/housekeeping': pages.housekeeping,
   '/shifts': pages.shifts,
   '/attendance': pages.attendance,
+  '/reports': pages.reports,
 }
 
 const done = new Set<string>()

@@ -85,7 +85,7 @@ class Metrics
 
     private function payments(): Builder
     {
-        return DB::table('payments')->where('hotel_id', $this->hotel->id)->whereIn('branch_id', $this->branchIds);
+        return DB::table('payments')->where('payments.hotel_id', $this->hotel->id)->whereIn('payments.branch_id', $this->branchIds);
     }
 
     // ------------------------------------------------------------------ KPIs

@@ -73,7 +73,7 @@ export const mainNav: NavItem[] = [
   { key: 'staff', path: '/staff', icon: UserGroupIcon, activeIcon: UserGroupSolid, group: 'team', phase: 1, permission: 'staff.view', built: true },
   { key: 'roles', path: '/roles', icon: ShieldCheckIcon, activeIcon: ShieldCheckSolid, group: 'team', phase: 1, permission: 'roles.manage', built: true },
   { key: 'activityLog', path: '/activity-log', icon: ClipboardDocumentListIcon, activeIcon: ClipboardDocumentListSolid, group: 'team', phase: 1, permission: 'activity_log.view', built: true },
-  { key: 'reports', path: '/reports', icon: ChartBarIcon, activeIcon: ChartBarSolid, group: 'insights', phase: 6 },
+  { key: 'reports', path: '/reports', icon: ChartBarIcon, activeIcon: ChartBarSolid, group: 'insights', phase: 6, built: true, permission: ['reports.revenue', 'reports.occupancy', 'reports.payments', 'reports.outstanding', 'reports.tax', 'reports.guests', 'reports.cancellations', 'reports.branch_compare'] },
   {
     key: 'settings',
     path: '/settings',

@@ -40,6 +40,7 @@ const HousekeepingPage = lazy(() => pages.housekeeping().then((m) => ({ default:
 const ShiftsPage = lazy(() => pages.shifts().then((m) => ({ default: m.ShiftsPage })))
 const AttendancePage = lazy(() => pages.attendance().then((m) => ({ default: m.AttendancePage })))
 const KioskPage = lazy(() => pages.kiosk().then((m) => ({ default: m.KioskPage })))
+const ReportsPage = lazy(() => pages.reports().then((m) => ({ default: m.ReportsPage })))
 const SetupPage = lazy(() => pages.setup().then((m) => ({ default: m.SetupPage })))
 const SettingsLayout = lazy(() => pages.settingsLayout().then((m) => ({ default: m.SettingsLayout })))
 const section = (name: string, load: () => Promise<unknown> = pages.settings) =>
@@ -108,6 +109,7 @@ export const routes = [
           ...mainNav
             .filter((item) => !item.built)
             .map((item) => ({ path: item.path.slice(1), element: <PlaceholderPage item={item} /> })),
+          { path: 'reports', element: page(<ReportsPage />) },
           {
             element: <RequirePermission permission={['cashier.own_shift', 'cashier.view_all']} />,
             children: [{ path: 'cashier', element: page(<CashierPage />) }],
