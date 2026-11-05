@@ -16,6 +16,7 @@ use App\Services\HotelDefaults;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class ReservationsTest extends TestCase
@@ -215,7 +216,7 @@ class ReservationsTest extends TestCase
         $id = $this->postJson('/api/v1/reservations', $this->booking(['check_in' => '2026-11-20', 'check_out' => '2026-11-22']))->json('data.id');
 
         // Another change to the same booking is still running (e.g. a double tap).
-        $lock = \Illuminate\Support\Facades\Cache::lock("one-at-a-time:reservation:{$this->hotel->id}:{$id}", 30);
+        $lock = Cache::lock("one-at-a-time:reservation:{$this->hotel->id}:{$id}", 30);
         $this->assertTrue($lock->get());
         $this->postJson("/api/v1/reservations/$id/cancel", ['reason' => 'Twice'])->assertStatus(409)->assertJsonPath('code', 'busy');
         $lock->release();
