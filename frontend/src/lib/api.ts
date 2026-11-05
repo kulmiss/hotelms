@@ -95,6 +95,9 @@ export type Health = {
 
 export const getHealth = () => api<Health>('/health')
 
+/** Setup walkthrough progress (Hotel Admin only). */
+export type SetupSummary = { completed: boolean; started: boolean; skipped: number; remaining: number }
+
 export type Me = {
   user: {
     id: number
@@ -104,7 +107,7 @@ export type Me = {
     is_super_admin: boolean
     must_change_password: boolean
   }
-  hotel: { id: number; name: string; status: string; default_currency: string; timezone: string; is_demo?: boolean; modules?: string[] } | null
+  hotel: { id: number; name: string; status: string; default_currency: string; timezone: string; is_demo?: boolean; modules?: string[]; setup?: SetupSummary | null } | null
   branches: { id: number; name: string }[]
   role: { id: number; name: string; is_hotel_admin: boolean; max_discount_percent: string } | null
   permissions: string[]

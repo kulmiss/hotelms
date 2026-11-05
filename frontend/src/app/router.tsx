@@ -25,6 +25,7 @@ const StaffFormPage = lazy(() => pages.staffForm().then((m) => ({ default: m.Sta
 const RolesPage = lazy(() => pages.roles().then((m) => ({ default: m.RolesPage })))
 const RoleFormPage = lazy(() => pages.roleForm().then((m) => ({ default: m.RoleFormPage })))
 const ActivityLogPage = lazy(() => pages.activityLog().then((m) => ({ default: m.ActivityLogPage })))
+const SetupPage = lazy(() => pages.setup().then((m) => ({ default: m.SetupPage })))
 const SettingsLayout = lazy(() => pages.settingsLayout().then((m) => ({ default: m.SettingsLayout })))
 const section = (name: string, load: () => Promise<unknown> = pages.settings) =>
   lazy(() => load().then((m) => ({ default: (m as Record<string, ComponentType>)[name] })))
@@ -74,6 +75,7 @@ export const routes = [
     element: <RequireAuth />,
     children: [
       { path: '/change-password', element: <ChangePasswordPage /> },
+      { path: '/setup', element: page(<SetupPage />) },
       {
         path: '/',
         element: <AppShell />,

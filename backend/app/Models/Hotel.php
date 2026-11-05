@@ -32,6 +32,8 @@ class Hotel extends Model
         return [
             'subscription_ends_at' => 'date',
             'trial_ends_at' => 'date',
+            'setup_steps' => 'array',
+            'setup_completed_at' => 'datetime',
             'custom_price' => 'decimal:2',
             'suspended_at' => 'datetime',
             'is_demo' => 'boolean',

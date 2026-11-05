@@ -32,7 +32,15 @@ export function RequireAuth() {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />
   }
 
-  if (me.data.user.must_change_password && location.pathname !== '/change-password') {
+  // A new Hotel Admin goes through the setup walkthrough (its first step is the new password).
+  // After "Save and exit" the dashboard shows a "Finish setup" card instead.
+  const setup = me.data.role?.is_hotel_admin && !me.data.impersonation ? me.data.hotel?.setup : null
+  const onSetup = location.pathname === '/setup'
+  if (setup && !setup.completed && (!setup.started || me.data.user.must_change_password) && !onSetup) {
+    return <Navigate to="/setup" replace />
+  }
+
+  if (me.data.user.must_change_password && location.pathname !== '/change-password' && !onSetup) {
     return <Navigate to="/change-password" replace />
   }
 

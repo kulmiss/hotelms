@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Models\Hotel;
+use App\Models\User;
 use App\Services\HotelModules;
+use App\Services\HotelSetup;
 use App\Services\Impersonation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -58,11 +61,20 @@ class MeController extends Controller
                 'timezone' => $hotel->timezone,
                 'is_demo' => $hotel->is_demo,
                 'modules' => app(HotelModules::class)->enabled($hotel),
+                'setup' => $user->isHotelAdmin() ? $this->setup($hotel, $user) : null,
             ] : null,
             'branches' => $user->accessibleBranches()
                 ->map(fn (Branch $branch) => ['id' => $branch->id, 'name' => $branch->name])
                 ->values(),
         ]);
+    }
+
+    /** @return array{completed: bool, started: bool, skipped: int, remaining: int} */
+    private function setup(Hotel $hotel, User $user): array
+    {
+        $o = app(HotelSetup::class)->overview($hotel, $user);
+
+        return ['completed' => $o['completed'], 'started' => $o['started'], 'skipped' => $o['skipped'], 'remaining' => $o['remaining']];
     }
 
     /** Edit your own profile (email is the sign-in name, so it is changed by an admin). */
