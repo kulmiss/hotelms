@@ -3,6 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
 import { getHealth } from '@/lib/api'
+import { useMe } from '@/lib/auth'
+import { buttonClass } from '@/components/ui/Button'
+import { Link } from 'react-router'
 
 export function DashboardPage() {
   const { t } = useTranslation()
@@ -21,6 +24,7 @@ export function DashboardPage() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6">
       <h1 className="text-2xl font-bold">{t('dashboard.title')}</h1>
+      <FinishSetupCard />
       <Card className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">{t('dashboard.welcome')}</h2>
         <p className="text-muted">{t('dashboard.intro')}</p>
@@ -35,5 +39,26 @@ export function DashboardPage() {
         {status}
       </Card>
     </div>
+  )
+}
+
+/** Shown to the Hotel Admin while setup steps are left or were skipped. */
+function FinishSetupCard() {
+  const { t } = useTranslation()
+  const me = useMe()
+  const setup = me.data?.role?.is_hotel_admin && !me.data.impersonation ? me.data.hotel?.setup : null
+  if (!setup || (setup.completed && setup.skipped === 0)) return null
+  return (
+    <Card className="flex flex-wrap items-center justify-between gap-3 ring-accent/40">
+      <div className="flex flex-col gap-1">
+        <h2 className="text-sm font-semibold">{t('setup.card.title')}</h2>
+        <p className="text-[13px] text-muted">
+          {setup.completed ? t('setup.card.skipped', { count: setup.skipped }) : t('setup.card.unfinished', { count: setup.remaining })}
+        </p>
+      </div>
+      <Link to="/setup" className={buttonClass()}>
+        {t('setup.card.action')}
+      </Link>
+    </Card>
   )
 }

@@ -732,5 +732,134 @@
     "cleaning": "Cleaning",
     "maintenance": "Maintenance",
     "out_of_order": "Out of order"
+  },
+  "setup": {
+    "title": "Hotel setup",
+    "progress": "{{done}} of {{total}} steps",
+    "optional": "Optional",
+    "stepOf": "Step {{n}} of {{total}}",
+    "welcomeShort": "Welcome",
+    "saveExit": "Save and exit",
+    "back": "Back",
+    "skip": "Skip for now",
+    "continue": "Save and continue",
+    "finish": "Finish setup",
+    "welcome": "Welcome, {{hotel}}",
+    "welcomeIntro": "Let's get {{app}} ready for your hotel. Your progress is saved after every step, so you can stop and come back any time.",
+    "plan": "Plan: {{plan}}",
+    "trialUntil": "Free trial until {{date}}",
+    "roomLimit_one": "Up to {{count}} room",
+    "roomLimit_other": "Up to {{count}} rooms",
+    "noRoomLimit": "No room limit",
+    "parts": {
+      "hotel": {
+        "title": "Your hotel",
+        "text": "Account, hotel profile and branches."
+      },
+      "rooms": {
+        "title": "Rooms and prices",
+        "text": "Room types, prices and rooms."
+      },
+      "rules": {
+        "title": "Rules and team",
+        "text": "Money, taxes, booking rules and your staff."
+      }
+    },
+    "duration": "It takes about 15 minutes.",
+    "start": "Start setup",
+    "steps": {
+      "account": {
+        "title": "Your account",
+        "help": "Replace your temporary password with your own, and add a phone number to recover your account."
+      },
+      "profile": {
+        "title": "Hotel profile",
+        "help": "Your hotel's name, logo and tax numbers. They are printed on invoices and receipts."
+      },
+      "branches": {
+        "title": "Branches",
+        "help": "Your main branch is ready. Check its details and check-in/out times, and add more branches if you have them."
+      },
+      "room_types": {
+        "title": "Room types",
+        "help": "Add the kinds of rooms you sell, with their prices. Add at least one."
+      },
+      "rooms": {
+        "title": "Rooms",
+        "help": "Create your rooms. The room generator makes many at once, floor by floor."
+      },
+      "payments": {
+        "title": "Currencies and payments",
+        "help": "ETB is your main currency. Add other currencies you accept, and turn payment methods on or off."
+      },
+      "taxes": {
+        "title": "Taxes",
+        "help": "VAT 15% is ready. Check the rates and whether your prices already include tax."
+      },
+      "booking_rules": {
+        "title": "Booking rules",
+        "help": "Deposits, how long unpaid bookings are held, walk-in payment, and early/late fees."
+      },
+      "cancellation": {
+        "title": "Cancellation policy",
+        "help": "Choose what guests pay when they cancel or don't show up. Standard is a good start."
+      },
+      "modules": {
+        "title": "Modules",
+        "help": "Turn on the extra tools included in your plan."
+      },
+      "team": {
+        "title": "Invite your team",
+        "help": "Add your staff. Each person gets an email with a temporary password."
+      },
+      "review": {
+        "title": "Review and finish",
+        "help": "Check each step. Skipped steps keep the sensible defaults, and everything can be changed later in Settings."
+      }
+    },
+    "account": {
+      "currentHint": "The temporary password you received.",
+      "passwordDone": "Your password is set.",
+      "phone": "Recovery phone",
+      "phoneHint": "Used to help you if you forget your password.",
+      "strength": {
+        "weak": "Weak",
+        "good": "Good",
+        "strong": "Strong"
+      }
+    },
+    "team": {
+      "invite": "Invite",
+      "invited_one": "{{count}} person invited",
+      "invited_other": "{{count}} people invited"
+    },
+    "state": {
+      "done": "Done",
+      "skipped": "Skipped – defaults used",
+      "required": "Required",
+      "defaults": "Not done – defaults will be used"
+    },
+    "allSet": {
+      "title": "You're all set!",
+      "text": "{{hotel}} is ready to take bookings.",
+      "done_one": "{{count}} step done",
+      "done_other": "{{count}} steps done",
+      "skipped_one": "{{count}} skipped",
+      "skipped_other": "{{count}} skipped",
+      "next": {
+        "booking": "Take your first booking",
+        "board": "See all rooms on the room board",
+        "settings": "Change anything later in Settings"
+      },
+      "go": "Go to dashboard"
+    },
+    "card": {
+      "title": "Finish setting up your hotel",
+      "unfinished_one": "{{count}} step left.",
+      "unfinished_other": "{{count}} steps left.",
+      "skipped_one": "You skipped {{count}} step – defaults are in use.",
+      "skipped_other": "You skipped {{count}} steps – defaults are in use.",
+      "action": "Continue setup"
+    }
   }
 }

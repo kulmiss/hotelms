@@ -66,6 +66,7 @@ class DemoHotel
                 'plan_id' => Plan::where('code', 'pro')->value('id'),
                 'subscription_ends_at' => now()->addYears(10)->toDateString(),
             ]);
+            $hotel->forceFill(['setup_completed_at' => now()])->save(); // the demo is ready to use
 
             $branches = $this->tenant->runAs($hotel, fn () => collect(['Bole branch', 'Piassa branch'])
                 ->map(fn ($name) => Branch::create(['hotel_id' => $hotel->id, 'name' => $name, 'city' => 'Addis Ababa'])));

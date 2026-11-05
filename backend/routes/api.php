@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\Hotel\ActivityLogController;
 use App\Http\Controllers\Api\Hotel\PermissionController;
 use App\Http\Controllers\Api\Hotel\RoleController;
+use App\Http\Controllers\Api\Hotel\SetupController;
 use App\Http\Controllers\Api\Hotel\StaffController;
 use App\Http\Controllers\Api\ImpersonationStopController;
 use App\Http\Controllers\Api\MeController;
@@ -49,6 +50,7 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
     Route::put('/me/password', [MeController::class, 'updatePassword'])->middleware('not.impersonating');
     Route::put('/me', [MeController::class, 'update'])->middleware(['password.changed', 'not.impersonating']);
     Route::post('/impersonation/stop', ImpersonationStopController::class);
+    Route::get('/setup', [SetupController::class, 'show']); // before the password change too (step 1 is the password)
 
     // Everything below needs a password the user chose themselves.
     Route::middleware('password.changed')->group(function () {
@@ -56,6 +58,8 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
         // Hotel staff. A suspended hotel is read-only.
         Route::middleware('hotel.writable')->group(function () {
             Route::get('/branches', [BranchController::class, 'index']);
+            Route::put('/setup/steps/{step}', [SetupController::class, 'mark']);
+            Route::post('/setup/finish', [SetupController::class, 'finish']);
 
             Route::middleware('permission:roles.manage')->group(function () {
                 Route::get('/permissions', [PermissionController::class, 'index']);

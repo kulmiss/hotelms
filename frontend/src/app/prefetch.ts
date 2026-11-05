@@ -20,6 +20,7 @@ export const pages = {
   settingsLayout: () => import('@/pages/settings/SettingsLayout'),
   settings: () => import('@/pages/settings/SettingsSections'),
   roomSettings: () => import('@/pages/settings/RoomSections'),
+  setup: () => import('@/pages/setup/SetupPage'),
 }
 
 const byPath: Record<string, () => Promise<unknown>> = {

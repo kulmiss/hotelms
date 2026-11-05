@@ -7,7 +7,9 @@ use App\Http\Resources\HotelResource;
 use App\Models\Hotel;
 use App\Models\User;
 use App\Services\HotelOnboarding;
+use App\Services\HotelSetup;
 use App\Services\HotelStatus;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -91,6 +93,10 @@ class HotelController extends Controller
             'branches' => $hotel->branches()->orderBy('name')->get(['id', 'name', 'city', 'status']),
             'admins' => User::where('hotel_id', $hotel->id)->orderBy('id')->limit(5)
                 ->get(['id', 'name', 'email', 'phone', 'last_login_at', 'must_change_password']),
+            'setup' => app(TenantContext::class)->runAs($hotel, fn () => app(HotelSetup::class)->overview(
+                $hotel,
+                User::where('hotel_id', $hotel->id)->whereHas('role', fn ($q) => $q->where('key', 'hotel_admin'))->orderBy('id')->first(),
+            )),
             'payments' => $hotel->subscriptionPayments()->with('plan:id,name', 'recorder:id,name')->latest('paid_at')->limit(20)->get(),
         ]);
     }
