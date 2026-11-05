@@ -160,7 +160,7 @@ class RoomController extends Controller
     private function guardLimit(Request $request, int $adding): void
     {
         $limit = $this->limitInfo($request);
-        if ($limit['max'] !== null && $limit['used'] + $adding > $limit['max']) {
+        if ($limit['max'] !== null && $limit['max'] < $limit['used'] + $adding) {
             throw ValidationException::withMessages(['limit' => "Your plan allows {$limit['max']} rooms ({$limit['used']} used). Upgrade the plan to add more."]);
         }
     }
