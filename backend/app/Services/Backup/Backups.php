@@ -35,7 +35,7 @@ class Backups
         }
         $dir = $this->folder().'/'.$kind;
         File::ensureDirectoryExists($dir, 0700);
-        $name = now()->format('Y-m-d_His').".sql.gz";
+        $name = now()->format('Y-m-d_His').'.sql.gz';
         $path = "{$dir}/{$name}";
         $tmp = "{$path}.part";
 

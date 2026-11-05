@@ -6,18 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\HotelResource;
 use App\Models\Hotel;
 use App\Models\User;
+use App\Services\ActivityLogger;
+use App\Services\HotelClosing;
 use App\Services\HotelOnboarding;
 use App\Services\HotelSetup;
 use App\Services\HotelStatus;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
-use App\Services\HotelClosing;
-use App\Services\ActivityLogger;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class HotelController extends Controller
 {
