@@ -84,9 +84,7 @@ jobs:
           git pull --ff-only || true
           if [ -f package-lock.json ]; then npm ci; else npm install; fi
       - name: Security audit
-        run: npm audit --omit=dev --audit-level=high
-      - name: Security audit (dev tools, report only)
-        run: npm audit || true
+        run: npm audit --audit-level=high
       - name: Lint
         run: npm run lint
       - name: Type check
