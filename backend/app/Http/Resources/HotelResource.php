@@ -21,6 +21,7 @@ class HotelResource extends JsonResource
             'default_currency' => $this->default_currency,
             'timezone' => $this->timezone,
             'status' => $this->status,
+            'is_demo' => $this->is_demo,
             'plan' => $this->whenLoaded('plan', fn () => $this->plan ? ['id' => $this->plan->id, 'name' => $this->plan->name] : null),
             'trial_plan' => $this->whenLoaded('trialPlan', fn () => $this->trialPlan ? ['id' => $this->trialPlan->id, 'name' => $this->trialPlan->name] : null),
             'billing_cycle' => $this->billing_cycle,

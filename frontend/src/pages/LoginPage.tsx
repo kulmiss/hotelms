@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { ApiError } from '@/lib/api'
-import { useLogin, useMe } from '@/lib/auth'
+import { useDemoLogin, useLogin, useMe } from '@/lib/auth'
 import { BrandMark, useBrand } from '@/lib/brand'
 
 export function LoginPage() {
@@ -83,6 +83,27 @@ export function LoginPage() {
           </Button>
         </form>
       </Card>
+      {brand.raw.demo_public && <TryDemo onDone={() => navigate('/', { replace: true })} />}
+    </div>
+  )
+}
+
+const DEMO_ROLES = ['hotel_admin', 'branch_manager', 'receptionist', 'housekeeping', 'accountant'] as const
+
+/** "Try the demo": one tap to explore the demo hotel as a chosen role. */
+function TryDemo({ onDone }: { onDone: () => void }) {
+  const { t } = useTranslation()
+  const demo = useDemoLogin()
+  return (
+    <div className="flex w-full max-w-sm flex-col items-center gap-3 text-center">
+      <span className="text-[13px] text-muted">{t('demo.tryTitle')}</span>
+      <div className="flex flex-wrap justify-center gap-2">
+        {DEMO_ROLES.map((r) => (
+          <Button key={r} variant="secondary" disabled={demo.isPending} onClick={() => demo.mutate(r, { onSuccess: onDone })}>
+            {t(`demo.roles.${r}`)}
+          </Button>
+        ))}
+      </div>
     </div>
   )
 }

@@ -36,7 +36,7 @@ class HotelUserController extends Controller
         DB::table('sessions')->where('user_id', $user->id)->delete();
 
         $emailSent = false;
-        if ($data['send_email'] ?? true) {
+        if (($data['send_email'] ?? true) && ! $hotel->is_demo) {
             try {
                 Mail::to($user->email)->send(new TemporaryPassword($user, $hotel, $password));
                 $emailSent = true;

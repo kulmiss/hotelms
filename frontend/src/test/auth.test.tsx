@@ -95,3 +95,26 @@ describe('signing in', () => {
     expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument()
   })
 })
+
+describe('try the demo', () => {
+  it('offers demo roles on the sign-in page when switched on', async () => {
+    let signedIn = false
+    const fetchMock = mockApi({
+      'GET /branding': { body: { data: { platform_name: 'HotelMS', brand_color: '#0f766e', login_message: null, support_email: null, support_phone: null, logo_url: null, demo_public: true } } },
+      'GET /sanctum/csrf-cookie': { status: 204 },
+      'GET /me': () => (signedIn ? { body: { ...makeMe({ name: 'Hana' }), hotel: { id: 5, name: 'Sheger Demo Hotel', status: 'active', default_currency: 'ETB', timezone: 'Africa/Addis_Ababa', is_demo: true } } } : { status: 401 }),
+      'POST /demo/login': () => {
+        signedIn = true
+        return { body: {} }
+      },
+      'GET /health': healthOk,
+    })
+    renderApp('/login')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Receptionist' }))
+
+    expect(await screen.findByText(/This is the demo hotel/)).toBeInTheDocument()
+    const call = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/demo/login'))
+    expect(JSON.parse(String(call?.[1]?.body))).toEqual({ role: 'receptionist' })
+  })
+})

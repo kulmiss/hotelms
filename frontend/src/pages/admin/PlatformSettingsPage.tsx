@@ -97,11 +97,12 @@ function GeneralTab({ initial }: { initial: PlatformSettings }) {
   const [name, setName] = useState(initial.platform_name)
   const [email, setEmail] = useState(initial.support_email ?? '')
   const [phone, setPhone] = useState(initial.support_phone ?? '')
+  const [demo, setDemo] = useState(initial.demo_public)
   return (
     <SettingsForm
       title={t('admin.settings.tabs.general')}
       description={t('admin.settings.generalHelp')}
-      onSave={() => ({ platform_name: name, support_email: email || null, support_phone: phone || null })}
+      onSave={() => ({ platform_name: name, support_email: email || null, support_phone: phone || null, demo_public: demo })}
     >
       {(error) => (
         <>
@@ -110,6 +111,13 @@ function GeneralTab({ initial }: { initial: PlatformSettings }) {
             <Field label={t('admin.settings.supportEmail')} type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={error?.field('support_email')} />
             <Field label={t('admin.settings.supportPhone')} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} error={error?.field('support_phone')} />
           </div>
+          <label className="flex min-h-touch items-start gap-3 text-[13px]">
+            <input type="checkbox" className="mt-0.5 size-4 rounded accent-accent" checked={demo} onChange={(e) => setDemo(e.target.checked)} />
+            <span className="flex flex-col">
+              <span className="font-medium">{t('admin.settings.demoPublic')}</span>
+              <span className="text-muted">{t('admin.settings.demoPublicHint')}</span>
+            </span>
+          </label>
         </>
       )}
     </SettingsForm>

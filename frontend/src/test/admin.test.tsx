@@ -181,3 +181,52 @@ describe('platform settings', () => {
     }
   })
 })
+
+describe('log in as hotel', () => {
+  const hotelDetail = {
+    body: {
+      data: { id: 1, name: 'Sheger Hotel', status: 'active', is_demo: false, plan: { id: 2, name: 'Standard' }, trial_plan: null, billing_cycle: 'monthly', trial_ends_at: null, subscription_ends_at: '2026-12-31', suspend_reason: null, email: null, phone: null, address: null, city: 'Addis Ababa' },
+      branches: [],
+      admins: [{ id: 7, name: 'Meron', email: 'meron@sheger.test', phone: null, last_login_at: null, must_change_password: false }],
+      payments: [],
+    },
+  }
+
+  it('enters the hotel with a reason and shows the support banner', async () => {
+    let inside = false
+    const owner = { ...superAdmin(), platform: { role: 'owner', permissions: ['hotels.view', 'hotels.impersonate'] } }
+    const fetchMock = mockApi({
+      'GET /me': () => ({
+        body: inside
+          ? { ...makeMe({ name: 'Meron' }), impersonation: { by: 'Owner', reason: 'Help with rooms', started_at: '2026-11-05T10:00:00Z' } }
+          : owner,
+      }),
+      'GET /admin/hotels/1': hotelDetail,
+      'POST /admin/hotels/1/impersonate': () => {
+        inside = true
+        return { body: { message: 'ok', as: { id: 7, name: 'Meron' } } }
+      },
+      'GET /health': { body: {} },
+    })
+    renderApp('/admin/hotels/1')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Log in as hotel' }))
+    await userEvent.type(screen.getByLabelText('Reason'), 'Help with rooms')
+    await userEvent.click(screen.getByRole('button', { name: 'Log in to hotel' }))
+
+    expect(await screen.findByText(/You are signed in as Meron at Sheger Hotel for support/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Return to admin' })).toBeInTheDocument()
+    const call = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/impersonate'))
+    expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ reason: 'Help with rooms' })
+  })
+
+  it('hides "Log in as hotel" from team roles without that permission', async () => {
+    mockApi({
+      'GET /me': { body: { ...superAdmin(), platform: { role: 'finance', permissions: ['hotels.view', 'billing.manage'] } } },
+      'GET /admin/hotels/1': hotelDetail,
+    })
+    renderApp('/admin/hotels/1')
+    expect(await screen.findByRole('heading', { name: 'Sheger Hotel' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Log in as hotel' })).not.toBeInTheDocument()
+  })
+})

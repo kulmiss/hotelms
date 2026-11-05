@@ -10,6 +10,7 @@ export type Branding = {
   support_email: string | null
   support_phone: string | null
   logo_url: string | null
+  demo_public?: boolean
 }
 
 const FALLBACK: Branding = {
@@ -28,7 +29,8 @@ export function useBrand() {
   const q = useQuery({
     queryKey: BRANDING_KEY,
     queryFn: () => api<{ data: Branding }>('/branding').then((r) => r.data),
-    staleTime: 5 * 60_000,
+    staleTime: 30_000,
+    refetchOnMount: 'always',
     retry: 1,
   })
   const b = q.data ?? FALLBACK

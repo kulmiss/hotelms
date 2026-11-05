@@ -29,6 +29,7 @@ export type Hotel = {
   city: string | null
   default_currency: string
   status: 'trial' | 'active' | 'grace' | 'suspended'
+  is_demo?: boolean
   plan: { id: number; name: string } | null
   trial_plan: { id: number; name: string } | null
   billing_cycle: 'monthly' | 'yearly'
@@ -63,6 +64,7 @@ export type PlatformSettings = {
   platform_name: string
   support_email: string | null
   support_phone: string | null
+  demo_public: boolean
   default_trial_days: number
   default_trial_plan_id: number | null
   grace_days: number
@@ -187,3 +189,14 @@ export const useResetUserPassword = (hotelId: number) =>
       { send_email: input.send_email },
     ),
   )
+
+/** Super Admin opens a hotel as one of its users (for support). */
+export function useLoginAsHotel(hotelId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { reason: string; user_id?: number }) => post(`/admin/hotels/${hotelId}/impersonate`, input),
+    onSuccess: () => qc.clear(),
+  })
+}
+
+export const useResetDemo = (hotelId: number) => useAdminMutation(() => post(`/admin/hotels/${hotelId}/demo/reset`))

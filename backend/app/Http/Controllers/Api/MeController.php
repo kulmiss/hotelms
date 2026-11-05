@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Services\Impersonation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -36,12 +37,25 @@ class MeController extends Controller
                 'max_discount_percent' => $user->role->max_discount_percent,
             ] : null,
             'permissions' => $user->permissionKeys(),
+            'platform' => $user->is_super_admin ? [
+                'role' => $user->platform_role,
+                'permissions' => array_values(array_filter(
+                    array_keys(config('hotelms.platform_permissions')),
+                    fn ($p) => $user->hasPlatformPermission($p),
+                )),
+            ] : null,
+            'impersonation' => ($support = app(Impersonation::class)->active($request)) ? [
+                'by' => $support->superAdmin->name,
+                'reason' => $support->reason,
+                'started_at' => $support->started_at->toIso8601String(),
+            ] : null,
             'hotel' => $hotel ? [
                 'id' => $hotel->id,
                 'name' => $hotel->name,
                 'status' => $hotel->status,
                 'default_currency' => $hotel->default_currency,
                 'timezone' => $hotel->timezone,
+                'is_demo' => $hotel->is_demo,
             ] : null,
             'branches' => $user->accessibleBranches()
                 ->map(fn (Branch $branch) => ['id' => $branch->id, 'name' => $branch->name])

@@ -104,8 +104,10 @@ export type Me = {
     is_super_admin: boolean
     must_change_password: boolean
   }
-  hotel: { id: number; name: string; status: string; default_currency: string; timezone: string } | null
+  hotel: { id: number; name: string; status: string; default_currency: string; timezone: string; is_demo?: boolean } | null
   branches: { id: number; name: string }[]
   role: { id: number; name: string; is_hotel_admin: boolean; max_discount_percent: string } | null
   permissions: string[]
+  platform?: { role: string | null; permissions: string[] } | null
+  impersonation?: { by: string; reason: string; started_at: string } | null
 }
