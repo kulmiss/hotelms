@@ -26,10 +26,15 @@ const RolesPage = lazy(() => pages.roles().then((m) => ({ default: m.RolesPage }
 const RoleFormPage = lazy(() => pages.roleForm().then((m) => ({ default: m.RoleFormPage })))
 const ActivityLogPage = lazy(() => pages.activityLog().then((m) => ({ default: m.ActivityLogPage })))
 const SettingsLayout = lazy(() => pages.settingsLayout().then((m) => ({ default: m.SettingsLayout })))
-const section = (name: string) => lazy(() => pages.settings().then((m) => ({ default: (m as unknown as Record<string, ComponentType>)[name] })))
+const section = (name: string, load: () => Promise<unknown> = pages.settings) =>
+  lazy(() => load().then((m) => ({ default: (m as Record<string, ComponentType>)[name] })))
 const SETTINGS_PAGES: Record<string, ReturnType<typeof section>> = {
   profile: section('ProfileSettings'),
   branches: section('BranchesSettings'),
+  'room-types': section('RoomTypesSettings', pages.roomSettings),
+  rooms: section('RoomsSettings', pages.roomSettings),
+  'rate-rules': section('RateRulesSettings', pages.roomSettings),
+  'guest-types': section('GuestTypesSettings', pages.roomSettings),
   currencies: section('CurrenciesSettings'),
   taxes: section('TaxesSettings'),
   'payment-methods': section('PaymentMethodsSettings'),

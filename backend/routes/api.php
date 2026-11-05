@@ -23,9 +23,13 @@ use App\Http\Controllers\Api\Settings\CancellationPolicyController;
 use App\Http\Controllers\Api\Settings\ChargeTypeController;
 use App\Http\Controllers\Api\Settings\CurrencyController;
 use App\Http\Controllers\Api\Settings\ExchangeRateController;
+use App\Http\Controllers\Api\Settings\GuestTypeController;
 use App\Http\Controllers\Api\Settings\HotelProfileController;
 use App\Http\Controllers\Api\Settings\HotelSettingsController;
 use App\Http\Controllers\Api\Settings\PaymentMethodController;
+use App\Http\Controllers\Api\Settings\RateRuleController;
+use App\Http\Controllers\Api\Settings\RoomController;
+use App\Http\Controllers\Api\Settings\RoomTypeController;
 use App\Http\Controllers\Api\Settings\TaxController;
 use Illuminate\Support\Facades\Route;
 
@@ -113,6 +117,28 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
                     Route::post('/cancellation-policies', [CancellationPolicyController::class, 'store']);
                     Route::put('/cancellation-policies/{id}', [CancellationPolicyController::class, 'update']);
                     Route::delete('/cancellation-policies/{id}', [CancellationPolicyController::class, 'destroy']);
+                });
+                Route::middleware('permission:settings.rooms')->group(function () {
+                    Route::get('/room-types', [RoomTypeController::class, 'index']);
+                    Route::post('/room-types', [RoomTypeController::class, 'store']);
+                    Route::put('/room-types/{id}', [RoomTypeController::class, 'update']);
+                    Route::delete('/room-types/{id}', [RoomTypeController::class, 'destroy']);
+                    Route::get('/rooms', [RoomController::class, 'index']);
+                    Route::post('/rooms', [RoomController::class, 'store']);
+                    Route::post('/rooms/generate', [RoomController::class, 'generate']);
+                    Route::put('/rooms/{id}', [RoomController::class, 'update']);
+                    Route::delete('/rooms/{id}', [RoomController::class, 'destroy']);
+                });
+                Route::middleware('permission:settings.pricing')->group(function () {
+                    Route::get('/guest-types', [GuestTypeController::class, 'index']);
+                    Route::post('/guest-types', [GuestTypeController::class, 'store']);
+                    Route::put('/guest-types/{id}', [GuestTypeController::class, 'update']);
+                    Route::delete('/guest-types/{id}', [GuestTypeController::class, 'destroy']);
+                    Route::get('/rate-rules', [RateRuleController::class, 'index']);
+                    Route::post('/rate-rules', [RateRuleController::class, 'store']);
+                    Route::put('/rate-rules/{id}', [RateRuleController::class, 'update']);
+                    Route::delete('/rate-rules/{id}', [RateRuleController::class, 'destroy']);
+                    Route::get('/price-preview', [RateRuleController::class, 'preview']);
                 });
                 Route::middleware('permission:settings.modules')->group(function () {
                     Route::get('/modules', [HotelSettingsController::class, 'modules']);

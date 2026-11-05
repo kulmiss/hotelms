@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\HotelModule;
+use App\Models\Room;
 use App\Services\HotelModules;
 use App\Services\HotelSettings;
 use Illuminate\Http\JsonResponse;
@@ -94,7 +95,7 @@ class HotelSettingsController extends Controller
             'usage' => [
                 'branches' => $hotel->branches()->count(),
                 'staff' => $hotel->users()->count(),
-                'rooms' => 0, // rooms arrive in phase 2b
+                'rooms' => Room::count(),
             ],
         ]]);
     }

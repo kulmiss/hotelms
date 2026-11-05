@@ -10,18 +10,20 @@ import { Card } from './Card'
 import { Field } from './Field'
 import { Select } from './Select'
 
-type Value = string | number | boolean | null
+type Value = string | number | boolean | null | string[] | number[]
 type Row = { id?: number } & Record<string, unknown>
 
 export type FieldDef = {
   name: string
   label: string
-  type?: 'text' | 'number' | 'decimal' | 'time' | 'select' | 'checkbox'
+  type?: 'text' | 'number' | 'decimal' | 'time' | 'date' | 'select' | 'checkbox' | 'tags' | 'days'
   options?: { value: string; label: string }[]
   hint?: string
   /** Empty input is sent as null. */
   nullable?: boolean
   wide?: boolean
+  /** Hide the field (and send null) unless this returns true. */
+  showIf?: (values: Record<string, Value>) => boolean
 }
 
 export type ColumnDef = { label: string; render: (row: Row) => ReactNode }
@@ -40,6 +42,7 @@ export function ResourceList({
   defaults,
   canDelete = () => true,
   header,
+  query = '',
 }: {
   endpoint: string
   title: string
@@ -50,9 +53,11 @@ export function ResourceList({
   defaults: Record<string, Value>
   canDelete?: (row: Row) => boolean
   header?: ReactNode
+  /** Extra list filter, e.g. "?branch_id=2" (saving still uses the plain endpoint). */
+  query?: string
 }) {
   const { t } = useTranslation()
-  const list = useSettingsList<Row>(endpoint)
+  const list = useSettingsList<Row>(endpoint + query)
   const remove = useSettingsDelete(endpoint)
   const [editing, setEditing] = useState<Row | null>(null)
   const deleteError = remove.error instanceof ApiError ? Object.values(remove.error.errors)[0]?.[0] ?? remove.error.message : null
@@ -145,6 +150,14 @@ function RecordForm({ endpoint, fields, record, onDone }: { endpoint: string; fi
     const out: Row = { id: record.id }
     for (const f of fields) {
       const v = values[f.name]
+      if (f.showIf && !f.showIf(values)) {
+        out[f.name] = null
+        continue
+      }
+      if (f.type === 'tags') {
+        out[f.name] = String(v ?? '').split(',').map((x) => x.trim()).filter(Boolean)
+        continue
+      }
       out[f.name] = f.nullable && (v === '' || v === undefined) ? null : f.type === 'number' && v !== '' && v !== null ? Number(v) : v
     }
     save.mutate(out, { onSuccess: onDone })
@@ -157,6 +170,32 @@ function RecordForm({ endpoint, fields, record, onDone }: { endpoint: string; fi
         {fields.map((f) => {
           const err = error?.field(f.name)
           const cls = f.wide ? 'sm:col-span-2' : ''
+          if (f.showIf && !f.showIf(values)) return null
+          if (f.type === 'days') {
+            const picked = (values[f.name] as number[] | '') || []
+            return (
+              <fieldset key={f.name} className={`flex flex-col gap-1.5 ${cls}`}>
+                <legend className="mb-1.5 text-[13px] font-medium">{f.label}</legend>
+                <div className="flex flex-wrap gap-1.5">
+                  {[1, 2, 3, 4, 5, 6, 7].map((d) => {
+                    const on = picked.includes(d)
+                    return (
+                      <button
+                        key={d}
+                        type="button"
+                        aria-pressed={on}
+                        onClick={() => set(f.name, on ? picked.filter((x) => x !== d) : [...picked, d].sort())}
+                        className={`min-h-touch min-w-12 rounded-lg px-2 text-[13px] font-medium ring-1 transition duration-75 ${on ? 'bg-accent text-on-accent ring-accent' : 'bg-surface text-muted ring-ring hover:bg-sunken'}`}
+                      >
+                        {t(`common.weekdays.${d}`)}
+                      </button>
+                    )
+                  })}
+                </div>
+                {err && <p className="text-[13px] text-danger-text">{err}</p>}
+              </fieldset>
+            )
+          }
           if (f.type === 'checkbox') {
             return (
               <label key={f.name} className={`flex min-h-touch items-start gap-3 text-[13px] ${cls}`}>
@@ -185,7 +224,7 @@ function RecordForm({ endpoint, fields, record, onDone }: { endpoint: string; fi
             <div key={f.name} className={cls}>
               <Field
                 label={f.label}
-                type={f.type === 'time' ? 'time' : f.type === 'number' ? 'number' : 'text'}
+                type={f.type === 'time' || f.type === 'date' ? f.type : f.type === 'number' ? 'number' : 'text'}
                 inputMode={f.type === 'decimal' ? 'decimal' : f.type === 'number' ? 'numeric' : undefined}
                 value={String(values[f.name] ?? '')}
                 hint={f.hint}
@@ -209,7 +248,9 @@ function RecordForm({ endpoint, fields, record, onDone }: { endpoint: string; fi
 }
 
 function normalise(v: Value | undefined, f: FieldDef): Value {
-  if (v === undefined || v === null) return f.type === 'checkbox' ? false : ''
+  if (v === undefined || v === null) return f.type === 'checkbox' ? false : f.type === 'days' ? [] : ''
   if (f.type === 'time' && typeof v === 'string') return v.slice(0, 5)
+  if (f.type === 'date' && typeof v === 'string') return v.slice(0, 10)
+  if (f.type === 'tags' && Array.isArray(v)) return v.join(', ')
   return v
 }

@@ -19,6 +19,7 @@ export const pages = {
   activityLog: () => import('@/pages/team/ActivityLogPage'),
   settingsLayout: () => import('@/pages/settings/SettingsLayout'),
   settings: () => import('@/pages/settings/SettingsSections'),
+  roomSettings: () => import('@/pages/settings/RoomSections'),
 }
 
 const byPath: Record<string, () => Promise<unknown>> = {
