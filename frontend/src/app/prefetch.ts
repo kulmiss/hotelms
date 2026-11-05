@@ -17,6 +17,8 @@ export const pages = {
   roles: () => import('@/pages/team/RolesPage'),
   roleForm: () => import('@/pages/team/RoleFormPage'),
   activityLog: () => import('@/pages/team/ActivityLogPage'),
+  settingsLayout: () => import('@/pages/settings/SettingsLayout'),
+  settings: () => import('@/pages/settings/SettingsSections'),
 }
 
 const byPath: Record<string, () => Promise<unknown>> = {
@@ -29,6 +31,7 @@ const byPath: Record<string, () => Promise<unknown>> = {
   '/staff': pages.staff,
   '/roles': pages.roles,
   '/activity-log': pages.activityLog,
+  '/settings': pages.settings,
 }
 
 const done = new Set<string>()

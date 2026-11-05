@@ -1,4 +1,4 @@
-import { lazy, Suspense, type ReactNode } from 'react'
+import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
 import { createBrowserRouter, Navigate, Outlet } from 'react-router'
 import { AppShell } from '@/components/layout/AppShell'
 import { ProgressBar } from '@/components/layout/ProgressBar'
@@ -25,6 +25,21 @@ const StaffFormPage = lazy(() => pages.staffForm().then((m) => ({ default: m.Sta
 const RolesPage = lazy(() => pages.roles().then((m) => ({ default: m.RolesPage })))
 const RoleFormPage = lazy(() => pages.roleForm().then((m) => ({ default: m.RoleFormPage })))
 const ActivityLogPage = lazy(() => pages.activityLog().then((m) => ({ default: m.ActivityLogPage })))
+const SettingsLayout = lazy(() => pages.settingsLayout().then((m) => ({ default: m.SettingsLayout })))
+const section = (name: string) => lazy(() => pages.settings().then((m) => ({ default: (m as unknown as Record<string, ComponentType>)[name] })))
+const SETTINGS_PAGES: Record<string, ReturnType<typeof section>> = {
+  profile: section('ProfileSettings'),
+  branches: section('BranchesSettings'),
+  currencies: section('CurrenciesSettings'),
+  taxes: section('TaxesSettings'),
+  'payment-methods': section('PaymentMethodsSettings'),
+  charges: section('ChargesSettings'),
+  'booking-rules': section('BookingRulesSettings'),
+  cancellation: section('CancellationSettings'),
+  modules: section('ModulesSettings'),
+  attendance: section('AttendanceSettings'),
+  subscription: section('SubscriptionSettings'),
+}
 const DesignSystemPage = lazy(() => pages.designSystem().then((m) => ({ default: m.DesignSystemPage })))
 
 /** Shown for the split second a screen is still downloading. */
@@ -77,6 +92,14 @@ export const routes = [
               { path: 'roles/new', element: page(<RoleFormPage />) },
               { path: 'roles/:id', element: page(<RoleFormPage />) },
             ],
+          },
+          {
+            path: 'settings',
+            element: page(<SettingsLayout />),
+            children: Object.entries(SETTINGS_PAGES).map(([key, Page]) => ({
+              path: key,
+              element: page(<Page />),
+            })),
           },
           {
             element: <RequirePermission permission="activity_log.view" />,

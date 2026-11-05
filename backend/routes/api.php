@@ -18,6 +18,15 @@ use App\Http\Controllers\Api\Hotel\RoleController;
 use App\Http\Controllers\Api\Hotel\StaffController;
 use App\Http\Controllers\Api\ImpersonationStopController;
 use App\Http\Controllers\Api\MeController;
+use App\Http\Controllers\Api\Settings\BranchSettingsController;
+use App\Http\Controllers\Api\Settings\CancellationPolicyController;
+use App\Http\Controllers\Api\Settings\ChargeTypeController;
+use App\Http\Controllers\Api\Settings\CurrencyController;
+use App\Http\Controllers\Api\Settings\ExchangeRateController;
+use App\Http\Controllers\Api\Settings\HotelProfileController;
+use App\Http\Controllers\Api\Settings\HotelSettingsController;
+use App\Http\Controllers\Api\Settings\PaymentMethodController;
+use App\Http\Controllers\Api\Settings\TaxController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -65,6 +74,56 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
             });
 
             Route::get('/activity-log', [ActivityLogController::class, 'index'])->middleware('permission:activity_log.view');
+
+            // Settings (phase 2a)
+            Route::prefix('settings')->group(function () {
+                Route::middleware('permission:settings.hotel')->group(function () {
+                    Route::get('/hotel', [HotelProfileController::class, 'show']);
+                    Route::put('/hotel', [HotelProfileController::class, 'update']);
+                    Route::post('/hotel/logo', [HotelProfileController::class, 'logo']);
+                });
+                Route::middleware('permission:settings.branches')->group(function () {
+                    Route::get('/branches', [BranchSettingsController::class, 'index']);
+                    Route::post('/branches', [BranchSettingsController::class, 'store']);
+                    Route::put('/branches/{id}', [BranchSettingsController::class, 'update']);
+                    Route::delete('/branches/{id}', [BranchSettingsController::class, 'destroy']);
+                });
+                Route::middleware('permission:settings.money')->group(function () {
+                    foreach (['currencies' => CurrencyController::class, 'taxes' => TaxController::class, 'payment-methods' => PaymentMethodController::class] as $uri => $controller) {
+                        Route::get("/{$uri}", [$controller, 'index']);
+                        Route::post("/{$uri}", [$controller, 'store']);
+                        Route::put("/{$uri}/{id}", [$controller, 'update']);
+                        Route::delete("/{$uri}/{id}", [$controller, 'destroy']);
+                    }
+                });
+                Route::middleware('permission:settings.exchange_rates')->group(function () {
+                    Route::get('/exchange-rates', [ExchangeRateController::class, 'index']);
+                    Route::post('/exchange-rates', [ExchangeRateController::class, 'store']);
+                });
+                Route::middleware('permission:settings.charges')->group(function () {
+                    Route::get('/charge-types', [ChargeTypeController::class, 'index']);
+                    Route::post('/charge-types', [ChargeTypeController::class, 'store']);
+                    Route::put('/charge-types/{id}', [ChargeTypeController::class, 'update']);
+                    Route::delete('/charge-types/{id}', [ChargeTypeController::class, 'destroy']);
+                });
+                Route::middleware('permission:settings.policies')->group(function () {
+                    Route::get('/booking-rules', [HotelSettingsController::class, 'bookingRules']);
+                    Route::put('/booking-rules', [HotelSettingsController::class, 'updateBookingRules']);
+                    Route::get('/cancellation-policies', [CancellationPolicyController::class, 'index']);
+                    Route::post('/cancellation-policies', [CancellationPolicyController::class, 'store']);
+                    Route::put('/cancellation-policies/{id}', [CancellationPolicyController::class, 'update']);
+                    Route::delete('/cancellation-policies/{id}', [CancellationPolicyController::class, 'destroy']);
+                });
+                Route::middleware('permission:settings.modules')->group(function () {
+                    Route::get('/modules', [HotelSettingsController::class, 'modules']);
+                    Route::put('/modules', [HotelSettingsController::class, 'updateModules']);
+                });
+                Route::middleware('permission:settings.attendance')->group(function () {
+                    Route::get('/attendance', [HotelSettingsController::class, 'attendance']);
+                    Route::put('/attendance', [HotelSettingsController::class, 'updateAttendance']);
+                });
+            });
+            Route::get('/subscription', [HotelSettingsController::class, 'subscription'])->middleware('permission:subscription.view');
         });
 
         // Super Admin (HotelMS team).

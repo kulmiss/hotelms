@@ -28,7 +28,7 @@ class DemoHotel
         'accountant' => ['Yonas Alemu', 'accountant'],
     ];
 
-    public function __construct(private DefaultRoles $roles, private TenantContext $tenant) {}
+    public function __construct(private DefaultRoles $roles, private TenantContext $tenant, private HotelDefaults $defaults) {}
 
     public static function email(string $roleKey): string
     {
@@ -67,6 +67,7 @@ class DemoHotel
                 ->map(fn ($name) => Branch::create(['hotel_id' => $hotel->id, 'name' => $name, 'city' => 'Addis Ababa'])));
 
             $roles = $this->roles->ensureFor($hotel);
+            $this->defaults->apply($hotel);
 
             foreach (self::PEOPLE as $key => [$name]) {
                 $user = User::create([
