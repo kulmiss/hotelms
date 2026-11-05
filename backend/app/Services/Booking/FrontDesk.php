@@ -313,7 +313,7 @@ class FrontDesk
             $until = $out->copy()->addMinutes((int) $rules['hourly_cleaning_minutes']);
         }
 
-        return DB::transaction(function () use ($reservation, $user, $hotel, $out, $until) {
+        return DB::transaction(function () use ($reservation, $user, $out, $until) {
             $invoice = $this->invoices->openFor($reservation, $user);
             foreach ($reservation->rooms()->with(['room', 'roomType'])->lockForUpdate()->get() as $rr) {
                 if (! $this->availability->roomIsFree($rr->room, $rr->blocked_until, $until, $reservation->id)) {
