@@ -37,11 +37,25 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-full items-center justify-center p-4">
-      <Card className="flex w-full max-w-sm flex-col gap-5 p-6">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <img src="/favicon.svg" alt="" className="size-12" />
-          <h1 className="text-xl font-bold">{t('login.title')}</h1>
+    <div className="grid min-h-full lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+      {/* Lobby panel: the same deep teal and brass as the app's sidebar */}
+      <div className="hidden flex-col justify-between bg-lobby p-12 text-lobby-text lg:flex">
+        <span className="flex items-center gap-3">
+          <span className="flex size-11 items-center justify-center rounded-xl bg-brass text-xl font-bold text-lobby">H</span>
+          <span className="text-lg font-semibold text-white">{t('app.name')}</span>
+        </span>
+        <div className="flex max-w-md flex-col gap-4">
+          <p className="text-3xl leading-snug font-semibold text-white">{t('login.panelTitle')}</p>
+          <p className="text-lobby-muted">{t('login.panelBody')}</p>
+        </div>
+        <span className="h-1 w-16 rounded-full bg-brass" aria-hidden />
+      </div>
+
+      <div className="flex items-center justify-center p-4 sm:p-8">
+      <Card className="flex w-full max-w-sm flex-col gap-6 p-7 animate-page-in motion-reduce:animate-none">
+        <div className="flex flex-col gap-2">
+          <span className="flex size-11 items-center justify-center rounded-xl bg-lobby text-xl font-bold text-brass lg:hidden">H</span>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('login.title')}</h1>
           <p className="text-sm text-muted">{t('login.subtitle')}</p>
         </div>
         <form className="flex flex-col gap-4" onSubmit={submit} noValidate>
@@ -78,6 +92,7 @@ export function LoginPage() {
           </Button>
         </form>
       </Card>
+      </div>
     </div>
   )
 }

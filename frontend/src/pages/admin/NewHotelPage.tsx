@@ -59,7 +59,7 @@ export function NewHotelPage() {
         <PageHeader title={t('admin.newHotel.created', { name: result.data.name })} />
         <Card className="flex flex-col gap-4">
           <p>{t('admin.newHotel.credentialsIntro')}</p>
-          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-lg bg-sunken p-4">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-xl bg-sunken p-4">
             <dt className="text-muted">{t('login.email')}</dt>
             <dd className="font-semibold break-all">{result.admin.email}</dd>
             <dt className="text-muted">{t('admin.newHotel.tempPassword')}</dt>
@@ -70,7 +70,7 @@ export function NewHotelPage() {
           </Alert>
           <Link
             to={`/admin/hotels/${result.data.id}`}
-            className="inline-flex min-h-touch items-center justify-center rounded-lg bg-accent px-4 font-semibold text-on-accent hover:bg-accent-hover"
+            className="inline-flex min-h-touch items-center justify-center rounded-xl bg-accent px-4 font-semibold text-on-accent hover:bg-accent-hover"
           >
             {t('admin.newHotel.openHotel')}
           </Link>
@@ -133,7 +133,7 @@ export function NewHotelPage() {
         </Card>
 
         <div className="flex justify-end gap-3">
-          <Link to="/admin/hotels" className="inline-flex min-h-touch items-center rounded-lg px-4 font-semibold text-muted hover:bg-sunken">
+          <Link to="/admin/hotels" className="inline-flex min-h-touch items-center rounded-xl px-4 font-semibold text-muted hover:bg-sunken">
             {t('common.cancel')}
           </Link>
           <Button type="submit" size="lg" disabled={create.isPending || !form.name || !form.admin_name || !form.admin_email}>

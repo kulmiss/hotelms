@@ -8,7 +8,7 @@ export function Alert({ tone = 'danger', children }: { tone?: 'danger' | 'info' 
     ok: 'bg-ok-bg text-ok-text',
   }
   return (
-    <div role={tone === 'danger' ? 'alert' : 'status'} className={cn('rounded-lg px-3 py-2.5 text-sm', tones[tone])}>
+    <div role={tone === 'danger' ? 'alert' : 'status'} className={cn('rounded-xl px-3 py-2.5 text-sm', tones[tone])}>
       {children}
     </div>
   )

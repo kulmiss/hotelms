@@ -18,7 +18,7 @@ export function Field({ label, hint, error, className, id, ...props }: FieldProp
         aria-describedby={[hintId, errorId].filter(Boolean).join(' ') || undefined}
         aria-invalid={error ? true : undefined}
         className={cn(
-          'min-h-touch rounded-lg border border-border bg-bg px-3 text-base text-text placeholder:text-muted',
+          'min-h-touch rounded-xl border border-border bg-surface px-3 text-base text-text placeholder:text-muted',
           'focus:border-accent focus:outline-none',
           error && 'border-danger',
           className,

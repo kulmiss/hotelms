@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@phosphor-icons/react'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -39,7 +39,7 @@ export function HotelPage() {
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
       <Link to="/admin/hotels" className="inline-flex min-h-touch items-center gap-2 self-start text-sm font-medium text-muted hover:text-text">
-        <ArrowLeft aria-hidden className="size-4" />
+        <ArrowLeft aria-hidden weight="bold" className="size-4" />
         {t('nav.hotels')}
       </Link>
       <PageHeader

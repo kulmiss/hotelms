@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { Plus, Search } from 'lucide-react'
+import { MagnifyingGlass, Plus } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatusBadge } from '@/components/ui/StatusBadge'
@@ -26,17 +26,17 @@ export function HotelsPage() {
         actions={
           <Link
             to="/admin/hotels/new"
-            className="inline-flex min-h-touch items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-on-accent hover:bg-accent-hover"
+            className="inline-flex min-h-touch items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-on-accent hover:bg-accent-hover"
           >
-            <Plus aria-hidden className="size-5" />
+            <Plus aria-hidden weight="bold" className="size-5" />
             {t('admin.hotels.new')}
           </Link>
         }
       />
 
       <div className="flex flex-wrap items-center gap-3">
-        <label className="flex min-h-touch max-w-sm flex-1 items-center gap-2 rounded-lg border border-border bg-surface px-3 text-muted">
-          <Search aria-hidden className="size-4 shrink-0" />
+        <label className="flex min-h-touch max-w-sm flex-1 items-center gap-2 rounded-xl border border-border bg-surface px-3 text-muted">
+          <MagnifyingGlass aria-hidden weight="bold" className="size-4 shrink-0" />
           <span className="sr-only">{t('admin.hotels.search')}</span>
           <input
             type="search"

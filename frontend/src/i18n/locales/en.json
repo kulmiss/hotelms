@@ -30,7 +30,8 @@
     "commandCenter": "Command center",
     "hotels": "Hotels",
     "plans": "Plans",
-    "platformSettings": "Settings"
+    "platformSettings": "Settings",
+    "platform": "Platform admin"
   },
   "topbar": {
     "search": "Search guests, rooms, bookings",
@@ -42,7 +43,8 @@
     "branch": "Branch",
     "mainBranch": "Main branch",
     "signOut": "Sign out",
-    "superAdmin": "Super Admin"
+    "superAdmin": "Super Admin",
+    "hotelmsTeam": "HotelMS team"
   },
   "login": {
     "title": "Sign in",
@@ -52,7 +54,9 @@
     "submit": "Sign in",
     "remember": "Keep me signed in on this device",
     "signingIn": "Signing in…",
-    "tooManyAttempts": "Too many tries. Please wait a minute and try again."
+    "tooManyAttempts": "Too many tries. Please wait a minute and try again.",
+    "panelTitle": "Run every room, booking and bill from one calm place.",
+    "panelBody": "Front desk, housekeeping, billing and reports for hotels across Ethiopia."
   },
   "password": {
     "title": "Set a new password",
@@ -98,14 +102,17 @@
   },
   "admin": {
     "dash": {
-      "subtitle": "All hotels at a glance.",
+      "subtitle": "Every hotel on HotelMS, at a glance.",
       "totalHotels": "Hotels",
       "unpaid": "Unpaid",
       "incomeThisMonth": "Income this month",
       "trialsEnding": "Trials ending in 7 days",
       "needsAttention": "Needs attention",
       "none": "None",
-      "allGood": "All hotels are paid up."
+      "allGood": "All hotels are paid up.",
+      "emptyTitle": "No hotels yet",
+      "emptyBody": "Create your first hotel. You'll get its Hotel Admin's sign-in details to share, and its free trial starts right away.",
+      "createFirst": "Create the first hotel"
     },
     "hotels": {
       "new": "New hotel",

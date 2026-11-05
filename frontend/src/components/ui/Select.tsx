@@ -15,7 +15,7 @@ export function Select({ label, hint, error, className, id, children, ...props }
         id={selectId}
         aria-invalid={error ? true : undefined}
         className={cn(
-          'min-h-touch rounded-lg border border-border bg-bg px-3 text-base text-text focus:border-accent focus:outline-none',
+          'min-h-touch rounded-xl border border-border bg-surface px-3 text-base text-text focus:border-accent focus:outline-none',
           error && 'border-danger',
           className,
         )}

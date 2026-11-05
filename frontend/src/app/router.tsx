@@ -1,25 +1,31 @@
+import { lazy, Suspense, type ReactNode } from 'react'
 import { createBrowserRouter, Navigate, Outlet } from 'react-router'
 import { AppShell } from '@/components/layout/AppShell'
 import { RequireAuth } from '@/components/layout/RequireAuth'
 import { useMe } from '@/lib/auth'
-import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
-import { HotelPage } from '@/pages/admin/HotelPage'
-import { HotelsPage } from '@/pages/admin/HotelsPage'
-import { NewHotelPage } from '@/pages/admin/NewHotelPage'
-import { PlansPage } from '@/pages/admin/PlansPage'
-import { PlatformSettingsPage } from '@/pages/admin/PlatformSettingsPage'
 import { ChangePasswordPage } from '@/pages/ChangePasswordPage'
-import { DashboardPage } from '@/pages/DashboardPage'
-import { DesignSystemPage } from '@/pages/DesignSystemPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
 import { mainNav } from './navigation'
+import { pages } from './prefetch'
+
+const DashboardPage = lazy(() => pages.dashboard().then((m) => ({ default: m.DashboardPage })))
+const AdminDashboardPage = lazy(() => pages.adminDashboard().then((m) => ({ default: m.AdminDashboardPage })))
+const HotelsPage = lazy(() => pages.hotels().then((m) => ({ default: m.HotelsPage })))
+const NewHotelPage = lazy(() => pages.newHotel().then((m) => ({ default: m.NewHotelPage })))
+const HotelPage = lazy(() => pages.hotel().then((m) => ({ default: m.HotelPage })))
+const PlansPage = lazy(() => pages.plans().then((m) => ({ default: m.PlansPage })))
+const PlatformSettingsPage = lazy(() => pages.platformSettings().then((m) => ({ default: m.PlatformSettingsPage })))
+const DesignSystemPage = lazy(() => pages.designSystem().then((m) => ({ default: m.DesignSystemPage })))
+
+/** Shown for the split second a screen is still downloading. */
+const page = (node: ReactNode) => <Suspense fallback={<div className="min-h-40" aria-busy="true" />}>{node}</Suspense>
 
 /** The HotelMS team goes to the Super Admin area; hotel staff to their hotel. */
 function HomeRedirect() {
   const me = useMe()
-  return me.data?.user.is_super_admin ? <Navigate to="/admin" replace /> : <DashboardPage />
+  return me.data?.user.is_super_admin ? <Navigate to="/admin" replace /> : page(<DashboardPage />)
 }
 
 /** Only HotelMS team members may open /admin. */
@@ -46,15 +52,15 @@ export const routes = [
             path: 'admin',
             element: <RequireSuperAdmin />,
             children: [
-              { index: true, element: <AdminDashboardPage /> },
-              { path: 'hotels', element: <HotelsPage /> },
-              { path: 'hotels/new', element: <NewHotelPage /> },
-              { path: 'hotels/:id', element: <HotelPage /> },
-              { path: 'plans', element: <PlansPage /> },
-              { path: 'settings', element: <PlatformSettingsPage /> },
+              { index: true, element: page(<AdminDashboardPage />) },
+              { path: 'hotels', element: page(<HotelsPage />) },
+              { path: 'hotels/new', element: page(<NewHotelPage />) },
+              { path: 'hotels/:id', element: page(<HotelPage />) },
+              { path: 'plans', element: page(<PlansPage />) },
+              { path: 'settings', element: page(<PlatformSettingsPage />) },
             ],
           },
-          { path: 'design-system', element: <DesignSystemPage /> },
+          { path: 'design-system', element: page(<DesignSystemPage />) },
           { path: '*', element: <NotFoundPage /> },
         ],
       },
