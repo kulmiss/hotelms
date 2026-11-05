@@ -23,8 +23,15 @@ export function mockApi(routes: Record<string, Reply>) {
   return fetchMock
 }
 
-export function makeMe(overrides: Partial<Me['user']> = {}): Me {
+export const ADMIN_PERMISSIONS = [
+  'dashboard.view', 'frontdesk.view', 'reservations.view', 'guests.view', 'invoices.view', 'cashier.own_shift',
+  'housekeeping.view', 'shifts.view_own', 'staff.view', 'staff.manage', 'roles.manage', 'activity_log.view',
+]
+
+export function makeMe(overrides: Partial<Me['user']> = {}, permissions: string[] = ADMIN_PERMISSIONS): Me {
   return {
+    role: { id: 1, name: 'Hotel Admin', is_hotel_admin: true, max_discount_percent: '100.00' },
+    permissions,
     user: {
       id: 1,
       name: 'Meron Tesfaye',

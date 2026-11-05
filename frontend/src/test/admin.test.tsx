@@ -6,7 +6,7 @@ import { renderApp } from './renderApp'
 
 afterEach(() => vi.unstubAllGlobals())
 
-const superAdmin = () => ({ ...makeMe({ is_super_admin: true, name: 'Owner' }), hotel: null, branches: [] })
+const superAdmin = () => ({ ...makeMe({ is_super_admin: true, name: 'Owner' }, []), role: null, hotel: null, branches: [] })
 
 const dashboard = {
   body: {

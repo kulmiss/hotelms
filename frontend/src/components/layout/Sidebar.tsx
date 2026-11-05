@@ -5,6 +5,7 @@ import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/react/2
 import { adminNav, devNav, mainNav, type NavItem } from '@/app/navigation'
 import { prefetchRoute } from '@/app/prefetch'
 import { useMe } from '@/lib/auth'
+import { useCan } from '@/lib/hotel'
 import { cn } from '@/lib/cn'
 
 type EntryProps = { item: NavItem; collapsed: boolean; onNavigate?: () => void }
@@ -58,7 +59,11 @@ type SidebarProps = { open: boolean; collapsed: boolean; onClose: () => void; on
 export function Sidebar({ open, collapsed, onClose, onToggleCollapsed }: SidebarProps) {
   const { t } = useTranslation()
   const me = useMe()
-  const items = [...(me.data?.user.is_super_admin ? adminNav : mainNav), ...(import.meta.env.DEV ? devNav : [])]
+  const can = useCan()
+  const items = [
+    ...(me.data?.user.is_super_admin ? adminNav : mainNav.filter((item) => can(item.permission))),
+    ...(import.meta.env.DEV ? devNav : []),
+  ]
 
   // Keep the order, start a new group whenever the group name changes.
   const groups: { name?: string; items: NavItem[] }[] = []
