@@ -190,6 +190,10 @@ class StaffController extends Controller
         if ($user->isHotelAdmin() && ! $actor->isHotelAdmin()) {
             abort(response()->json(['message' => 'Only a Hotel Admin can change another Hotel Admin.', 'code' => 'forbidden'], 403));
         }
+        // Nobody may take over (e.g. by resetting the password of) someone who can do more than they can.
+        if (! $actor->isHotelAdmin() && ! $actor->is($user) && array_diff($user->permissionKeys(), $actor->permissionKeys())) {
+            abort(response()->json(['message' => 'This person can do things you cannot, so only a Hotel Admin can change them.', 'code' => 'forbidden'], 403));
+        }
     }
 
     private function guardKeepsAnAdmin(User $user): void

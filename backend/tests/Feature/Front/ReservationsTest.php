@@ -225,6 +225,22 @@ class ReservationsTest extends TestCase
         $this->postJson("/api/v1/reservations/$id/cancel", ['reason' => 'Again'])->assertUnprocessable(); // already cancelled
     }
 
+    public function test_rooms_types_and_branches_in_use_cannot_be_deleted(): void
+    {
+        $this->actingAs($this->admin);
+        $room = $this->inHotel(fn () => Room::where('number', '201')->first());
+        $id = $this->postJson('/api/v1/reservations', $this->booking(['rooms' => [['room_type_id' => $this->deluxe->id, 'room_id' => $room->id]]]))->assertCreated()->json('data.id');
+
+        $this->deleteJson("/api/v1/settings/rooms/{$room->id}")->assertUnprocessable();
+        $this->deleteJson("/api/v1/settings/room-types/{$this->deluxe->id}")->assertUnprocessable();
+        $second = Branch::factory()->for($this->hotel)->create(['name' => 'Piassa', 'code' => 'PS']);
+        $this->deleteJson("/api/v1/settings/branches/{$this->branch->id}")->assertUnprocessable();
+
+        $this->postJson("/api/v1/reservations/$id/cancel", ['reason' => 'Test'])->assertOk();
+        $this->deleteJson("/api/v1/settings/rooms/{$room->id}")->assertOk();
+        $this->assertNotNull($second);
+    }
+
     public function test_no_show_only_after_check_in_time(): void
     {
         $this->actingAs($this->admin);

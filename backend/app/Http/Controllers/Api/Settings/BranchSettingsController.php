@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api\Settings;
 
 use App\Models\Branch;
+use App\Models\CashierSession;
+use App\Models\Invoice;
+use App\Models\Reservation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -51,6 +54,15 @@ class BranchSettingsController extends ResourceController
     {
         if (Branch::count() <= 1) {
             $this->refuse('branch', 'A hotel needs at least one branch.');
+        }
+        if (Reservation::where('branch_id', $record->getKey())->whereIn('status', Reservation::ACTIVE)->exists()) {
+            $this->refuse('branch', 'This branch has guests or bookings. Finish or cancel them first.');
+        }
+        if (Invoice::where('branch_id', $record->getKey())->where('status', '!=', 'void')->where('balance', '>', 0)->exists()) {
+            $this->refuse('branch', 'This branch has unpaid bills. Settle them first.');
+        }
+        if (CashierSession::where('branch_id', $record->getKey())->whereNull('closed_at')->exists()) {
+            $this->refuse('branch', 'A cashier shift is still open in this branch.');
         }
     }
 }

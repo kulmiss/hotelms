@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\Settings;
 
+use App\Models\Reservation;
+use App\Models\ReservationRoom;
 use App\Models\Room;
 use App\Models\RoomType;
 use Illuminate\Database\Eloquent\Builder;
@@ -55,6 +57,9 @@ class RoomTypeController extends ResourceController
     {
         if (Room::where('room_type_id', $record->getKey())->exists()) {
             $this->refuse('room_type', 'Move or delete the rooms of this type first.');
+        }
+        if (ReservationRoom::where('room_type_id', $record->getKey())->whereIn('status', Reservation::ACTIVE)->exists()) {
+            $this->refuse('room_type', 'There are bookings for this room type. Change or finish them first.');
         }
     }
 }

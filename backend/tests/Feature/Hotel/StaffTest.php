@@ -104,6 +104,17 @@ class StaffTest extends TestCase
         ])->assertUnprocessable()->assertJsonValidationErrors('role_id');
     }
 
+    public function test_branch_manager_cannot_take_over_someone_who_can_do_more(): void
+    {
+        $manager = $this->manager($this->bole);
+        $accountant = User::factory()->withRole($this->hotel, 'accountant')->create(); // tax and accounting reports
+        $accountant->branches()->attach($this->bole);
+
+        $this->actingAs($manager)->postJson("/api/v1/staff/{$accountant->id}/reset-password")->assertForbidden();
+        $this->postJson("/api/v1/staff/{$accountant->id}/disable")->assertForbidden();
+        $this->actingAs($this->admin())->postJson("/api/v1/staff/{$accountant->id}/reset-password")->assertOk();
+    }
+
     public function test_nobody_disables_themselves_or_changes_their_own_role(): void
     {
         $admin = $this->admin();

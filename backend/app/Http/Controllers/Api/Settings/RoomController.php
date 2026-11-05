@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\Room;
 use App\Models\RoomType;
+use App\Models\Reservation;
+use App\Models\ReservationRoom;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -127,7 +129,11 @@ class RoomController extends Controller
 
     public function destroy(Request $request, string $id): JsonResponse
     {
-        $this->findRoom($request, $id)->delete();
+        $room = $this->findRoom($request, $id);
+        if (ReservationRoom::where('room_id', $room->id)->whereIn('status', Reservation::ACTIVE)->exists()) {
+            throw ValidationException::withMessages(['room' => 'This room has a guest or a booking. Move them to another room first.']);
+        }
+        $room->delete();
 
         return response()->json(['message' => 'Deleted.']);
     }
