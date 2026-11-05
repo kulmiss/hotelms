@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -31,10 +30,20 @@ class OneAtATime
             [$kind, $id] = $stay ? ['reservation', (string) $stay] : ['invoice', $id];
         }
 
+        // Our own wait loop on the real clock (Laravel's block() follows the app clock, which tests freeze).
+        $lock = Cache::lock("one-at-a-time:{$kind}:{$hotel}:{$id}", 30);
+        $until = microtime(true) + max(0, (int) config('hotelms.lock_wait_seconds'));
+        while (! $lock->get()) {
+            if (microtime(true) >= $until) {
+                return response()->json(['message' => 'Someone is changing this right now. Please try again in a moment.', 'code' => 'busy'], 409);
+            }
+            usleep(150_000);
+        }
+
         try {
-            return Cache::lock("one-at-a-time:{$kind}:{$hotel}:{$id}", 30)->block((int) config('hotelms.lock_wait_seconds'), fn () => $next($request));
-        } catch (LockTimeoutException) {
-            return response()->json(['message' => 'Someone is changing this right now. Please try again in a moment.', 'code' => 'busy'], 409);
+            return $next($request);
+        } finally {
+            $lock->release();
         }
     }
 }
