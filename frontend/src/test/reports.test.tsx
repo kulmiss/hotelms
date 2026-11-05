@@ -29,7 +29,7 @@ describe('dashboard and reports', () => {
       },
       'GET /reports/drilldown': { body: { data: [{ reservation_id: 9, code: 'BL-26-00001', guest: 'Abebe', room: '101', amount: '2000.00' }] } },
     })
-    renderApp('/reports')
+    renderApp('/reports?report=performance')
     expect(await screen.findByText('33.3%')).toBeInTheDocument()
     expect(screen.getByText('33.2%')).toBeInTheDocument() // up from 25%
     expect(screen.getByRole('link', { name: 'Excel' })).toHaveAttribute('href', expect.stringContaining('format=xlsx'))
