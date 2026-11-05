@@ -25,7 +25,7 @@ class HotelModules
         $on = HotelModule::withoutGlobalScope('hotel')->where('hotel_id', $hotel->id)
             ->where('is_enabled', true)->pluck('module')->all();
 
-        return array_values(array_intersect($on, $this->available($hotel)));
+        return array_values(array_intersect($this->available($hotel), $on)); // plan order
     }
 
     public function isEnabled(Hotel $hotel, string $module): bool

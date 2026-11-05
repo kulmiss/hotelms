@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * See App\Services\HotelStatus for the rules.
  */
 #[Fillable([
-    'name', 'email', 'phone', 'address', 'city', 'logo_path',
+    'name', 'legal_name', 'tin', 'vat_number', 'email', 'phone', 'address', 'city', 'logo_path',
     'default_currency', 'timezone', 'status', 'plan_id', 'subscription_ends_at',
     'trial_ends_at', 'trial_plan_id', 'billing_cycle', 'custom_price', 'suspended_at', 'suspend_reason', 'is_demo',
 ])]
