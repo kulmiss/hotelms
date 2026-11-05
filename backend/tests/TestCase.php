@@ -23,8 +23,11 @@ abstract class TestCase extends BaseTestCase
     {
         // auth:sanctum switches the default guard to "sanctum" during a request;
         // put it back and start fresh so the next request sees this user.
+        // Also start a new session: Sanctum signs out a session whose stored
+        // password does not match the user (a real safety feature).
         config(['auth.defaults.guard' => 'web']);
         $this->app['auth']->forgetGuards();
+        $this->flushSession();
 
         return parent::actingAs($user, $guard ?? 'web');
     }

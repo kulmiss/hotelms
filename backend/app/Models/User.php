@@ -59,7 +59,10 @@ class User extends Authenticatable
             return true;
         }
 
-        return in_array($this->platform_role, config("hotelms.platform_permissions.{$permission}", []), true);
+        // Permission names contain dots, so read the whole map (not config dot-paths).
+        $roles = config('hotelms.platform_permissions', [])[$permission] ?? [];
+
+        return in_array($this->platform_role, $roles, true);
     }
 
     public function isActive(): bool

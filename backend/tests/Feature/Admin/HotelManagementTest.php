@@ -165,4 +165,24 @@ class HotelManagementTest extends TestCase
 
         $this->actingAs($finance)->postJson("/api/v1/admin/hotels/{$hotel->id}/suspend", ['reason' => 'Unpaid'])->assertOk();
     }
+
+    public function test_each_team_role_gets_exactly_its_permissions(): void
+    {
+        $expect = [
+            'support' => ['hotels.view' => true, 'hotels.create' => false, 'billing.manage' => false, 'hotels.impersonate' => true],
+            'sales' => ['hotels.view' => true, 'hotels.create' => true, 'billing.manage' => false, 'hotels.impersonate' => false],
+            'finance' => ['hotels.view' => true, 'hotels.create' => false, 'billing.manage' => true, 'hotels.impersonate' => false],
+            'tech' => ['hotels.view' => true, 'hotels.create' => false, 'billing.manage' => false, 'switches.manage' => true],
+            'owner' => ['hotels.view' => true, 'hotels.create' => true, 'billing.manage' => true, 'team.manage' => true],
+        ];
+
+        foreach ($expect as $role => $permissions) {
+            $member = User::factory()->platformRole($role)->make();
+            foreach ($permissions as $permission => $allowed) {
+                $this->assertSame($allowed, $member->hasPlatformPermission($permission), "{$role} / {$permission}");
+            }
+        }
+
+        $this->assertFalse(User::factory()->make()->hasPlatformPermission('hotels.view'));
+    }
 }
