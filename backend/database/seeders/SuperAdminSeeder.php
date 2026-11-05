@@ -21,9 +21,12 @@ class SuperAdminSeeder extends Seeder
         }
 
         $password = (string) config('hotelms.super_admin.password');
+        if ($password === '' && app()->environment('local')) {
+            $password = 'ChangeMe-123'; // easy first sign-in on a developer laptop
+        }
         $generated = $password === '';
         if ($generated) {
-            $password = Str::password(16);
+            $password = Str::password(16, symbols: false);
         }
 
         $user = new User([
