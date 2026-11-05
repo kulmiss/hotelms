@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('hotels:update-statuses')->hourly()->withoutOverlapping();
 Schedule::command('reservations:expire')->everyMinute()->withoutOverlapping();
+Schedule::command('reports:automation')->everyMinute()->withoutOverlapping();
+Schedule::command('reports:automation --alerts')->everyFifteenMinutes()->withoutOverlapping();
 
 // The demo hotel starts fresh every night.
 Schedule::command('demo:reset')->dailyAt('02:30')->withoutOverlapping();

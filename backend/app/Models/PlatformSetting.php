@@ -28,6 +28,9 @@ class PlatformSetting extends Model
         // Emails
         'email_from_name' => 'HotelMS',
         'email_footer' => null,
+        // Telegram bot for reports and alerts (free; create it with @BotFather)
+        'telegram_bot_token' => null,
+        'telegram_bot_username' => null,
     ];
 
     /** Settings anyone may read (shown on the sign-in page before login). */

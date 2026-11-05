@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Admin\HotelController as AdminHotelController;
 use App\Http\Controllers\Api\Admin\HotelUserController;
 use App\Http\Controllers\Api\Admin\ImpersonationController;
 use App\Http\Controllers\Api\Admin\PlanController as AdminPlanController;
+use App\Http\Controllers\Api\Admin\PlatformReportController;
 use App\Http\Controllers\Api\Admin\PlatformSettingsController;
 use App\Http\Controllers\Api\Admin\SubscriptionPaymentController;
 use App\Http\Controllers\Api\AuthController;
@@ -27,6 +28,7 @@ use App\Http\Controllers\Api\Modules\AttendanceController;
 use App\Http\Controllers\Api\Modules\CashierController;
 use App\Http\Controllers\Api\Modules\HousekeepingController;
 use App\Http\Controllers\Api\Modules\ShiftController;
+use App\Http\Controllers\Api\Reports\AutomationController;
 use App\Http\Controllers\Api\Reports\InsightController;
 use App\Http\Controllers\Api\Reports\ReportController;
 use App\Http\Controllers\Api\Settings\BranchSettingsController;
@@ -60,6 +62,9 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
     Route::get('/me', [MeController::class, 'show']);
     Route::put('/me/password', [MeController::class, 'updatePassword'])->middleware('not.impersonating');
     Route::put('/me', [MeController::class, 'update'])->middleware(['password.changed', 'not.impersonating']);
+    Route::get('/telegram', [AutomationController::class, 'telegramStatus']);
+    Route::post('/telegram/link', [AutomationController::class, 'telegramLink'])->middleware('not.impersonating');
+    Route::delete('/telegram/link', [AutomationController::class, 'telegramUnlink'])->middleware('not.impersonating');
     Route::post('/impersonation/stop', ImpersonationStopController::class);
     Route::get('/setup', [SetupController::class, 'show']); // before the password change too (step 1 is the password)
 
@@ -214,6 +219,30 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
             Route::get('/reports/my-shift', [InsightController::class, 'myShift'])->middleware('permission:reports.my_shift');
             Route::get('/reports/my-work', [InsightController::class, 'myWork'])->middleware(['module:housekeeping', 'permission:reports.my_work']);
             Route::get('/reports/accounting', [InsightController::class, 'accounting'])->middleware('permission:reports.accounting_export');
+            Route::get('/saved-views', [AutomationController::class, 'views']);
+            Route::post('/saved-views', [AutomationController::class, 'saveView']);
+            Route::put('/saved-views/{id}', [AutomationController::class, 'saveView']);
+            Route::delete('/saved-views/{id}', [AutomationController::class, 'deleteView']);
+            Route::middleware('permission:reports.custom')->group(function () {
+                Route::get('/custom-reports', [AutomationController::class, 'customReports']);
+                Route::post('/custom-reports', [AutomationController::class, 'saveCustomReport']);
+                Route::post('/custom-reports/run', [AutomationController::class, 'runCustom']);
+                Route::put('/custom-reports/{id}', [AutomationController::class, 'saveCustomReport']);
+                Route::delete('/custom-reports/{id}', [AutomationController::class, 'deleteCustomReport']);
+            });
+            Route::middleware('permission:reports.schedule')->group(function () {
+                Route::get('/report-schedules', [AutomationController::class, 'schedules']);
+                Route::post('/report-schedules', [AutomationController::class, 'saveSchedule']);
+                Route::put('/report-schedules/{id}', [AutomationController::class, 'saveSchedule']);
+                Route::delete('/report-schedules/{id}', [AutomationController::class, 'deleteSchedule']);
+                Route::post('/report-schedules/{id}/test', [AutomationController::class, 'testSchedule']);
+            });
+            Route::middleware('permission:alerts.manage')->group(function () {
+                Route::get('/alert-rules', [AutomationController::class, 'alertRules']);
+                Route::put('/alert-rules/{id}', [AutomationController::class, 'saveAlertRule']);
+            });
+            Route::get('/alert-events', [AutomationController::class, 'alertEvents']);
+            Route::post('/alert-events/{id}/ack', [AutomationController::class, 'acknowledge']);
             Route::get('/reports/{key}', [ReportController::class, 'show']); // per-report permission checked inside
 
             Route::get('/activity-log', [ActivityLogController::class, 'index'])->middleware('permission:activity_log.view');
@@ -300,6 +329,8 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
         // Super Admin (HotelMS team).
         Route::prefix('admin')->middleware('platform:hotels.view')->group(function () {
             Route::get('/dashboard', AdminDashboardController::class);
+            Route::get('/reports/platform', [PlatformReportController::class, 'platform']);
+            Route::get('/reports/hotel-health', [PlatformReportController::class, 'health']);
 
             Route::get('/hotels', [AdminHotelController::class, 'index']);
             Route::get('/hotels/{hotel}', [AdminHotelController::class, 'show']);
