@@ -99,6 +99,32 @@ describe('Super Admin area', () => {
   })
 })
 
+describe('hotel page', () => {
+  it('gives a Hotel Admin a new temporary password and shows it', async () => {
+    const fetchMock = mockApi({
+      'GET /me': { body: superAdmin() },
+      'GET /admin/hotels/1': {
+        body: {
+          data: { id: 1, name: 'Sheger Hotel', status: 'trial', plan: { id: 2, name: 'Standard' }, trial_plan: null, billing_cycle: 'monthly', trial_ends_at: '2026-12-05', subscription_ends_at: null, suspend_reason: null, email: null, phone: null, address: null, city: 'Addis Ababa' },
+          branches: [{ id: 1, name: 'Main branch', city: 'Addis Ababa', status: 'active' }],
+          admins: [{ id: 7, name: 'Meron', email: 'meron@sheger.test', phone: null, last_login_at: null, must_change_password: true }],
+          payments: [],
+        },
+      },
+      'POST /admin/hotels/1/users/7/reset-password': { body: { temporary_password: 'NewTmp123abc', email_sent: true } },
+    })
+    renderApp('/admin/hotels/1')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Reset password' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Create new password' }))
+
+    expect(await screen.findByText('NewTmp123abc')).toBeInTheDocument()
+    expect(screen.getByText('Also emailed to meron@sheger.test.')).toBeInTheDocument()
+    const call = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/reset-password'))
+    expect(JSON.parse(String(call?.[1]?.body))).toEqual({ send_email: true })
+  })
+})
+
 describe('collapsible sidebar', () => {
   it('collapses, remembers it, and expands again', async () => {
     mockApi({ 'GET /me': { body: superAdmin() }, 'GET /admin/dashboard': dashboard })

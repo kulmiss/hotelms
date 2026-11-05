@@ -145,3 +145,11 @@ export const useSavePlan = () =>
     plan.id ? put(`/admin/plans/${plan.id}`, plan) : post('/admin/plans', plan),
   )
 export const useSaveSettings = () => useAdminMutation((s: Partial<PlatformSettings>) => put('/admin/settings', s))
+
+export const useResetUserPassword = (hotelId: number) =>
+  useAdminMutation((input: { userId: number; send_email: boolean }) =>
+    post<{ temporary_password: string; email_sent: boolean }>(
+      `/admin/hotels/${hotelId}/users/${input.userId}/reset-password`,
+      { send_email: input.send_email },
+    ),
+  )

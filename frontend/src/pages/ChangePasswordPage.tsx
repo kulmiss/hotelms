@@ -67,6 +67,11 @@ export function ChangePasswordPage() {
           <Button type="submit" size="lg" disabled={change.isPending || !current || !password || mismatch}>
             {t('password.submit')}
           </Button>
+          {!forced && (
+            <Button variant="ghost" onClick={() => navigate(-1)}>
+              {t('common.cancel')}
+            </Button>
+          )}
           {forced && (
             <Button variant="ghost" onClick={() => logout.mutate()}>
               {t('topbar.signOut')}

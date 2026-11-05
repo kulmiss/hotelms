@@ -35,7 +35,12 @@ describe('app shell (signed in)', () => {
     renderApp('/')
     expect(await screen.findByText('Meron Tesfaye')).toBeInTheDocument()
     expect(screen.getByRole('option', { name: 'Piassa branch' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Account menu' }))
+    expect(screen.getByRole('menu')).toBeVisible()
+    expect(screen.getByRole('menuitem', { name: 'My profile' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Sign out' })).toBeInTheDocument()
+    await userEvent.keyboard('{Escape}')
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
   })
 
   it('opens a planned screen as a placeholder', async () => {
@@ -49,10 +54,26 @@ describe('app shell (signed in)', () => {
   it('toggles dark mode and remembers it', async () => {
     mockApi({ 'GET /me': { body: makeMe() }, 'GET /health': healthOk })
     renderApp('/')
-    await userEvent.click(await screen.findByRole('button', { name: 'Dark mode' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Account menu' }))
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Dark mode' }))
     await waitFor(() => expect(document.documentElement).toHaveClass('dark'))
     expect(localStorage.getItem('hms-theme')).toBe('dark')
-    expect(screen.getByRole('button', { name: 'Light mode' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Light mode' })).toBeInTheDocument()
+  })
+
+  it('lets users edit their own profile', async () => {
+    const fetchMock = mockApi({
+      'GET /me': { body: makeMe() },
+      'PUT /me': { body: makeMe({ name: 'Meron T.' }) },
+    })
+    renderApp('/profile')
+    const name = await screen.findByLabelText('Full name')
+    await userEvent.clear(name)
+    await userEvent.type(name, 'Meron T.')
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+    expect(await screen.findByText('Saved.')).toBeInTheDocument()
+    const call = fetchMock.mock.calls.find(([url, init]) => String(url).endsWith('/me') && init?.method === 'PUT')
+    expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ name: 'Meron T.' })
   })
 
   it('shows a not-found page for unknown addresses', async () => {

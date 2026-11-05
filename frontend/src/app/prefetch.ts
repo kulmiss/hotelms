@@ -11,6 +11,7 @@ export const pages = {
   plans: () => import('@/pages/admin/PlansPage'),
   platformSettings: () => import('@/pages/admin/PlatformSettingsPage'),
   designSystem: () => import('@/pages/DesignSystemPage'),
+  profile: () => import('@/pages/ProfilePage'),
 }
 
 const byPath: Record<string, () => Promise<unknown>> = {

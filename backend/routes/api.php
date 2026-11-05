@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Api\Admin\HotelController as AdminHotelController;
+use App\Http\Controllers\Api\Admin\HotelUserController;
 use App\Http\Controllers\Api\Admin\PlanController as AdminPlanController;
 use App\Http\Controllers\Api\Admin\PlatformSettingsController;
 use App\Http\Controllers\Api\Admin\SubscriptionPaymentController;
@@ -23,6 +24,7 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/me', [MeController::class, 'show']);
     Route::put('/me/password', [MeController::class, 'updatePassword']);
+    Route::put('/me', [MeController::class, 'update'])->middleware('password.changed');
 
     // Everything below needs a password the user chose themselves.
     Route::middleware('password.changed')->group(function () {
@@ -46,6 +48,9 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
                 Route::put('/hotels/{hotel}', [AdminHotelController::class, 'update']);
                 Route::post('/hotels/{hotel}/trial', [AdminHotelController::class, 'setTrial']);
             });
+
+            Route::post('/hotels/{hotel}/users/{user}/reset-password', [HotelUserController::class, 'resetPassword'])
+                ->middleware('platform:users.reset_password');
 
             Route::middleware('platform:billing.manage')->group(function () {
                 Route::post('/hotels/{hotel}/suspend', [AdminHotelController::class, 'suspend']);

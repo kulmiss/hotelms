@@ -44,7 +44,10 @@
     "mainBranch": "Main branch",
     "signOut": "Sign out",
     "superAdmin": "Super Admin",
-    "hotelmsTeam": "HotelMS team"
+    "hotelmsTeam": "HotelMS team",
+    "accountMenu": "Account menu",
+    "profile": "My profile",
+    "changePassword": "Change password"
   },
   "login": {
     "title": "Sign in",
@@ -180,7 +183,17 @@
       "savePayment": "Save payment",
       "suspendHelp": "The hotel can still sign in, view and export, but cannot save anything new until you activate it again.",
       "reason": "Reason",
-      "confirmSuspend": "Suspend hotel"
+      "confirmSuspend": "Suspend hotel",
+      "resetPassword": "Reset password",
+      "resetTitle": "New temporary password for {{name}}",
+      "resetHelp": "Old passwords are stored scrambled and can't be shown. This creates a new temporary password. {{name}} will choose their own at the next sign-in, and is signed out everywhere now.",
+      "emailIt": "Email it to {{email}}",
+      "createPassword": "Create new password",
+      "newPasswordReady": "New temporary password",
+      "copy": "Copy",
+      "copied": "Copied",
+      "resetEmailSent": "Also emailed to {{email}}.",
+      "resetEmailNotSent": "Not emailed – share it yourself."
     },
     "billing": {
       "monthly": "Monthly",
@@ -223,5 +236,14 @@
       "graceDays": "Grace period after expiry (days)",
       "graceHint": "After this, the hotel becomes read-only until it pays."
     }
+  },
+  "profile": {
+    "title": "My profile",
+    "subtitle": "Your name and phone, as your team sees them.",
+    "name": "Full name",
+    "phone": "Phone",
+    "emailHint": "You sign in with this email. Ask your Hotel Admin to change it.",
+    "passwordTitle": "Password",
+    "passwordBody": "Change the password you use to sign in."
   }
 }

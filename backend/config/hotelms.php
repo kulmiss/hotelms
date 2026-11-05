@@ -22,6 +22,7 @@ return [
         'hotels.view' => ['support', 'sales', 'finance', 'tech'],
         'hotels.create' => ['sales'],
         'hotels.impersonate' => ['support', 'tech'],
+        'users.reset_password' => ['support', 'sales', 'tech'],
         'billing.manage' => ['finance'],
         'switches.manage' => ['tech'],
         'team.manage' => [],

@@ -17,6 +17,7 @@ const NewHotelPage = lazy(() => pages.newHotel().then((m) => ({ default: m.NewHo
 const HotelPage = lazy(() => pages.hotel().then((m) => ({ default: m.HotelPage })))
 const PlansPage = lazy(() => pages.plans().then((m) => ({ default: m.PlansPage })))
 const PlatformSettingsPage = lazy(() => pages.platformSettings().then((m) => ({ default: m.PlatformSettingsPage })))
+const ProfilePage = lazy(() => pages.profile().then((m) => ({ default: m.ProfilePage })))
 const DesignSystemPage = lazy(() => pages.designSystem().then((m) => ({ default: m.DesignSystemPage })))
 
 /** Shown for the split second a screen is still downloading. */
@@ -60,6 +61,7 @@ export const routes = [
               { path: 'settings', element: page(<PlatformSettingsPage />) },
             ],
           },
+          { path: 'profile', element: page(<ProfilePage />) },
           { path: 'design-system', element: page(<DesignSystemPage />) },
           { path: '*', element: <NotFoundPage /> },
         ],

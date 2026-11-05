@@ -42,6 +42,19 @@ class MeController extends Controller
         ]);
     }
 
+    /** Edit your own profile (email is the sign-in name, so it is changed by an admin). */
+    public function update(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'phone' => ['nullable', 'string', 'max:30'],
+        ]);
+
+        $request->user()->update($data);
+
+        return $this->show($request);
+    }
+
     public function updatePassword(Request $request): JsonResponse
     {
         $user = $request->user();

@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft } from '@phosphor-icons/react'
+import { ArrowLeft, Check, Copy, Key } from '@phosphor-icons/react'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -15,6 +15,7 @@ import {
   useHotel,
   usePlans,
   useRecordPayment,
+  useResetUserPassword,
   useSetTrial,
   useSuspendHotel,
   type Hotel,
@@ -109,11 +110,14 @@ export function HotelPage() {
           <h3 className="mt-2 text-sm font-semibold">{t('admin.hotel.staff')}</h3>
           <ul className="flex flex-col gap-1 text-sm">
             {hotel.data.admins.map((a) => (
-              <li key={a.id} className="flex flex-col">
-                <span className="font-medium">{a.name}</span>
-                <span className="text-muted break-all">
-                  {a.email} · {a.must_change_password ? t('admin.hotel.notSignedInYet') : t('admin.hotel.lastLogin', { date: date(a.last_login_at) })}
-                </span>
+              <li key={a.id} className="flex flex-col gap-2">
+                <div className="flex flex-col">
+                  <span className="font-medium">{a.name}</span>
+                  <span className="text-muted break-all">
+                    {a.email} · {a.must_change_password ? t('admin.hotel.notSignedInYet') : t('admin.hotel.lastLogin', { date: date(a.last_login_at) })}
+                  </span>
+                </div>
+                <ResetPassword hotelId={h.id} user={a} />
               </li>
             ))}
           </ul>
@@ -166,6 +170,64 @@ export function HotelPage() {
           </table>
         )}
       </Card>
+    </div>
+  )
+}
+
+function ResetPassword({ hotelId, user }: { hotelId: number; user: { id: number; name: string; email: string } }) {
+  const { t } = useTranslation()
+  const reset = useResetUserPassword(hotelId)
+  const [open, setOpen] = useState(false)
+  const [sendEmail, setSendEmail] = useState(true)
+  const [copied, setCopied] = useState(false)
+
+  if (!open) {
+    return (
+      <Button variant="secondary" className="self-start" onClick={() => setOpen(true)}>
+        <Key aria-hidden weight="duotone" className="size-5" />
+        {t('admin.hotel.resetPassword')}
+      </Button>
+    )
+  }
+
+  if (reset.data) {
+    const copy = () => {
+      void navigator.clipboard?.writeText(reset.data.temporary_password).then(() => setCopied(true))
+    }
+    return (
+      <div className="flex flex-col gap-2 rounded-xl bg-sunken p-3">
+        <span className="text-xs text-muted">{t('admin.hotel.newPasswordReady')}</span>
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-mono text-base font-semibold break-all">{reset.data.temporary_password}</span>
+          <Button variant="secondary" onClick={copy}>
+            {copied ? <Check aria-hidden weight="bold" className="size-4" /> : <Copy aria-hidden weight="duotone" className="size-4" />}
+            {copied ? t('admin.hotel.copied') : t('admin.hotel.copy')}
+          </Button>
+        </div>
+        <span className="text-xs text-muted">
+          {reset.data.email_sent ? t('admin.hotel.resetEmailSent', { email: user.email }) : t('admin.hotel.resetEmailNotSent')}
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-3 rounded-xl bg-sunken p-3">
+      <p className="text-sm font-semibold">{t('admin.hotel.resetTitle', { name: user.name })}</p>
+      <p className="text-xs text-muted">{t('admin.hotel.resetHelp', { name: user.name })}</p>
+      <label className="flex min-h-touch items-center gap-3 text-sm">
+        <input type="checkbox" className="size-5 accent-accent" checked={sendEmail} onChange={(e) => setSendEmail(e.target.checked)} />
+        {t('admin.hotel.emailIt', { email: user.email })}
+      </label>
+      {reset.isError && <Alert>{t('common.serverUnreachable')}</Alert>}
+      <div className="flex justify-end gap-2">
+        <Button variant="ghost" onClick={() => setOpen(false)}>
+          {t('common.cancel')}
+        </Button>
+        <Button disabled={reset.isPending} onClick={() => reset.mutate({ userId: user.id, send_email: sendEmail })}>
+          {t('admin.hotel.createPassword')}
+        </Button>
+      </div>
     </div>
   )
 }

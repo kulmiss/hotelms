@@ -24,9 +24,8 @@ function NavEntry({ item, collapsed, onNavigate }: EntryProps) {
         cn(
           'group relative flex min-h-touch items-center gap-3 rounded-xl px-3 text-sm font-medium',
           'transition-[background-color,color] duration-200',
-          // Collapsed (desktop): icon on top, small name underneath.
-          collapsed &&
-            'lg:flex-col lg:justify-center lg:gap-1 lg:px-1 lg:py-2.5 lg:text-center lg:text-[11px] lg:leading-tight',
+          // Collapsed (desktop): icon on top, small name underneath, centred.
+          collapsed && 'lg:mx-auto lg:w-16 lg:flex-col lg:justify-center lg:gap-1 lg:px-0 lg:py-2 lg:text-center',
           isActive
             ? 'bg-lobby-raised text-white'
             : 'text-lobby-muted hover:bg-lobby-raised/60 hover:text-lobby-text',
@@ -48,7 +47,12 @@ function NavEntry({ item, collapsed, onNavigate }: EntryProps) {
             weight="duotone"
             className={cn('size-6 shrink-0 transition-colors', isActive ? 'text-brass' : 'text-current')}
           />
-          <span className={cn('min-w-0 truncate', collapsed && 'lg:line-clamp-2 lg:w-full lg:whitespace-normal')}>
+          <span
+            className={cn(
+              'min-w-0 truncate',
+              collapsed && 'lg:w-full lg:px-0.5 lg:text-[10.5px] lg:leading-tight lg:font-medium',
+            )}
+          >
             {label}
           </span>
         </>
@@ -79,32 +83,23 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapsed }: Sidebar
       <aside
         data-collapsed={collapsed}
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex w-64 flex-col gap-6 overflow-hidden bg-lobby p-4 text-lobby-text',
+          'fixed inset-y-0 left-0 z-40 flex w-64 flex-col gap-4 overflow-hidden bg-lobby p-4 text-lobby-text',
           'transition-[transform,width,padding] duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)] motion-reduce:transition-none',
           'lg:static lg:translate-x-0',
-          collapsed && 'lg:w-[5.5rem] lg:px-2',
+          collapsed && 'lg:w-24 lg:px-2',
           open ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <div className={cn('flex items-center gap-2', collapsed ? 'lg:flex-col' : 'justify-between')}>
+        <div className={cn('flex items-center justify-between gap-2', collapsed && 'lg:justify-center')}>
           <span className="flex min-w-0 items-center gap-3">
             <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brass text-lg font-bold text-lobby">
               H
             </span>
-            <span className={cn('flex min-w-0 flex-col', collapsed && 'lg:sr-only')}>
+            <span className={cn('flex min-w-0 flex-col transition-opacity duration-200', collapsed && 'lg:sr-only')}>
               <span className="text-base font-semibold text-white">{t('app.name')}</span>
               <span className="truncate text-xs text-lobby-muted">{place}</span>
             </span>
           </span>
-          <button
-            type="button"
-            onClick={onToggleCollapsed}
-            aria-label={collapsed ? t('nav.expand') : t('nav.collapse')}
-            aria-expanded={!collapsed}
-            className="hidden size-touch shrink-0 items-center justify-center rounded-xl text-lobby-muted transition-colors hover:bg-lobby-raised hover:text-white lg:flex"
-          >
-            <SidebarSimple aria-hidden weight="duotone" className={cn('size-6 transition-transform duration-300', collapsed && 'rotate-180')} />
-          </button>
           <button
             type="button"
             onClick={onClose}
@@ -127,6 +122,21 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapsed }: Sidebar
             </div>
           )}
         </nav>
+
+        {/* Collapse / expand: at the bottom, where it does not move the menu around */}
+        <button
+          type="button"
+          onClick={onToggleCollapsed}
+          aria-label={collapsed ? t('nav.expand') : t('nav.collapse')}
+          aria-expanded={!collapsed}
+          className={cn(
+            'hidden min-h-touch items-center gap-3 rounded-xl px-3 text-sm font-medium text-lobby-muted transition-colors hover:bg-lobby-raised hover:text-white lg:flex',
+            collapsed && 'lg:mx-auto lg:w-16 lg:justify-center lg:px-0',
+          )}
+        >
+          <SidebarSimple aria-hidden weight="duotone" className={cn('size-6 shrink-0 transition-transform duration-300', collapsed && 'rotate-180')} />
+          <span className={cn(collapsed && 'lg:sr-only')}>{collapsed ? t('nav.expand') : t('nav.collapse')}</span>
+        </button>
       </aside>
     </>
   )
