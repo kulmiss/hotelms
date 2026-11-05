@@ -11,7 +11,9 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\BrandingController;
 use App\Http\Controllers\Api\DemoController;
+use App\Http\Controllers\Api\Front\FrontDeskController;
 use App\Http\Controllers\Api\Front\GuestController;
+use App\Http\Controllers\Api\Front\InvoiceController;
 use App\Http\Controllers\Api\Front\ReservationController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\Hotel\ActivityLogController;
@@ -109,6 +111,43 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
             Route::put('/reservations/{id}', [ReservationController::class, 'update'])->middleware('permission:reservations.edit');
             Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->middleware('permission:reservations.cancel');
             Route::post('/reservations/{id}/no-show', [ReservationController::class, 'noShow'])->middleware('permission:reservations.no_show');
+
+            // Front desk.
+            Route::middleware('permission:frontdesk.view')->group(function () {
+                Route::get('/front-desk/board', [FrontDeskController::class, 'board']);
+                Route::get('/front-desk/today', [FrontDeskController::class, 'today']);
+            });
+            Route::post('/rooms/{id}/status', [FrontDeskController::class, 'roomStatus']); // rooms.change_status / rooms.maintenance checked inside
+            Route::middleware('permission:frontdesk.walk_in')->group(function () {
+                Route::get('/front-desk/walk-in/rooms', [FrontDeskController::class, 'walkInRooms']);
+                Route::post('/front-desk/walk-in', [FrontDeskController::class, 'walkIn']);
+            });
+            Route::middleware('permission:frontdesk.check_in')->group(function () {
+                Route::get('/reservations/{id}/check-in', [FrontDeskController::class, 'checkInInfo']);
+                Route::post('/reservations/{id}/check-in', [FrontDeskController::class, 'checkIn']);
+            });
+            Route::middleware('permission:frontdesk.check_out')->group(function () {
+                Route::get('/reservations/{id}/check-out', [FrontDeskController::class, 'checkOutInfo']);
+                Route::post('/reservations/{id}/check-out', [FrontDeskController::class, 'checkOut']);
+            });
+            Route::middleware('permission:frontdesk.room_move')->group(function () {
+                Route::post('/reservations/{id}/rooms/{roomStay}/move', [FrontDeskController::class, 'move']);
+                Route::post('/reservations/{id}/extend', [FrontDeskController::class, 'extend']);
+            });
+            Route::post('/reservations/{id}/approve-balance', [FrontDeskController::class, 'approveBalance'])->middleware('permission:checkout.approve_balance');
+
+            // Billing.
+            Route::middleware('permission:invoices.view')->group(function () {
+                Route::get('/invoices', [InvoiceController::class, 'index']);
+                Route::get('/invoices/{id}', [InvoiceController::class, 'show']);
+                Route::get('/charge-types', [InvoiceController::class, 'chargeTypes']);
+                Route::post('/invoices/{id}/items', [InvoiceController::class, 'addCharge']); // add_charge / discount checked inside
+                Route::delete('/invoices/{id}/items/{item}', [InvoiceController::class, 'removeItem']);
+                Route::post('/invoices/{id}/payments', [InvoiceController::class, 'payment']); // payments.take / refund checked inside
+            });
+            Route::post('/invoices/{id}/void', [InvoiceController::class, 'void'])->middleware('permission:invoices.void');
+            Route::post('/invoices/{id}/split', [InvoiceController::class, 'split'])->middleware('permission:invoices.split');
+            Route::get('/payments', [InvoiceController::class, 'payments'])->middleware('permission:payments.view');
 
             Route::get('/activity-log', [ActivityLogController::class, 'index'])->middleware('permission:activity_log.view');
 

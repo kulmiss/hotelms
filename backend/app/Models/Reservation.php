@@ -62,6 +62,12 @@ class Reservation extends Model
         return $this->hasMany(Payment::class);
     }
 
+    /** @return HasMany<Invoice, $this> */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo
     {

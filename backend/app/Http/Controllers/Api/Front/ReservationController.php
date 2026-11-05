@@ -11,6 +11,7 @@ use App\Models\PaymentMethod;
 use App\Models\Reservation;
 use App\Models\ReservationRoom;
 use App\Models\Room;
+use App\Http\Presenters\ReservationPresenter;
 use App\Services\Booking\Availability;
 use App\Services\Booking\ReservationService;
 use App\Services\Booking\StayQuote;
@@ -44,7 +45,7 @@ class ReservationController extends Controller
             ->orderBy($request->input('sort') === 'newest' ? 'created_at' : 'check_in_at', $request->input('sort') === 'newest' ? 'desc' : 'asc')
             ->paginate(min(100, (int) $request->input('per_page', 25)));
 
-        $page->getCollection()->transform(fn (Reservation $r) => $this->summary($r, $hotel));
+        $page->getCollection()->transform(fn (Reservation $r) => ReservationPresenter::summary($r, $hotel));
 
         return response()->json($page);
     }
@@ -53,7 +54,7 @@ class ReservationController extends Controller
     {
         $reservation = $this->find($request, $id);
 
-        return response()->json(['data' => $this->detail($reservation, $request->user()->hotel)]);
+        return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)]);
     }
 
     /** Lists the booking screens need (front-desk staff may not open Settings). */
@@ -113,7 +114,7 @@ class ReservationController extends Controller
         $data = $request->validate($this->bookingRules() + ['source' => ['nullable', Rule::in(Reservation::SOURCES)], 'notes' => ['nullable', 'string', 'max:1000']]);
         $reservation = $this->service->create($data, $request->user());
 
-        return response()->json(['data' => $this->detail($reservation, $request->user()->hotel)], 201);
+        return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)], 201);
     }
 
     public function update(Request $request, string $id): JsonResponse
@@ -122,7 +123,7 @@ class ReservationController extends Controller
         $data = $request->validate($this->bookingRules(false) + ['source' => ['nullable', Rule::in(Reservation::SOURCES)], 'notes' => ['nullable', 'string', 'max:1000']]);
         $reservation = $this->service->update($reservation, $data, $request->user());
 
-        return response()->json(['data' => $this->detail($reservation, $request->user()->hotel)]);
+        return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)]);
     }
 
     public function cancellationTerms(Request $request, string $id): JsonResponse
@@ -138,7 +139,7 @@ class ReservationController extends Controller
         $data = $request->validate(['reason' => ['required', 'string', 'max:200']]);
         $reservation = $this->service->cancel($reservation, $data['reason'], $request->user());
 
-        return response()->json(['data' => $this->detail($reservation, $request->user()->hotel)]);
+        return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)]);
     }
 
     public function noShow(Request $request, string $id): JsonResponse
@@ -146,7 +147,7 @@ class ReservationController extends Controller
         $reservation = $this->find($request, $id);
         $reservation = $this->service->cancel($reservation, (string) $request->input('reason', 'No-show'), $request->user(), true);
 
-        return response()->json(['data' => $this->detail($reservation, $request->user()->hotel)]);
+        return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)]);
     }
 
     public function payment(Request $request, string $id): JsonResponse
@@ -165,7 +166,7 @@ class ReservationController extends Controller
 
         $this->service->recordPayment($reservation, $data, $request->user());
 
-        return response()->json(['data' => $this->detail($reservation->fresh(), $request->user()->hotel)], 201);
+        return response()->json(['data' => ReservationPresenter::detail($reservation->fresh(), $request->user()->hotel)], 201);
     }
 
     /** Rooms × days for a branch, with the bookings on each room (and unassigned ones per type). */
@@ -238,70 +239,5 @@ class ReservationController extends Controller
     private function find(Request $request, string $id): Reservation
     {
         return Reservation::whereIn('branch_id', $request->user()->accessibleBranches()->pluck('id'))->findOrFail($id);
-    }
-
-    /** @return array<string, mixed> */
-    private function summary(Reservation $r, Hotel $hotel): array
-    {
-        return [
-            'id' => $r->id,
-            'code' => $r->code,
-            'status' => $r->status,
-            'stay_type' => $r->stay_type,
-            'source' => $r->source,
-            'branch' => $r->branch?->only(['id', 'name']),
-            'guest' => $r->guest ? ['id' => $r->guest->id, 'name' => $r->guest->full_name, 'phone' => $r->guest->phone] : null,
-            'check_in_at' => HotelClock::iso($r->check_in_at, $hotel),
-            'check_out_at' => HotelClock::iso($r->check_out_at, $hotel),
-            'expires_at' => HotelClock::iso($r->expires_at, $hotel),
-            'rooms' => $r->rooms->map(fn (ReservationRoom $rr) => ['room_type' => $rr->roomType?->name, 'room_number' => $rr->room?->number])->values(),
-            'adults' => $r->adults,
-            'children' => $r->children,
-            'currency' => $r->currency,
-            'total' => $r->total,
-            'paid_total' => $r->paid_total,
-            'deposit_required' => $r->deposit_required,
-        ];
-    }
-
-    /** @return array<string, mixed> */
-    private function detail(Reservation $r, Hotel $hotel): array
-    {
-        $r->load(['guest', 'branch:id,name,code', 'rooms.roomType:id,name', 'rooms.room:id,number', 'rooms.rates', 'rooms.guests:id,first_name,last_name', 'payments.method:id,name', 'payments.receiver:id,name', 'creator:id,name']);
-
-        return array_merge($this->summary($r, $hotel), [
-            'guest' => $r->guest,
-            'notes' => $r->notes,
-            'subtotal' => $r->subtotal,
-            'discount_percent' => $r->discount_percent,
-            'discount_amount' => $r->discount_amount,
-            'tax_total' => $r->tax_total,
-            'balance' => Money::sub((string) $r->total, (string) $r->paid_total),
-            'cancellation_fee' => $r->cancellation_fee,
-            'cancellation_policy_id' => $r->cancellation_policy_id,
-            'policy' => $r->policy_snapshot,
-            'cancelled_at' => HotelClock::iso($r->cancelled_at, $hotel),
-            'cancel_reason' => $r->cancel_reason,
-            'created_by' => $r->creator?->name,
-            'created_at' => HotelClock::iso($r->created_at, $hotel),
-            'rooms' => $r->rooms->map(fn (ReservationRoom $rr) => [
-                'id' => $rr->id,
-                'room_type_id' => $rr->room_type_id,
-                'room_type' => $rr->roomType?->name,
-                'room_id' => $rr->room_id,
-                'room_number' => $rr->room?->number,
-                'adults' => $rr->adults,
-                'children' => $rr->children,
-                'total' => $rr->total_amount,
-                'status' => $rr->status,
-                'lines' => $rr->rates->map(fn ($l) => ['date' => $l->date->toDateString(), 'label' => $l->label, 'amount' => $l->amount, 'rule_name' => $l->rule_name])->values(),
-                'guests' => $rr->guests->map(fn ($g) => ['id' => $g->id, 'name' => $g->full_name])->values(),
-            ])->values(),
-            'payments' => $r->payments->sortByDesc('paid_at')->map(fn (Payment $p) => [
-                'id' => $p->id, 'type' => $p->type, 'amount' => $p->amount, 'currency' => $p->currency, 'amount_in_base' => $p->amount_in_base,
-                'method' => $p->method?->name, 'reference' => $p->reference, 'refund_reason' => $p->refund_reason,
-                'paid_at' => HotelClock::iso($p->paid_at, $hotel), 'by' => $p->receiver?->name,
-            ])->values(),
-        ]);
     }
 }

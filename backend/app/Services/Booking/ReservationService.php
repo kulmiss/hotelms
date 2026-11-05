@@ -4,9 +4,9 @@ namespace App\Services\Booking;
 
 use App\Models\Branch;
 use App\Models\CancellationPolicy;
-use App\Models\ExchangeRate;
 use App\Models\Guest;
 use App\Models\Hotel;
+use App\Models\Invoice;
 use App\Models\NumberSequence;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
@@ -15,6 +15,8 @@ use App\Models\ReservationRoom;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\User;
+use App\Services\Billing\CurrencyConverter;
+use App\Services\Billing\InvoiceService;
 use App\Services\HotelSettings;
 use App\Support\HotelClock;
 use App\Support\Money;
@@ -33,6 +35,7 @@ class ReservationService
         private Availability $availability,
         private StayQuote $quote,
         private HotelSettings $settings,
+        private CurrencyConverter $converter,
     ) {}
 
     /**
@@ -138,10 +141,13 @@ class ReservationService
      *
      * @param  array<string, mixed>  $data
      */
-    public function recordPayment(Reservation $reservation, array $data, User $user): Payment
+    public function recordPayment(Reservation $reservation, array $data, User $user, ?Invoice $invoice = null): Payment
     {
         $type = $data['type'];
-        if ($type !== 'refund' && ! $reservation->isActive()) {
+        // After check-in, money goes on the guest's bill.
+        $invoice ??= $reservation->invoices()->where('status', '!=', 'void')->orderBy('id')->first();
+        $owing = $invoice && Money::isPositive((string) $invoice->balance);
+        if ($type !== 'refund' && ! $reservation->isActive() && ! $owing) {
             throw ValidationException::withMessages(['type' => 'This booking is '.$reservation->status.'; only refunds are possible.']);
         }
         $method = PaymentMethod::where('is_active', true)->find($data['payment_method_id']);
@@ -151,17 +157,19 @@ class ReservationService
 
         $amount = Money::round((string) $data['amount']);
         $currency = strtoupper($data['currency'] ?? $reservation->currency);
-        $rate = $this->rate($currency, $reservation->currency);
+        $rate = $this->converter->rate($currency, $reservation->currency);
         $inBase = Money::mul($amount, $rate);
 
-        if ($type === 'refund' && Money::compare($inBase, (string) $reservation->paid_total) > 0) {
-            throw ValidationException::withMessages(['amount' => 'A refund cannot be more than what was paid ('.$reservation->paid_total.' '.$reservation->currency.').']);
+        $paidSoFar = $invoice ? (string) $invoice->paid_total : (string) $reservation->paid_total;
+        if ($type === 'refund' && Money::compare($inBase, $paidSoFar) > 0) {
+            throw ValidationException::withMessages(['amount' => 'A refund cannot be more than what was paid ('.$paidSoFar.' '.$reservation->currency.').']);
         }
 
-        return DB::transaction(function () use ($reservation, $data, $user, $method, $type, $amount, $currency, $rate, $inBase) {
+        return DB::transaction(function () use ($reservation, $data, $user, $method, $type, $amount, $currency, $rate, $inBase, $invoice) {
             $payment = Payment::create([
                 'branch_id' => $reservation->branch_id,
                 'reservation_id' => $reservation->id,
+                'invoice_id' => $invoice?->id,
                 'payment_method_id' => $method->id,
                 'type' => $type,
                 'amount' => $amount,
@@ -175,6 +183,9 @@ class ReservationService
             ]);
             $this->refreshPaid($reservation);
             $this->confirmIfPaid($reservation->refresh());
+            if ($invoice) {
+                app(InvoiceService::class)->recalc($invoice);
+            }
 
             return $payment;
         });
@@ -276,7 +287,9 @@ class ReservationService
         $stayType = $data['stay_type'] ?? 'nightly';
         $times = $this->quote->times($hotel, $branch, $stayType, (string) $data['check_in'], $data['check_out'] ?? null, isset($data['hours']) ? (int) $data['hours'] : null);
 
-        if ($times['in']->lt(now()->subMinutes(30)) && (! $existing || ! $existing->check_in_at->eq($times['in']))) {
+        if (! empty($data['walk_in'])) {
+            $times['in'] = now()->startOfMinute(); // walk-ins start now
+        } elseif ($times['in']->lt(now()->subMinutes(30)) && (! $existing || ! $existing->check_in_at->eq($times['in']))) {
             throw ValidationException::withMessages(['check_in' => 'Check-in cannot be in the past.']);
         }
 
@@ -440,21 +453,7 @@ class ReservationService
         return sprintf('%s-%s-%05d', $prefix, substr($year, 2), $n);
     }
 
-    private function rate(string $from, string $to): string
-    {
-        if ($from === $to) {
-            return '1';
-        }
-        $rate = ExchangeRate::where('from_currency', $from)->where('to_currency', $to)
-            ->where('effective_date', '<=', now()->toDateString())->orderByDesc('effective_date')->orderByDesc('id')->value('rate');
-        if (! $rate) {
-            throw ValidationException::withMessages(['currency' => "Enter today's {$from} → {$to} rate in Settings first."]);
-        }
-
-        return (string) $rate;
-    }
-
-    private function refreshPaid(Reservation $reservation): void
+    public function refreshPaid(Reservation $reservation): void
     {
         $payments = Payment::where('reservation_id', $reservation->id)->get(['type', 'amount_in_base']);
         $in = Money::sum($payments->where('type', '!=', 'refund')->pluck('amount_in_base')->map(fn ($v) => (string) $v));
@@ -462,7 +461,7 @@ class ReservationService
         $reservation->update(['paid_total' => Money::sub($in, $out)]);
     }
 
-    private function confirmIfPaid(Reservation $reservation): void
+    public function confirmIfPaid(Reservation $reservation): void
     {
         if ($reservation->status === 'pending' && Money::compare((string) $reservation->paid_total, (string) $reservation->deposit_required) >= 0) {
             $reservation->update(['status' => 'confirmed', 'expires_at' => null]);

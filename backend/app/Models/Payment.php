@@ -32,6 +32,12 @@ class Payment extends Model
         return $this->belongsTo(User::class, 'received_by');
     }
 
+    /** @return BelongsTo<Invoice, $this> */
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
+    }
+
     /** @return BelongsTo<Reservation, $this> */
     public function reservation(): BelongsTo
     {

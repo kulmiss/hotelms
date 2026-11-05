@@ -1,0 +1,263 @@
+<?php
+
+namespace App\Http\Controllers\Api\Front;
+
+use App\Http\Controllers\Controller;
+use App\Http\Presenters\ReservationPresenter;
+use App\Models\Invoice;
+use App\Models\Reservation;
+use App\Models\ReservationRoom;
+use App\Models\Room;
+use App\Services\Billing\InvoiceService;
+use App\Services\Booking\Availability;
+use App\Services\Booking\FrontDesk;
+use App\Services\HotelSettings;
+use App\Support\HotelClock;
+use App\Support\Money;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+
+/** Room board, today's lists, walk-in, check-in / check-out, room move, extend (workflows.md W3–W7). */
+class FrontDeskController extends Controller
+{
+    public function __construct(private FrontDesk $desk, private Availability $availability) {}
+
+    /** Every room with its status and who is in it (polled by the screen). */
+    public function board(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $hotel = $user->hotel;
+        $branch = $this->branch($request);
+        $todayEnd = HotelClock::now($hotel)->endOfDay()->utc();
+
+        $stays = ReservationRoom::with(['reservation.guest:id,first_name,last_name'])->whereNotNull('room_id')
+            ->whereHas('reservation', fn ($q) => $q->where('branch_id', $branch->id))
+            ->where(fn ($q) => $q->where('status', 'checked_in')
+                ->orWhere(fn ($w) => $w->whereIn('status', ['pending', 'confirmed'])->where('check_in_at', '<=', $todayEnd)))
+            ->get();
+        $balances = Invoice::whereIn('reservation_id', $stays->pluck('reservation_id'))->where('status', '!=', 'void')
+            ->selectRaw('reservation_id, sum(balance) as b')->groupBy('reservation_id')->pluck('b', 'reservation_id');
+
+        $rooms = Room::with('roomType:id,name')->where('branch_id', $branch->id)->orderBy('floor')->orderByRaw('LENGTH(number)')->orderBy('number')->get()
+            ->map(function (Room $room) use ($stays, $balances, $hotel) {
+                $in = $stays->first(fn ($s) => $s->room_id === $room->id && $s->status === 'checked_in');
+                $next = $stays->first(fn ($s) => $s->room_id === $room->id && $s->status !== 'checked_in');
+                $info = fn (?ReservationRoom $s) => $s ? [
+                    'reservation_id' => $s->reservation_id, 'code' => $s->reservation?->code, 'guest' => $s->reservation?->guest?->full_name,
+                    'check_in_at' => HotelClock::iso($s->check_in_at, $hotel), 'check_out_at' => HotelClock::iso($s->check_out_at, $hotel),
+                    'balance' => (string) ($balances[$s->reservation_id] ?? '0.00'), 'overdue' => $s->status === 'checked_in' && now()->gt($s->check_out_at),
+                ] : null;
+
+                return [
+                    'id' => $room->id, 'number' => $room->number, 'floor' => $room->floor, 'status' => $room->status,
+                    'room_type_id' => $room->room_type_id, 'room_type' => $room->roomType?->name, 'notes' => $room->notes,
+                    'stay' => $info($in), 'arriving' => $info($next),
+                ];
+            });
+
+        $counts = $rooms->countBy('status');
+
+        return response()->json(['data' => $rooms->values(), 'counts' => $counts, 'refreshed_at' => HotelClock::iso(now(), $hotel)]);
+    }
+
+    /** Arrivals today (late ones flagged), departures today (overdue flagged), guests in house. */
+    public function today(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $hotel = $user->hotel;
+        $branch = $this->branch($request);
+        $start = HotelClock::now($hotel)->startOfDay()->utc();
+        $end = HotelClock::now($hotel)->endOfDay()->utc();
+        $base = fn () => Reservation::with(['guest:id,first_name,last_name,phone', 'branch:id,name', 'rooms.roomType:id,name', 'rooms.room:id,number'])->where('branch_id', $branch->id);
+
+        $present = fn ($r) => ReservationPresenter::summary($r, $hotel) + [
+            'late' => $r->isActive() && $r->status !== 'checked_in' && now()->gt($r->check_in_at),
+            'overdue' => $r->status === 'checked_in' && now()->gt($r->check_out_at),
+            'balance' => FrontDesk::balance($r),
+        ];
+
+        return response()->json([
+            'arrivals' => $base()->whereIn('status', ['pending', 'confirmed'])->where('check_in_at', '<=', $end)->where('check_out_at', '>', $start)->orderBy('check_in_at')->get()->map($present),
+            'departures' => $base()->where('status', 'checked_in')->where('check_out_at', '<=', $end)->orderBy('check_out_at')->get()->map($present),
+            'in_house' => $base()->where('status', 'checked_in')->orderBy('check_out_at')->get()->map($present),
+        ]);
+    }
+
+    /** What the check-in screen needs: clean free rooms per booked room, fees and money due. */
+    public function checkInInfo(Request $request, string $id): JsonResponse
+    {
+        $reservation = $this->reservation($request, $id);
+        $hotel = $request->user()->hotel;
+        $early = $this->desk->earlyFee($reservation, now());
+
+        $rooms = $reservation->rooms()->with(['roomType:id,name', 'room:id,number,status', 'rates'])->get()->map(function (ReservationRoom $rr) use ($reservation, $early) {
+            $from = now()->lt($rr->check_in_at) ? now() : $rr->check_in_at;
+            $free = $this->availability->freeRooms($reservation->branch_id, $rr->room_type_id, $from, $rr->blocked_until, $reservation->id)
+                ->where('status', 'available')->values();
+            $night = (string) ($rr->rates->first()?->amount ?? '0');
+
+            return [
+                'id' => $rr->id, 'room_type' => $rr->roomType?->name, 'room_id' => $rr->room_id, 'room_number' => $rr->room?->number, 'room_status' => $rr->room?->status,
+                'free_rooms' => $free->map(fn (Room $r) => ['id' => $r->id, 'number' => $r->number, 'floor' => $r->floor]),
+                'early_fee' => $early ? ($early['type'] === 'fixed' ? Money::round($early['value']) : Money::percentOf($night, $early['value'])) : null,
+            ];
+        });
+
+        return response()->json(['data' => [
+            'reservation' => ReservationPresenter::detail($reservation, $hotel),
+            'rooms' => $rooms,
+            'deposit_due' => $reservation->status === 'pending' ? Money::max(Money::sub((string) $reservation->deposit_required, (string) $reservation->paid_total), '0') : '0.00',
+        ]]);
+    }
+
+    public function checkIn(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate([
+            'rooms' => ['nullable', 'array'], 'rooms.*.id' => ['required', 'integer'], 'rooms.*.room_id' => ['nullable', 'integer'],
+            'waive_early_fee' => ['boolean'], ...$this->paymentRules(),
+        ]);
+        $reservation = $this->desk->checkIn($this->reservation($request, $id), $data, $request->user());
+
+        return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)]);
+    }
+
+    /** What the check-out screen needs: late fee and the bills. */
+    public function checkOutInfo(Request $request, string $id): JsonResponse
+    {
+        $reservation = $this->reservation($request, $id);
+        $late = $this->desk->lateFee($reservation, now());
+        $lateAmount = '0.00';
+        if ($late) {
+            foreach ($reservation->rooms()->with('rates')->get() as $rr) {
+                $night = (string) ($rr->rates->last()?->amount ?? '0');
+                $lateAmount = Money::add($lateAmount, $late['type'] === 'fixed' ? Money::round($late['value']) : Money::percentOf($night, $late['value']));
+            }
+        }
+
+        return response()->json(['data' => [
+            'reservation' => ReservationPresenter::detail($reservation, $request->user()->hotel),
+            'late_fee' => $late ? $lateAmount : null,
+            'balance' => FrontDesk::balance($reservation),
+        ]]);
+    }
+
+    public function checkOut(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['waive_late_fee' => ['boolean'], 'approve_balance' => ['boolean'], ...$this->paymentRules()]);
+        $reservation = $this->desk->checkOut($this->reservation($request, $id), $data, $request->user());
+
+        return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)]);
+    }
+
+    public function walkIn(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'branch_id' => ['required', 'integer'],
+            'stay_type' => ['required', Rule::in(Reservation::STAY_TYPES)],
+            'check_out' => ['nullable', 'date'],
+            'hours' => ['nullable', 'integer', 'min:1'],
+            'guest_id' => ['required', 'integer'],
+            'rooms' => ['required', 'array', 'min:1', 'max:10'],
+            'rooms.*.room_type_id' => ['required', 'integer'],
+            'rooms.*.room_id' => ['required', 'integer'],
+            'rooms.*.adults' => ['nullable', 'integer', 'between:1,20'],
+            'rooms.*.children' => ['nullable', 'integer', 'between:0,20'],
+            'discount_percent' => ['nullable', 'decimal:0,2', 'between:0,100'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+            ...$this->paymentRules(),
+        ]);
+        $reservation = $this->desk->walkIn($data, $request->user());
+
+        return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)], 201);
+    }
+
+    /** Free, clean rooms right now (for walk-ins), with today's price. */
+    public function walkInRooms(Request $request): JsonResponse
+    {
+        $branch = $this->branch($request);
+        $hotel = $request->user()->hotel;
+        $settings = app(HotelSettings::class)->group(HotelSettings::BOOKING_DEFAULTS);
+
+        return response()->json([
+            'data' => $this->availability->freeRooms($branch->id, null, now(), now()->addHour())->where('status', 'available')
+                ->load('roomType')->map(fn (Room $r) => [
+                    'id' => $r->id, 'number' => $r->number, 'floor' => $r->floor, 'room_type_id' => $r->room_type_id, 'room_type' => $r->roomType?->name,
+                    'nightly_price' => $r->roomType?->nightly_price, 'day_use_price' => $r->roomType?->day_use_price, 'hourly_price' => $r->roomType?->hourly_price,
+                    'max_capacity' => $r->roomType?->max_capacity, 'currency' => $r->roomType?->currency,
+                ])->values(),
+            'walk_in_payment' => $settings['walk_in_payment'],
+            'now' => HotelClock::iso(now(), $hotel),
+        ]);
+    }
+
+    public function move(Request $request, string $id, string $roomStay): JsonResponse
+    {
+        $reservation = $this->reservation($request, $id);
+        $rr = $reservation->rooms()->findOrFail($roomStay);
+        $data = $request->validate(['room_id' => ['required', 'integer']]);
+        $reservation = $this->desk->moveRoom($reservation, $rr, (int) $data['room_id'], $request->user());
+
+        return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)]);
+    }
+
+    public function extend(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['check_out' => ['nullable', 'date'], 'hours' => ['nullable', 'integer', 'between:1,24']]);
+        $reservation = $this->desk->extend($this->reservation($request, $id), $data, $request->user());
+
+        return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)]);
+    }
+
+    public function roomStatus(Request $request, string $id): JsonResponse
+    {
+        $room = Room::whereIn('branch_id', $request->user()->accessibleBranches()->pluck('id'))->findOrFail($id);
+        $data = $request->validate(['status' => ['required', Rule::in(Room::STATUSES)]]);
+
+        return response()->json(['data' => $this->desk->setRoomStatus($room, $data['status'], $request->user())]);
+    }
+
+    /** Manager allows check-out with money still owed (Q8). */
+    public function approveBalance(Request $request, string $id, InvoiceService $invoices): JsonResponse
+    {
+        $reservation = $this->reservation($request, $id);
+        foreach ($reservation->invoices()->where('status', '!=', 'void')->get() as $inv) {
+            if (Money::isPositive((string) $inv->balance)) {
+                $invoices->approveBalance($inv, $request->user());
+            }
+        }
+
+        return response()->json(['data' => ReservationPresenter::detail($reservation->fresh(), $request->user()->hotel)]);
+    }
+
+    // ------------------------------------------------------------ helpers
+
+    /** @return array<string, mixed> */
+    private function paymentRules(): array
+    {
+        return [
+            'payment' => ['nullable', 'array'],
+            'payment.payment_method_id' => ['nullable', 'integer'],
+            'payment.amount' => ['nullable', 'decimal:0,2', 'min:0'],
+            'payment.currency' => ['nullable', 'string', 'size:3'],
+            'payment.reference' => ['nullable', 'string', 'max:100'],
+        ];
+    }
+
+    private function branch(Request $request)
+    {
+        $branches = $request->user()->accessibleBranches();
+        $branch = $request->input('branch_id') ? $branches->firstWhere('id', (int) $request->input('branch_id')) : $branches->first();
+        if (! $branch) {
+            throw ValidationException::withMessages(['branch_id' => 'Choose one of your branches.']);
+        }
+
+        return $branch;
+    }
+
+    private function reservation(Request $request, string $id): Reservation
+    {
+        return Reservation::whereIn('branch_id', $request->user()->accessibleBranches()->pluck('id'))->findOrFail($id);
+    }
+}
