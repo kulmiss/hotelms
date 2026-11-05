@@ -62,7 +62,7 @@ class AutomationTest extends TestCase
             ->assertCreated()->assertJsonMissingPath('data.filters.evil')->json('data.id');
         $manager = User::factory()->withRole($this->hotel, 'branch_manager')->create();
         $this->actingAs($manager)->getJson('/api/v1/saved-views')->assertJsonCount(0, 'data');
-        $this->putJson("/api/v1/saved-views/$id", ['report_key' => 'performance', 'name' => 'x', 'filters' => []])->assertNotFound(); // not mine
+        $this->putJson("/api/v1/saved-views/$id", ['report_key' => 'performance', 'name' => 'x', 'filters' => ['from' => '2026-11-01']])->assertNotFound(); // not mine
 
         $this->actingAs($this->admin)->putJson("/api/v1/saved-views/$id", ['report_key' => 'performance', 'name' => 'Bole this month', 'filters' => ['from' => '2026-11-01'], 'shared_with_roles' => [$manager->role_id]])->assertOk();
         $this->actingAs($manager)->getJson('/api/v1/saved-views')->assertJsonCount(1, 'data')->assertJsonPath('data.0.mine', false);
