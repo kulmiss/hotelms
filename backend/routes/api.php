@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\BrandingController;
 use App\Http\Controllers\Api\DemoController;
+use App\Http\Controllers\Api\Front\GuestController;
+use App\Http\Controllers\Api\Front\ReservationController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\Hotel\ActivityLogController;
 use App\Http\Controllers\Api\Hotel\PermissionController;
@@ -81,6 +83,32 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
                 Route::post('/staff/{user}/enable', [StaffController::class, 'enable']);
                 Route::post('/staff/{user}/reset-password', [StaffController::class, 'resetPassword']);
             });
+
+            // Guests (shared by all branches).
+            Route::get('/guests', [GuestController::class, 'index'])->middleware('permission:guests.view');
+            Route::get('/guest-types', [GuestController::class, 'types'])->middleware('permission:guests.view');
+            Route::get('/guests/{id}', [GuestController::class, 'show'])->middleware('permission:guests.view');
+            Route::middleware('permission:guests.create_edit')->group(function () {
+                Route::post('/guests', [GuestController::class, 'store']);
+                Route::put('/guests/{id}', [GuestController::class, 'update']);
+            });
+            Route::post('/guests/{id}/blacklist', [GuestController::class, 'blacklist'])->middleware('permission:guests.blacklist');
+
+            // Reservations.
+            Route::middleware('permission:reservations.view')->group(function () {
+                Route::get('/reservations', [ReservationController::class, 'index']);
+                Route::get('/reservations/calendar', [ReservationController::class, 'calendar']);
+                Route::get('/reservations/lookups', [ReservationController::class, 'lookups']);
+                Route::get('/reservations/availability', [ReservationController::class, 'availability']);
+                Route::post('/reservations/quote', [ReservationController::class, 'quote']);
+                Route::get('/reservations/{id}', [ReservationController::class, 'show']);
+                Route::get('/reservations/{id}/cancellation-terms', [ReservationController::class, 'cancellationTerms']);
+                Route::post('/reservations/{id}/payments', [ReservationController::class, 'payment']); // payments.take / payments.refund checked inside
+            });
+            Route::post('/reservations', [ReservationController::class, 'store'])->middleware('permission:reservations.create');
+            Route::put('/reservations/{id}', [ReservationController::class, 'update'])->middleware('permission:reservations.edit');
+            Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->middleware('permission:reservations.cancel');
+            Route::post('/reservations/{id}/no-show', [ReservationController::class, 'noShow'])->middleware('permission:reservations.no_show');
 
             Route::get('/activity-log', [ActivityLogController::class, 'index'])->middleware('permission:activity_log.view');
 

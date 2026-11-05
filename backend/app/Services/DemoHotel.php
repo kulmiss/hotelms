@@ -3,16 +3,20 @@
 namespace App\Services;
 
 use App\Models\Branch;
+use App\Models\Guest;
 use App\Models\GuestType;
+use App\Models\PaymentMethod;
 use App\Models\Hotel;
 use App\Models\Plan;
 use App\Models\RateRule;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\User;
+use App\Services\Booking\ReservationService;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * The demo hotel for sales meetings and "Try the demo" (decisions.md W11).
@@ -50,6 +54,10 @@ class DemoHotel
             // Remove the old demo completely (users first: emails are unique).
             // (Without model events: there is nothing to log about a demo being wiped.)
             Model::withoutEvents(fn () => Hotel::withTrashed()->where('is_demo', true)->get()->each(function (Hotel $old) {
+                // Bookings first: they point at guests, rooms and payment methods.
+                foreach (['payments', 'reservations', 'guests'] as $table) {
+                    DB::table($table)->where('hotel_id', $old->id)->delete();
+                }
                 User::withTrashed()->where('hotel_id', $old->id)->forceDelete();
                 $old->forceDelete();
             }));
@@ -89,9 +97,59 @@ class DemoHotel
             }
 
             $this->tenant->runAs($hotel, fn () => $this->rooms($branches->all()));
+            $admin = User::where('email', self::email('hotel_admin'))->first();
+            $this->tenant->runAs($hotel, fn () => $this->bookings($admin, $branches->all()));
 
             return $hotel;
         });
+    }
+
+    /**
+     * Sample guests and future bookings for the next weeks (past stays come with the front desk).
+     *
+     * @param  list<Branch>  $branches
+     */
+    private function bookings(User $admin, array $branches): void
+    {
+        $first = ['Abebe', 'Almaz', 'Bekele', 'Chaltu', 'Dawit', 'Eden', 'Fikru', 'Genet', 'Hana', 'Kebede', 'Lidya', 'Meseret', 'Nahom', 'Rahel', 'Samuel', 'Selam', 'Tigist', 'Yared', 'Zewdu', 'Meron', 'John', 'Sarah', 'Ahmed', 'Li'];
+        $last = ['Tadesse', 'Alemu', 'Bekele', 'Girma', 'Haile', 'Kassa', 'Mengistu', 'Negash', 'Tesfaye', 'Wolde', 'Smith', 'Mohammed', 'Wang'];
+        $corporate = GuestType::where('name', 'Corporate')->value('id');
+        mt_srand(2026); // the same demo every night
+
+        $guests = [];
+        foreach ($first as $i => $name) {
+            $foreign = $i >= 20;
+            $guests[] = Guest::create([
+                'first_name' => $name, 'last_name' => $last[$i % count($last)],
+                'phone' => '+251 9'.mt_rand(10, 99).' '.mt_rand(100000, 999999),
+                'nationality' => $foreign ? ['American', 'British', 'Sudanese', 'Chinese'][$i - 20] : 'Ethiopian',
+                'id_type' => $foreign ? 'passport' : 'national_id',
+                'id_number' => ($foreign ? 'P' : 'ET').mt_rand(1000000, 9999999),
+                'guest_type_id' => $i % 5 === 0 ? $corporate : null,
+            ]);
+        }
+
+        $service = app(ReservationService::class);
+        $cash = PaymentMethod::where('type', 'cash')->value('id');
+        $tz = 'Africa/Addis_Ababa';
+        foreach (range(1, 36) as $n) {
+            $branch = $branches[$n % 3 === 0 ? 1 : 0];
+            $types = RoomType::where('branch_id', $branch->id)->pluck('id')->all();
+            $start = now($tz)->addDays(mt_rand(1, 30))->toDateString();
+            try {
+                $r = $service->create([
+                    'branch_id' => $branch->id, 'stay_type' => 'nightly', 'check_in' => $start,
+                    'check_out' => now($tz)->parse($start)->addDays(mt_rand(1, 4))->toDateString(),
+                    'guest_id' => $guests[array_rand($guests)]->id, 'source' => ['phone', 'email', 'agent', 'phone'][mt_rand(0, 3)],
+                    'rooms' => array_map(fn () => ['room_type_id' => $types[array_rand($types)], 'adults' => 2], range(1, mt_rand(1, 10) > 8 ? 2 : 1)),
+                ], $admin);
+                if ($n % 4 !== 0 && $cash) { // most bookings have their deposit
+                    $service->recordPayment($r, ['type' => 'deposit', 'payment_method_id' => $cash, 'amount' => (string) $r->deposit_required], $admin);
+                }
+            } catch (ValidationException) {
+                // fully booked that day: skip
+            }
+        }
     }
 
     /**

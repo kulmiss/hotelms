@@ -25,6 +25,11 @@ const StaffFormPage = lazy(() => pages.staffForm().then((m) => ({ default: m.Sta
 const RolesPage = lazy(() => pages.roles().then((m) => ({ default: m.RolesPage })))
 const RoleFormPage = lazy(() => pages.roleForm().then((m) => ({ default: m.RoleFormPage })))
 const ActivityLogPage = lazy(() => pages.activityLog().then((m) => ({ default: m.ActivityLogPage })))
+const GuestsPage = lazy(() => pages.guests().then((m) => ({ default: m.GuestsPage })))
+const GuestPage = lazy(() => pages.guests().then((m) => ({ default: m.GuestPage })))
+const ReservationsPage = lazy(() => pages.reservations().then((m) => ({ default: m.ReservationsPage })))
+const ReservationPage = lazy(() => pages.reservation().then((m) => ({ default: m.ReservationPage })))
+const ReservationFormPage = lazy(() => pages.reservationForm().then((m) => ({ default: m.ReservationFormPage })))
 const SetupPage = lazy(() => pages.setup().then((m) => ({ default: m.SetupPage })))
 const SettingsLayout = lazy(() => pages.settingsLayout().then((m) => ({ default: m.SettingsLayout })))
 const section = (name: string, load: () => Promise<unknown> = pages.settings) =>
@@ -85,6 +90,32 @@ export const routes = [
           ...mainNav
             .filter((item) => !item.built)
             .map((item) => ({ path: item.path.slice(1), element: <PlaceholderPage item={item} /> })),
+          {
+            element: <RequirePermission permission="guests.view" />,
+            children: [
+              { path: 'guests', element: page(<GuestsPage />) },
+              { path: 'guests/:id', element: page(<GuestPage />) },
+            ],
+          },
+          {
+            element: <RequirePermission permission="guests.create_edit" />,
+            children: [{ path: 'guests/new', element: page(<GuestPage />) }],
+          },
+          {
+            element: <RequirePermission permission="reservations.view" />,
+            children: [
+              { path: 'reservations', element: page(<ReservationsPage />) },
+              { path: 'reservations/:id', element: page(<ReservationPage />) },
+            ],
+          },
+          {
+            element: <RequirePermission permission="reservations.create" />,
+            children: [{ path: 'reservations/new', element: page(<ReservationFormPage />) }],
+          },
+          {
+            element: <RequirePermission permission="reservations.edit" />,
+            children: [{ path: 'reservations/:id/edit', element: page(<ReservationFormPage />) }],
+          },
           {
             element: <RequirePermission permission="staff.view" />,
             children: [
