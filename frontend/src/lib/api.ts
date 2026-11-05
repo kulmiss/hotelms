@@ -6,6 +6,9 @@
 const ROOT = import.meta.env.VITE_API_URL ?? ''
 const BASE = ROOT + '/api/v1'
 
+/** Full URL of an API path (for downloads in a link). */
+export const apiUrl = (path: string) => BASE + path
+
 export class ApiError extends Error {
   readonly status: number
   readonly code?: string

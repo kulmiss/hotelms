@@ -30,7 +30,8 @@
       "5": "Fri",
       "6": "Sat",
       "7": "Sun"
-    }
+    },
+    "close": "Close"
   },
   "nav": {
     "main": "Main",
@@ -492,6 +493,7 @@
       "branches": "Branches",
       "room-types": "Room types",
       "rooms": "Rooms",
+      "import": "Import from Excel",
       "rate-rules": "Prices and rules",
       "guest-types": "Guest types",
       "currencies": "Currencies and rates",
@@ -860,6 +862,50 @@
       "skipped_one": "You skipped {{count}} step – defaults are in use.",
       "skipped_other": "You skipped {{count}} steps – defaults are in use.",
       "action": "Continue setup"
+    }
+  },
+  "import": {
+    "title": "Import rooms from Excel",
+    "fromExcel": "Import from Excel",
+    "help": "Download the template, fill in one row per room, then upload it. You can check and fix everything before anything is saved.",
+    "sectionHelp": "Bring in your room types and rooms from an Excel or CSV file. Every import can be undone for 24 hours. Guests and future bookings can be imported once those parts are ready.",
+    "templateExcel": "Excel template",
+    "templateCsv": "CSV template",
+    "upload": "Upload file",
+    "reading": "Reading…",
+    "matchHelp_one": "{{file}}: {{count}} row. Tell us which column of your file holds each piece of information.",
+    "matchHelp_other": "{{file}}: {{count}} rows. Tell us which column of your file holds each piece of information.",
+    "notInFile": "— Not in my file —",
+    "columnN": "Column {{n}}",
+    "toPreview": "Preview",
+    "summaryRooms_one": "{{count}} room",
+    "summaryRooms_other": "{{count}} rooms",
+    "summaryTypes": "New room types: {{list}}",
+    "errors_one": "{{count}} problem to fix",
+    "errors_other": "{{count}} problems to fix",
+    "noErrors": "Ready to import",
+    "importN_one": "Import {{count}} room",
+    "importN_other": "Import {{count}} rooms",
+    "done": "Imported {{rooms}} rooms and {{types}} new room types.",
+    "undoHint": "Made a mistake? You can undo this import for 24 hours in Settings → Import from Excel.",
+    "another": "Import another file",
+    "history": "Last imports",
+    "historyRow": "{{rooms}} rooms, {{types}} room types",
+    "undo": "Undo",
+    "undone": "Undone",
+    "noHistory": "No imports yet.",
+    "columns": {
+      "branch": "Branch",
+      "room_type": "Room type",
+      "room_number": "Room number",
+      "floor": "Floor",
+      "nightly_price": "Price per night",
+      "day_use_price": "Day-use price",
+      "hourly_price": "Hourly price",
+      "guests_included": "Guests included",
+      "max_guests": "Max guests",
+      "amenities": "Amenities",
+      "notes": "Notes"
     }
   }
 }

@@ -34,6 +34,7 @@ const SETTINGS_PAGES: Record<string, ReturnType<typeof section>> = {
   branches: section('BranchesSettings'),
   'room-types': section('RoomTypesSettings', pages.roomSettings),
   rooms: section('RoomsSettings', pages.roomSettings),
+  import: section('ImportSettings', pages.roomSettings),
   'rate-rules': section('RateRulesSettings', pages.roomSettings),
   'guest-types': section('GuestTypesSettings', pages.roomSettings),
   currencies: section('CurrenciesSettings'),

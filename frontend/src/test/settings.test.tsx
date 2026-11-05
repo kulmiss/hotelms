@@ -119,3 +119,51 @@ describe('rooms and prices', () => {
     expect(await screen.findByText('ETB 5,500.00')).toBeInTheDocument()
   })
 })
+
+describe('import from Excel', () => {
+  const meRooms = () => ({ ...meAdmin(), permissions: [...ALL, 'settings.rooms'] })
+  const columns = ['branch', 'room_type', 'room_number', 'floor', 'nightly_price', 'day_use_price', 'hourly_price', 'guests_included', 'max_guests', 'amenities', 'notes']
+
+  it('previews the file, shows row errors and imports when fixed', async () => {
+    let fixed = false
+    const fetchMock = mockApi({
+      'GET /me': { body: meRooms() },
+      'GET /settings/imports': { body: { data: [] } },
+      'POST /settings/import/parse': { body: { file_name: 'rooms.xlsx', headers: columns, rows: [['Bole branch', 'Standard', '101', '1', 'abc', '', '', '', '', '', '']], columns } },
+      'POST /settings/import/check': (init) => {
+        fixed = JSON.parse(String(init?.body)).rows[0].nightly_price === '2500'
+        return { body: { data: { errors: fixed ? {} : { '1': { nightly_price: 'Must be a number.' } }, general: [], summary: { rooms: 1, new_types: ['Standard (Bole branch)'] } } } }
+      },
+      'POST /settings/import': { status: 201, body: { data: { id: 1, file_name: 'rooms.xlsx', rooms: 1, room_types: 1, by: 'Meron', created_at: '2026-11-05T10:00:00Z', undone_at: null, can_undo: true } } },
+    })
+    renderApp('/settings/import')
+
+    await userEvent.upload(await screen.findByLabelText('Upload file'), new File(['x'], 'rooms.xlsx'))
+    expect(await screen.findByText('Must be a number.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Import 1 room' })).toBeDisabled()
+
+    const price = screen.getByLabelText('Price per night 1')
+    await userEvent.clear(price)
+    await userEvent.type(price, '2500')
+    expect(await screen.findByText('Ready to import')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Import 1 room' }))
+
+    expect(await screen.findByText('Imported 1 rooms and 1 new room types.')).toBeInTheDocument()
+    const call = fetchMock.mock.calls.find(([url, init]) => String(url).endsWith('/settings/import') && init?.method === 'POST')
+    expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ file_name: 'rooms.xlsx', rows: [{ branch: 'Bole branch', room_number: '101', nightly_price: '2500' }] })
+  })
+
+  it('asks to match columns for a file in another layout', async () => {
+    mockApi({
+      'GET /me': { body: meRooms() },
+      'GET /settings/imports': { body: { data: [] } },
+      'POST /settings/import/parse': { body: { file_name: 'old.csv', headers: ['Room No', 'Type', 'Rate'], rows: [['5', 'Single', '900']], columns } },
+    })
+    renderApp('/settings/import')
+    await userEvent.upload(await screen.findByLabelText('Upload file'), new File(['x'], 'old.csv'))
+    expect(await screen.findByText(/Tell us which column/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Preview' })).toBeDisabled() // room type not matched yet
+    await userEvent.selectOptions(screen.getByLabelText('Room type'), 'Type')
+    expect(screen.getByRole('button', { name: 'Preview' })).toBeEnabled()
+  })
+})

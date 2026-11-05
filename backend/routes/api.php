@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\Settings\ExchangeRateController;
 use App\Http\Controllers\Api\Settings\GuestTypeController;
 use App\Http\Controllers\Api\Settings\HotelProfileController;
 use App\Http\Controllers\Api\Settings\HotelSettingsController;
+use App\Http\Controllers\Api\Settings\ImportController;
 use App\Http\Controllers\Api\Settings\PaymentMethodController;
 use App\Http\Controllers\Api\Settings\RateRuleController;
 use App\Http\Controllers\Api\Settings\RoomController;
@@ -132,6 +133,12 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
                     Route::post('/rooms/generate', [RoomController::class, 'generate']);
                     Route::put('/rooms/{id}', [RoomController::class, 'update']);
                     Route::delete('/rooms/{id}', [RoomController::class, 'destroy']);
+                    Route::get('/import/template', [ImportController::class, 'template']);
+                    Route::post('/import/parse', [ImportController::class, 'parse']);
+                    Route::post('/import/check', [ImportController::class, 'check']);
+                    Route::post('/import', [ImportController::class, 'store']);
+                    Route::get('/imports', [ImportController::class, 'index']);
+                    Route::post('/imports/{id}/undo', [ImportController::class, 'undo']);
                 });
                 Route::middleware('permission:settings.pricing')->group(function () {
                     Route::get('/guest-types', [GuestTypeController::class, 'index']);

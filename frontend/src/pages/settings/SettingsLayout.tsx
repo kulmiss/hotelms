@@ -11,6 +11,7 @@ export const SETTINGS_SECTIONS = [
   { key: 'branches', permission: 'settings.branches' },
   { key: 'room-types', permission: 'settings.rooms' },
   { key: 'rooms', permission: 'settings.rooms' },
+  { key: 'import', permission: 'settings.rooms' },
   { key: 'rate-rules', permission: 'settings.pricing' },
   { key: 'guest-types', permission: 'settings.pricing' },
   { key: 'currencies', permission: 'settings.exchange_rates' },
