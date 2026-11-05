@@ -30,7 +30,7 @@ class CashierController extends Controller
         $data = $request->validate([
             'branch_id' => ['nullable', 'integer'],
             'opening' => ['nullable', 'array'],
-            'opening.*' => ['decimal:0,2', 'min:0'],
+            'opening.*' => ['decimal:0,2', 'min:0', 'max:99999999'],
         ]);
         $branches = $request->user()->accessibleBranches();
         $branch = isset($data['branch_id']) ? $branches->firstWhere('id', (int) $data['branch_id']) : $branches->first();
@@ -44,7 +44,7 @@ class CashierController extends Controller
 
     public function close(Request $request): JsonResponse
     {
-        $data = $request->validate(['counted' => ['required', 'array'], 'counted.*' => ['decimal:0,2', 'min:0'], 'notes' => ['nullable', 'string', 'max:1000']]);
+        $data = $request->validate(['counted' => ['required', 'array'], 'counted.*' => ['decimal:0,2', 'min:0', 'max:99999999'], 'notes' => ['nullable', 'string', 'max:1000']]);
         $session = $this->cashier->current($request->user());
         if (! $session) {
             throw ValidationException::withMessages(['shift' => 'You have no open cashier shift.']);

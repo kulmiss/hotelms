@@ -45,7 +45,7 @@ class InsightController extends Controller
         $data = $request->validate([
             'branch_id' => ['required', 'integer'],
             'month' => ['required', 'date_format:Y-m'],
-            'revenue_target' => ['nullable', 'decimal:0,2', 'min:0'],
+            'revenue_target' => ['nullable', 'decimal:0,2', 'min:0', 'max:99999999'],
             'occupancy_target' => ['nullable', 'decimal:0,2', 'between:0,100'],
         ]);
         if (! $request->user()->accessibleBranches()->contains('id', (int) $data['branch_id'])) {

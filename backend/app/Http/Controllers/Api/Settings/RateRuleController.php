@@ -38,7 +38,7 @@ class RateRuleController extends ResourceController
             'days_of_week.*' => ['integer', 'between:1,7'],
             'guest_type_id' => ['nullable', 'integer', Rule::in(GuestType::pluck('id')->all()), Rule::requiredIf($request->input('rule_type') === 'guest_type')],
             'adjustment' => ['required', Rule::in(['fixed_price', 'percent', 'amount'])],
-            'value' => ['required', 'decimal:0,2', $request->input('adjustment') === 'fixed_price' ? 'min:0' : 'min:-9999999'],
+            'value' => ['required', 'decimal:0,2', $request->input('adjustment') === 'fixed_price' ? 'min:0' : 'min:-9999999', 'max:99999999'],
             'priority' => ['required', 'integer', 'between:0,1000'],
             'is_active' => ['boolean'],
         ];

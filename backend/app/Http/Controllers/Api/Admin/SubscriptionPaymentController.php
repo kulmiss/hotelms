@@ -39,7 +39,7 @@ class SubscriptionPaymentController extends Controller
     {
         $data = $request->validate([
             'plan_id' => ['required', 'exists:plans,id'],
-            'amount' => ['required', 'decimal:0,2', 'gt:0'],
+            'amount' => ['required', 'decimal:0,2', 'gt:0', 'max:99999999'],
             'currency' => ['required', 'string', 'size:3'],
             'method' => ['required', Rule::in(SubscriptionPayment::METHODS)],
             'reference' => ['nullable', 'string', 'max:100'],

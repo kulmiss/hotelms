@@ -229,4 +229,15 @@ class SecurityTest extends TestCase
         $this->assertStringNotContainsString('12345', $log);
         $this->assertStringNotContainsString('nuts', $log);
     }
+
+    public function test_a_password_reset_by_the_admin_also_resets_two_step_sign_in(): void
+    {
+        $this->useApp($this->staff);
+        $this->actingAs($this->admin)->postJson("/api/v1/staff/{$this->staff->id}/reset-password", ['send_email' => false])->assertOk();
+        $this->assertNull($this->staff->fresh()->two_factor_method);
+
+        $this->useApp($this->admin);
+        $this->artisan('hotelms:reset-two-factor', ['email' => 'admin@sheger.test'])->assertSuccessful();
+        $this->assertNull($this->admin->fresh()->two_factor_confirmed_at);
+    }
 }

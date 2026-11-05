@@ -28,7 +28,7 @@ class ExchangeRateController extends Controller
 
         $data = $request->validate([
             'from_currency' => ['required', Rule::in($codes), Rule::notIn([$main])],
-            'rate' => ['required', 'decimal:0,6', 'gt:0'],
+            'rate' => ['required', 'decimal:0,6', 'gt:0', 'max:1000000'],
             'effective_date' => ['nullable', 'date'],
         ]);
 

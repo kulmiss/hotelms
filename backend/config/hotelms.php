@@ -10,6 +10,9 @@ return [
     // Default of the "two-step sign-in for admins" switch until the Super Admin changes it (tests turn it off).
     'two_factor_admins' => (bool) env('HOTELMS_TWO_FACTOR_ADMINS', true),
 
+    // How long a second change to the same booking waits for the first one (OneAtATime middleware).
+    'lock_wait_seconds' => (int) env('HOTELMS_LOCK_WAIT_SECONDS', 10),
+
     'super_admin' => [
         'email' => env('SUPER_ADMIN_EMAIL', 'admin@hotelms.test'),
         'password' => env('SUPER_ADMIN_PASSWORD', ''),

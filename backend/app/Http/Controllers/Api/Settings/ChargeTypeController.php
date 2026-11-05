@@ -17,7 +17,7 @@ class ChargeTypeController extends ResourceController
     {
         return [
             'name' => ['required', 'string', 'max:60'],
-            'default_price' => ['nullable', 'decimal:0,2', 'min:0'],
+            'default_price' => ['nullable', 'decimal:0,2', 'min:0', 'max:99999999'],
             'currency' => ['required', 'string', 'size:3'],
             'is_active' => ['boolean'],
         ];

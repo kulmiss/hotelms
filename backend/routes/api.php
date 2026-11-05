@@ -134,12 +134,12 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
                 Route::post('/reservations/quote', [ReservationController::class, 'quote']);
                 Route::get('/reservations/{id}', [ReservationController::class, 'show']);
                 Route::get('/reservations/{id}/cancellation-terms', [ReservationController::class, 'cancellationTerms']);
-                Route::post('/reservations/{id}/payments', [ReservationController::class, 'payment']); // payments.take / payments.refund checked inside
+                Route::post('/reservations/{id}/payments', [ReservationController::class, 'payment'])->middleware('one.at.a.time:reservation'); // payments.take / payments.refund checked inside
             });
             Route::post('/reservations', [ReservationController::class, 'store'])->middleware('permission:reservations.create');
-            Route::put('/reservations/{id}', [ReservationController::class, 'update'])->middleware('permission:reservations.edit');
-            Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->middleware('permission:reservations.cancel');
-            Route::post('/reservations/{id}/no-show', [ReservationController::class, 'noShow'])->middleware('permission:reservations.no_show');
+            Route::put('/reservations/{id}', [ReservationController::class, 'update'])->middleware(['permission:reservations.edit', 'one.at.a.time:reservation']);
+            Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->middleware(['permission:reservations.cancel', 'one.at.a.time:reservation']);
+            Route::post('/reservations/{id}/no-show', [ReservationController::class, 'noShow'])->middleware(['permission:reservations.no_show', 'one.at.a.time:reservation']);
 
             // Front desk.
             Route::middleware('permission:frontdesk.view')->group(function () {
@@ -153,29 +153,29 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
             });
             Route::middleware('permission:frontdesk.check_in')->group(function () {
                 Route::get('/reservations/{id}/check-in', [FrontDeskController::class, 'checkInInfo']);
-                Route::post('/reservations/{id}/check-in', [FrontDeskController::class, 'checkIn']);
+                Route::post('/reservations/{id}/check-in', [FrontDeskController::class, 'checkIn'])->middleware('one.at.a.time:reservation');
             });
             Route::middleware('permission:frontdesk.check_out')->group(function () {
                 Route::get('/reservations/{id}/check-out', [FrontDeskController::class, 'checkOutInfo']);
-                Route::post('/reservations/{id}/check-out', [FrontDeskController::class, 'checkOut']);
+                Route::post('/reservations/{id}/check-out', [FrontDeskController::class, 'checkOut'])->middleware('one.at.a.time:reservation');
             });
             Route::middleware('permission:frontdesk.room_move')->group(function () {
-                Route::post('/reservations/{id}/rooms/{roomStay}/move', [FrontDeskController::class, 'move']);
-                Route::post('/reservations/{id}/extend', [FrontDeskController::class, 'extend']);
+                Route::post('/reservations/{id}/rooms/{roomStay}/move', [FrontDeskController::class, 'move'])->middleware('one.at.a.time:reservation');
+                Route::post('/reservations/{id}/extend', [FrontDeskController::class, 'extend'])->middleware('one.at.a.time:reservation');
             });
-            Route::post('/reservations/{id}/approve-balance', [FrontDeskController::class, 'approveBalance'])->middleware('permission:checkout.approve_balance');
+            Route::post('/reservations/{id}/approve-balance', [FrontDeskController::class, 'approveBalance'])->middleware(['permission:checkout.approve_balance', 'one.at.a.time:reservation']);
 
             // Billing.
             Route::middleware('permission:invoices.view')->group(function () {
                 Route::get('/invoices', [InvoiceController::class, 'index']);
                 Route::get('/invoices/{id}', [InvoiceController::class, 'show']);
                 Route::get('/charge-types', [InvoiceController::class, 'chargeTypes']);
-                Route::post('/invoices/{id}/items', [InvoiceController::class, 'addCharge']); // add_charge / discount checked inside
-                Route::delete('/invoices/{id}/items/{item}', [InvoiceController::class, 'removeItem']);
-                Route::post('/invoices/{id}/payments', [InvoiceController::class, 'payment']); // payments.take / refund checked inside
+                Route::post('/invoices/{id}/items', [InvoiceController::class, 'addCharge'])->middleware('one.at.a.time:invoice'); // add_charge / discount checked inside
+                Route::delete('/invoices/{id}/items/{item}', [InvoiceController::class, 'removeItem'])->middleware('one.at.a.time:invoice');
+                Route::post('/invoices/{id}/payments', [InvoiceController::class, 'payment'])->middleware('one.at.a.time:invoice'); // payments.take / refund checked inside
             });
-            Route::post('/invoices/{id}/void', [InvoiceController::class, 'void'])->middleware('permission:invoices.void');
-            Route::post('/invoices/{id}/split', [InvoiceController::class, 'split'])->middleware('permission:invoices.split');
+            Route::post('/invoices/{id}/void', [InvoiceController::class, 'void'])->middleware(['permission:invoices.void', 'one.at.a.time:invoice']);
+            Route::post('/invoices/{id}/split', [InvoiceController::class, 'split'])->middleware(['permission:invoices.split', 'one.at.a.time:invoice']);
             Route::get('/payments', [InvoiceController::class, 'payments'])->middleware('permission:payments.view');
 
             // Optional modules (each only when the hotel has it switched on).

@@ -7,6 +7,8 @@ use App\Mail\StaffInvite;
 use App\Models\Branch;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserDevice;
+use App\Services\Security\TwoFactor;
 use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -152,6 +154,7 @@ class StaffController extends Controller
             'remember_token' => Str::random(60),
         ])->save();
         $this->signOutEverywhere($user);
+        app(TwoFactor::class)->disable($user); // a lost phone: set two-step sign-in up again
         $this->log->log('staff.password_reset', "Password reset: {$user->name}", $user);
 
         return response()->json([
@@ -265,7 +268,8 @@ class StaffController extends Controller
     private function signOutEverywhere(User $user): void
     {
         $user->tokens()->delete();
-        DB::table('sessions')->where('user_id', $user->id)->delete();
+        DB::table('sessions')->where('user_id', $user->id)->delete(); // database sessions
+        UserDevice::where('user_id', $user->id)->where('status', 'active')->update(['status' => 'signed_out']); // any session driver
     }
 
     private function email(User $user, string $password, bool $isReset, bool $send): bool

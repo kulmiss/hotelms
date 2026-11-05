@@ -154,7 +154,7 @@ class ReservationController extends Controller
         $data = $request->validate([
             'type' => ['required', Rule::in(Payment::TYPES)],
             'payment_method_id' => ['required', 'integer'],
-            'amount' => ['required', 'decimal:0,2', 'gt:0'],
+            'amount' => ['required', 'decimal:0,2', 'gt:0', 'max:99999999'],
             'currency' => ['nullable', 'string', 'size:3'],
             'reference' => ['nullable', 'string', 'max:100'],
             'refund_reason' => ['nullable', 'required_if:type,refund', 'string', 'max:200'],

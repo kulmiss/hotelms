@@ -59,7 +59,7 @@ class HotelController extends Controller
             'default_currency' => ['required', 'string', 'size:3'],
             'plan_id' => ['required', 'exists:plans,id'],
             'billing_cycle' => ['required', Rule::in(['monthly', 'yearly'])],
-            'custom_price' => ['nullable', 'decimal:0,2', 'min:0'],
+            'custom_price' => ['nullable', 'decimal:0,2', 'min:0', 'max:99999999'],
             'trial_days' => ['nullable', 'integer', 'between:0,365'],
             'trial_plan_id' => ['nullable', 'exists:plans,id'],
             'admin.name' => ['required', 'string', 'max:120'],
@@ -112,7 +112,7 @@ class HotelController extends Controller
             'default_currency' => ['sometimes', 'required', 'string', 'size:3'],
             'plan_id' => ['sometimes', 'required', 'exists:plans,id'],
             'billing_cycle' => ['sometimes', 'required', Rule::in(['monthly', 'yearly'])],
-            'custom_price' => ['sometimes', 'nullable', 'decimal:0,2', 'min:0'],
+            'custom_price' => ['sometimes', 'nullable', 'decimal:0,2', 'min:0', 'max:99999999'],
         ]);
 
         $hotel->update($data);

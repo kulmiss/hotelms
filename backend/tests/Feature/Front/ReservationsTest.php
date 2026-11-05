@@ -209,6 +209,21 @@ class ReservationsTest extends TestCase
         $this->postJson('/api/v1/reservations', $this->booking(['check_in' => '2026-11-20', 'check_out' => '2026-11-22', 'rooms' => [['room_type_id' => $this->standard->id], ['room_type_id' => $this->standard->id]]]))->assertCreated();
     }
 
+    public function test_changes_to_one_booking_run_one_at_a_time(): void
+    {
+        $this->actingAs($this->admin);
+        $id = $this->postJson('/api/v1/reservations', $this->booking(['check_in' => '2026-11-20', 'check_out' => '2026-11-22']))->json('data.id');
+
+        // Another change to the same booking is still running (e.g. a double tap).
+        $lock = \Illuminate\Support\Facades\Cache::lock("one-at-a-time:reservation:{$this->hotel->id}:{$id}", 30);
+        $this->assertTrue($lock->get());
+        $this->postJson("/api/v1/reservations/$id/cancel", ['reason' => 'Twice'])->assertStatus(409)->assertJsonPath('code', 'busy');
+        $lock->release();
+
+        $this->postJson("/api/v1/reservations/$id/cancel", ['reason' => 'Once'])->assertOk();
+        $this->postJson("/api/v1/reservations/$id/cancel", ['reason' => 'Again'])->assertUnprocessable(); // already cancelled
+    }
+
     public function test_no_show_only_after_check_in_time(): void
     {
         $this->actingAs($this->admin);
