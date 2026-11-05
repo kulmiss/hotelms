@@ -285,6 +285,31 @@ class FrontDeskTest extends TestCase
         $this->postJson("/api/v1/invoices/$invoiceId/split")->assertOk()->assertJsonCount(2, 'data')
             ->assertJsonPath('data.0.total', '4600.00')->assertJsonPath('data.1.total', '4600.00')
             ->assertJsonPath('data.0.paid_total', '2760.00'); // the deposit stays on the first bill
+
+        // One payment at check-out pays both bills, so nobody needs a manager's approval.
+        $this->at('2026-11-14 11:00');
+        $this->postJson("/api/v1/reservations/$id/check-out", ['payment' => ['payment_method_id' => $this->cash, 'amount' => '6440.00']])
+            ->assertOk()->assertJsonPath('data.status', 'checked_out');
+        $bills = $this->getJson("/api/v1/reservations/$id")->json('data.invoices');
+        $this->assertSame(['paid', 'paid'], array_column($bills, 'status'));
+        $this->assertSame('0.00', $this->getJson("/api/v1/reservations/$id")->json('data.balance'));
+    }
+
+    public function test_a_new_bill_after_a_void_keeps_the_payments(): void
+    {
+        $id = $this->booked();
+        $this->at('2026-11-12 15:00');
+        $this->checkIn($id, ['101'])->assertOk();
+        $invoiceId = $this->invoice($id)['id'];
+        $this->postJson("/api/v1/invoices/$invoiceId/void", ['reason' => 'Wrong name'])->assertOk();
+
+        $this->postJson("/api/v1/reservations/$id/extend", ['check_out' => '2026-11-15'])->assertOk(); // opens a new bill
+        $open = collect($this->getJson("/api/v1/reservations/$id")->json('data.invoices'))->firstWhere('status', '!=', 'void');
+        $bill = $this->getJson("/api/v1/invoices/{$open['id']}")->json('data');
+        $this->assertNotSame($invoiceId, $bill['id']);
+        $this->assertSame('1380.00', $bill['paid_total']); // the deposit moved over
+        $this->assertSame('6900.00', $bill['total']); // 3 nights × 2000 + 15%
+        $this->assertSame('6900.00', $this->getJson("/api/v1/reservations/$id")->json('data.total')); // booking total follows
     }
 
     public function test_void_needs_permission_and_a_reason(): void

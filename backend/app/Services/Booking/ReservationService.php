@@ -194,6 +194,39 @@ class ReservationService
     }
 
     /**
+     * One payment for a booking with several bills (split per room): it pays the bills in order,
+     * as separate payment lines, so no bill is left owing while another is overpaid.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function payAcrossBills(Reservation $reservation, array $data, User $user): void
+    {
+        $bills = $reservation->invoices()->where('status', '!=', 'void')->orderBy('id')->get();
+        if ($bills->count() < 2 || ($data['type'] ?? 'payment') === 'refund') {
+            $this->recordPayment($reservation, $data, $user, $bills->first());
+
+            return;
+        }
+        $currency = strtoupper($data['currency'] ?? $reservation->currency);
+        $rate = $this->converter->rate($currency, $reservation->currency);
+        $left = Money::round((string) $data['amount']);
+        $owing = $bills->filter(fn (Invoice $i) => Money::isPositive((string) $i->balance))->values();
+        $targets = $owing->isNotEmpty() ? $owing : collect([$bills->first()]);
+
+        foreach ($targets as $k => $bill) {
+            if (! Money::isPositive($left)) {
+                break;
+            }
+            $last = $k === $targets->count() - 1;
+            // The bill's balance in the paid currency (rounded up to the cent so it is fully covered).
+            $need = Money::round(bcadd(bcdiv((string) $bill->balance, $rate, 6), '0.004999', 6));
+            $part = $last ? $left : Money::min($need, $left);
+            $this->recordPayment($reservation, ['amount' => $part] + $data, $user, $bill->fresh());
+            $left = Money::sub($left, $part);
+        }
+    }
+
+    /**
      * What cancelling (or a no-show) would cost under the booking's policy (W2).
      *
      * @return array{fee: string, refund_due: string, free: bool, hours_before: int, policy: ?array<string, mixed>}
@@ -453,6 +486,16 @@ class ReservationService
         $prefix = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string) $branch->code) ?: 'RES');
 
         return sprintf('%s-%s-%05d', $prefix, substr($year, 2), $n);
+    }
+
+    /** Booking totals again from its rooms (after an extension or a move to another room type). */
+    public function refreshTotals(Reservation $reservation): void
+    {
+        $subtotal = Money::sum($reservation->rooms()->pluck('total_amount')->map(fn ($v) => (string) $v)->all());
+        $discount = Money::percentOf($subtotal, (string) $reservation->discount_percent);
+        $net = Money::sub($subtotal, $discount);
+        $tax = $this->quote->addedTaxes($net);
+        $reservation->update(['subtotal' => $subtotal, 'discount_amount' => $discount, 'tax_total' => $tax, 'total' => Money::add($net, $tax)]);
     }
 
     public function refreshPaid(Reservation $reservation): void

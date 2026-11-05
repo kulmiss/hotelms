@@ -49,7 +49,10 @@ class ReservationPresenter
             'discount_percent' => $r->discount_percent,
             'discount_amount' => $r->discount_amount,
             'tax_total' => $r->tax_total,
-            'balance' => Money::sub((string) $r->total, (string) $r->paid_total),
+            // Once there is a bill, it is the truth (extras, fees, extensions); before that the booking total.
+            'balance' => $r->invoices->where('status', '!=', 'void')->isNotEmpty()
+                ? Money::sum($r->invoices->where('status', '!=', 'void')->pluck('balance')->map(fn ($v) => (string) $v)->all())
+                : Money::sub((string) $r->total, (string) $r->paid_total),
             'cancellation_fee' => $r->cancellation_fee,
             'cancellation_policy_id' => $r->cancellation_policy_id,
             'policy' => $r->policy_snapshot,

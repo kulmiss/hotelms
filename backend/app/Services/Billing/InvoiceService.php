@@ -63,8 +63,14 @@ class InvoiceService
                     'service_date' => HotelClock::local($reservation->check_in_at, $reservation->hotel)->toDateString(),
                 ], $user);
             }
-            // Deposits taken before arrival now count on the bill.
-            Payment::where('reservation_id', $reservation->id)->whereNull('invoice_id')->update(['invoice_id' => $invoice->id]);
+            // Deposits taken before arrival, and payments of a voided earlier bill, now count on this bill.
+            $voided = $reservation->invoices()->where('status', 'void')->pluck('id');
+            Payment::where('reservation_id', $reservation->id)
+                ->where(fn ($q) => $q->whereNull('invoice_id')->orWhereIn('invoice_id', $voided))
+                ->update(['invoice_id' => $invoice->id]);
+            foreach ($voided as $id) {
+                $this->recalc(Invoice::find($id));
+            }
 
             return $this->recalc($invoice);
         });
@@ -93,7 +99,7 @@ class InvoiceService
             'waived_by' => $waived ? $user?->id : null,
             'reservation_room_id' => $data['reservation_room_id'] ?? null,
             'charge_type_id' => $data['charge_type_id'] ?? null,
-            'service_date' => $data['service_date'] ?? now()->toDateString(),
+            'service_date' => $data['service_date'] ?? HotelClock::now($invoice->hotel)->toDateString(),
             'created_by' => $user?->id,
         ]);
         foreach ($this->taxes->forLine($item->type, $amount) as $tax) {

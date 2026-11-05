@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\Reservation;
 use App\Models\ReservationRoom;
 use App\Models\Room;
+use App\Models\RoomType;
 use App\Models\User;
 use App\Services\Billing\InvoiceService;
 use App\Services\HotelSettings;
@@ -69,7 +70,7 @@ class FrontDesk
 
         return DB::transaction(function () use ($reservation, $data, $user, $now, $payment, $waive) {
             $chosen = collect($data['rooms'] ?? [])->keyBy(fn ($r) => (int) $r['id']);
-            $rooms = $reservation->rooms()->with('rates')->lockForUpdate()->get();
+            $rooms = $reservation->rooms()->with(['rates', 'roomType'])->lockForUpdate()->get();
             $used = [];
             foreach ($rooms as $i => $rr) {
                 $roomId = (int) ($chosen->get($rr->id)['room_id'] ?? $rr->room_id ?? 0);
@@ -89,6 +90,13 @@ class FrontDesk
                 }
                 $used[] = $room->id;
                 $rr->update(['room_id' => $room->id]);
+            }
+            // Early arrival: the extra hours before the check-in time must not take a room another booking counts on.
+            foreach ($rooms->filter(fn ($rr) => $now->lt($rr->check_in_at))->groupBy('room_type_id') as $group) {
+                $first = $group->first();
+                if ($this->availability->availableCount($first->roomType, $now, $first->check_in_at, $reservation->id) < $group->count()) {
+                    throw ValidationException::withMessages(['rooms' => 'Too early: these rooms are still promised to other guests until the check-in time.']);
+                }
             }
 
             // Deposit before the guest gets the key (pending bookings).
@@ -210,7 +218,7 @@ class FrontDesk
                 if (! $user->hasPermission('payments.take')) {
                     throw ValidationException::withMessages(['payment' => 'You may not take payments.']);
                 }
-                $this->reservations->recordPayment($reservation, $data['payment'] + ['type' => 'payment'], $user, $invoice);
+                $this->reservations->payAcrossBills($reservation, $data['payment'] + ['type' => 'payment'], $user);
             }
 
             // Money still owed needs a manager (Q8).
@@ -262,9 +270,21 @@ class FrontDesk
             throw ValidationException::withMessages(['room_id' => 'Before arrival, choose a room of the booked type (or change the booking).']);
         }
 
-        return DB::transaction(function () use ($reservation, $rr, $room, $inHouse, $user) {
+        return DB::transaction(function () use ($reservation, $rr, $room, $from, $inHouse, $user) {
+            // Again under a lock, so two moves into the same room cannot both win.
+            $room = Room::whereKey($room->id)->lockForUpdate()->first();
+            if (! $this->availability->roomIsFree($room, $from, $rr->blocked_until, $reservation->id)) {
+                throw ValidationException::withMessages(['room_id' => "Room {$room->number} is not free for the rest of the stay."]);
+            }
             $old = $rr->room;
             $typeChanged = $room->room_type_id !== $rr->room_type_id;
+            // An upgrade uses a room of the other type: bookings already counting on that type must still fit.
+            if ($typeChanged) {
+                RoomType::whereKey($room->room_type_id)->lockForUpdate()->first();
+                if ($this->availability->availableCount($room->roomType, $from, $rr->blocked_until, $reservation->id) < 1) {
+                    throw ValidationException::withMessages(['room_id' => "All {$room->roomType->name} rooms are promised to other bookings during this stay."]);
+                }
+            }
             $rr->update(['room_id' => $room->id, 'room_type_id' => $room->room_type_id]);
 
             if ($inHouse) {
@@ -335,6 +355,7 @@ class FrontDesk
                 $rr->update(['check_out_at' => $out, 'blocked_until' => $until, 'total_amount' => Money::add((string) $rr->total_amount, Money::sum(array_column($lines, 'amount')))]);
             }
             $reservation->update(['check_out_at' => $out]);
+            $this->reservations->refreshTotals($reservation);
             $this->invoices->recalc($invoice);
 
             return $reservation->fresh();
@@ -425,6 +446,7 @@ class FrontDesk
             ], $user);
         }
         $rr->update(['total_amount' => Money::sum($rr->rates()->pluck('amount')->map(fn ($v) => (string) $v))]);
+        $this->reservations->refreshTotals($reservation);
         $this->invoices->recalc($invoice);
     }
 
