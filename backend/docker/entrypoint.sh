@@ -7,6 +7,6 @@ set -e
 [ -f .env ] || cp .env.example .env
 grep -q '^APP_KEY=base64' .env || php artisan key:generate --force
 php artisan migrate --force --no-interaction
-php artisan db:seed --class=SuperAdminSeeder --force --no-interaction
+php artisan db:seed --force --no-interaction
 
 exec "$@"

@@ -15,9 +15,10 @@ class PlanFactory extends Factory
         return [
             'name' => 'Standard',
             'max_rooms' => 60,
-            'price' => '5000.00',
+            'price_per_room' => '100.00',
+            'minimum_monthly' => '2000.00',
+            'yearly_free_months' => 2,
             'currency' => 'ETB',
-            'billing_cycle' => 'monthly',
             'modules' => ['housekeeping', 'cashier_close'],
             'is_active' => true,
         ];

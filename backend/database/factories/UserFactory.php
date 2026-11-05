@@ -37,7 +37,15 @@ class UserFactory extends Factory
     public function superAdmin(): static
     {
         return $this->state(fn () => ['hotel_id' => null])
-            ->afterMaking(fn (User $user) => $user->is_super_admin = true);
+            ->afterMaking(function (User $user) {
+                $user->is_super_admin = true;
+                $user->platform_role ??= 'owner';
+            });
+    }
+
+    public function platformRole(string $role): static
+    {
+        return $this->superAdmin()->afterMaking(fn (User $user) => $user->platform_role = $role);
     }
 
     public function forHotel(Hotel $hotel): static

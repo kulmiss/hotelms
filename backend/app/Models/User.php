@@ -48,6 +48,20 @@ class User extends Authenticatable
         return $this->belongsToMany(Branch::class)->withoutGlobalScope('hotel');
     }
 
+    /** Super Admin team permission check (owner has everything). */
+    public function hasPlatformPermission(string $permission): bool
+    {
+        if (! $this->is_super_admin) {
+            return false;
+        }
+
+        if ($this->platform_role === 'owner') {
+            return true;
+        }
+
+        return in_array($this->platform_role, config("hotelms.platform_permissions.{$permission}", []), true);
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';
