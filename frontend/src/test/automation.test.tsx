@@ -60,7 +60,8 @@ describe('report automation', () => {
       'POST /custom-reports/run': { body: { data: { columns: ['room_nights', 'room_revenue'], rows: [{ key: '3', label: 'Deluxe', room_nights: 4, room_revenue: '8000.00' }], currency: 'ETB' } } },
     })
     renderApp('/reports?report=custom')
-    await userEvent.selectOptions(await screen.findByLabelText('Group by'), 'room_type')
+    await screen.findByRole('option', { name: 'Room type' })
+    await userEvent.selectOptions(screen.getByLabelText('Group by'), 'room_type')
     await userEvent.click(screen.getByRole('button', { name: 'Run' }))
     expect(await screen.findByText('Deluxe')).toBeInTheDocument()
     expect(screen.getByText('ETB 8,000.00')).toBeInTheDocument()
@@ -122,7 +123,7 @@ describe('Super Admin reports', () => {
     })
     renderApp('/admin/reports')
     expect((await screen.findAllByText('ETB 15,000.00')).length).toBeGreaterThan(0)
-    expect(screen.getByRole('link', { name: 'Axum Inn' })).toHaveAttribute('href', '/admin/hotels/5')
+    expect(screen.getByRole('link', { name: /Axum Inn/ })).toHaveAttribute('href', '/admin/hotels/5')
     expect(await screen.findByText('15 days ago')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'At risk · 1' })).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: 'Main' })).toHaveTextContent('Reports')
