@@ -49,7 +49,8 @@ class HotelController extends Controller
             ->paginate(min((int) $request->input('per_page', 25), 100));
 
         return HotelResource::collection($hotels)->additional([
-            'counts' => Hotel::query()->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status')->map(fn ($n) => (int) $n),
+            'counts' => Hotel::query()->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status')->map(fn ($n) => (int) $n)
+                ->put('closed', Hotel::onlyTrashed()->count()),
         ]);
     }
 

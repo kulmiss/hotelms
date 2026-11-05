@@ -37,6 +37,8 @@ export type Hotel = {
   trial_ends_at: string | null
   subscription_ends_at: string | null
   suspend_reason: string | null
+  closed_at?: string | null
+  deleted_for_good_on?: string | null
   branches_count?: number
   users_count?: number
 }
@@ -100,7 +102,7 @@ export const useHotels = (filters: { search?: string; status?: string; page?: nu
     queryKey: ['admin', 'hotels', filters],
     queryFn: () =>
       api<{ data: Hotel[]; counts: Record<string, number>; meta: { total: number; last_page: number; current_page: number } }>(
-        '/admin/hotels' + qs(filters),
+        '/admin/hotels' + qs(filters.status === 'closed' ? { ...filters, status: undefined, closed: 1 } : filters),
       ),
     placeholderData: keepPreviousData,
   })
@@ -140,6 +142,8 @@ export const useCreateHotel = () => useAdminMutation((input: NewHotelInput) => p
 export const useSuspendHotel = (id: number) =>
   useAdminMutation((reason: string) => post(`/admin/hotels/${id}/suspend`, { reason }))
 export const useActivateHotel = (id: number) => useAdminMutation(() => post(`/admin/hotels/${id}/activate`))
+export const useCloseHotel = (id: number) => useAdminMutation((v: { reason: string; confirm_name: string }) => post(`/admin/hotels/${id}/close`, v))
+export const useReopenHotel = (id: number) => useAdminMutation(() => post(`/admin/hotels/${id}/reopen`))
 export const useSetTrial = (id: number) =>
   useAdminMutation((input: { trial_ends_at: string; reason: string }) => post(`/admin/hotels/${id}/trial`, input))
 

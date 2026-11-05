@@ -356,7 +356,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
             Route::get('/reports/hotel-health', [PlatformReportController::class, 'health']);
 
             Route::get('/hotels', [AdminHotelController::class, 'index']);
-            Route::get('/hotels/{hotel}', [AdminHotelController::class, 'show']);
+            Route::get('/hotels/{hotel}', [AdminHotelController::class, 'show'])->withTrashed(); // closed hotels too
             Route::get('/plans', [AdminPlanController::class, 'index']);
             Route::get('/settings', [PlatformSettingsController::class, 'show']);
 

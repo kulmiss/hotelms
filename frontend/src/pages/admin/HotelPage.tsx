@@ -14,11 +14,13 @@ import { StatusBadge } from '@/components/ui/StatusBadge'
 import {
   getQuote,
   useActivateHotel,
+  useCloseHotel,
   useHotel,
   useLoginAsHotel,
   useResetDemo,
   usePlans,
   useRecordPayment,
+  useReopenHotel,
   useResetUserPassword,
   useSetTrial,
   useSuspendHotel,
@@ -28,7 +30,7 @@ import { ApiError } from '@/lib/api'
 import { useMe } from '@/lib/auth'
 import { date, money } from '@/lib/format'
 
-type Panel = 'payment' | 'suspend' | 'trial' | 'loginAs' | null
+type Panel = 'payment' | 'suspend' | 'trial' | 'loginAs' | 'close' | null
 
 export function HotelPage() {
   const { t } = useTranslation()
@@ -57,6 +59,9 @@ export function HotelPage() {
           </span>
         }
         actions={
+          h.closed_at ? (
+            <ReopenButton hotelId={h.id} />
+          ) : (
           <>
             {canLoginAs && (
               <Button variant="secondary" onClick={() => toggle('loginAs')}>
@@ -78,11 +83,19 @@ export function HotelPage() {
                 {t('admin.hotel.suspend')}
               </Button>
             )}
+            {!h.is_demo && (
+              <Button variant="ghost" className="text-danger-text" onClick={() => toggle('close')}>
+                {t('admin.hotel.close')}
+              </Button>
+            )}
           </>
+          )
         }
       />
 
-      {h.status === 'suspended' && (
+      {h.closed_at && <Alert>{t('admin.hotel.closedBanner', { date: date(h.deleted_for_good_on ?? null) })}</Alert>}
+      {panel === 'close' && <ClosePanel hotel={h} onDone={() => setPanel(null)} />}
+      {h.status === 'suspended' && !h.closed_at && (
         <Alert>{h.suspend_reason ? t('admin.hotel.suspendedBecause', { reason: h.suspend_reason }) : t('admin.hotel.suspendedUnpaid')}</Alert>
       )}
 
@@ -392,6 +405,52 @@ function PaymentPanel({ hotel, onDone }: { hotel: Hotel; onDone: () => void }) {
           </Button>
           <Button type="submit" disabled={record.isPending || !amount || !planId}>
             {t('admin.hotel.savePayment')}
+          </Button>
+        </div>
+      </form>
+    </Card>
+  )
+}
+
+function ReopenButton({ hotelId }: { hotelId: number }) {
+  const { t } = useTranslation()
+  const reopen = useReopenHotel(hotelId)
+  return (
+    <Button disabled={reopen.isPending} onClick={() => reopen.mutate()}>
+      {t('admin.hotel.reopen')}
+    </Button>
+  )
+}
+
+/** Close the account: nobody signs in any more; data kept 90 days, then deleted for good. */
+function ClosePanel({ hotel, onDone }: { hotel: Hotel; onDone: () => void }) {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const close = useCloseHotel(hotel.id)
+  const [reason, setReason] = useState('')
+  const [name, setName] = useState('')
+  const error = close.error instanceof ApiError ? (Object.values(close.error.errors)[0]?.[0] ?? close.error.message) : null
+  return (
+    <Card>
+      <form
+        noValidate
+        className="flex flex-col gap-4"
+        onSubmit={(e) => {
+          e.preventDefault()
+          close.mutate({ reason, confirm_name: name }, { onSuccess: () => navigate('/admin/hotels', { replace: true }) })
+        }}
+      >
+        <h2 className="font-semibold">{t('admin.hotel.close')}</h2>
+        <p className="text-sm text-muted">{t('admin.hotel.closeHelp')}</p>
+        {error && <Alert>{error}</Alert>}
+        <Field label={t('admin.hotel.reason')} value={reason} onChange={(e) => setReason(e.target.value)} required />
+        <Field label={t('admin.hotel.typeName', { name: hotel.name })} value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" required />
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" onClick={onDone}>
+            {t('common.cancel')}
+          </Button>
+          <Button type="submit" variant="danger" disabled={close.isPending || !reason || name.trim().toLowerCase() !== hotel.name.trim().toLowerCase()}>
+            {t('admin.hotel.confirmClose')}
           </Button>
         </div>
       </form>

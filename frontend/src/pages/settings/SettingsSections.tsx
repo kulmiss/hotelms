@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { PhotoIcon } from '@heroicons/react/24/outline'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
+import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { ResourceList } from '@/components/ui/ResourceList'
 import { Select } from '@/components/ui/Select'
-import { ApiError, post } from '@/lib/api'
+import { ApiError, apiUrl, post } from '@/lib/api'
+import { useMe } from '@/lib/auth'
 import { date, money } from '@/lib/format'
 import { useHotelLogo, useSettingsList, useSettingsObject, useSettingsObjectSave } from '@/lib/settings'
 import { useQueryClient } from '@tanstack/react-query'
@@ -510,6 +511,7 @@ type Security = { require_two_factor_staff: boolean; approved_devices_only: bool
 
 export function SecuritySettings() {
   const { t } = useTranslation()
+  const me = useMe()
   const q = useSettingsObject<Security>('/settings/security')
   const save = useSettingsObjectSave<Security>('/settings/security')
   const v = q.data?.data
@@ -543,6 +545,17 @@ export function SecuritySettings() {
           </Select>
         </div>
       </Card>
+      {me.data?.role?.is_hotel_admin && (
+        <Card className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <h3 className="font-semibold">{t('settings.security.exportTitle')}</h3>
+            <p className="max-w-prose text-[13px] text-muted">{t('settings.security.exportHelp')}</p>
+          </div>
+          <a className={buttonClass('secondary')} href={apiUrl('/settings/export')} download>
+            {t('settings.security.export')}
+          </a>
+        </Card>
+      )}
     </div>
   )
 }

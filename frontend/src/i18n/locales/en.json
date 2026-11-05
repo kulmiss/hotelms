@@ -167,7 +167,8 @@
     "trial": "Trial",
     "active": "Active",
     "grace": "Grace period",
-    "suspended": "Suspended"
+    "suspended": "Suspended",
+    "closed": "Closed"
   },
   "modules": {
     "housekeeping": "Housekeeping",
@@ -273,7 +274,13 @@
       "copy": "Copy",
       "copied": "Copied",
       "resetEmailSent": "Also emailed to {{email}}.",
-      "resetEmailNotSent": "Not emailed – share it yourself."
+      "resetEmailNotSent": "Not emailed – share it yourself.",
+      "close": "Close account",
+      "closeHelp": "Nobody of this hotel can sign in any more. Their data is kept 90 days (you can reopen), then deleted for good.",
+      "typeName": "Type \"{{name}}\" to confirm",
+      "confirmClose": "Close account",
+      "reopen": "Reopen hotel",
+      "closedBanner": "This hotel is closed. Its data will be deleted for good on {{date}}. Reopen to keep it."
     },
     "billing": {
       "monthly": "Monthly",
@@ -815,7 +822,10 @@
       "screenLockHint": "On shared reception devices. Unlock with a PIN or password.",
       "never": "Never",
       "minutes_one": "{{count}} minute",
-      "minutes_other": "{{count}} minutes"
+      "minutes_other": "{{count}} minutes",
+      "exportTitle": "Download all your data",
+      "exportHelp": "One ZIP file with every record of your hotel (guests, bookings, bills, payments…) as spreadsheets. Only for Hotel Admins.",
+      "export": "Download (ZIP)"
     }
   },
   "roomStatus": {
