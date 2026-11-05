@@ -4,6 +4,7 @@ use App\Http\Middleware\BlockDuringImpersonation;
 use App\Http\Middleware\EnsureActiveUser;
 use App\Http\Middleware\EnsureHotelPermission;
 use App\Http\Middleware\EnsureHotelWritable;
+use App\Http\Middleware\EnsureModuleEnabled;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsurePlatformPermission;
 use App\Http\Middleware\SetTenantContext;
@@ -34,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'active' => EnsureActiveUser::class,
             'not.impersonating' => BlockDuringImpersonation::class,
             'password.changed' => EnsurePasswordChanged::class,
+            'module' => EnsureModuleEnabled::class,
             'hotel.writable' => EnsureHotelWritable::class,
             'platform' => EnsurePlatformPermission::class,
             'permission' => EnsureHotelPermission::class,

@@ -6,12 +6,18 @@ use App\Models\Branch;
 use App\Models\Guest;
 use App\Models\GuestType;
 use App\Models\Hotel;
+use App\Models\HousekeepingTask;
 use App\Models\PaymentMethod;
+use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\Plan;
+use App\Models\Reservation;
 use App\Models\RateRule;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\User;
+use App\Services\Booking\Availability;
+use App\Services\Booking\FrontDesk;
 use App\Services\Booking\ReservationService;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Model;
@@ -55,7 +61,7 @@ class DemoHotel
             // (Without model events: there is nothing to log about a demo being wiped.)
             Model::withoutEvents(fn () => Hotel::withTrashed()->where('is_demo', true)->get()->each(function (Hotel $old) {
                 // Bookings first: they point at guests, rooms and payment methods.
-                foreach (['payments', 'reservations', 'guests'] as $table) {
+                foreach (['payments', 'housekeeping_tasks', 'invoices', 'reservations', 'guests', 'attendances', 'shift_assignments', 'cashier_sessions'] as $table) {
                     DB::table($table)->where('hotel_id', $old->id)->delete();
                 }
                 User::withTrashed()->where('hotel_id', $old->id)->forceDelete();
@@ -130,7 +136,7 @@ class DemoHotel
         }
 
         $service = app(ReservationService::class);
-        $cash = PaymentMethod::where('type', 'cash')->value('id');
+        $cash = PaymentMethod::where('type', 'mobile_money')->value('id'); // not cash: no cashier shift needed
         $tz = 'Africa/Addis_Ababa';
         foreach (range(1, 36) as $n) {
             $branch = $branches[$n % 3 === 0 ? 1 : 0];
@@ -150,6 +156,92 @@ class DemoHotel
                 // fully booked that day: skip
             }
         }
+
+        $this->history($admin, $branches, $guests, $cash);
+    }
+
+    /**
+     * Past stays (last 6 months), guests in house now and arrivals today, so the
+     * room board, bills and reports have something to show.
+     *
+     * @param  list<Branch>  $branches
+     * @param  list<Guest>  $guests
+     */
+    private function history(User $admin, array $branches, array $guests, ?int $method): void
+    {
+        if (! $method) {
+            return;
+        }
+        $service = app(ReservationService::class);
+        $desk = app(FrontDesk::class);
+        $tz = 'Africa/Addis_Ababa';
+        $today = now($tz)->startOfDay();
+        $stays = [];
+
+        // Past stays, two a day on average, oldest first.
+        for ($daysAgo = 180; $daysAgo >= 3; $daysAgo -= mt_rand(0, 1)) {
+            $stays[] = [$daysAgo, mt_rand(1, 3), 'past'];
+            if (count($stays) > 160) {
+                break;
+            }
+            $daysAgo -= 1;
+        }
+        // In house now (arrived 1–2 days ago) and arriving today.
+        foreach (range(1, 8) as $i) {
+            $ago = mt_rand(1, 2);
+            $stays[] = [$ago, $ago + mt_rand(1, 3), 'in_house'];
+        }
+        foreach (range(1, 4) as $i) {
+            $stays[] = [0, mt_rand(1, 3), 'arriving'];
+        }
+
+        foreach ($stays as [$daysAgo, $nights, $kind]) {
+            $branch = $branches[mt_rand(0, 3) === 0 ? 1 : 0];
+            $types = RoomType::where('branch_id', $branch->id)->pluck('id')->all();
+            $in = $today->copy()->subDays($daysAgo)->toDateString();
+            $out = $today->copy()->subDays($daysAgo)->addDays($nights)->toDateString();
+            try {
+                $r = $service->create([
+                    'branch_id' => $branch->id, 'stay_type' => 'nightly', 'check_in' => $in, 'check_out' => $out, 'allow_past' => true,
+                    'guest_id' => $guests[array_rand($guests)]->id, 'source' => ['phone', 'walk_in', 'agent', 'email'][mt_rand(0, 3)],
+                    'rooms' => [['room_type_id' => $types[array_rand($types)], 'adults' => mt_rand(1, 2)]],
+                ], $admin);
+                if ($kind === 'arriving') {
+                    $service->recordPayment($r, ['type' => 'deposit', 'payment_method_id' => $method, 'amount' => (string) $r->deposit_required], $admin);
+
+                    continue;
+                }
+                $service->recordPayment($r, ['type' => 'payment', 'payment_method_id' => $method, 'amount' => (string) $r->total], $admin);
+                $room = app(Availability::class)->freeRooms($branch->id, $r->rooms()->first()->room_type_id, $r->check_in_at, $r->check_out_at)
+                    ->where('status', 'available')->first();
+                if (! $room) {
+                    continue;
+                }
+                $r = $desk->checkIn($r->fresh(), ['rooms' => [['id' => $r->rooms()->first()->id, 'room_id' => $room->id]], 'backfill' => $kind === 'past'], $admin);
+                if ($kind === 'past') {
+                    $desk->checkOut($r, ['approve_balance' => true, 'backfill' => true], $admin);
+                    $room->refresh()->update(['status' => 'available']);
+                    $this->backdate($r->fresh());
+                }
+            } catch (ValidationException) {
+                // full that day: skip
+            }
+        }
+
+        // A few rooms waiting for cleaning.
+        Room::where('status', 'available')->inRandomOrder()->limit(5)->update(['status' => 'dirty']);
+    }
+
+    /** Past stays happened at their own times (not "now"). */
+    private function backdate(Reservation $r): void
+    {
+        foreach ($r->rooms as $rr) {
+            $rr->update(['actual_check_in_at' => $rr->check_in_at, 'actual_check_out_at' => $rr->check_out_at->copy()->subHour(), 'blocked_until' => $rr->check_out_at]);
+        }
+        Payment::where('reservation_id', $r->id)->update(['paid_at' => $r->check_in_at, 'created_at' => $r->check_in_at]);
+        Invoice::where('reservation_id', $r->id)->update(['issued_at' => $r->check_in_at, 'created_at' => $r->check_in_at]);
+        HousekeepingTask::where('reservation_id', $r->id)->update(['status' => 'done', 'started_at' => $r->check_out_at, 'completed_at' => $r->check_out_at->copy()->addMinutes(40)]);
+        $r->update(['created_at' => $r->check_in_at->copy()->subDays(mt_rand(1, 20))]);
     }
 
     /**

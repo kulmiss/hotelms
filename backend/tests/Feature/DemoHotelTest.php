@@ -4,7 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\Branch;
 use App\Models\Hotel;
+use App\Models\Invoice;
 use App\Models\PlatformSetting;
+use App\Models\Reservation;
+use App\Models\Room;
 use App\Models\User;
 use App\Services\DemoHotel;
 use App\Support\Tenancy\TenantContext;
@@ -34,6 +37,19 @@ class DemoHotelTest extends TestCase
             $this->assertSame($role, $user->role->key);
             $this->assertFalse($user->must_change_password);
         }
+    }
+
+    public function test_demo_has_history_guests_in_house_and_bills(): void
+    {
+        $hotel = app(DemoHotel::class)->reset();
+        app(TenantContext::class)->runAs($hotel, function () {
+            $this->assertSame(60, Room::count());
+            $this->assertGreaterThan(50, Reservation::where('status', 'checked_out')->count());
+            $this->assertGreaterThan(0, Reservation::where('status', 'checked_in')->count());
+            $this->assertGreaterThan(10, Reservation::whereIn('status', ['pending', 'confirmed'])->count());
+            $this->assertGreaterThan(50, Invoice::where('status', 'paid')->count());
+            $this->assertTrue(Reservation::where('status', 'checked_out')->where('check_in_at', '<', now()->subMonths(3))->exists());
+        });
     }
 
     public function test_reset_wipes_visitors_changes(): void

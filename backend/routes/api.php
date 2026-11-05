@@ -23,6 +23,10 @@ use App\Http\Controllers\Api\Hotel\SetupController;
 use App\Http\Controllers\Api\Hotel\StaffController;
 use App\Http\Controllers\Api\ImpersonationStopController;
 use App\Http\Controllers\Api\MeController;
+use App\Http\Controllers\Api\Modules\AttendanceController;
+use App\Http\Controllers\Api\Modules\CashierController;
+use App\Http\Controllers\Api\Modules\HousekeepingController;
+use App\Http\Controllers\Api\Modules\ShiftController;
 use App\Http\Controllers\Api\Settings\BranchSettingsController;
 use App\Http\Controllers\Api\Settings\CancellationPolicyController;
 use App\Http\Controllers\Api\Settings\ChargeTypeController;
@@ -148,6 +152,53 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
             Route::post('/invoices/{id}/void', [InvoiceController::class, 'void'])->middleware('permission:invoices.void');
             Route::post('/invoices/{id}/split', [InvoiceController::class, 'split'])->middleware('permission:invoices.split');
             Route::get('/payments', [InvoiceController::class, 'payments'])->middleware('permission:payments.view');
+
+            // Optional modules (each only when the hotel has it switched on).
+            Route::middleware('module:cashier_close')->group(function () {
+                Route::middleware('permission:cashier.own_shift')->group(function () {
+                    Route::get('/cashier/current', [CashierController::class, 'current']);
+                    Route::post('/cashier/open', [CashierController::class, 'open']);
+                    Route::post('/cashier/close', [CashierController::class, 'close']);
+                });
+                Route::get('/cashier/sessions', [CashierController::class, 'index'])->middleware('permission:cashier.own_shift,cashier.view_all');
+                Route::get('/cashier/sessions/{id}', [CashierController::class, 'show'])->middleware('permission:cashier.own_shift,cashier.view_all');
+                Route::post('/cashier/sessions/{id}/approve', [CashierController::class, 'approve'])->middleware('permission:cashier.approve');
+            });
+            Route::middleware('module:housekeeping')->group(function () {
+                Route::middleware('permission:housekeeping.view')->group(function () {
+                    Route::get('/housekeeping/board', [HousekeepingController::class, 'board']);
+                    Route::get('/housekeeping/tasks', [HousekeepingController::class, 'index']);
+                    Route::post('/housekeeping/tasks/{id}/start', [HousekeepingController::class, 'start']); // own task or assign, checked inside
+                    Route::post('/housekeeping/tasks/{id}/done', [HousekeepingController::class, 'done']);
+                });
+                Route::middleware('permission:housekeeping.assign')->group(function () {
+                    Route::get('/housekeeping/staff', [HousekeepingController::class, 'staff']);
+                    Route::post('/housekeeping/tasks', [HousekeepingController::class, 'store']);
+                    Route::put('/housekeeping/tasks/{id}', [HousekeepingController::class, 'update']);
+                });
+            });
+            Route::middleware('module:shifts')->group(function () {
+                Route::get('/shifts/mine', [ShiftController::class, 'mine'])->middleware('permission:shifts.view_own');
+                Route::middleware('permission:shifts.manage')->group(function () {
+                    Route::get('/shifts', [ShiftController::class, 'index']);
+                    Route::post('/shifts', [ShiftController::class, 'store']);
+                    Route::put('/shifts/{id}', [ShiftController::class, 'update']);
+                    Route::delete('/shifts/{id}', [ShiftController::class, 'destroy']);
+                    Route::get('/shifts/roster', [ShiftController::class, 'roster']);
+                    Route::post('/shifts/roster', [ShiftController::class, 'assign']);
+                    Route::delete('/shifts/roster/{id}', [ShiftController::class, 'unassign']);
+                });
+            });
+            Route::middleware('module:attendance')->group(function () {
+                Route::middleware('permission:attendance.clock')->group(function () {
+                    Route::get('/attendance/status', [AttendanceController::class, 'status']);
+                    Route::post('/attendance/clock', [AttendanceController::class, 'clock']);
+                    Route::post('/attendance/kiosk', [AttendanceController::class, 'kiosk']);
+                });
+                Route::post('/attendance/pin/{user}', [AttendanceController::class, 'setPin']); // self or staff.manage, checked inside
+                Route::post('/attendance/manual', [AttendanceController::class, 'manual'])->middleware('permission:attendance.manual');
+                Route::get('/attendance/report', [AttendanceController::class, 'report'])->middleware('permission:attendance.report');
+            });
 
             Route::get('/activity-log', [ActivityLogController::class, 'index'])->middleware('permission:activity_log.view');
 

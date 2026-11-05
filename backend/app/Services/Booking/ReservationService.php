@@ -18,6 +18,7 @@ use App\Models\User;
 use App\Services\Billing\CurrencyConverter;
 use App\Services\Billing\InvoiceService;
 use App\Services\HotelSettings;
+use App\Services\Modules\Cashier;
 use App\Support\HotelClock;
 use App\Support\Money;
 use Illuminate\Support\Collection;
@@ -171,6 +172,7 @@ class ReservationService
                 'reservation_id' => $reservation->id,
                 'invoice_id' => $invoice?->id,
                 'payment_method_id' => $method->id,
+                'cashier_session_id' => app(Cashier::class)->sessionForPayment($user, $method, $reservation->branch_id),
                 'type' => $type,
                 'amount' => $amount,
                 'currency' => $currency,
@@ -289,7 +291,7 @@ class ReservationService
 
         if (! empty($data['walk_in'])) {
             $times['in'] = now()->startOfMinute(); // walk-ins start now
-        } elseif ($times['in']->lt(now()->subMinutes(30)) && (! $existing || ! $existing->check_in_at->eq($times['in']))) {
+        } elseif (empty($data['allow_past']) && $times['in']->lt(now()->subMinutes(30)) && (! $existing || ! $existing->check_in_at->eq($times['in']))) {
             throw ValidationException::withMessages(['check_in' => 'Check-in cannot be in the past.']);
         }
 

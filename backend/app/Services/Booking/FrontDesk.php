@@ -50,10 +50,11 @@ class FrontDesk
         $localToday = HotelClock::now($hotel)->toDateString();
         $inDate = HotelClock::local($reservation->check_in_at, $hotel)->toDateString();
         $outDate = HotelClock::local($reservation->check_out_at, $hotel)->toDateString();
-        if ($reservation->stay_type === 'nightly' ? $localToday < $inDate : $now->lt($reservation->check_in_at->copy()->subHour())) {
+        $backfill = ! empty($data['backfill']); // demo history only (never reachable from the API)
+        if (! $backfill && ($reservation->stay_type === 'nightly' ? $localToday < $inDate : $now->lt($reservation->check_in_at->copy()->subHour()))) {
             throw ValidationException::withMessages(['status' => 'This booking starts on '.$inDate.'. Change the dates to check in today.']);
         }
-        if ($reservation->stay_type === 'nightly' ? $localToday >= $outDate : $now->gte($reservation->check_out_at)) {
+        if (! $backfill && ($reservation->stay_type === 'nightly' ? $localToday >= $outDate : $now->gte($reservation->check_out_at))) {
             throw ValidationException::withMessages(['status' => 'This stay has already ended. Change the dates first.']);
         }
         $payment = ! empty($data['payment']['amount']) ? $data['payment'] : null;
@@ -190,7 +191,7 @@ class FrontDesk
             $invoice = $this->invoices->openFor($reservation, $user);
 
             // Late check-out fee, once.
-            $late = $this->lateFee($reservation, $now);
+            $late = empty($data['backfill']) ? $this->lateFee($reservation, $now) : null;
             if ($late && ! $invoice->items()->where('type', 'late_check_out')->exists()) {
                 foreach ($reservation->rooms()->with(['room', 'rates'])->get() as $rr) {
                     $this->invoices->line($invoice, [
