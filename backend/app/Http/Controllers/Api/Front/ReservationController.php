@@ -269,7 +269,7 @@ class ReservationController extends Controller
     {
         $r->load(['guest', 'branch:id,name,code', 'rooms.roomType:id,name', 'rooms.room:id,number', 'rooms.rates', 'rooms.guests:id,first_name,last_name', 'payments.method:id,name', 'payments.receiver:id,name', 'creator:id,name']);
 
-        return $this->summary($r, $hotel) + [
+        return array_merge($this->summary($r, $hotel), [
             'guest' => $r->guest,
             'notes' => $r->notes,
             'subtotal' => $r->subtotal,
@@ -302,6 +302,6 @@ class ReservationController extends Controller
                 'method' => $p->method?->name, 'reference' => $p->reference, 'refund_reason' => $p->refund_reason,
                 'paid_at' => HotelClock::iso($p->paid_at, $hotel), 'by' => $p->receiver?->name,
             ])->values(),
-        ];
+        ]);
     }
 }
