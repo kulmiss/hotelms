@@ -186,7 +186,7 @@ export function CustomReportBuilder({ f }: { f: ReportFilters }) {
           <div className="w-48">
             <Field label={t('automation.reportName')} value={name} onChange={(e) => setName(e.target.value)} />
           </div>
-          <Button variant="secondary" disabled={!name || !measures.length || save.isPending} onClick={() => save.mutate({ id: editing ?? undefined, name, measures, group_by: group, chart_type: chart }}>
+          <Button variant="secondary" disabled={!name || !measures.length || save.isPending} onClick={() => save.mutate({ id: editing ?? undefined, name, measures, group_by: group, chart_type: chart })}>
             {editing ? t('automation.update') : t('automation.saveReport')}
           </Button>
         </div>
