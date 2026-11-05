@@ -146,6 +146,7 @@ class Cashier
         if ($session->user_id === $manager->id && ! $manager->isHotelAdmin()) {
             throw ValidationException::withMessages(['shift' => 'Another manager must approve your own shift.']);
         }
+
         return DB::transaction(function () use ($session, $manager) {
             if (CashierSession::whereKey($session->id)->lockForUpdate()->value('status') !== 'closed') {
                 throw ValidationException::withMessages(['shift' => 'Only closed shifts can be approved.']);
