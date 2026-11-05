@@ -5,6 +5,7 @@ namespace Tests\Feature\Hotel;
 use App\Mail\StaffInvite;
 use App\Models\Branch;
 use App\Models\Hotel;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\DefaultRoles;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,7 +22,7 @@ class StaffTest extends TestCase
 
     private Branch $piassa;
 
-    /** @var array<string, \App\Models\Role> */
+    /** @var array<string, Role> */
     private array $roles;
 
     protected function setUp(): void
