@@ -3,8 +3,12 @@
 namespace App\Services;
 
 use App\Models\Branch;
+use App\Models\GuestType;
 use App\Models\Hotel;
 use App\Models\Plan;
+use App\Models\RateRule;
+use App\Models\Room;
+use App\Models\RoomType;
 use App\Models\User;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Model;
@@ -83,7 +87,57 @@ class DemoHotel
                 $user->branches()->attach($key === 'hotel_admin' ? $branches->pluck('id') : [$branches[0]->id]);
             }
 
+            $this->tenant->runAs($hotel, fn () => $this->rooms($branches->all()));
+
             return $hotel;
         });
+    }
+
+    /**
+     * 60 sample rooms: Bole has 4 floors × 10 (Standard, Deluxe, Suite),
+     * Piassa 2 floors × 10 (Standard, Deluxe). Plus a weekend price and guest types.
+     *
+     * @param  list<Branch>  $branches
+     */
+    private function rooms(array $branches): void
+    {
+        $types = [
+            ['Standard', 'Double bed, shower, Wi-Fi', 2, 2, '2500.00', '1500.00', '400.00', ['Wi-Fi', 'TV', 'Shower']],
+            ['Deluxe', 'King bed, balcony, breakfast', 2, 3, '3800.00', '2200.00', null, ['Wi-Fi', 'TV', 'Balcony', 'Breakfast']],
+            ['Suite', 'Living room, bathtub, city view', 2, 4, '6500.00', null, null, ['Wi-Fi', 'TV', 'Bathtub', 'Mini bar', 'Breakfast']],
+        ];
+        $layout = [[4, ['Standard' => 6, 'Deluxe' => 3, 'Suite' => 1]], [2, ['Standard' => 7, 'Deluxe' => 3]]];
+
+        foreach ($branches as $i => $branch) {
+            [$floors, $mix] = $layout[$i] ?? $layout[1];
+            $made = [];
+            foreach ($types as [$name, $desc, $base, $max, $night, $day, $hour, $amenities]) {
+                if (isset($mix[$name])) {
+                    $made[$name] = RoomType::create([
+                        'branch_id' => $branch->id, 'name' => $name, 'description' => $desc,
+                        'base_capacity' => $base, 'max_capacity' => $max, 'nightly_price' => $night,
+                        'day_use_price' => $day, 'hourly_price' => $hour, 'currency' => 'ETB', 'amenities' => $amenities,
+                    ]);
+                }
+            }
+            for ($floor = 1; $floor <= $floors; $floor++) {
+                $n = 1;
+                foreach ($mix as $name => $count) {
+                    for ($k = 0; $k < $count; $k++, $n++) {
+                        Room::create([
+                            'branch_id' => $branch->id, 'room_type_id' => $made[$name]->id,
+                            'number' => $floor.str_pad((string) $n, 2, '0', STR_PAD_LEFT), 'floor' => (string) $floor, 'status' => 'available',
+                        ]);
+                    }
+                }
+            }
+        }
+
+        $guestTypes = [];
+        foreach (['Walk-in', 'Corporate', 'Government', 'NGO'] as $name) {
+            $guestTypes[$name] = GuestType::create(['name' => $name]);
+        }
+        RateRule::create(['name' => 'Weekend', 'rule_type' => 'weekend', 'days_of_week' => [5, 6], 'adjustment' => 'percent', 'value' => '10.00', 'priority' => 10, 'is_active' => true]);
+        RateRule::create(['name' => 'Corporate discount', 'rule_type' => 'guest_type', 'guest_type_id' => $guestTypes['Corporate']->id, 'adjustment' => 'percent', 'value' => '-15.00', 'priority' => 20, 'is_active' => true]);
     }
 }

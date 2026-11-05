@@ -64,3 +64,58 @@ describe('hotel settings', () => {
     expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
   })
 })
+
+describe('rooms and prices', () => {
+  const meRooms = () => ({ ...meAdmin(), permissions: [...ALL, 'settings.rooms', 'settings.pricing'] })
+
+  it('previews the room generator before creating rooms', async () => {
+    const fetchMock = mockApi({
+      'GET /me': { body: meRooms() },
+      'GET /settings/room-types': { body: { data: [{ id: 3, branch_id: 1, name: 'Standard', nightly_price: '2500.00', currency: 'ETB' }] } },
+      'GET /settings/rooms': { body: { data: [], limit: { used: 0, max: 20 } } },
+      'POST /settings/rooms/generate': (init) => {
+        const body = JSON.parse(String(init?.body))
+        if (body.preview) {
+          return { body: { data: [{ number: '101', floor: '1', room_type_id: 3, room_type: 'Standard' }, { number: '102', floor: '1', room_type_id: 3, room_type: 'Standard' }], existing: [], limit: { used: 0, max: 20 } } }
+        }
+        return { status: 201, body: { created: 2 } }
+      },
+    })
+    renderApp('/settings/rooms')
+
+    expect(await screen.findByText('0 of 20 rooms used')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Room generator' }))
+    expect(await screen.findByText('2 rooms will be created:')).toBeInTheDocument()
+    expect(screen.getByText('102')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Create 2 rooms' }))
+
+    const created = fetchMock.mock.calls.find(([url, init]) => String(url).endsWith('/settings/rooms/generate') && !JSON.parse(String(init?.body)).preview)
+    expect(JSON.parse(String(created?.[1]?.body))).toMatchObject({ room_type_id: 3, first_floor: 1, floors: 1, rooms_per_floor: 10 })
+  })
+
+  it('asks for a room type before rooms can be added', async () => {
+    mockApi({
+      'GET /me': { body: meRooms() },
+      'GET /settings/room-types': { body: { data: [] } },
+      'GET /settings/rooms': { body: { data: [], limit: { used: 0, max: null } } },
+    })
+    renderApp('/settings/rooms')
+    expect(await screen.findByText('Add a room type for this branch first.')).toBeInTheDocument()
+  })
+
+  it('shows a weekend rule and the stay price night by night', async () => {
+    mockApi({
+      'GET /me': { body: meRooms() },
+      'GET /settings/guest-types': { body: { data: [] } },
+      'GET /settings/room-types': { body: { data: [{ id: 3, branch_id: 1, name: 'Standard', nightly_price: '2500.00', currency: 'ETB' }] } },
+      'GET /settings/rate-rules': { body: { data: [{ id: 1, name: 'Weekend', rule_type: 'weekend', days_of_week: [5, 6], room_type_id: null, adjustment: 'percent', value: '20.00', priority: 10, is_active: true }] } },
+      'GET /settings/price-preview': {
+        body: { data: { total: '5500.00', currency: 'ETB', nights: [{ date: '2026-11-12', amount: '2500.00', rule: null }, { date: '2026-11-13', amount: '3000.00', rule: { name: 'Weekend' } }] } },
+      },
+    })
+    renderApp('/settings/rate-rules')
+    expect(await screen.findByText('Fri, Sat')).toBeInTheDocument()
+    expect(screen.getByText('+20%')).toBeInTheDocument()
+    expect(await screen.findByText('ETB 5,500.00')).toBeInTheDocument()
+  })
+})

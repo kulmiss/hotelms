@@ -9,6 +9,10 @@ import { useCan } from '@/lib/hotel'
 export const SETTINGS_SECTIONS = [
   { key: 'profile', permission: 'settings.hotel' },
   { key: 'branches', permission: 'settings.branches' },
+  { key: 'room-types', permission: 'settings.rooms' },
+  { key: 'rooms', permission: 'settings.rooms' },
+  { key: 'rate-rules', permission: 'settings.pricing' },
+  { key: 'guest-types', permission: 'settings.pricing' },
   { key: 'currencies', permission: 'settings.exchange_rates' },
   { key: 'taxes', permission: 'settings.money' },
   { key: 'payment-methods', permission: 'settings.money' },

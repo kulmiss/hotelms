@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Hotel;
 use App\Models\Plan;
+use App\Models\Room;
 use App\Models\SubscriptionPayment;
 use App\Models\User;
 use App\Support\Money;
@@ -39,9 +40,10 @@ class Subscriptions
         return $plan->priceFor($this->billableRooms($hotel), $cycle, $periods);
     }
 
+    /** Active rooms across all branches (plans.md: counted on the invoice date). */
     public function billableRooms(Hotel $hotel): int
     {
-        return 0; // Rooms arrive in phase 2.
+        return Room::withoutGlobalScope('hotel')->where('hotel_id', $hotel->id)->count();
     }
 
     /**

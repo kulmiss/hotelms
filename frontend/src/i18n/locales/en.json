@@ -21,7 +21,16 @@
     "off": "Off",
     "active": "Active",
     "inactive": "Inactive",
-    "nothingYet": "Nothing here yet."
+    "nothingYet": "Nothing here yet.",
+    "weekdays": {
+      "1": "Mon",
+      "2": "Tue",
+      "3": "Wed",
+      "4": "Thu",
+      "5": "Fri",
+      "6": "Sat",
+      "7": "Sun"
+    }
   },
   "nav": {
     "main": "Main",
@@ -481,6 +490,10 @@
     "sections": {
       "profile": "Hotel profile",
       "branches": "Branches",
+      "room-types": "Room types",
+      "rooms": "Rooms",
+      "rate-rules": "Prices and rules",
+      "guest-types": "Guest types",
       "currencies": "Currencies and rates",
       "taxes": "Taxes",
       "payment-methods": "Payment methods",
@@ -626,6 +639,98 @@
       "help": "Your HotelMS plan. Contact HotelMS to change it.",
       "rooms": "Rooms",
       "unlimited": "{{used}} (unlimited)"
+    },
+    "roomTypes": {
+      "help": "Each branch has its own room types and prices.",
+      "add": "Add room type",
+      "name": "Name",
+      "description": "Description",
+      "baseCapacity": "Guests included",
+      "maxCapacity": "Max guests",
+      "nightly": "Price per night",
+      "dayUse": "Day-use price",
+      "hourly": "Hourly price",
+      "currency": "Currency",
+      "optional": "Leave empty if you don't offer it.",
+      "amenities": "Amenities",
+      "amenitiesHint": "Separate with commas, e.g. Wi-Fi, TV, Balcony",
+      "guests": "Guests",
+      "rooms": "Rooms"
+    },
+    "rooms": {
+      "help": "Add rooms one by one, or many at once with the room generator.",
+      "branch": "Branch",
+      "addOne": "Add room",
+      "noTypes": "Add a room type for this branch first.",
+      "used": "{{used}} of {{max}} rooms used",
+      "usedUnlimited": "{{used}} rooms",
+      "number": "Room number",
+      "floor": "Floor",
+      "type": "Room type",
+      "status": "Status",
+      "notes": "Notes",
+      "generator": "Room generator",
+      "generatorHelp": "E.g. floors 1–4 with 10 rooms each makes rooms 101–110, 201–210…",
+      "firstFloor": "First floor",
+      "groundHint": "0 = ground floor (G01, G02…)",
+      "floors": "Number of floors",
+      "perFloor": "Rooms per floor",
+      "startNumber": "First room number on each floor",
+      "typeByPosition": "Room type by position on the floor",
+      "position": "Position {{n}}",
+      "previewCount_one": "{{count}} room will be created:",
+      "previewCount_other": "{{count}} rooms will be created:",
+      "exists": "These numbers already exist: {{list}}",
+      "overLimit": "Your plan allows {{max}} rooms ({{used}} used). Upgrade the plan to add more.",
+      "create_one": "Create {{count}} room",
+      "create_other": "Create {{count}} rooms"
+    },
+    "guestTypes": {
+      "help": "Groups of guests that can get their own price, e.g. Corporate, Government, NGO.",
+      "add": "Add guest type",
+      "name": "Name"
+    },
+    "rates": {
+      "help": "Change the room price on weekends, in seasons or for guest types. When several rules match a night, only the one with the highest priority is used.",
+      "add": "Add rule",
+      "name": "Name",
+      "type": "Rule type",
+      "types": {
+        "weekend": "Weekdays",
+        "season": "Season (dates)",
+        "guest_type": "Guest type"
+      },
+      "days": "Days",
+      "from": "From",
+      "to": "To",
+      "guestType": "Guest type",
+      "roomType": "Room type",
+      "allTypes": "All room types",
+      "adjustment": "Change",
+      "adjustments": {
+        "percent": "Percent (+/−)",
+        "amount": "Amount (+/−)",
+        "fixed_price": "Fixed price"
+      },
+      "value": "Value",
+      "valueHint": "Use a minus for a discount, e.g. -15",
+      "priority": "Priority",
+      "priorityHint": "Higher wins when rules overlap.",
+      "when": "When",
+      "change": "Change",
+      "preview": "Try the prices",
+      "previewHelp": "See what a stay costs, night by night, with your rules.",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "total": "Total"
     }
+  },
+  "roomStatus": {
+    "available": "Available",
+    "occupied": "Occupied",
+    "dirty": "Dirty",
+    "cleaning": "Cleaning",
+    "maintenance": "Maintenance",
+    "out_of_order": "Out of order"
   }
 }
