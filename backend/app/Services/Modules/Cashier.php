@@ -4,6 +4,7 @@ namespace App\Services\Modules;
 
 use App\Models\CashierSession;
 use App\Models\Hotel;
+use App\Models\HotelCurrency;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\User;
@@ -53,13 +54,21 @@ class Cashier
     /** @param  array<string, string>  $opening  currency => amount */
     public function open(User $user, int $branchId, array $opening): CashierSession
     {
-        if ($this->current($user)) {
-            throw ValidationException::withMessages(['shift' => 'You already have an open cashier shift.']);
-        }
         $main = $user->hotel->default_currency ?? 'ETB';
-        $opening += [$main => '0'];
+        $opening = array_change_key_case($opening, CASE_UPPER) + [$main => '0'];
+        $known = HotelCurrency::pluck('code')->map(fn ($c) => strtoupper($c))->push($main)->all();
+        foreach (array_keys($opening) as $currency) {
+            if (! in_array($currency, $known, true)) {
+                throw ValidationException::withMessages(["opening.$currency" => "{$currency} is not one of your currencies."]);
+            }
+        }
 
         return DB::transaction(function () use ($user, $branchId, $opening) {
+            // One open shift per person, also on a double tap.
+            User::whereKey($user->id)->lockForUpdate()->first();
+            if ($this->current($user)) {
+                throw ValidationException::withMessages(['shift' => 'You already have an open cashier shift.']);
+            }
             $session = CashierSession::create(['branch_id' => $branchId, 'user_id' => $user->id, 'opened_at' => now(), 'status' => 'open']);
             foreach ($opening as $currency => $amount) {
                 $session->balances()->create(['currency' => strtoupper($currency), 'opening_amount' => Money::round((string) $amount)]);
@@ -113,6 +122,9 @@ class Cashier
         }
 
         return DB::transaction(function () use ($session, $counted, $note, $expected) {
+            if (CashierSession::whereKey($session->id)->lockForUpdate()->value('status') !== 'open') {
+                throw ValidationException::withMessages(['shift' => 'This shift is already closed.']);
+            }
             foreach ($expected as $currency => $row) {
                 $count = Money::round((string) $counted[$currency]);
                 $session->balances()->updateOrCreate(['currency' => $currency], [
@@ -134,8 +146,13 @@ class Cashier
         if ($session->user_id === $manager->id && ! $manager->isHotelAdmin()) {
             throw ValidationException::withMessages(['shift' => 'Another manager must approve your own shift.']);
         }
-        $session->update(['status' => 'approved', 'approved_by' => $manager->id, 'approved_at' => now()]);
+        return DB::transaction(function () use ($session, $manager) {
+            if (CashierSession::whereKey($session->id)->lockForUpdate()->value('status') !== 'closed') {
+                throw ValidationException::withMessages(['shift' => 'Only closed shifts can be approved.']);
+            }
+            $session->update(['status' => 'approved', 'approved_by' => $manager->id, 'approved_at' => now()]);
 
-        return $session->fresh('balances');
+            return $session->fresh('balances');
+        });
     }
 }
