@@ -1,5 +1,12 @@
 {
-  "app": { "name": "HotelMS" },
+  "app": {
+    "name": "HotelMS"
+  },
+  "common": {
+    "loading": "Loading…",
+    "serverUnreachable": "Can't reach the server. Check the internet and try again.",
+    "tryAgain": "Try again"
+  },
   "nav": {
     "main": "Main",
     "dashboard": "Dashboard",
@@ -22,7 +29,30 @@
     "lightMode": "Light mode",
     "darkMode": "Dark mode",
     "branch": "Branch",
-    "mainBranch": "Main branch"
+    "mainBranch": "Main branch",
+    "signOut": "Sign out",
+    "superAdmin": "Super Admin"
+  },
+  "login": {
+    "title": "Sign in",
+    "subtitle": "Use the account your hotel admin gave you.",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "remember": "Keep me signed in on this device",
+    "signingIn": "Signing in…",
+    "tooManyAttempts": "Too many tries. Please wait a minute and try again."
+  },
+  "password": {
+    "title": "Set a new password",
+    "forcedIntro": "You signed in with a temporary password. Please choose your own to continue.",
+    "intro": "Choose a new password for your account.",
+    "current": "Current password",
+    "new": "New password",
+    "confirm": "Repeat new password",
+    "rules": "At least 8 characters, with letters and numbers.",
+    "mismatch": "The two passwords don't match.",
+    "submit": "Save password"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -39,13 +69,8 @@
     "comingIn": "Coming in phase {{phase}}",
     "body": "This screen is planned. It will be built in phase {{phase}} of the build plan."
   },
-  "login": {
-    "title": "Sign in",
-    "subtitle": "Use the account your hotel admin gave you.",
-    "email": "Email",
-    "password": "Password",
-    "submit": "Sign in",
-    "notReady": "Sign-in is built in phase 1."
-  },
-  "notFound": { "title": "Page not found", "back": "Back to dashboard" }
+  "notFound": {
+    "title": "Page not found",
+    "back": "Back to dashboard"
+  }
 }

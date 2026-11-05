@@ -26,6 +26,8 @@ The first start takes several minutes (it downloads and installs everything). Th
 - **API status:** http://localhost:8000/api/v1/health
 - **Emails sent by the app:** http://localhost:8025
 
+**Sign in** as the Super Admin: `admin@hotelms.test` / `ChangeMe-123`. You'll be asked to choose your own password. (Change the email in `backend/.env`: `SUPER_ADMIN_EMAIL`, before the first start.)
+
 Stop it with `Ctrl + C`. Next time, `docker compose up` (without `--build`) is enough.
 
 ## Checks
