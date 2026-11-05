@@ -17,6 +17,7 @@ use App\Services\HotelSettings;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -360,12 +361,12 @@ class FrontDeskTest extends TestCase
     public function test_room_board_stays_fast_for_big_hotels(): void
     {
         $count = function (): int {
-            \Illuminate\Support\Facades\DB::flushQueryLog();
-            \Illuminate\Support\Facades\DB::enableQueryLog();
+            DB::flushQueryLog();
+            DB::enableQueryLog();
             $this->actingAs($this->admin)->getJson("/api/v1/front-desk/board?branch_id={$this->branch->id}")->assertOk();
             $this->getJson("/api/v1/front-desk/today?branch_id={$this->branch->id}")->assertOk();
 
-            return count(\Illuminate\Support\Facades\DB::getQueryLog());
+            return count(DB::getQueryLog());
         };
         $this->checkIn($this->booked(), ['101'])->assertOk();
         $small = $count();
