@@ -3,6 +3,7 @@
 namespace App\Services\Billing;
 
 use App\Models\Tax;
+use App\Support\Tenancy\TenantContext;
 use App\Support\Money;
 use Illuminate\Support\Collection;
 
@@ -14,8 +15,8 @@ use Illuminate\Support\Collection;
  */
 class TaxCalculator
 {
-    /** @var Collection<int, Tax>|null */
-    private ?Collection $taxes = null;
+    /** @var array<int, Collection<int, Tax>> taxes per hotel (never mixed between hotels) */
+    private array $taxes = [];
 
     /** Line types that count as "rooms" for taxes. */
     public const ROOM_TYPES = ['room', 'early_check_in', 'late_check_out', 'discount'];
@@ -43,6 +44,6 @@ class TaxCalculator
     /** @return Collection<int, Tax> */
     private function active(): Collection
     {
-        return $this->taxes ??= Tax::where('is_active', true)->orderBy('id')->get();
+        return $this->taxes[(int) app(TenantContext::class)->hotelId()] ??= Tax::where('is_active', true)->orderBy('id')->get();
     }
 }

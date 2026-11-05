@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Settings;
 use App\Models\ExchangeRate;
 use App\Models\HotelCurrency;
 use Illuminate\Database\Eloquent\Model;
+use App\Support\HotelClock;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -23,9 +24,10 @@ class CurrencyController extends ResourceController
     public function index(): JsonResponse
     {
         $main = HotelCurrency::where('is_default', true)->value('code');
-        $currencies = HotelCurrency::orderByDesc('is_default')->orderBy('code')->get()->map(function (HotelCurrency $c) use ($main) {
+        $today = HotelClock::now(request()->user()->hotel)->toDateString();
+        $currencies = HotelCurrency::orderByDesc('is_default')->orderBy('code')->get()->map(function (HotelCurrency $c) use ($main, $today) {
             $rate = $c->code === $main ? null : ExchangeRate::where('from_currency', $c->code)->where('to_currency', $main)
-                ->where('effective_date', '<=', now()->toDateString())->latest('effective_date')->latest('id')->first();
+                ->where('effective_date', '<=', $today)->latest('effective_date')->latest('id')->first();
 
             return $c->toArray() + ['current_rate' => $rate?->rate, 'rate_date' => $rate?->effective_date?->toDateString()];
         });

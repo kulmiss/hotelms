@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\ExchangeRate;
 use App\Models\HotelCurrency;
+use App\Support\HotelClock;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -36,7 +37,7 @@ class ExchangeRateController extends Controller
             'from_currency' => $data['from_currency'],
             'to_currency' => $main,
             'rate' => $data['rate'],
-            'effective_date' => $data['effective_date'] ?? now()->toDateString(),
+            'effective_date' => $data['effective_date'] ?? HotelClock::now($request->user()->hotel)->toDateString(),
             'entered_by' => $request->user()->id,
         ]);
 
