@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\Modules\AttendanceController;
 use App\Http\Controllers\Api\Modules\CashierController;
 use App\Http\Controllers\Api\Modules\HousekeepingController;
 use App\Http\Controllers\Api\Modules\ShiftController;
+use App\Http\Controllers\Api\Reports\ReportController;
 use App\Http\Controllers\Api\Settings\BranchSettingsController;
 use App\Http\Controllers\Api\Settings\CancellationPolicyController;
 use App\Http\Controllers\Api\Settings\ChargeTypeController;
@@ -199,6 +200,11 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
                 Route::post('/attendance/manual', [AttendanceController::class, 'manual'])->middleware('permission:attendance.manual');
                 Route::get('/attendance/report', [AttendanceController::class, 'report'])->middleware('permission:attendance.report');
             });
+
+            // Dashboard and reports.
+            Route::get('/dashboard', [ReportController::class, 'dashboard'])->middleware('permission:dashboard.view');
+            Route::get('/reports/drilldown', [ReportController::class, 'drilldown']);
+            Route::get('/reports/{key}', [ReportController::class, 'show']); // per-report permission checked inside
 
             Route::get('/activity-log', [ActivityLogController::class, 'index'])->middleware('permission:activity_log.view');
 
