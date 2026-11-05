@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Services\HotelModules;
 use App\Services\Impersonation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -56,6 +57,7 @@ class MeController extends Controller
                 'default_currency' => $hotel->default_currency,
                 'timezone' => $hotel->timezone,
                 'is_demo' => $hotel->is_demo,
+                'modules' => app(HotelModules::class)->enabled($hotel),
             ] : null,
             'branches' => $user->accessibleBranches()
                 ->map(fn (Branch $branch) => ['id' => $branch->id, 'name' => $branch->name])

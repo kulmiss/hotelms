@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Hotel;
 use App\Models\User;
 use App\Services\DefaultRoles;
+use App\Services\HotelDefaults;
 use Illuminate\Database\Seeder;
 
 /**
@@ -13,10 +14,11 @@ use Illuminate\Database\Seeder;
  */
 class DefaultRolesSeeder extends Seeder
 {
-    public function run(DefaultRoles $defaults): void
+    public function run(DefaultRoles $defaults, HotelDefaults $settings): void
     {
-        Hotel::query()->each(function (Hotel $hotel) use ($defaults) {
+        Hotel::query()->each(function (Hotel $hotel) use ($defaults, $settings) {
             $roles = $defaults->ensureFor($hotel);
+            $settings->apply($hotel);
 
             $hasAdmin = User::where('hotel_id', $hotel->id)->where('role_id', $roles['hotel_admin']->id)->exists();
             if (! $hasAdmin) {
