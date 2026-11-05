@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\Branded;
 use App\Models\Hotel;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
@@ -13,7 +14,7 @@ use Illuminate\Queue\SerializesModels;
 /** Sent when the HotelMS team resets someone's password. */
 class TemporaryPassword extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Branded, Queueable, SerializesModels;
 
     public function __construct(
         public User $user,
@@ -23,13 +24,11 @@ class TemporaryPassword extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Your new HotelMS password');
+        return $this->brandedEnvelope('Your new HotelMS password');
     }
 
     public function content(): Content
     {
-        return new Content(markdown: 'mail.temporary-password', with: [
-            'signInUrl' => rtrim((string) config('app.frontend_url'), '/').'/login',
-        ]);
+        return new Content(markdown: 'mail.temporary-password', with: $this->brandData());
     }
 }

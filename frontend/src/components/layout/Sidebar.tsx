@@ -5,6 +5,8 @@ import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/react/2
 import { adminNav, devNav, mainNav, type NavItem } from '@/app/navigation'
 import { prefetchRoute } from '@/app/prefetch'
 import { useMe } from '@/lib/auth'
+import { useCan } from '@/lib/hotel'
+import { BrandMark, useBrand } from '@/lib/brand'
 import { cn } from '@/lib/cn'
 
 type EntryProps = { item: NavItem; collapsed: boolean; onNavigate?: () => void }
@@ -23,7 +25,7 @@ function NavEntry({ item, collapsed, onNavigate }: EntryProps) {
         aria-label={collapsed ? label : undefined}
         className={({ isActive }) =>
           cn(
-            'flex min-h-touch items-center gap-x-3 rounded-lg px-2 text-sm font-medium outline-none transition duration-75',
+            'flex min-h-touch items-center gap-x-2.5 rounded-lg px-2 text-[13px] font-medium outline-none transition duration-75',
             'focus-visible:bg-sunken',
             collapsed && 'lg:justify-center lg:px-0',
             isActive ? 'bg-sunken text-accent-text' : 'text-grey-text hover:bg-sunken',
@@ -34,7 +36,7 @@ function NavEntry({ item, collapsed, onNavigate }: EntryProps) {
           const Icon = isActive ? item.activeIcon : item.icon
           return (
             <>
-              <Icon aria-hidden className={cn('size-6 shrink-0', isActive ? 'text-accent-text' : 'text-icon')} />
+              <Icon aria-hidden className={cn('size-5 shrink-0', isActive ? 'text-accent-text' : 'text-icon')} />
               {/* Collapsed: icon only (the name shows as a tooltip). */}
               <span className={cn('flex-1 truncate', collapsed && 'lg:hidden')}>{label}</span>
             </>
@@ -58,7 +60,12 @@ type SidebarProps = { open: boolean; collapsed: boolean; onClose: () => void; on
 export function Sidebar({ open, collapsed, onClose, onToggleCollapsed }: SidebarProps) {
   const { t } = useTranslation()
   const me = useMe()
-  const items = [...(me.data?.user.is_super_admin ? adminNav : mainNav), ...(import.meta.env.DEV ? devNav : [])]
+  const can = useCan()
+  const brand = useBrand()
+  const items = [
+    ...(me.data?.user.is_super_admin ? adminNav : mainNav.filter((item) => can(item.permission))),
+    ...(import.meta.env.DEV ? devNav : []),
+  ]
 
   // Keep the order, start a new group whenever the group name changes.
   const groups: { name?: string; items: NavItem[] }[] = []
@@ -82,18 +89,18 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapsed }: Sidebar
       <aside
         data-collapsed={collapsed}
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex w-72 flex-col bg-surface shadow-xl ring-1 ring-ring',
+          'fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-surface shadow-xl ring-1 ring-ring',
           'transition-[transform,width] duration-300 ease-in-out motion-reduce:transition-none',
           'lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:shadow-none',
-          collapsed && 'lg:w-[4.5rem]',
+          collapsed && 'lg:w-16',
           open ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <header className={cn('flex h-16 shrink-0 items-center gap-x-3 px-4', collapsed && 'lg:justify-center lg:px-0')}>
+        <header className={cn('flex h-14 shrink-0 items-center gap-x-3 px-4', collapsed && 'lg:justify-center lg:px-0')}>
           {!collapsed && (
-            <span className="flex min-w-0 flex-1 items-center gap-x-2.5 text-lg font-bold tracking-tight">
-              <img src="/favicon.svg" alt="" className="size-8 shrink-0" />
-              {t('app.name')}
+            <span className="flex min-w-0 flex-1 items-center gap-x-2.5 text-[15px] font-semibold tracking-tight">
+              <BrandMark className="size-7" />
+              <span className="truncate">{brand.name}</span>
             </span>
           )}
           <button
@@ -103,7 +110,7 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapsed }: Sidebar
             aria-expanded={!collapsed}
             className="hidden size-touch shrink-0 items-center justify-center rounded-lg text-icon transition duration-75 hover:bg-sunken hover:text-muted lg:flex"
           >
-            {collapsed ? <ChevronRightIcon aria-hidden className="size-6" /> : <ChevronLeftIcon aria-hidden className="size-6" />}
+            {collapsed ? <ChevronRightIcon aria-hidden className="size-5" /> : <ChevronLeftIcon aria-hidden className="size-5" />}
           </button>
           <button
             type="button"
@@ -111,21 +118,21 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapsed }: Sidebar
             aria-label={t('topbar.closeMenu')}
             className={cn('flex size-touch items-center justify-center rounded-lg text-icon hover:bg-sunken lg:hidden', collapsed && 'ml-auto')}
           >
-            <XMarkIcon aria-hidden className="size-6" />
+            <XMarkIcon aria-hidden className="size-5" />
           </button>
         </header>
 
-        <nav aria-label={t('nav.main')} className="flex flex-1 flex-col overflow-x-visible overflow-y-auto px-4 py-6 lg:overflow-y-visible">
-          <ul className="flex flex-col gap-y-7">
+        <nav aria-label={t('nav.main')} className="flex flex-1 flex-col overflow-x-visible overflow-y-auto px-3 py-4 lg:overflow-y-visible">
+          <ul className="flex flex-col gap-y-5">
             {groups.map((group, gi) => (
               <Fragment key={group.name ?? `g${gi}`}>
                 <li className="flex flex-col gap-y-1">
                   {group.name && (
-                    <span className={cn('mb-1 px-2 text-sm font-medium text-muted', collapsed && 'lg:sr-only')}>
+                    <span className={cn('mb-1 px-2 text-xs font-medium text-muted', collapsed && 'lg:sr-only')}>
                       {t(`nav.groups.${group.name}`)}
                     </span>
                   )}
-                  <ul className="flex flex-col gap-y-1">
+                  <ul className="flex flex-col gap-y-0.5">
                     {group.items.map((item) => (
                       <NavEntry key={item.key} item={item} collapsed={collapsed} onNavigate={onClose} />
                     ))}

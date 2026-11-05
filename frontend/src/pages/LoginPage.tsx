@@ -7,11 +7,13 @@ import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { ApiError } from '@/lib/api'
 import { useLogin, useMe } from '@/lib/auth'
+import { BrandMark, useBrand } from '@/lib/brand'
 
 export function LoginPage() {
   const { t } = useTranslation()
   const me = useMe()
   const login = useLogin()
+  const brand = useBrand()
   const navigate = useNavigate()
   const location = useLocation()
   const [email, setEmail] = useState('')
@@ -38,14 +40,14 @@ export function LoginPage() {
 
   return (
     <div className="flex min-h-full flex-col items-center justify-center gap-y-6 px-4 py-12">
-      <span className="flex items-center gap-x-2.5 text-2xl font-bold tracking-tight">
-        <img src="/favicon.svg" alt="" className="size-10" />
-        {t('app.name')}
+      <span className="flex items-center gap-x-2.5 text-lg font-semibold tracking-tight">
+        <BrandMark className="size-9" />
+        {brand.name}
       </span>
-      <Card className="flex w-full max-w-md flex-col gap-y-8 p-8 animate-page-in motion-reduce:animate-none">
+      <Card className="flex w-full max-w-sm flex-col gap-y-6 p-7 animate-page-in motion-reduce:animate-none">
         <div className="flex flex-col gap-y-2 text-center">
-          <h1 className="text-2xl font-bold tracking-tight">{t('login.title')}</h1>
-          <p className="text-sm text-muted">{t('login.subtitle')}</p>
+          <h1 className="text-xl font-semibold tracking-tight">{t('login.title')}</h1>
+          <p className="text-sm text-muted">{brand.loginMessage || t('login.subtitle')}</p>
         </div>
         <form className="flex flex-col gap-y-6" onSubmit={submit} noValidate>
           {fieldError && <Alert>{fieldError}</Alert>}

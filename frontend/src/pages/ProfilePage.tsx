@@ -27,7 +27,7 @@ export function ProfilePage() {
           to="/change-password"
           className={buttonClass('secondary')}
         >
-          <KeyIcon aria-hidden className="size-5 text-icon" />
+          <KeyIcon aria-hidden className="size-4 text-icon" />
           {t('topbar.changePassword')}
         </Link>
       </Card>

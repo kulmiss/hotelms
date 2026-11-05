@@ -14,8 +14,8 @@ const variants: Record<Variant, string> = {
 
 // Touch rule: md is 44px tall, lg is 52px (for main reception actions).
 const sizes: Record<Size, string> = {
-  md: 'min-h-touch px-3.5 text-sm',
-  lg: 'min-h-13 px-5 text-base',
+  md: 'min-h-touch px-3 text-[13px]',
+  lg: 'min-h-11 px-5 text-sm',
 }
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {

@@ -181,7 +181,7 @@ function ResetPassword({ hotelId, user }: { hotelId: number; user: { id: number;
   if (!open) {
     return (
       <Button variant="secondary" className="self-start" onClick={() => setOpen(true)}>
-        <KeyIcon aria-hidden className="size-5 text-icon" />
+        <KeyIcon aria-hidden className="size-4 text-icon" />
         {t('admin.hotel.resetPassword')}
       </Button>
     )
@@ -197,7 +197,7 @@ function ResetPassword({ hotelId, user }: { hotelId: number; user: { id: number;
         <div className="flex items-center justify-between gap-2">
           <span className="font-mono text-base font-semibold break-all">{reset.data.temporary_password}</span>
           <Button variant="secondary" onClick={copy}>
-            {copied ? <CheckIcon aria-hidden className="size-5" /> : <ClipboardDocumentIcon aria-hidden className="size-5 text-icon" />}
+            {copied ? <CheckIcon aria-hidden className="size-5" /> : <ClipboardDocumentIcon aria-hidden className="size-4 text-icon" />}
             {copied ? t('admin.hotel.copied') : t('admin.hotel.copy')}
           </Button>
         </div>

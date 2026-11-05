@@ -28,7 +28,7 @@ export function AdminDashboardPage() {
             to="/admin/hotels/new"
             className={buttonClass('primary')}
           >
-            <PlusIcon aria-hidden className="size-5" />
+            <PlusIcon aria-hidden className="size-4" />
             {t('admin.hotels.new')}
           </Link>
         }
@@ -49,7 +49,7 @@ export function AdminDashboardPage() {
             to="/admin/hotels/new"
             className={buttonClass('primary', 'md', 'mt-2')}
           >
-            <PlusIcon aria-hidden className="size-5" />
+            <PlusIcon aria-hidden className="size-4" />
             {t('admin.dash.createFirst')}
           </Link>
         </Card>

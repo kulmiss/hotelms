@@ -12,6 +12,11 @@ export const pages = {
   platformSettings: () => import('@/pages/admin/PlatformSettingsPage'),
   designSystem: () => import('@/pages/DesignSystemPage'),
   profile: () => import('@/pages/ProfilePage'),
+  staff: () => import('@/pages/team/StaffPage'),
+  staffForm: () => import('@/pages/team/StaffFormPage'),
+  roles: () => import('@/pages/team/RolesPage'),
+  roleForm: () => import('@/pages/team/RoleFormPage'),
+  activityLog: () => import('@/pages/team/ActivityLogPage'),
 }
 
 const byPath: Record<string, () => Promise<unknown>> = {
@@ -21,6 +26,9 @@ const byPath: Record<string, () => Promise<unknown>> = {
   '/admin/plans': pages.plans,
   '/admin/settings': pages.platformSettings,
   '/design-system': pages.designSystem,
+  '/staff': pages.staff,
+  '/roles': pages.roles,
+  '/activity-log': pages.activityLog,
 }
 
 const done = new Set<string>()

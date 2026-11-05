@@ -60,6 +60,28 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 export const post = <T>(path: string, data?: unknown) =>
   api<T>(path, { method: 'POST', body: data === undefined ? undefined : JSON.stringify(data) })
 
+/** Sends a file (multipart form). Pass null to remove. */
+export async function upload<T>(path: string, field: string, file: File | null): Promise<T> {
+  await prepareSession()
+  const form = new FormData()
+  if (file) form.append(field, file)
+  const token = xsrfToken()
+  const res = await fetch(BASE + path, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { Accept: 'application/json', ...(token ? { 'X-XSRF-TOKEN': token } : {}) },
+    body: form,
+  })
+  const body: unknown = await res.json().catch(() => null)
+  if (!res.ok) {
+    const message = body && typeof body === 'object' && 'message' in body ? String(body.message) : res.statusText
+    throw new ApiError(res.status, message, body)
+  }
+  return body as T
+}
+
+export const del = <T>(path: string) => api<T>(path, { method: 'DELETE' })
+
 export const put = <T>(path: string, data?: unknown) =>
   api<T>(path, { method: 'PUT', body: data === undefined ? undefined : JSON.stringify(data) })
 
@@ -84,4 +106,6 @@ export type Me = {
   }
   hotel: { id: number; name: string; status: string; default_currency: string; timezone: string } | null
   branches: { id: number; name: string }[]
+  role: { id: number; name: string; is_hotel_admin: boolean; max_discount_percent: string } | null
+  permissions: string[]
 }

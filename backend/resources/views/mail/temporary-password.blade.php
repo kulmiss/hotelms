@@ -3,7 +3,7 @@
 
 Hello {{ $user->name }},
 
-The HotelMS team has set a new temporary password for your account at **{{ $hotel->name }}**.
+The {{ $platformName }} team has set a new temporary password for your account at **{{ $hotel->name }}**.
 
 **Email:** {{ $user->email }}<br>
 **Temporary password:** {{ $temporaryPassword }}
@@ -17,5 +17,11 @@ Sign in
 If you did not ask for this, please contact your Hotel Admin.
 
 Thanks,<br>
-The HotelMS team
+The {{ $platformName }} team
+
+@if ($emailFooter)
+<x-mail::subcopy>
+{{ $emailFooter }}
+</x-mail::subcopy>
+@endif
 </x-mail::message>

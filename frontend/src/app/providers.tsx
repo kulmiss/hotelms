@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
+import { BrandingEffects } from '@/lib/brand'
 import { ThemeProvider } from '@/lib/theme'
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -8,7 +9,10 @@ export function Providers({ children }: { children: ReactNode }) {
   )
   return (
     <ThemeProvider>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <BrandingEffects />
+        {children}
+      </QueryClientProvider>
     </ThemeProvider>
   )
 }

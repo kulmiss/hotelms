@@ -9,6 +9,6 @@ class DatabaseSeeder extends Seeder
     /** Safe to run on every start: nothing is overwritten. */
     public function run(): void
     {
-        $this->call([PlatformSeeder::class, SuperAdminSeeder::class]);
+        $this->call([PlatformSeeder::class, SuperAdminSeeder::class, DefaultRolesSeeder::class]);
     }
 }

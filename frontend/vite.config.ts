@@ -20,6 +20,7 @@ export default defineConfig({
     proxy: {
       '/api': { target: apiTarget },
       '/sanctum': { target: apiTarget },
+      '/storage': { target: apiTarget },
     },
   },
   test: {

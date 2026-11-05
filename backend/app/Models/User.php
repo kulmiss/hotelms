@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -18,12 +19,15 @@ use Laravel\Sanctum\HasApiTokens;
  * Users are looked up by email across the whole platform (one login page),
  * so this model is not tenant-scoped. Staff lists must filter by hotel_id.
  */
-#[Fillable(['hotel_id', 'name', 'email', 'phone', 'password', 'status', 'must_change_password'])]
+#[Fillable(['hotel_id', 'role_id', 'name', 'email', 'phone', 'password', 'status', 'must_change_password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
+    use HasApiTokens, HasFactory, LogsActivity, Notifiable, SoftDeletes;
+
+    /** @var list<string>|null */
+    private ?array $permissionCache = null;
 
     protected function casts(): array
     {
@@ -40,6 +44,48 @@ class User extends Authenticatable
     public function hotel(): BelongsTo
     {
         return $this->belongsTo(Hotel::class);
+    }
+
+    /**
+     * The user's role (one per user). The relation already limits to the role's id,
+     * so the tenant scope is not needed here.
+     *
+     * @return BelongsTo<Role, $this>
+     */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class)->withoutGlobalScope('hotel');
+    }
+
+    public function isHotelAdmin(): bool
+    {
+        return $this->hotel_id !== null && $this->role?->isHotelAdmin() === true
+            && $this->role->hotel_id === $this->hotel_id;
+    }
+
+    /** @return list<string> hotel permissions of this user */
+    public function permissionKeys(): array
+    {
+        if ($this->permissionCache !== null) {
+            return $this->permissionCache;
+        }
+
+        $role = $this->role;
+
+        return $this->permissionCache = ($this->hotel_id !== null && $role && $role->hotel_id === $this->hotel_id)
+            ? $role->permissionKeys()
+            : [];
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        return in_array($permission, $this->permissionKeys(), true);
+    }
+
+    public function forgetPermissionCache(): void
+    {
+        $this->permissionCache = null;
+        $this->unsetRelation('role');
     }
 
     /** @return BelongsToMany<Branch, $this> */
@@ -67,12 +113,12 @@ class User extends Authenticatable
 
     public function isActive(): bool
     {
-        return $this->status === 'active';
+        return ($this->status ?? 'active') === 'active';
     }
 
     /**
-     * Branches this user may work in. Until roles arrive (phase 1b), staff with
-     * no branch assignment can use every branch of their hotel.
+     * Branches this user may work in: the Hotel Admin sees every branch,
+     * everyone else only their assigned branches (permissions.md).
      *
      * @return Collection<int, Branch>
      */
@@ -82,10 +128,10 @@ class User extends Authenticatable
             return collect();
         }
 
-        $assigned = $this->branches()->where('branches.hotel_id', $this->hotel_id)->get();
+        if ($this->isHotelAdmin()) {
+            return Branch::withoutGlobalScope('hotel')->where('hotel_id', $this->hotel_id)->orderBy('name')->get();
+        }
 
-        return $assigned->isNotEmpty()
-            ? $assigned
-            : Branch::withoutGlobalScope('hotel')->where('hotel_id', $this->hotel_id)->orderBy('name')->get();
+        return $this->branches()->where('branches.hotel_id', $this->hotel_id)->orderBy('name')->get();
     }
 }

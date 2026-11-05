@@ -12,10 +12,25 @@ use Illuminate\Database\Eloquent\Model;
 class PlatformSetting extends Model
 {
     public const DEFAULTS = [
+        // General
+        'platform_name' => 'HotelMS',
+        'support_email' => null,
+        'support_phone' => null,
+        // Trials and billing
         'default_trial_days' => 30,
         'default_trial_plan_id' => null,
         'grace_days' => 3,
+        // Branding (applies to the whole web app)
+        'brand_color' => '#0f766e',
+        'brand_logo_path' => null,
+        'login_message' => null,
+        // Emails
+        'email_from_name' => 'HotelMS',
+        'email_footer' => null,
     ];
+
+    /** Settings anyone may read (shown on the sign-in page before login). */
+    public const PUBLIC = ['platform_name', 'brand_color', 'login_message', 'support_email', 'support_phone'];
 
     protected function casts(): array
     {
