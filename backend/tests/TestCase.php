@@ -21,8 +21,11 @@ abstract class TestCase extends BaseTestCase
      */
     public function actingAs(Authenticatable $user, $guard = null)
     {
+        // auth:sanctum switches the default guard to "sanctum" during a request;
+        // put it back and start fresh so the next request sees this user.
+        config(['auth.defaults.guard' => 'web']);
         $this->app['auth']->forgetGuards();
 
-        return parent::actingAs($user, $guard);
+        return parent::actingAs($user, $guard ?? 'web');
     }
 }
