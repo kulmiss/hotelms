@@ -24,7 +24,7 @@ class Devices
 
     public const SESSION_KEY = 'device_id';
 
-    /** The device token from the cookie, or a new one (sent back with {@see cookie()}). */
+    /** The device token from the cookie, or a new one (sent back with {@see Cookie()}). */
     public function token(Request $request): string
     {
         $token = (string) $request->cookie(self::COOKIE);

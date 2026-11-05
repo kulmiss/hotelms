@@ -13,12 +13,14 @@ use App\Services\HotelDefaults;
 use App\Services\HotelSettings;
 use App\Services\Modules\Attendance;
 use App\Services\Security\Devices;
+use App\Services\Security\TwoFactor;
 use App\Support\Tenancy\TenantContext;
 use App\Support\Totp;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class SecurityTest extends TestCase
@@ -53,7 +55,7 @@ class SecurityTest extends TestCase
         $this->app['auth']->forgetGuards();
     }
 
-    private function login(string $email, ?string $device = null): \Illuminate\Testing\TestResponse
+    private function login(string $email, ?string $device = null): TestResponse
     {
         $this->freshGuards();
         auth()->guard('web')->logout();
@@ -102,7 +104,7 @@ class SecurityTest extends TestCase
     public function test_sign_in_with_an_email_code_and_a_recovery_code(): void
     {
         $this->staff->forceFill(['two_factor_method' => 'email', 'two_factor_confirmed_at' => now()])->save();
-        $codes = app(\App\Services\Security\TwoFactor::class)->newRecoveryCodes($this->staff);
+        $codes = app(TwoFactor::class)->newRecoveryCodes($this->staff);
 
         $this->login('hana@sheger.test')->assertOk()->assertJsonPath('two_factor', 'email')->assertJsonPath('email', 'ha••@sheger.test');
         $sent = null;
