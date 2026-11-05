@@ -58,6 +58,17 @@ describe('two-step sign-in', () => {
   })
 })
 
+describe('ended sessions', () => {
+  it('goes to the sign-in page when the session ends on another screen', async () => {
+    mockApi({
+      'GET /me': { body: makeMe() },
+      'GET /guests': { status: 401, body: { message: 'This device was signed out.', code: 'device_signed_out' } },
+    })
+    renderApp('/guests')
+    expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument()
+  })
+})
+
 describe('shared devices', () => {
   it('locks the screen and lets another staff member take over with a PIN', async () => {
     localStorage.setItem('hms_locked', '1')
