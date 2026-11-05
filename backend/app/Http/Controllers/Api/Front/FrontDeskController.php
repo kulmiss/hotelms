@@ -127,7 +127,9 @@ class FrontDeskController extends Controller
     public function checkOutInfo(Request $request, string $id): JsonResponse
     {
         $reservation = $this->reservation($request, $id);
-        $late = $this->desk->lateFee($reservation, now());
+        $alreadyCharged = Invoice::where('reservation_id', $reservation->id)->where('status', '!=', 'void')
+            ->whereHas('items', fn ($q) => $q->where('type', 'late_check_out'))->exists();
+        $late = $alreadyCharged ? null : $this->desk->lateFee($reservation, now());
         $lateAmount = '0.00';
         if ($late) {
             foreach ($reservation->rooms()->with('rates')->get() as $rr) {
