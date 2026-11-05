@@ -3,13 +3,12 @@
 namespace Tests\Feature\Reports;
 
 use App\Mail\ReportMail;
-use App\Models\AlertEvent;
 use App\Models\Branch;
 use App\Models\CashierSession;
 use App\Models\Guest;
 use App\Models\Hotel;
-use App\Models\PlatformSetting;
 use App\Models\Plan;
+use App\Models\PlatformSetting;
 use App\Models\ReportSchedule;
 use App\Models\Room;
 use App\Models\RoomType;

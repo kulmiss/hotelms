@@ -8,8 +8,8 @@ use App\Models\CustomReport;
 use App\Models\ExchangeRate;
 use App\Models\Hotel;
 use App\Models\HotelCurrency;
-use App\Models\Reservation;
 use App\Models\ReportSchedule;
+use App\Models\Reservation;
 use App\Models\User;
 use App\Services\Notify\Notifier;
 use App\Support\HotelClock;
@@ -264,7 +264,7 @@ class Automation
     {
         $f = Insights::for($hotel, $branchIds)->forecast((int) $t['days']);
 
-        return collect($f['days'])->filter(fn ($d) => $d['usual_occupancy'] - $d['occupancy'] >= (float) $t['points'])
+        return collect($f['days'])->filter(fn ($d) => (float) $t['points'] <= $d['usual_occupancy'] - $d['occupancy'])
             ->map(fn ($d) => ['fingerprint' => "slow:{$d['date']}", 'title' => "Slow booking for {$d['date']}: {$d['occupancy']}% booked, usually {$d['usual_occupancy']}% by now", 'link' => '/reports?report=forecast'])
             ->values()->all();
     }
