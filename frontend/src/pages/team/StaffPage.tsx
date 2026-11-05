@@ -22,7 +22,7 @@ export function StaffPage() {
         actions={
           can('staff.manage') && (
             <Link to="/staff/new" className={buttonClass('primary')}>
-              <PlusIcon aria-hidden className="size-5" />
+              <PlusIcon aria-hidden className="size-4" />
               {t('team.staff.add')}
             </Link>
           )

@@ -12,13 +12,13 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
     'flex size-touch shrink-0 items-center justify-center rounded-lg text-icon outline-none transition duration-75 hover:bg-sunken hover:text-muted focus-visible:bg-sunken'
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-x-4 bg-surface px-4 shadow-sm ring-1 ring-ring md:px-6 lg:px-8">
+    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-x-3 bg-surface/80 px-4 ring-1 ring-ring backdrop-blur-xl md:px-6 lg:px-8">
       <button type="button" onClick={onOpenMenu} aria-label={t('topbar.openMenu')} className={`${iconButton} -ml-2 lg:hidden`}>
-        <Bars3Icon aria-hidden className="size-6" />
+        <Bars3Icon aria-hidden className="size-5" />
       </button>
 
-      <label className="flex min-h-touch w-full max-w-sm items-center gap-x-2 rounded-lg bg-surface px-3 shadow-sm ring-1 ring-ring-strong transition duration-75 focus-within:ring-2 focus-within:ring-accent">
-        <MagnifyingGlassIcon aria-hidden className="size-5 shrink-0 text-icon" />
+      <label className="flex min-h-touch w-full max-w-xs items-center gap-x-2 rounded-lg bg-sunken px-3 ring-1 ring-transparent transition duration-75 focus-within:ring-2 focus-within:ring-accent">
+        <MagnifyingGlassIcon aria-hidden className="size-4 shrink-0 text-icon" />
         <span className="sr-only">{t('topbar.search')}</span>
         <input
           type="search"
@@ -43,7 +43,7 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
           </select>
         )}
         <button type="button" aria-label={t('topbar.notifications')} className={iconButton}>
-          <BellIcon aria-hidden className="size-6" />
+          <BellIcon aria-hidden className="size-5" />
         </button>
         <UserMenu />
       </div>

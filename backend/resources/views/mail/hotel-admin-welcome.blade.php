@@ -1,9 +1,9 @@
 <x-mail::message>
-# Welcome to HotelMS
+# Welcome to {{ $platformName }}
 
 Hello {{ $admin->name }},
 
-Your hotel **{{ $hotel->name }}** is ready on HotelMS. You are its Hotel Admin.
+Your hotel **{{ $hotel->name }}** is ready on {{ $platformName }}. You are its Hotel Admin.
 
 **Email:** {{ $admin->email }}<br>
 **Temporary password:** {{ $temporaryPassword }}
@@ -19,5 +19,11 @@ Your free trial runs until {{ $hotel->trial_ends_at->format('j F Y') }}.
 @endif
 
 Thanks,<br>
-The HotelMS team
+The {{ $platformName }} team
+
+@if ($emailFooter)
+<x-mail::subcopy>
+{{ $emailFooter }}
+</x-mail::subcopy>
+@endif
 </x-mail::message>

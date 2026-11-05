@@ -9,7 +9,8 @@
  * Same names in light and dark, so components never hard-code colours.
  */
 :root {
-  --bg: #fafafa; /* zinc-50 page */
+  --touch: 2.25rem;
+  --bg: #f8f8f9; /* page */
   --surface: #ffffff;
   --sunken: #f4f4f5; /* zinc-100: hover, active nav, table head */
   --border: #e4e4e7; /* zinc-200 */
@@ -108,8 +109,8 @@
   --color-room-clean: var(--room-clean);
   --color-room-maintenance: var(--room-maintenance);
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  /* Touch rule: every tap target is at least 44px (11 × 4px). */
-  --spacing-touch: 2.75rem;
+  /* Controls: 36px with a mouse, 44px on touch screens (see :root below). */
+  --spacing-touch: var(--touch);
   --animate-page-in: page-in 200ms ease-out both;
   --animate-menu-in: menu-in 100ms ease-out both;
   --animate-progress: progress 1.2s ease-in-out infinite;
@@ -147,6 +148,13 @@
   }
 }
 
+/* Touch screens (iPads, touch PCs) keep 44px tap targets – decided in W5. */
+@media (pointer: coarse) {
+  :root {
+    --touch: 2.75rem;
+  }
+}
+
 @layer base {
   html,
   body,
@@ -154,7 +162,8 @@
     height: 100%;
   }
   body {
-    @apply bg-bg font-sans text-text antialiased;
+    @apply bg-bg font-sans text-sm text-text antialiased;
+    font-feature-settings: 'cv11', 'ss01'; /* Inter: cleaner shapes */
     -webkit-tap-highlight-color: transparent;
   }
   :focus-visible {
@@ -174,6 +183,6 @@
 @layer components {
   /* Filament "section": white card with a fine ring and small shadow. */
   .panel {
-    @apply rounded-xl bg-surface shadow-sm ring-1 ring-ring;
+    @apply rounded-xl bg-surface shadow-[0_1px_2px_rgb(0_0_0/0.04)] ring-1 ring-ring;
   }
 }

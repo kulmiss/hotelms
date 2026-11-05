@@ -10,7 +10,7 @@ export function Field({ label, hint, error, className, id, ...props }: FieldProp
   const errorId = error ? `${inputId}-error` : undefined
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={inputId} className="text-sm font-medium text-text">
+      <label htmlFor={inputId} className="text-[13px] font-medium text-text">
         {label}
       </label>
       <input

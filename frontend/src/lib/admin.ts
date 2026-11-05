@@ -1,5 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api, post, put } from './api'
+import { api, post, put, upload } from './api'
+import { BRANDING_KEY } from './brand'
 
 export type Plan = {
   id: number
@@ -58,7 +59,20 @@ export type HotelDetail = {
   }[]
 }
 
-export type PlatformSettings = { default_trial_days: number; default_trial_plan_id: number | null; grace_days: number }
+export type PlatformSettings = {
+  platform_name: string
+  support_email: string | null
+  support_phone: string | null
+  default_trial_days: number
+  default_trial_plan_id: number | null
+  grace_days: number
+  brand_color: string
+  brand_logo_path: string | null
+  brand_logo_url: string | null
+  login_message: string | null
+  email_from_name: string
+  email_footer: string | null
+}
 
 export type AdminDashboard = {
   hotels: { total: number; by_status: Record<string, number> }
@@ -144,7 +158,27 @@ export const useSavePlan = () =>
   useAdminMutation((plan: Partial<Plan> & { id?: number }) =>
     plan.id ? put(`/admin/plans/${plan.id}`, plan) : post('/admin/plans', plan),
   )
-export const useSaveSettings = () => useAdminMutation((s: Partial<PlatformSettings>) => put('/admin/settings', s))
+export function useSaveSettings() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (s: Partial<PlatformSettings>) => put<{ data: PlatformSettings }>('/admin/settings', s),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['admin'] })
+      void qc.invalidateQueries({ queryKey: BRANDING_KEY })
+    },
+  })
+}
+
+export function useUploadLogo() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (file: File | null) => upload<{ data: PlatformSettings }>('/admin/settings/logo', 'logo', file),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['admin', 'settings'] })
+      void qc.invalidateQueries({ queryKey: BRANDING_KEY })
+    },
+  })
+}
 
 export const useResetUserPassword = (hotelId: number) =>
   useAdminMutation((input: { userId: number; send_email: boolean }) =>

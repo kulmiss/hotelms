@@ -29,12 +29,12 @@ export function StatTile({
 }) {
   const shown = useCountUp(value)
   return (
-    <div className="panel flex flex-col gap-y-2 p-6">
+    <div className="panel flex flex-col gap-y-1.5 p-5">
       <div className="flex items-center gap-x-2">
-        <Icon aria-hidden className={cn('size-5', tones[tone])} />
-        <span className="text-sm font-medium text-muted">{label}</span>
+        <Icon aria-hidden className={cn('size-4', tones[tone])} />
+        <span className="text-[13px] font-medium text-muted">{label}</span>
       </div>
-      <span className="text-3xl font-semibold tracking-tight" aria-live="polite">
+      <span className="text-2xl font-semibold tracking-tight" aria-live="polite">
         {shown ?? '—'}
       </span>
       {footer && <div className={cn('text-sm', tones[tone])}>{footer}</div>}

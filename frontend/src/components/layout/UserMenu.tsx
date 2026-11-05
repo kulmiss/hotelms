@@ -76,7 +76,7 @@ export function UserMenu() {
         onClick={() => setOpen((o) => !o)}
         className="flex size-touch items-center justify-center rounded-full outline-none"
       >
-        <span className="flex size-9 items-center justify-center rounded-full bg-accent text-sm font-semibold text-on-accent ring-2 ring-surface transition hover:ring-sunken">
+        <span className="flex size-8 items-center justify-center rounded-full bg-accent text-xs font-semibold text-on-accent ring-2 ring-surface transition hover:ring-sunken">
           {initials(user.name)}
         </span>
         <span className="sr-only">{user.name}</span>
@@ -89,7 +89,7 @@ export function UserMenu() {
           className="absolute top-full right-0 z-50 mt-2 w-64 origin-top-right animate-menu-in divide-y divide-border rounded-lg bg-surface shadow-lg ring-1 ring-ring motion-reduce:animate-none"
         >
           <div className="flex items-center gap-x-3 p-3">
-            <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold text-on-accent">
+            <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-semibold text-on-accent">
               {initials(user.name)}
             </span>
             <span className="flex min-w-0 flex-col">
@@ -113,25 +113,25 @@ export function UserMenu() {
                   choice === c ? 'bg-sunken text-accent-text' : 'text-icon hover:bg-sunken hover:text-muted',
                 )}
               >
-                <Icon aria-hidden className="size-5" />
+                <Icon aria-hidden className="size-4" />
               </button>
             ))}
           </div>
 
           <div className="p-1">
             <Link role="menuitem" to="/profile" onClick={() => setOpen(false)} className={item}>
-              <UserCircleIcon aria-hidden className="size-5 text-icon" />
+              <UserCircleIcon aria-hidden className="size-4 text-icon" />
               {t('topbar.profile')}
             </Link>
             <Link role="menuitem" to="/change-password" onClick={() => setOpen(false)} className={item}>
-              <KeyIcon aria-hidden className="size-5 text-icon" />
+              <KeyIcon aria-hidden className="size-4 text-icon" />
               {t('topbar.changePassword')}
             </Link>
           </div>
 
           <div className="p-1">
             <button role="menuitem" type="button" onClick={signOut} className={item}>
-              <ArrowLeftStartOnRectangleIcon aria-hidden className="size-5 text-icon" />
+              <ArrowLeftStartOnRectangleIcon aria-hidden className="size-4 text-icon" />
               {t('topbar.signOut')}
             </button>
           </div>

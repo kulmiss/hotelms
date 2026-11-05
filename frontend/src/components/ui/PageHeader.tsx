@@ -20,10 +20,10 @@ export function PageHeader({
     <div className="flex flex-col gap-y-2">
       {breadcrumbs && (
         <nav aria-label="Breadcrumb">
-          <ol className="flex flex-wrap items-center gap-x-2 text-sm font-medium text-muted">
+          <ol className="flex flex-wrap items-center gap-x-2 text-[13px] font-medium text-muted">
             {breadcrumbs.map((c, i) => (
               <li key={i} className="flex items-center gap-x-2">
-                {i > 0 && <ChevronRightIcon aria-hidden className="size-5 text-icon" />}
+                {i > 0 && <ChevronRightIcon aria-hidden className="size-4 text-icon" />}
                 {c.to ? (
                   <Link to={c.to} className="transition duration-75 hover:text-text">
                     {c.label}
@@ -38,7 +38,7 @@ export function PageHeader({
       )}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-y-1">
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{title}</h1>
           {subtitle && <div className="text-sm text-muted">{subtitle}</div>}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}

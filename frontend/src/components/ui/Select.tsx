@@ -8,7 +8,7 @@ export function Select({ label, hint, error, className, id, children, ...props }
   const selectId = id ?? autoId
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={selectId} className="text-sm font-medium text-text">
+      <label htmlFor={selectId} className="text-[13px] font-medium text-text">
         {label}
       </label>
       <select

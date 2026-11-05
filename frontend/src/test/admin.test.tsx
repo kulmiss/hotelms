@@ -142,3 +142,42 @@ describe('collapsible sidebar', () => {
     expect(screen.getByRole('complementary')).toHaveAttribute('data-collapsed', 'false')
   })
 })
+
+describe('platform settings', () => {
+  const settings = {
+    body: {
+      data: {
+        platform_name: 'HotelMS', support_email: null, support_phone: null, default_trial_days: 30, default_trial_plan_id: null, grace_days: 3,
+        brand_color: '#0f766e', brand_logo_path: null, brand_logo_url: null, login_message: null, email_from_name: 'HotelMS', email_footer: null,
+      },
+    },
+  }
+
+  it('saves branding from its own tab', async () => {
+    const fetchMock = mockApi({
+      'GET /me': { body: superAdmin() },
+      'GET /admin/settings': settings,
+      'GET /admin/plans': plans,
+      'PUT /admin/settings': settings,
+    })
+    renderApp('/admin/settings')
+
+    await userEvent.click(await screen.findByRole('tab', { name: 'Branding' }))
+    await userEvent.click(screen.getByRole('button', { name: '#7c3aed' }))
+    const message = screen.getByLabelText('Sign-in message')
+    await userEvent.type(message, 'Welcome back')
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    expect(await screen.findByText('Saved.')).toBeInTheDocument()
+    const call = fetchMock.mock.calls.find(([url, init]) => String(url).endsWith('/admin/settings') && init?.method === 'PUT')
+    expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ brand_color: '#7c3aed', login_message: 'Welcome back' })
+  })
+
+  it('has general, billing, branding and email tabs', async () => {
+    mockApi({ 'GET /me': { body: superAdmin() }, 'GET /admin/settings': settings, 'GET /admin/plans': plans })
+    renderApp('/admin/settings')
+    for (const name of ['General', 'Trials and billing', 'Branding', 'Emails']) {
+      expect(await screen.findByRole('tab', { name })).toBeInTheDocument()
+    }
+  })
+})

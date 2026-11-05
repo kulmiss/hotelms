@@ -189,7 +189,7 @@ function StaffActions({ member }: { member: StaffMember }) {
           </Button>
         ) : (
           <Button variant="secondary" disabled={setActive.isPending} onClick={() => setActive.mutate(true)}>
-            <ArrowPathIcon aria-hidden className="size-5 text-icon" />
+            <ArrowPathIcon aria-hidden className="size-4 text-icon" />
             {t('team.staff.enable')}
           </Button>
         )}
@@ -208,7 +208,7 @@ function StaffActions({ member }: { member: StaffMember }) {
               {t('admin.hotel.emailIt', { email: member.email })}
             </label>
             <Button variant="secondary" disabled={reset.isPending} onClick={() => reset.mutate(sendEmail)}>
-              <KeyIcon aria-hidden className="size-5 text-icon" />
+              <KeyIcon aria-hidden className="size-4 text-icon" />
               {t('admin.hotel.createPassword')}
             </Button>
           </>

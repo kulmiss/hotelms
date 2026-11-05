@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Admin\PlanController as AdminPlanController;
 use App\Http\Controllers\Api\Admin\PlatformSettingsController;
 use App\Http\Controllers\Api\Admin\SubscriptionPaymentController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BrandingController;
 use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\Hotel\ActivityLogController;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/health', HealthController::class)->name('api.health');
+Route::get('/branding', BrandingController::class);
 
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
@@ -86,6 +88,7 @@ Route::middleware(['auth:sanctum', 'active', 'tenant'])->group(function () {
                 Route::post('/plans', [AdminPlanController::class, 'store']);
                 Route::put('/plans/{plan}', [AdminPlanController::class, 'update']);
                 Route::put('/settings', [PlatformSettingsController::class, 'update']);
+                Route::post('/settings/logo', [PlatformSettingsController::class, 'logo']);
             });
         });
     });

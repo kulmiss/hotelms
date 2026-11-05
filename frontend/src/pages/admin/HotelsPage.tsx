@@ -30,7 +30,7 @@ export function HotelsPage() {
             to="/admin/hotels/new"
             className={buttonClass('primary')}
           >
-            <PlusIcon aria-hidden className="size-5" />
+            <PlusIcon aria-hidden className="size-4" />
             {t('admin.hotels.new')}
           </Link>
         }

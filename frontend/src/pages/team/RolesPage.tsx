@@ -18,7 +18,7 @@ export function RolesPage() {
         subtitle={t('team.roles.subtitle')}
         actions={
           <Link to="/roles/new" className={buttonClass('primary')}>
-            <PlusIcon aria-hidden className="size-5" />
+            <PlusIcon aria-hidden className="size-4" />
             {t('team.roles.new')}
           </Link>
         }

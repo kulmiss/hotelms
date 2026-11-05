@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\Branded;
 use App\Models\Hotel;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
@@ -12,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 
 class HotelAdminWelcome extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Branded, Queueable, SerializesModels;
 
     public function __construct(
         public User $admin,
@@ -22,13 +23,11 @@ class HotelAdminWelcome extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: "Welcome to HotelMS – {$this->hotel->name}");
+        return $this->brandedEnvelope("Welcome to HotelMS – {$this->hotel->name}");
     }
 
     public function content(): Content
     {
-        return new Content(markdown: 'mail.hotel-admin-welcome', with: [
-            'signInUrl' => rtrim((string) config('app.frontend_url'), '/').'/login',
-        ]);
+        return new Content(markdown: 'mail.hotel-admin-welcome', with: $this->brandData());
     }
 }

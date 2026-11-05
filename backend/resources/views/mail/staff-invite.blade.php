@@ -6,7 +6,7 @@ Hello {{ $user->name }},
 @if ($isReset)
 A manager at **{{ $hotel->name }}** has set a new temporary password for your account.
 @else
-You now have an account at **{{ $hotel->name }}** on HotelMS{{ $user->role ? ' as '.$user->role->name : '' }}.
+You now have an account at **{{ $hotel->name }}** on {{ $platformName }}{{ $user->role ? ' as '.$user->role->name : '' }}.
 @endif
 
 **Email:** {{ $user->email }}<br>
@@ -19,5 +19,11 @@ Sign in
 </x-mail::button>
 
 Thanks,<br>
-The HotelMS team
+The {{ $platformName }} team
+
+@if ($emailFooter)
+<x-mail::subcopy>
+{{ $emailFooter }}
+</x-mail::subcopy>
+@endif
 </x-mail::message>

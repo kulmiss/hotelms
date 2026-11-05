@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\Branded;
 use App\Models\Hotel;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
@@ -13,7 +14,7 @@ use Illuminate\Queue\SerializesModels;
 /** A new staff account (or a new temporary password) for a hotel. */
 class StaffInvite extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Branded, Queueable, SerializesModels;
 
     public function __construct(
         public User $user,
@@ -24,15 +25,13 @@ class StaffInvite extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: $this->isReset
-            ? 'Your new HotelMS password'
-            : "Your HotelMS account at {$this->hotel->name}");
+        return $this->brandedEnvelope($this->isReset
+            ? 'Your new password'
+            : "Your account at {$this->hotel->name}");
     }
 
     public function content(): Content
     {
-        return new Content(markdown: 'mail.staff-invite', with: [
-            'signInUrl' => rtrim((string) config('app.frontend_url'), '/').'/login',
-        ]);
+        return new Content(markdown: 'mail.staff-invite', with: $this->brandData());
     }
 }

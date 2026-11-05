@@ -28,7 +28,7 @@ export function Tabs({
   }
 
   return (
-    <div role="tablist" aria-label={label} className="panel flex gap-x-1 overflow-x-auto p-2">
+    <div role="tablist" aria-label={label} className="panel flex gap-x-1 overflow-x-auto p-1">
       {items.map((item, i) => {
         const selected = item.key === active
         return (
@@ -46,7 +46,7 @@ export function Tabs({
             onClick={() => onChange(item.key)}
             onKeyDown={(e) => onKey(e, i)}
             className={cn(
-              'flex min-h-touch flex-1 items-center justify-center gap-x-2 rounded-lg px-3 text-sm font-medium whitespace-nowrap outline-none transition duration-75',
+              'flex min-h-touch flex-1 items-center justify-center gap-x-2 rounded-lg px-3 text-[13px] font-medium whitespace-nowrap outline-none transition duration-75',
               selected ? 'bg-sunken text-accent-text' : 'text-muted hover:bg-sunken hover:text-text',
             )}
           >

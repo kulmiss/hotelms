@@ -262,7 +262,37 @@
       "trialPlanHint": "Which plan's features a hotel can try.",
       "samePlan": "Same as the hotel's plan",
       "graceDays": "Grace period after expiry (days)",
-      "graceHint": "After this, the hotel becomes read-only until it pays."
+      "graceHint": "After this, the hotel becomes read-only until it pays.",
+      "subtitle": "Settings for the whole HotelMS platform.",
+      "tabs": {
+        "general": "General",
+        "billing": "Trials and billing",
+        "branding": "Branding",
+        "emails": "Emails"
+      },
+      "generalHelp": "Your platform's name and how hotels can reach your support team.",
+      "platformName": "Platform name",
+      "supportEmail": "Support email",
+      "supportPhone": "Support phone",
+      "trialsHelp": "How long new hotels can try HotelMS for free, and what happens when a subscription runs out.",
+      "brandTitle": "Name and colour",
+      "brandHelp": "Shown in the sidebar, sign-in page, browser tab and buttons, for every hotel.",
+      "brandColor": "Main colour",
+      "customColor": "Custom colour",
+      "hex": "Colour code",
+      "loginMessage": "Sign-in message",
+      "loginMessageHint": "Shown under \"Sign in\". Leave empty for the default.",
+      "preview": "Preview",
+      "logo": "Logo",
+      "logoHelp": "PNG, JPG, WebP or SVG, up to 1 MB. Square logos look best.",
+      "uploadLogo": "Upload logo",
+      "replaceLogo": "Replace logo",
+      "removeLogo": "Remove",
+      "emailsHelp": "How emails from HotelMS (welcome emails, new passwords) look to hotels.",
+      "fromName": "Sender name",
+      "fromNameHint": "The name hotels see in their inbox.",
+      "footer": "Footer text",
+      "footerHint": "A short line added at the bottom of every email."
     }
   },
   "profile": {
