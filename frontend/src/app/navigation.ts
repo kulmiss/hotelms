@@ -1,5 +1,9 @@
 import {
   BarChart3,
+  Building2,
+  Gauge,
+  SlidersHorizontal,
+  Tags,
   BedDouble,
   CalendarDays,
   LayoutDashboard,
@@ -37,3 +41,11 @@ export const mainNav: NavItem[] = [
 ]
 
 export const devNav: NavItem[] = [{ key: 'designSystem', path: '/design-system', icon: Palette, phase: 0 }]
+
+/** Super Admin (HotelMS team) area. */
+export const adminNav: NavItem[] = [
+  { key: 'commandCenter', path: '/admin', icon: Gauge, phase: 1 },
+  { key: 'hotels', path: '/admin/hotels', icon: Building2, phase: 1 },
+  { key: 'plans', path: '/admin/plans', icon: Tags, phase: 1 },
+  { key: 'platformSettings', path: '/admin/settings', icon: SlidersHorizontal, phase: 1 },
+]
