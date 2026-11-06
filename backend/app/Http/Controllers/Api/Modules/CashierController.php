@@ -67,7 +67,7 @@ class CashierController extends Controller
             ->when($request->boolean('short'), fn ($q) => $q->whereHas('balances', fn ($b) => $b->where('difference', '<', 0)))
             ->when($request->input('from'), fn ($q, $d) => $q->where('opened_at', '>=', HotelClock::parse($d, $hotel)))
             ->when($request->input('to'), fn ($q, $d) => $q->where('opened_at', '<', HotelClock::parse($d, $hotel)->addDay()))
-            ->latest('opened_at')->paginate(min(100, (int) $request->input('per_page', 25)));
+            ->latest('opened_at')->paginate(max(1, min(100, (int) $request->input('per_page', 25))));
         $page->getCollection()->transform(fn (CashierSession $s) => $this->summary($s, $request));
 
         return response()->json($page);

@@ -46,7 +46,7 @@ class HotelController extends Controller
             ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($request->input('plan_id'), fn ($q, $plan) => $q->where('plan_id', $plan))
             ->orderBy('name')
-            ->paginate(min((int) $request->input('per_page', 25), 100));
+            ->paginate(max(1, min((int) $request->input('per_page', 25), 100)));
 
         return HotelResource::collection($hotels)->additional([
             'counts' => Hotel::query()->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status')->map(fn ($n) => (int) $n)

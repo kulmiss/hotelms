@@ -55,6 +55,7 @@ class StaffController extends Controller
         $data = $this->validated($request);
         $role = $this->allowedRole($actor, (int) $data['role_id']);
         $branchIds = $this->allowedBranches($actor, $data['branch_ids'] ?? [], $role);
+        $this->guardStaffLimit($actor);
         $password = Str::password(12, symbols: false);
 
         $user = DB::transaction(function () use ($actor, $data, $role, $branchIds, $password) {
@@ -134,6 +135,9 @@ class StaffController extends Controller
     public function enable(Request $request, User $user): JsonResponse
     {
         $this->guardManageable($request->user(), $user);
+        if ($user->status !== 'active') {
+            $this->guardStaffLimit($request->user());
+        }
 
         $user->forceFill(['status' => 'active'])->save();
         $this->log->log('staff.enabled', "Staff enabled: {$user->name}", $user);
@@ -181,6 +185,16 @@ class StaffController extends Controller
     private function guardVisible(User $actor, User $user): void
     {
         abort_unless($this->visibleStaff($actor)->whereKey($user->id)->exists() || $actor->is($user), 404);
+    }
+
+    /** The plan's staff limit counts active accounts (disabled ones do not count). */
+    private function guardStaffLimit(User $actor): void
+    {
+        $max = $actor->hotel->effectivePlan()?->max_staff;
+        $used = User::where('hotel_id', $actor->hotel_id)->where('status', 'active')->count();
+        if ($max !== null && $used >= $max) {
+            throw ValidationException::withMessages(['email' => "Your plan allows {$max} active staff accounts ({$used} used). Disable someone or upgrade the plan."]);
+        }
     }
 
     private function guardManageable(User $actor, User $user): void

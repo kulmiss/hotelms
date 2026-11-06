@@ -41,7 +41,7 @@ class ReservationController extends Controller
             ->when($request->input('to'), fn ($w, $d) => $w->where('check_in_at', '<', HotelClock::parse($d, $hotel)->addDay()))
             ->when($q !== '', fn ($w) => $w->where(fn ($x) => $x->where('code', 'like', "%{$q}%")->orWhereHas('guest', fn ($g) => $g->search($q))))
             ->orderBy($request->input('sort') === 'newest' ? 'created_at' : 'check_in_at', $request->input('sort') === 'newest' ? 'desc' : 'asc')
-            ->paginate(min(100, (int) $request->input('per_page', 25)));
+            ->paginate(max(1, min(100, (int) $request->input('per_page', 25))));
 
         $page->getCollection()->transform(fn (Reservation $r) => ReservationPresenter::summary($r, $hotel));
 

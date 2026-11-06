@@ -19,7 +19,7 @@ class ActivityLogController extends Controller
             ->when($request->input('search'), fn ($q, $s) => $q->where('description', 'like', "%{$s}%"))
             ->when($request->input('user_id'), fn ($q, $u) => $q->where('user_id', $u))
             ->latest('id')
-            ->paginate(min((int) $request->input('per_page', 50), 100));
+            ->paginate(max(1, min((int) $request->input('per_page', 50), 100)));
 
         return response()->json($page);
     }

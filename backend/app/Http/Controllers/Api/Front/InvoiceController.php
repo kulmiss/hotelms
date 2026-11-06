@@ -34,7 +34,7 @@ class InvoiceController extends Controller
                 ->orWhereHas('reservation', fn ($r) => $r->where('code', 'like', "%{$q}%"))
                 ->orWhereHas('guest', fn ($g) => $g->search($q))))
             ->latest('issued_at')
-            ->paginate(min(100, (int) $request->input('per_page', 25)));
+            ->paginate(max(1, min(100, (int) $request->input('per_page', 25))));
         $page->getCollection()->transform(fn (Invoice $i) => InvoicePresenter::summary($i, $hotel));
 
         return response()->json($page);
@@ -132,7 +132,7 @@ class InvoiceController extends Controller
             ->when($request->input('from'), fn ($w, $d) => $w->where('paid_at', '>=', HotelClock::parse($d, $hotel)))
             ->when($request->input('to'), fn ($w, $d) => $w->where('paid_at', '<', HotelClock::parse($d, $hotel)->addDay()))
             ->latest('paid_at')
-            ->paginate(min(100, (int) $request->input('per_page', 25)));
+            ->paginate(max(1, min(100, (int) $request->input('per_page', 25))));
         $page->getCollection()->transform(fn (Payment $p) => [
             'id' => $p->id, 'type' => $p->type, 'amount' => $p->amount, 'currency' => $p->currency, 'amount_in_base' => $p->amount_in_base,
             'method' => $p->method?->name, 'reference' => $p->reference, 'by' => $p->receiver?->name, 'paid_at' => HotelClock::iso($p->paid_at, $hotel),

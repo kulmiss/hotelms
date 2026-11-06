@@ -326,7 +326,7 @@ export function SchedulesReport() {
                   <Button variant="ghost" onClick={() => setEdit(s)}>
                     {t('common.edit')}
                   </Button>
-                  <Button variant="ghost" aria-label={t('common.delete')} onClick={() => remove.mutate(s.id)}>
+                  <Button variant="ghost" aria-label={t('common.delete')} disabled={remove.isPending} onClick={() => remove.mutate(s.id)}>
                     <TrashIcon aria-hidden className="size-4" />
                   </Button>
                 </td>

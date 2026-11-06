@@ -19,7 +19,11 @@ class ExpirePendingReservations extends Command
         $total = 0;
         Hotel::query()->whereIn('id', fn ($q) => $q->select('hotel_id')->from('reservations')->where('status', 'pending')->where('expires_at', '<=', now()))
             ->each(function (Hotel $hotel) use ($tenant, &$total) {
-                $total += $tenant->runAs($hotel, fn () => app(ReservationService::class)->expireDue());
+                try {
+                    $total += $tenant->runAs($hotel, fn () => app(ReservationService::class)->expireDue());
+                } catch (\Throwable $e) {
+                    report($e); // one hotel's problem never stops the others
+                }
             });
         $this->info("Expired {$total} booking(s).");
 

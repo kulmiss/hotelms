@@ -22,6 +22,7 @@ use App\Services\Modules\Cashier;
 use App\Support\HotelClock;
 use App\Support\Money;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -297,8 +298,21 @@ class ReservationService
         $count = 0;
         Reservation::where('status', 'pending')->whereNotNull('expires_at')->where('expires_at', '<=', now())
             ->get()->each(function (Reservation $r) use (&$count) {
-                $this->cancel($r, 'expired', null, false, false);
-                $count++;
+                // The same lock as a person changing this booking (OneAtATime): a deposit paid at
+                // this very moment wins, and the booking is then no longer pending.
+                $lock = Cache::lock("one-at-a-time:reservation:{$r->hotel_id}:{$r->id}", 30);
+                if (! $lock->get()) {
+                    return; // someone is working on it: try again next minute
+                }
+                try {
+                    $fresh = $r->fresh();
+                    if ($fresh && $fresh->status === 'pending' && $fresh->expires_at?->lte(now())) {
+                        $this->cancel($fresh, 'expired', null, false, false);
+                        $count++;
+                    }
+                } finally {
+                    $lock->release();
+                }
             });
 
         return $count;

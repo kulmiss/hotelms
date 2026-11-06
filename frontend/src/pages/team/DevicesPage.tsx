@@ -46,19 +46,19 @@ export function DevicesPage() {
                   <Badge tone={STATUS_TONE[d.status]}>{t(`security.statuses.${d.status}`)}</Badge>
                 </td>
                 <td className="px-2 py-1 text-right whitespace-nowrap">
-                  {d.status === 'pending' && <Button onClick={() => act.mutate({ id: d.id, action: 'approve' })}>{t('devices.approve')}</Button>}
+                  {d.status === 'pending' && <Button disabled={act.isPending} onClick={() => act.mutate({ id: d.id, action: 'approve' })}>{t('devices.approve')}</Button>}
                   {d.status === 'active' && !d.this_device && (
-                    <Button variant="ghost" onClick={() => act.mutate({ id: d.id, action: 'sign-out' })}>
+                    <Button variant="ghost" disabled={act.isPending} onClick={() => act.mutate({ id: d.id, action: 'sign-out' })}>
                       {t('security.signOut')}
                     </Button>
                   )}
                   {d.status === 'blocked' ? (
-                    <Button variant="ghost" onClick={() => act.mutate({ id: d.id, action: 'unblock' })}>
+                    <Button variant="ghost" disabled={act.isPending} onClick={() => act.mutate({ id: d.id, action: 'unblock' })}>
                       {t('devices.unblock')}
                     </Button>
                   ) : (
                     !d.this_device && (
-                      <Button variant="ghost" className="text-danger-text" onClick={() => act.mutate({ id: d.id, action: 'block' })}>
+                      <Button variant="ghost" className="text-danger-text" disabled={act.isPending} onClick={() => act.mutate({ id: d.id, action: 'block' })}>
                         {t('devices.block')}
                       </Button>
                     )

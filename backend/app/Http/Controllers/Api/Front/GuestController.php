@@ -21,7 +21,7 @@ class GuestController extends Controller
             ->when($request->boolean('blacklisted'), fn ($q) => $q->where('is_blacklisted', true))
             ->withCount('reservations')
             ->orderByDesc('id')
-            ->paginate(min(100, (int) $request->input('per_page', 25)));
+            ->paginate(max(1, min(100, (int) $request->input('per_page', 25))));
 
         return response()->json($guests);
     }
