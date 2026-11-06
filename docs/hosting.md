@@ -27,7 +27,7 @@ Same code for **shared hosting (cPanel)** and a **VPS**. No Redis, no always-on 
    php artisan migrate --force
    php artisan db:seed --force     # creates the Super Admin
    php artisan storage:link
-   php artisan config:cache && php artisan route:cache
+   php artisan optimize            # caches settings, routes, events and views: much faster
    ```
 6. **Cron Jobs** → every minute:
    ```
@@ -38,7 +38,7 @@ Same code for **shared hosting (cPanel)** and a **VPS**. No Redis, no always-on 
 
 ## 2b. VPS (Ubuntu 24.04)
 ```sh
-sudo apt install nginx mysql-server php8.3-fpm php8.3-{mysql,bcmath,mbstring,xml,zip,intl,gd,curl} unzip
+sudo apt install nginx mysql-server php8.3-fpm php8.3-{mysql,bcmath,mbstring,xml,zip,intl,gd,curl,opcache,redis} redis-server unzip
 sudo mkdir -p /var/www && sudo unzip hotelms.zip -d /var/www && sudo chown -R www-data:www-data /var/www/hotelms
 ```
 Then steps 4–5 above (in `/var/www/hotelms`), the cron line for user `www-data` (`sudo crontab -u www-data -e`), and this nginx site:
@@ -52,6 +52,9 @@ server {
     add_header X-Frame-Options DENY always;
     add_header Referrer-Policy strict-origin-when-cross-origin always;
     client_max_body_size 10m;
+    gzip on;
+    gzip_comp_level 5;
+    gzip_types text/plain text/css application/javascript application/json application/manifest+json image/svg+xml;
 
     location ~ ^/(api|sanctum|up)(/|$) { try_files $uri /index.php?$query_string; }
     location /assets/ { expires 1y; add_header Cache-Control "public, immutable"; }
@@ -69,10 +72,16 @@ server {
 ```sh
 php artisan down
 # upload/extract the new package over the old folder (keep .env and storage/)
-php artisan migrate --force && php artisan config:cache && php artisan route:cache
+php artisan migrate --force && php artisan optimize
 php artisan up
 ```
 A backup is taken every hour, so you can always go back (see below).
+
+## Speed
+- **PHP OPcache on** (cPanel → *Select PHP Version* → *Extensions*: tick `opcache`; *Options*: `opcache.memory_consumption` 128 or more, `opcache.max_accelerated_files` 20000). On a VPS it is on by default with `php8.3-fpm`.
+- **Redis** if the host offers it (`CACHE_STORE=redis`, `SESSION_DRIVER=redis`); otherwise the database drivers work.
+- After every update run `php artisan optimize` (above). Never leave `APP_DEBUG=true` on a live server: it is slow and shows internals.
+- Text is compressed (gzip/brotli) and the app's files are cached for a year by `public/.htaccess`; on Nginx use the `gzip on;` lines in the VPS config above.
 
 ## Backups
 - Every night a full backup, every hour a small one (without logs) – in `BACKUP_PATH` (kept 30 days / 48 hours).

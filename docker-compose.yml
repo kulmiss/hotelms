@@ -4,6 +4,8 @@ name: hotelms
 services:
   mysql:
     image: mysql:8.4
+    # Development only: no binary log (faster writes, e.g. the demo reset), more memory for data.
+    command: ['--skip-log-bin', '--innodb-buffer-pool-size=512M', '--innodb-flush-log-at-trx-commit=2']
     environment:
       MYSQL_DATABASE: hotelms
       MYSQL_USER: hotelms
@@ -30,6 +32,9 @@ services:
     build: ./backend
     volumes: ['./backend:/var/www/backend']
     ports: ['8000:8000']
+    environment:
+      # Answer several requests at the same time (a page asks for 5–10 things at once).
+      PHP_CLI_SERVER_WORKERS: 8
     depends_on:
       mysql: { condition: service_healthy }
       redis: { condition: service_started }

@@ -19,10 +19,28 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
+    // Prepare the app and every screen at start-up, so the first visit to a page is not slow.
+    warmup: { clientFiles: ['./src/main.tsx', './src/app/router.tsx', './src/pages/**/*.tsx', './src/components/**/*.tsx'] },
     proxy: {
       '/api': { target: apiTarget },
       '/sanctum': { target: apiTarget },
       '/storage': { target: apiTarget },
+    },
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-dom/client', 'react-router', '@tanstack/react-query', 'i18next', 'react-i18next', '@heroicons/react/24/outline', '@heroicons/react/24/solid', '@heroicons/react/20/solid', '@heroicons/react/16/solid'],
+  },
+  build: {
+    target: 'es2022',
+    reportCompressedSize: false,
+    rollupOptions: {
+      output: {
+        // Libraries change rarely: in their own files they stay cached across app updates.
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router'],
+          data: ['@tanstack/react-query', 'i18next', 'react-i18next'],
+        },
+      },
     },
   },
   test: {
