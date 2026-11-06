@@ -2,6 +2,7 @@
 
 namespace App\Services\Booking;
 
+use App\Http\Controllers\Api\Front\PaymentProofController;
 use App\Models\Branch;
 use App\Models\CancellationPolicy;
 use App\Models\Guest;
@@ -25,7 +26,6 @@ use App\Support\Money;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Api\Front\PaymentProofController;
 use Illuminate\Validation\ValidationException;
 
 /**
