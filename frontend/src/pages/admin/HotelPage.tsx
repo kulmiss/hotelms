@@ -158,9 +158,12 @@ export function HotelPage() {
             {hotel.data.admins.map((a) => (
               <li key={a.id} className="flex flex-col gap-2">
                 <div className="flex flex-col">
-                  <span className="font-medium">{a.name}</span>
+                  <span className="font-medium">
+                    {a.name}
+                    {a.role && <span className="font-normal text-muted"> · {a.role.name}</span>}
+                  </span>
                   <span className="text-muted break-all">
-                    {a.email}, {a.must_change_password ? t('admin.hotel.notSignedInYet') : t('admin.hotel.lastLogin', { date: date(a.last_login_at) })}
+                    {a.email}, {a.must_change_password || !a.last_login_at ? t('admin.hotel.notSignedInYet') : t('admin.hotel.lastLogin', { date: date(a.last_login_at) })}
                   </span>
                 </div>
                 <ResetPassword hotelId={h.id} user={a} />

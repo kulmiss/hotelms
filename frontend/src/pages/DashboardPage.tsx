@@ -26,6 +26,7 @@ import { ROOM_DOTS } from '@/lib/desk'
 import { date, money } from '@/lib/format'
 import { useCan } from '@/lib/hotel'
 import { useDashboard } from '@/lib/reports'
+import { mainNav, NAV_MODULES } from '@/app/navigation'
 
 /** Today at a glance (screen-list.md 2.1). Money figures only for roles that may see revenue. */
 export function DashboardPage() {
@@ -143,7 +144,50 @@ export function DashboardPage() {
         </>
       )}
 
+      {isHotelUser && !can('dashboard.view') && <QuickLinks />}
+      {isHotelUser && can('dashboard.view') && dash.isPending && <DashboardSkeleton />}
+
       <ApiStatus />
+    </div>
+  )
+}
+
+/** For roles without the hotel numbers (e.g. Housekeeping): big shortcuts to their own screens. */
+function QuickLinks() {
+  const { t } = useTranslation()
+  const me = useMe()
+  const can = useCan()
+  const modules = me.data?.hotel?.modules ?? []
+  const items = mainNav.filter((item) => item.path !== '/' && can(item.permission) && (!item.module || modules.includes(NAV_MODULES[item.module])))
+  if (!items.length) return null
+  return (
+    <div className="flex flex-col gap-3">
+      <h2 className="text-sm font-semibold">{t('dashboard.yourWork')}</h2>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((item) => (
+          <Link key={item.path} to={item.path} className="panel flex min-h-touch items-center gap-3 p-5 transition duration-150 hover:ring-accent/40">
+            <item.icon aria-hidden className="size-5 text-icon" />
+            <span className="text-sm font-medium">{t(`nav.${item.key}`)}</span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/** Grey shapes while today's numbers load, so the page never looks empty. */
+function DashboardSkeleton() {
+  return (
+    <div aria-hidden className="flex flex-col gap-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="panel h-28 animate-pulse bg-sunken" />
+        ))}
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="panel h-44 animate-pulse bg-sunken" />
+        <div className="panel h-44 animate-pulse bg-sunken" />
+      </div>
     </div>
   )
 }

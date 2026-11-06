@@ -1,3 +1,4 @@
+import { dateTime } from '@/lib/format'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert } from '@/components/ui/Alert'
@@ -15,7 +16,7 @@ const GROUPS: SwitchDef['group'][] = ['emergency', 'modules', 'features', 'limit
 
 /** "2026-11-20T09:00" from the date box → an exact time with the browser's offset. */
 const toIso = (v: string) => (v ? new Date(v).toISOString() : null)
-const when = (v: string | null) => (v ? new Date(v).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : '')
+const when = (v: string | null) => (v ? dateTime(v) : '')
 const errorOf = (e: unknown) => (e instanceof ApiError ? e.message : e ? String(e) : null)
 
 /** Super Admin → Switches (W4): turn features on/off for everyone, a plan or one hotel; gifts with an end date; banners. */

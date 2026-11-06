@@ -111,6 +111,26 @@ class DemoHotelTest extends TestCase
                 Room::where('status', 'occupied')->count(),
             );
 
+            // Busy but not full: there are clean free rooms for a walk-in, and every dirty room has a cleaning task.
+            $this->assertLessThan(95, $kpis['occupancy']);
+            $this->assertGreaterThan(0, Room::where('status', 'available')->count());
+            $dirty = Room::where('status', 'dirty')->pluck('id');
+            $this->assertNotEmpty($dirty);
+            $this->assertSame($dirty->count(), DB::table('housekeeping_tasks')->whereIn('room_id', $dirty)->where('status', '!=', 'done')->distinct()->count('room_id'));
+
+            // Future bookings were made over the last weeks, not all today; most already have a room.
+            $this->assertLessThan(60, Reservation::where('created_at', '>=', $start)->count());
+            $future = DB::table('reservation_rooms')->where('hotel_id', $hotel->id)->where('status', 'confirmed')->where('check_in_at', '>', $start->copy()->addDays(2));
+            $this->assertGreaterThan((clone $future)->count() / 2, (clone $future)->whereNotNull('room_id')->count());
+
+            // The team: a rota, attendance, and cash held in cashier shifts (one open shift per person).
+            $this->assertGreaterThan(0, DB::table('shift_assignments')->where('hotel_id', $hotel->id)->where('date', '>', $start->toDateString())->count());
+            $this->assertGreaterThan(0, DB::table('attendances')->where('hotel_id', $hotel->id)->count());
+            $this->assertSame(0, DB::table('payments as p')->join('payment_methods as m', 'm.id', '=', 'p.payment_method_id')
+                ->where('p.hotel_id', $hotel->id)->where('m.type', 'cash')->where('p.paid_at', '>=', $start->copy()->subDays(13))->whereNull('p.cashier_session_id')->count());
+            $open = DB::table('cashier_sessions')->where('hotel_id', $hotel->id)->where('status', 'open')->pluck('user_id');
+            $this->assertSame($open->count(), $open->unique()->count());
+
             // Every bill adds up: lines + tax = total; payments = paid.
             foreach (Invoice::inRandomOrder()->limit(25)->get() as $invoice) {
                 $lines = (string) DB::table('invoice_items')->where('invoice_id', $invoice->id)->sum('amount');

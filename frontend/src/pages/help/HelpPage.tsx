@@ -1,3 +1,4 @@
+import { dateTime } from '@/lib/format'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PlusIcon } from '@heroicons/react/20/solid'
@@ -59,7 +60,7 @@ export function HelpPage() {
                   </span>
                   <span className="text-xs text-muted">
                     {r.from && `${r.from} · `}
-                    {r.last_message_at && new Date(r.last_message_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                    {r.last_message_at && dateTime(r.last_message_at)}
                   </span>
                 </button>
               </li>

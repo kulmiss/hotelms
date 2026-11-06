@@ -1,3 +1,4 @@
+import { dateTime } from '@/lib/format'
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
@@ -18,7 +19,7 @@ import { useInbox, useInboxMessage, useInboxRequest, useInboxUpdate, useLogCall,
 import { TextArea } from '@/pages/help/HelpPage'
 
 const errorOf = (e: unknown) => (e instanceof ApiError ? e.message : e ? String(e) : null)
-const when = (v: string | null) => (v ? new Date(v).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : '')
+const when = (v: string | null) => (v ? dateTime(v) : '')
 
 /** Super Admin → Support (area 7): requests from the app, Telegram and phone calls. */
 export function SupportInboxPage() {

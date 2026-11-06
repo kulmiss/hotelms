@@ -11,7 +11,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { StatTile } from '@/components/ui/StatTile'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { useAdminDashboard } from '@/lib/admin'
-import { date, money } from '@/lib/format'
+import { date, money, dateTime } from '@/lib/format'
 
 export function AdminDashboardPage() {
   const { t } = useTranslation()
@@ -115,7 +115,7 @@ export function AdminDashboardPage() {
                     <span className="line-clamp-2">{a.description}</span>
                     <span className="text-xs text-muted">
                       {a.hotel?.name}
-                      {a.user && ` · ${a.user}`} · {new Date(a.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {a.user && ` · ${a.user}`} · {new Date(a.at).toDateString() === new Date().toDateString() ? new Date(a.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : dateTime(a.at)}
                     </span>
                   </li>
                 ))}

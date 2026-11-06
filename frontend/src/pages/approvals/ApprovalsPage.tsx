@@ -1,3 +1,4 @@
+import { dateTime } from '@/lib/format'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CheckIcon, XMarkIcon } from '@heroicons/react/20/solid'
@@ -15,7 +16,7 @@ import { useLookups } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 
 const errorOf = (e: unknown) => (e instanceof ApiError ? (Object.values(e.errors)[0]?.[0] ?? e.message) : e ? String(e) : null)
-const when = (v: string | null) => (v ? new Date(v).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : '')
+const when = (v: string | null) => (v ? dateTime(v) : '')
 
 /** Approvals (automation.md): price suggestions and refunds wait here for a manager. Nothing happens without a yes. */
 export function ApprovalsPage() {

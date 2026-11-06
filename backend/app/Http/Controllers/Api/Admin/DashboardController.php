@@ -33,7 +33,11 @@ class DashboardController extends Controller
             ->whereBetween('payments.paid_at', [$start, $end])->where('payments.type', '!=', 'refund')
             ->selectRaw('hotels.id, hotels.name, payments.currency, SUM(payments.amount) as total, COUNT(*) as payments')
             ->groupBy('hotels.id', 'hotels.name', 'payments.currency')->orderByDesc('total')->limit(5)->get();
-        $activity = $tenant->acrossAllHotels(fn () => ActivityLog::whereIn('hotel_id', $ids)->with(['user:id,name', 'hotel:id,name'])->latest('id')->limit(15)->get());
+        // What people did; settings written by the system when a hotel is created are left out.
+        $quiet = ['HotelSetting', 'AlertRule', 'ReportSchedule', 'AutomationSetting'];
+        $activity = $tenant->acrossAllHotels(fn () => ActivityLog::whereIn('hotel_id', $ids)
+            ->where(fn ($q) => $q->whereNull('subject_type')->orWhereNotIn('subject_type', $quiet))
+            ->with(['user:id,name', 'hotel:id,name'])->latest('id')->limit(15)->get());
 
         return response()->json([
             'hotels' => [

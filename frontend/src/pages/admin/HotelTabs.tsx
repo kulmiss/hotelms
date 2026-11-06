@@ -10,12 +10,12 @@ import { Select } from '@/components/ui/Select'
 import { StatTile } from '@/components/ui/StatTile'
 import { ApiError } from '@/lib/api'
 import { useMe } from '@/lib/auth'
-import { date, money } from '@/lib/format'
+import { date, money, dateTime } from '@/lib/format'
 import { useAddNote, useHotelLive, useHotelOverview, useRemoveNote, type HotelLive } from '@/lib/platform'
 import { TextArea } from '@/pages/help/HelpPage'
 
 const errorOf = (e: unknown) => (e instanceof ApiError ? e.message : e ? String(e) : null)
-const when = (v: string | null) => (v ? new Date(v).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : '—')
+const when = (v: string | null) => (v ? dateTime(v) : '—')
 
 /** Plan usage bars (rooms, branches, staff against the plan or gift limit). */
 export function PlanUsage({ hotelId }: { hotelId: number }) {

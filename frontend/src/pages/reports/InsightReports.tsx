@@ -235,7 +235,7 @@ function Targets({ branchId }: { branchId?: number | null }) {
                 <span className={cn('w-14 text-right font-semibold tabular-nums', pct < 85 && 'text-danger-text')}>{pct}%</span>
               </div>
             )}
-            <span className="text-xs text-muted">{t('insights.occupancyLine', { projected: r.projected_occupancy, target: r.occupancy_target ? Number(r.occupancy_target) : '—' })}</span>
+            <span className="text-xs text-muted">{r.occupancy_target ? t('insights.occupancyLine', { projected: r.projected_occupancy, target: Number(r.occupancy_target) }) : t('insights.occupancyLineNoTarget', { projected: r.projected_occupancy })}</span>
             {can('reports.targets_manage') &&
               (e ? (
                 <div className="flex flex-wrap items-end gap-2">

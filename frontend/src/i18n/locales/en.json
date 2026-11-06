@@ -138,6 +138,7 @@
     "welcome": "Welcome to HotelMS",
     "intro": "This is the Phase 0 foundation. Hotel features arrive phase by phase.",
     "apiStatus": "API status",
+    "yourWork": "Your work",
     "checking": "Checking…",
     "connected": "Connected",
     "degraded": "Database not reachable",
@@ -265,7 +266,7 @@
       "subscription": "Subscription",
       "trialEnds": "Trial ends",
       "contact": "Contact",
-      "staff": "Hotel Admin",
+      "staff": "Staff",
       "notSignedInYet": "has not signed in yet",
       "lastLogin": "last sign-in {{date}}",
       "payments": "Payments",
@@ -406,6 +407,7 @@
       "lastUsed": "Last used",
       "bookings30": "Bookings (30 days)",
       "never": "Never",
+      "today": "Today",
       "daysAgo_one": "{{count}} day ago",
       "daysAgo_other": "{{count}} days ago"
     }
@@ -1388,7 +1390,7 @@
     "assignedTo": "For {{name}}",
     "start": "Start",
     "done": "Done",
-    "allDone": "Nothing to do. All rooms are clean.",
+    "allDone": "Nothing to do right now. New rooms to clean will show here.",
     "nobody": "Anyone",
     "type": "Task",
     "priority": "Priority",
@@ -1563,6 +1565,7 @@
     "month": "Month",
     "projectionLine": "Earned {{earned}} + booked {{booked}} = {{projection}}",
     "occupancyLine": "Projected occupancy {{projected}}% (target {{target}}%)",
+    "occupancyLineNoTarget": "Projected occupancy {{projected}}% (no target set)",
     "revenueTarget": "Revenue target",
     "occupancyTarget": "Occupancy target %",
     "setTarget": "Set target",
@@ -2013,7 +2016,7 @@
     "lastRun": "Last run: {{when}}",
     "jobsLine": "{{waiting}} waiting · {{failed}} failed",
     "backupLine": "Newest: {{when}} · {{kb}} KB · {{count}} kept",
-    "freeMb": "{{mb}} MB free",
+    "freeSpace": "{{size}} free",
     "checks": {
       "database": "Database",
       "cache": "Cache",
@@ -2138,6 +2141,8 @@
       "switches_manage": "Switches and emergency",
       "support_answer": "Answer support requests",
       "system_view": "System health and activity log",
+      "releases_manage": "Release notes (What's new)",
+      "content_manage": "Texts on invoices and emails",
       "team_manage": "Manage the HotelMS team"
     }
   },
