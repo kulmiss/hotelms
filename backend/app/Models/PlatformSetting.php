@@ -28,6 +28,13 @@ class PlatformSetting extends Model
         // Emails
         'email_from_name' => 'HotelMS',
         'email_footer' => null,
+        // Mail server (Owner only; empty = the MAIL_* lines of .env). The password is stored encrypted.
+        'mail_host' => null,
+        'mail_port' => 587,
+        'mail_encryption' => 'tls',
+        'mail_username' => null,
+        'mail_password' => null,
+        'mail_from_address' => null,
         // Security: two-step sign-in required for the HotelMS team and Hotel Admins
         'two_factor_admins' => true,
         // Telegram bot for reports and alerts (free; create it with @BotFather)

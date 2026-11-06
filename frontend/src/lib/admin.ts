@@ -81,6 +81,13 @@ export type PlatformSettings = {
   email_footer: string | null
   telegram_bot_token: string | null
   telegram_bot_username: string | null
+  mail_host?: string | null
+  mail_port?: number
+  mail_encryption?: 'tls' | 'ssl' | 'none'
+  mail_username?: string | null
+  /** Masked ("••••••••") when saved; send it back unchanged to keep it. */
+  mail_password?: string | null
+  mail_from_address?: string | null
 }
 
 export type AdminDashboard = {
@@ -172,6 +179,11 @@ export const useSavePlan = () =>
   useAdminMutation((plan: Partial<Plan> & { id?: number }) =>
     plan.id ? put(`/admin/plans/${plan.id}`, plan) : post('/admin/plans', plan),
   )
+/** Owner: send a test email to yourself with the saved mail server. */
+export function useTestEmail() {
+  return useMutation({ mutationFn: () => post<{ message: string }>('/admin/settings/test-email'), meta: { toast: false } })
+}
+
 export function useSaveSettings() {
   const qc = useQueryClient()
   return useMutation({

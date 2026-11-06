@@ -493,6 +493,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
                 Route::post('/plans', [AdminPlanController::class, 'store']);
                 Route::put('/plans/{plan}', [AdminPlanController::class, 'update']);
                 Route::put('/settings', [PlatformSettingsController::class, 'update']);
+                Route::post('/settings/test-email', [PlatformSettingsController::class, 'testEmail'])->middleware('throttle:5,1');
                 Route::post('/settings/logo', [PlatformSettingsController::class, 'logo']);
             });
         });
