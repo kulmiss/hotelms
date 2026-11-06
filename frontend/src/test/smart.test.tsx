@@ -7,7 +7,10 @@ import { renderApp } from './renderApp'
 
 afterEach(() => vi.unstubAllGlobals())
 
-const hint = { key: 'tonight', text: 'Tonight looks about 80% full – 4 more arrivals to come.', why: '12 rooms in house now plus 4 arriving today, of 20 rooms.', tone: 'info', link: null }
+const hint = {
+  key: 'tonight', text: 'Tonight looks about 80% full – 4 more arrivals to come.', why: '12 rooms in house now plus 4 arriving today, of 20 rooms.', tone: 'info', link: null,
+  explain: { facts: [['Rooms with a guest now', '12'], ['Rooms in the hotel', '20']], how: 'Rooms with a guest staying tonight, plus bookings arriving today.', do: 'Check the arrivals list.' },
+}
 
 describe('smart hints', () => {
   it('shows a hint with its reason and hides it when dismissed', async () => {
@@ -18,6 +21,10 @@ describe('smart hints', () => {
     expect(screen.queryByText(hint.why)).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Why?' }))
     expect(screen.getByText(hint.why)).toBeInTheDocument()
+    // The full explanation: the numbers, how it was worked out, what to do.
+    expect(screen.getByText('Rooms in the hotel').nextElementSibling).toHaveTextContent('20')
+    expect(screen.getByText(hint.explain.how)).toBeInTheDocument()
+    expect(screen.getByText(hint.explain.do)).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Hide this tip' }))
     expect(screen.queryByText(hint.text)).not.toBeInTheDocument()
   })

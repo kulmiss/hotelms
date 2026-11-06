@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { ProofField, type Proof } from '@/components/payments/PaymentProof'
 import { CheckIcon } from '@heroicons/react/20/solid'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
@@ -40,6 +41,8 @@ export function WalkInPage() {
   const [methodId, setMethodId] = useState(0)
   const [amount, setAmount] = useState<string | null>(null)
   const [reference, setReference] = useState('')
+  const [proof, setProof] = useState<Proof | null>(null)
+  const [payLater, setPayLater] = useState(false)
   const free = useFreeRooms(branchId || null, true, { stay_type: stayType, check_out: checkOut, hours })
   const walkIn = useWalkIn()
 
@@ -76,7 +79,7 @@ export function WalkInPage() {
         hours: input.hours,
         ...(quick ? { quick_guest: { name: quickName.trim(), phone: quickPhone.trim() } } : { guest_id: guest?.id }),
         rooms: chosen.map((r) => ({ room_type_id: r.room_type_id, room_id: r.id, adults: 1, children: 0 })),
-        payment: { payment_method_id: methodId || lookups.data?.payment_methods[0]?.id || 0, amount: pay, reference: reference || undefined },
+        ...(payLater ? { pay_later: true } : { payment: { payment_method_id: methodId || lookups.data?.payment_methods[0]?.id || 0, amount: pay, reference: reference || undefined, proof_id: proof?.id } }),
       },
       { onSuccess: (res) => navigate(`/reservations/${res.data.id}`, { replace: true }) },
     )
@@ -185,7 +188,16 @@ export function WalkInPage() {
           {!chosen.length && <p className="text-[13px] text-muted">{t('desk.pickRoomFirst')}</p>}
           {quoteError && <Alert>{Object.values(quoteError.errors)[0]?.[0] ?? quoteError.message}</Alert>}
           {q && chosen.length > 0 && <QuoteSummary q={{ ...q, deposit_required: '0' }} />}
-          {q && (
+          {q && lookups.data?.pay_later && (
+            <label className="flex min-h-touch items-start gap-2 border-t border-border pt-3 text-[13px]">
+              <input type="checkbox" className="mt-0.5 size-4 accent-accent" checked={payLater} onChange={(e) => setPayLater(e.target.checked)} />
+              <span className="flex flex-col">
+                {t('payLater.option')}
+                <span className="text-xs text-muted">{t('payLater.walkInHint')}</span>
+              </span>
+            </label>
+          )}
+          {q && !payLater && (
             <div className="flex flex-col gap-3 border-t border-border pt-3">
               <p className="text-xs text-muted">{free.data?.walk_in_payment === 'deposit' ? t('desk.depositRule') : t('desk.fullRule')}</p>
               <Select label={t('reservations.method')} value={String(methodId || lookups.data?.payment_methods[0]?.id || '')} onChange={(e) => setMethodId(Number(e.target.value))}>
@@ -197,12 +209,13 @@ export function WalkInPage() {
               </Select>
               <Field label={t('reservations.amount')} inputMode="decimal" value={pay} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ''))} error={error?.field('payment.amount')} />
               <Field label={t('reservations.reference')} value={reference} onChange={(e) => setReference(e.target.value)} />
+              <ProofField value={proof} onChange={setProof} />
             </div>
           )}
           {error && !error.field('payment.amount') && <Alert>{Object.values(error.errors)[0]?.[0] ?? error.message}</Alert>}
           {!hasGuest && chosen.length > 0 && <p className="text-xs text-warn-text">{quick ? t('desk.quick.needNamePhone') : t('reservations.form.needGuest')}</p>}
           <Button size="lg" disabled={!input || !hasGuest || !q || walkIn.isPending} onClick={submit}>
-            {t('desk.takePaymentCheckIn')}
+            {payLater ? t('payLater.checkInNow') : t('desk.takePaymentCheckIn')}
           </Button>
         </Card>
       </div>

@@ -60,7 +60,7 @@ const SOURCES: Record<string, string[]> = {
 /** Extra words people type that are not on the screen. */
 const SYNONYMS: Record<string, string> = {
   profile: 'logo name tin vat number invoice address phone email footer paper receipt a4 80mm',
-  'booking-rules': 'deposit walk-in early late check-in check-out hourly cleaning expire',
+  'booking-rules': 'deposit walk-in early late check-in check-out hourly cleaning expire pay later credit',
   taxes: 'vat service charge tax',
   currencies: 'usd dollar exchange rate money',
   'payment-methods': 'cash telebirr cbe birr bank card mobile money',

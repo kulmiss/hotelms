@@ -1,8 +1,11 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\SystemController;
+use App\Models\PaymentProof;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
+use Illuminate\Support\Facades\Storage;
 
 /*
 | Scheduled jobs. On shared hosting, one cron line runs them every minute:
@@ -30,3 +33,12 @@ Schedule::command('demo:reset')->dailyAt('02:30')->withoutOverlapping();
 
 // Proof that cron runs (Super Admin → System health).
 Schedule::call(fn () => Cache::forever(SystemController::HEARTBEAT, now()->toIso8601String()))->everyMinute()->name('scheduler-heartbeat');
+
+// Payment proofs uploaded but never attached to a payment (the payment was not saved): removed after a day.
+Schedule::call(function () {
+    app(TenantContext::class)->acrossAllHotels(fn () => PaymentProof::whereNull('payment_id')->where('created_at', '<', now()->subDay())->get()
+        ->each(function (PaymentProof $p) {
+            Storage::disk('local')->delete($p->path);
+            $p->delete();
+        }));
+})->name('payment-proofs:cleanup')->dailyAt('03:20')->withoutOverlapping();

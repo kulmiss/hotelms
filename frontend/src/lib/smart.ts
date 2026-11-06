@@ -3,7 +3,10 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { api } from './api'
 
 /** A ✨ Smart hint (smart-features.md): a sentence, why, and maybe a link or data the screen can use. */
-export type SmartHint = { key: string; text: string; why: string; tone: 'info' | 'ok' | 'warn'; link: string | null; data?: Record<string, unknown> }
+/** The full answer to "Why?": the numbers used, how the hint was worked out, and what you can do. */
+export type SmartExplain = { facts: [string, string][]; how: string; do: string | null }
+
+export type SmartHint = { key: string; text: string; why: string; tone: 'info' | 'ok' | 'warn'; link: string | null; data?: Record<string, unknown>; explain?: SmartExplain }
 
 export function useSmart(place: string, params: Record<string, string | number | null | undefined> = {}, enabled = true) {
   const qs = new URLSearchParams()

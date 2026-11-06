@@ -169,6 +169,7 @@ class FrontDeskController extends Controller
             'hours' => ['nullable', 'integer', 'min:1', 'max:24'],
             'guest_id' => ['required_without:quick_guest', 'nullable', 'integer'],
             // Quick check-in: only a name and phone now, the rest later (the guest shows "Details missing").
+            'pay_later' => ['nullable', 'boolean'],
             'quick_guest' => ['nullable', 'array'],
             'quick_guest.name' => ['required_with:quick_guest', 'string', 'min:2', 'max:120'],
             'quick_guest.phone' => ['required_with:quick_guest', 'string', 'max:30', 'regex:/^[0-9+()\-\s]{6,30}$/'],
@@ -281,6 +282,7 @@ class FrontDeskController extends Controller
             'payment.amount' => ['nullable', 'decimal:0,2', 'min:0', 'max:99999999'],
             'payment.currency' => ['nullable', 'string', 'size:3'],
             'payment.reference' => ['nullable', 'string', 'max:100'],
+            'payment.proof_id' => ['nullable', 'integer'],
         ];
     }
 

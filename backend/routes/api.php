@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\DemoController;
 use App\Http\Controllers\Api\Front\FrontDeskController;
 use App\Http\Controllers\Api\Front\GuestController;
 use App\Http\Controllers\Api\Front\InvoiceController;
+use App\Http\Controllers\Api\Front\PaymentProofController;
 use App\Http\Controllers\Api\Front\ReservationController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\Hotel\ActivityLogController;
@@ -154,6 +155,11 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
             });
             Route::post('/guests/{id}/blacklist', [GuestController::class, 'blacklist'])->middleware('permission:guests.blacklist');
 
+            // Payment proof (optional photo or PDF); permissions are checked inside.
+            Route::post('/payment-proofs', [PaymentProofController::class, 'store'])->middleware('throttle:30,1');
+            Route::get('/payment-proofs/{id}', [PaymentProofController::class, 'show']);
+            Route::put('/payments/{payment}/proof', [PaymentProofController::class, 'attach']);
+
             // Reservations.
             Route::middleware('permission:reservations.view')->group(function () {
                 Route::get('/reservations', [ReservationController::class, 'index']);
@@ -168,6 +174,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
             });
             Route::post('/reservations', [ReservationController::class, 'store'])->middleware('permission:reservations.create');
             Route::put('/reservations/{id}', [ReservationController::class, 'update'])->middleware(['permission:reservations.edit', 'one.at.a.time:reservation']);
+            Route::post('/reservations/{id}/pay-later', [ReservationController::class, 'payLater'])->middleware(['permission:reservations.edit', 'one.at.a.time:reservation']);
             Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->middleware(['permission:reservations.cancel', 'one.at.a.time:reservation']);
             Route::post('/reservations/{id}/no-show', [ReservationController::class, 'noShow'])->middleware(['permission:reservations.no_show', 'one.at.a.time:reservation']);
 

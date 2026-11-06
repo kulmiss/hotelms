@@ -94,6 +94,8 @@ class ReservationController extends Controller
             })),
             'policies' => CancellationPolicy::orderByDesc('is_default')->orderBy('id')->get(['id', 'name', 'free_until_hours', 'penalty_type', 'penalty_value', 'is_default']),
             'payment_methods' => PaymentMethod::where('is_active', true)->orderBy('id')->get(['id', 'name', 'type']),
+            // May this person let a guest pay everything at check-out (no deposit, no up-front payment)?
+            'pay_later' => $this->service->canPayLater($request->user()),
             'currencies' => HotelCurrency::orderByDesc('is_default')->orderBy('code')->when(! $multi, fn ($q) => $q->where('is_default', true))->get(['code', 'symbol', 'is_default']),
         ]);
     }
@@ -142,7 +144,7 @@ class ReservationController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $data = $request->validate($this->bookingRules() + ['source' => ['nullable', Rule::in(Reservation::SOURCES)], 'notes' => ['nullable', 'string', 'max:1000']]);
+        $data = $request->validate($this->bookingRules() + ['source' => ['nullable', Rule::in(Reservation::SOURCES)], 'notes' => ['nullable', 'string', 'max:1000'], 'pay_later' => ['nullable', 'boolean']]);
         $reservation = $this->service->create($data, $request->user());
 
         return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)], 201);
@@ -162,6 +164,14 @@ class ReservationController extends Controller
         $reservation = $this->find($request, $id);
 
         return response()->json(['data' => $this->service->cancellationTerms($reservation, $request->boolean('no_show'))]);
+    }
+
+    /** Confirm a pending booking without a deposit: the guest pays at check-out. */
+    public function payLater(Request $request, string $id): JsonResponse
+    {
+        $reservation = $this->service->payLater($this->find($request, $id), $request->user());
+
+        return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)]);
     }
 
     public function cancel(Request $request, string $id): JsonResponse
@@ -190,6 +200,7 @@ class ReservationController extends Controller
             'amount' => ['required', 'decimal:0,2', 'gt:0', 'max:99999999'],
             'currency' => ['nullable', 'string', 'size:3'],
             'reference' => ['nullable', 'string', 'max:100'],
+            'proof_id' => ['nullable', 'integer'],
             'refund_reason' => ['nullable', 'required_if:type,refund', 'string', 'max:200'],
         ]);
         $permission = $data['type'] === 'refund' ? 'payments.refund' : 'payments.take';

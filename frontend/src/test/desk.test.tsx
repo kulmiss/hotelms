@@ -109,6 +109,38 @@ describe('quick check-in', () => {
     })
   })
 
+  it('checks a walk-in in to pay at check-out when allowed', async () => {
+    const quote = {
+      stay_type: 'nightly', check_in_at: '2026-11-12T14:00:00+03:00', check_out_at: '2026-11-13T12:00:00+03:00', currency: 'ETB',
+      rooms: [{ room_type_id: 3, room_type: 'Standard', room_id: 2, room_number: '102', adults: 1, children: 0, total: '2000.00', lines: [] }],
+      subtotal: '2000.00', discount_percent: '0.00', discount_amount: '0.00', tax_total: '300.00', total: '2300.00', deposit_required: '690.00', policy_name: null,
+    }
+    const fetchMock = mockApi({
+      'GET /me': { body: me() },
+      'GET /reservations/lookups': { body: { policies: [], payment_methods: [{ id: 1, name: 'Cash', type: 'cash' }], currencies: [], pay_later: true } },
+      'GET /front-desk/walk-in/rooms': { body: { data: [{ id: 2, number: '102', floor: '1', room_type_id: 3, room_type: 'Standard', nightly_price: '2000.00', day_use_price: null, hourly_price: null, max_capacity: 2, currency: 'ETB' }], walk_in_payment: 'full', now: '2026-11-12T16:00:00+03:00' } },
+      'POST /reservations/quote': { body: { data: quote } },
+      'GET /guests': { body: { data: [{ id: 5, first_name: 'Abebe', last_name: 'Kebede', full_name: 'Abebe Kebede', phone: null, id_number: null, is_blacklisted: false }], current_page: 1, last_page: 1, total: 1 } },
+      'POST /front-desk/walk-in': { status: 201, body: { data: { ...reservation, id: 12, status: 'checked_in' } } },
+    })
+    renderApp('/rooms/walk-in')
+
+    await userEvent.click(await screen.findByRole('button', { name: /102/ }))
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Search name, phone or ID' }), 'Abebe')
+    await userEvent.click(await screen.findByRole('button', { name: /Abebe Kebede/ }))
+    await userEvent.click(await screen.findByRole('checkbox', { name: /Pay at check-out/ }))
+    expect(screen.queryByLabelText('Amount')).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Check in (pay at check-out)' }))
+
+    await waitFor(() => {
+      const call = fetchMock.mock.calls.find(([url, init]) => String(url).endsWith('/front-desk/walk-in') && init?.method === 'POST')
+      const body = JSON.parse(String(call?.[1]?.body))
+      expect(body.pay_later).toBe(true)
+      expect(body.payment).toBeUndefined()
+      expect(body.guest_id).toBe(5)
+    })
+  })
+
   it('hides quick check-in without the permission', async () => {
     mockApi({
       'GET /me': { body: makeMe({}, [...DESK, 'guests.create_edit']) },
@@ -118,6 +150,29 @@ describe('quick check-in', () => {
     renderApp('/rooms/walk-in')
     expect(await screen.findByRole('heading', { name: 'Guest' })).toBeInTheDocument()
     expect(screen.queryByRole('checkbox', { name: 'Quick check-in' })).not.toBeInTheDocument()
+  })
+})
+
+describe('payment proof', () => {
+  it('adds an optional photo to a payment', async () => {
+    const fetchMock = mockApi({
+      'GET /me': { body: me() },
+      'GET /reservations/9': { body: { data: reservation } },
+      'GET /reservations/lookups': { body: { policies: [], payment_methods: [{ id: 1, name: 'Bank transfer', type: 'bank_transfer' }], currencies: [] } },
+      'POST /payment-proofs': { status: 201, body: { data: { id: 77, mime: 'image/jpeg' } } },
+      'POST /reservations/9/payments': { status: 201, body: { data: {} } },
+    })
+    renderApp('/reservations/9')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Record payment' }))
+    await userEvent.upload(screen.getByLabelText('Choose file'), new File(['slip'], 'slip.jpg', { type: 'image/jpeg' }))
+    expect(await screen.findByText('Proof added')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Save payment' }))
+
+    await waitFor(() => {
+      const call = fetchMock.mock.calls.find(([url, init]) => String(url).endsWith('/reservations/9/payments') && init?.method === 'POST')
+      expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ proof_id: 77 })
+    })
   })
 })
 

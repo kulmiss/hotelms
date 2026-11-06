@@ -30,6 +30,7 @@ class HotelSettingsController extends Controller
             'deposit_value' => ['required', 'decimal:0,2', 'min:0', $request->input('deposit_type') === 'percent' ? 'max:100' : 'max:9999999'],
             'pending_expiry_hours' => ['required', 'integer', 'between:1,720'],
             'walk_in_payment' => ['required', Rule::in(['full', 'deposit'])],
+            'allow_pay_later' => ['sometimes', 'boolean'],
             'early_check_in_fee_type' => ['required', Rule::in(['fixed', 'percent'])],
             'early_check_in_fee_value' => ['required', 'decimal:0,2', 'min:0', 'max:99999999'],
             'late_check_out_fee_type' => ['required', Rule::in(['fixed', 'percent'])],

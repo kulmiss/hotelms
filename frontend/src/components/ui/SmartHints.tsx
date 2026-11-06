@@ -42,7 +42,7 @@ function SmartHintRow({ h }: { h: SmartHint }) {
             </Link>
           )}
         </p>
-        {why && <p className="mt-0.5 text-xs text-muted">{h.why}</p>}
+        {why && <WhyPanel h={h} />}
       </div>
       <button type="button" aria-expanded={why} onClick={() => setWhy(!why)} className="min-h-6 shrink-0 rounded px-1 text-xs font-medium text-muted hover:text-text">
         {t('smart.why')}
@@ -50,6 +50,40 @@ function SmartHintRow({ h }: { h: SmartHint }) {
       <button type="button" aria-label={t('smart.dismiss')} onClick={() => dismiss(h)} className="-m-1 flex size-7 shrink-0 items-center justify-center rounded-md text-icon hover:bg-surface hover:text-muted">
         <XMarkIcon aria-hidden className="size-4" />
       </button>
+    </div>
+  )
+}
+
+/** "Why?": the reason in a sentence, the numbers behind it, how it was worked out and what you can do. */
+function WhyPanel({ h }: { h: SmartHint }) {
+  const { t } = useTranslation()
+  const e = h.explain
+  return (
+    <div className="mt-2 flex flex-col gap-2 rounded-md bg-surface/70 p-2.5 text-xs ring-1 ring-ring animate-page-in">
+      <p className="text-text">{h.why}</p>
+      {e && e.facts.length > 0 && (
+        <dl className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1">
+          {e.facts.map(([label, value], i) => (
+            <div key={i} className="contents">
+              <dt className="text-muted">{label}</dt>
+              <dd className="text-right font-medium tabular-nums">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {e?.how && (
+        <p>
+          <span className="font-semibold">{t('smart.how')} </span>
+          <span className="text-muted">{e.how}</span>
+        </p>
+      )}
+      {e?.do && (
+        <p>
+          <span className="font-semibold">{t('smart.whatToDo')} </span>
+          <span className="text-muted">{e.do}</span>
+        </p>
+      )}
+      <p className="text-[11px] text-muted">{t('smart.never')}</p>
     </div>
   )
 }

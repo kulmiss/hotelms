@@ -67,7 +67,10 @@ class SmartHintsTest extends TestCase
 
     public function test_dashboard_tonight_and_plan_usage(): void
     {
-        $this->actingAs($this->admin)->getJson('/api/v1/smart/dashboard')->assertOk()->assertJsonFragment(['key' => 'tonight']);
+        $tonight = collect($this->actingAs($this->admin)->getJson('/api/v1/smart/dashboard')->assertOk()->assertJsonFragment(['key' => 'tonight'])->json('data'))->firstWhere('key', 'tonight');
+        // "Why?" has the full explanation: the numbers, how it was worked out.
+        $this->assertContains(['Rooms in the hotel', (string) $this->inHotel($this->hotel, fn () => Room::count())], $tonight['explain']['facts']);
+        $this->assertNotEmpty($tonight['explain']['how']);
         $this->getJson('/api/v1/smart/rooms_settings')->assertOk()->assertJsonPath('data.0.text', 'You can add 1 more room on your plan.');
     }
 

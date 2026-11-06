@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { ProofField, ProofLink, type Proof } from '@/components/payments/PaymentProof'
 import { PrinterIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
@@ -153,6 +154,7 @@ export function InvoicePage() {
                       {p.reference && ` · ${p.reference}`}
                       {p.refund_reason && ` · ${p.refund_reason}`}
                     </span>
+                    <ProofLink paymentId={p.id} proof={p.proof} canAdd={can('payments.take')} />
                   </span>
                   <span className={cn('tabular-nums', p.type === 'refund' && 'text-danger-text')}>
                     {p.type === 'refund' ? '− ' : ''}
@@ -261,6 +263,7 @@ function PayPanel({ inv, onClose }: { inv: InvoiceDetail; onClose: () => void })
   const [amount, setAmount] = useState(Number(inv.balance) > 0 ? inv.balance : '')
   const [currency, setCurrency] = useState(inv.currency)
   const [reference, setReference] = useState('')
+  const [proof, setProof] = useState<Proof | null>(null)
   const [reason, setReason] = useState('')
   const method = methodId || lookups.data?.payment_methods[0]?.id || 0
 
@@ -297,13 +300,14 @@ function PayPanel({ inv, onClose }: { inv: InvoiceDetail; onClose: () => void })
         )}
       </div>
       <Field label={t('reservations.reference')} value={reference} onChange={(e) => setReference(e.target.value)} />
+      <ProofField value={proof} onChange={setProof} />
       {type === 'refund' && <Field label={t('reservations.refundReason')} value={reason} onChange={(e) => setReason(e.target.value)} />}
       {pay.error && <div className="sm:col-span-3"><Alert>{err(pay.error)}</Alert></div>}
       <div className="flex justify-end gap-2 sm:col-span-3">
         <Button variant="ghost" onClick={onClose}>
           {t('common.cancel')}
         </Button>
-        <Button disabled={!amount || pay.isPending} onClick={() => pay.mutate({ type, payment_method_id: method, amount, currency, reference: reference || undefined, refund_reason: reason || undefined }, { onSuccess: onClose })}>
+        <Button disabled={!amount || pay.isPending} onClick={() => pay.mutate({ type, payment_method_id: method, amount, currency, reference: reference || undefined, refund_reason: reason || undefined, proof_id: proof?.id }, { onSuccess: onClose })}>
           {t('reservations.savePayment')}
         </Button>
       </div>

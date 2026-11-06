@@ -23,7 +23,8 @@ use Throwable;
  * Smart hints (smart-features.md): plain statistics on the hotel's own data, written as clear sentences.
  * Each hint has a "why", can be dismissed, and never changes anything. Free to run; nothing leaves the server.
  *
- * A hint: ['key', 'text', 'why', 'tone' (info|ok|warn), 'link'?, 'data'?]
+ * A hint: ['key', 'text', 'why', 'tone' (info|ok|warn), 'link'?, 'data'?, 'explain'?]
+ * 'explain' is the full answer to "Why?": ['facts' => [[label, value], …], 'how' => how it was worked out, 'do' => what you can do].
  */
 class SmartHints
 {
@@ -63,6 +64,12 @@ class SmartHints
         return $currency.' '.number_format((float) $amount, 2);
     }
 
+    /** @param  list<array{0: string, 1: string|int|float}>  $facts */
+    private static function explain(array $facts, string $how, ?string $do = null): array
+    {
+        return ['facts' => array_map(fn ($f) => [$f[0], (string) $f[1]], $facts), 'how' => $how, 'do' => $do];
+    }
+
     private static function pct(float $now, float $before): ?int
     {
         return $before > 0 ? (int) round(($now - $before) / $before * 100) : null;
@@ -93,6 +100,15 @@ class SmartHints
                         'text' => 'Revenue this week is '.abs($change)."% {$way} last week".($top && Money::isPositive($top['room_revenue']) ? ", mostly from {$top['name']} rooms." : '.'),
                         'why' => 'This week '.self::money($hotel->default_currency, $now['revenue']).', the week before '.self::money($hotel->default_currency, $before['revenue']).'.',
                         'tone' => $change >= 0 ? 'ok' : 'warn', 'link' => '/reports?report=performance',
+                        'explain' => self::explain([
+                            ['Revenue, last 7 days', self::money($hotel->default_currency, $now['revenue'])],
+                            ['Revenue, the 7 days before', self::money($hotel->default_currency, $before['revenue'])],
+                            ['Change', ($change >= 0 ? '+' : '').$change.'%'],
+                            ['Occupancy, last 7 days', $now['occupancy'].'% (was '.$before['occupancy'].'%)'],
+                            ['Average night (ADR)', self::money($hotel->default_currency, $now['adr']).' (was '.self::money($hotel->default_currency, $before['adr']).')'],
+                        ] + ($top ? [5 => ['Room type with most revenue', $top['name'].' · '.self::money($hotel->default_currency, $top['room_revenue'])]] : []),
+                            'Revenue of today and the 6 days before, compared with the 7 days before that. Revenue is room nights, extras and fees on the bills, after discounts, without tax.',
+                            $change >= 0 ? 'Keep prices as they are; check the Forecast report for the coming weeks.' : 'Open the report to see which days and room types fell. A weekend price or a corporate offer can help fill rooms.'),
                     ];
                 }
                 if ($now['room_nights'] === 0 && $before['room_nights'] === 0) {
@@ -103,6 +119,13 @@ class SmartHints
                 return [
                     'text' => "Occupancy this week is {$now['occupancy']}% (".($diff >= 0 ? '+' : '')."{$diff} points on last week).",
                     'why' => "Room nights sold: {$now['room_nights']} this week, {$before['room_nights']} the week before.", 'tone' => $diff >= 0 ? 'ok' : 'warn',
+                    'explain' => self::explain([
+                        ['Room nights sold, last 7 days', $now['room_nights']],
+                        ['Room nights sold, the 7 days before', $before['room_nights']],
+                        ['Rooms in the hotel', $now['rooms']],
+                        ['Occupancy now / before', $now['occupancy'].'% / '.$before['occupancy'].'%'],
+                    ], 'Occupancy = room nights sold ÷ (rooms × 7 nights). Only stays that checked in count; cancelled and no-show bookings do not.',
+                        $diff >= 0 ? null : 'Look at the coming week on the Reservations calendar and follow up pending bookings.'),
                 ];
             }),
             $this->hint($hotel, 'tonight', function () use ($hotel, $branchIds) {
@@ -120,6 +143,13 @@ class SmartHints
                 return [
                     'text' => "Tonight looks about {$expected}% full".($toCome ? " – {$toCome} more ".($toCome === 1 ? 'arrival' : 'arrivals').' to come.' : '.'),
                     'why' => "{$inHouse} rooms in house now plus {$toCome} arriving today, of {$rooms} rooms.", 'link' => '/rooms?tab=arrivals',
+                    'explain' => self::explain([
+                        ['Rooms with a guest now', $inHouse],
+                        ['Rooms still to arrive today', $toCome],
+                        ['Rooms in the hotel', $rooms],
+                        ['Expected tonight', $expected.'%'],
+                    ], 'Rooms with a guest staying tonight, plus confirmed and pending bookings arriving today, divided by all rooms that can be sold. Guests leaving later today are not counted.',
+                        $toCome ? 'Check the arrivals list: call late guests, and make sure their rooms are clean.' : null),
                 ];
             }),
         ]);
@@ -161,7 +191,13 @@ class SmartHints
                     $why[] = 'booked long ago';
                 }
 
-                return $score >= 4 ? ['text' => 'This guest may not come. Call to confirm, or ask for a deposit.', 'why' => 'Because: '.implode(', ', $why).'.', 'tone' => 'warn'] : null;
+                return $score >= 4 ? [
+                    'text' => 'This guest may not come. Call to confirm, or ask for a deposit.', 'why' => 'Because: '.implode(', ', $why).'.', 'tone' => 'warn',
+                    'explain' => self::explain(
+                        array_merge(array_map(fn ($w) => ['Sign', ucfirst($w)], $why), [['Risk points', "{$score} (a warning from 4)"]]),
+                        'Points for each sign: nothing paid (2), earlier bookings cancelled or not shown (2 each, up to 4), first stay (1), booked by phone or other (1), booked more than 30 days ago (1).',
+                        'Call the guest to confirm, or ask for a deposit. If they do not arrive, mark the booking as a no-show.'),
+                ] : null;
             }),
             $this->hint($hotel, 'returning_guest', function () use ($hotel, $r) {
                 if (! $r->guest) {
@@ -180,6 +216,12 @@ class SmartHints
                     'text' => "Returning guest – {$nth} stay.".($usual ? " Usually room {$usual}." : '').($r->guest->notes ? " Note: {$r->guest->notes}" : ''),
                     'why' => 'Last stay '.HotelClock::local($past->first()->check_out_at, $hotel)->format('d M Y').', '.self::money($r->currency, $spent).' spent so far.',
                     'tone' => 'ok', 'link' => "/guests/{$r->guest_id}",
+                    'explain' => self::explain(array_values(array_filter([
+                        ['Earlier stays', $past->count()],
+                        ['Last stay', HotelClock::local($past->first()->check_out_at, $hotel)->format('d M Y')],
+                        ['Spent so far', self::money($r->currency, $spent)],
+                        $usual ? ['Room used most', $usual] : null,
+                    ])), 'Stays of this guest that ended with check-out, in all branches.', 'Welcome them back by name, and give their usual room if it is free.'),
                 ];
             }),
         ]);
@@ -211,7 +253,12 @@ class SmartHints
                     $reasons[] = "room {$best->number}".(($previous[$best->id] ?? 0) > 0 ? ' (the guest stayed there before)' : ' (clean, used least in the last 30 days)');
                 }
 
-                return $picks ? ['text' => 'Suggested: '.implode('; ', $reasons).'.', 'why' => 'Rooms are used evenly so they wear evenly; returning guests get their usual room.', 'data' => ['rooms' => $picks]] : null;
+                return $picks ? [
+                    'text' => 'Suggested: '.implode('; ', $reasons).'.', 'why' => 'Rooms are used evenly so they wear evenly; returning guests get their usual room.', 'data' => ['rooms' => $picks],
+                    'explain' => self::explain(array_map(fn ($x) => ['Suggestion', ucfirst($x)], $reasons),
+                        'Only clean rooms of the booked type that are free for the whole stay. First a room the guest stayed in before; otherwise the room used least in the last 30 days, so all rooms wear evenly.',
+                        'Pick the suggested room, or any other free room if the guest asks.'),
+                ] : null;
             }),
             $this->hint($hotel, 'upgrade', function () use ($hotel, $r, $availability) {
                 if ($r->stay_type !== 'nightly' || $r->rooms->count() !== 1) {
@@ -232,6 +279,13 @@ class SmartHints
                 return $free >= 2 && $occupancy < 60 ? [
                     'text' => "Quiet night: {$better->name} has {$free} free rooms. A free upgrade makes a good impression.",
                     'why' => 'Only '.round($occupancy).'% of rooms are occupied now.', 'tone' => 'ok',
+                    'explain' => self::explain([
+                        ['Booked room type', $rr->roomType?->name ?? '—'],
+                        ['Next better type', $better->name],
+                        ["Free {$better->name} rooms for the stay", $free],
+                        ['Rooms occupied now', round($occupancy).'%'],
+                    ], 'Shown on quiet nights only: under 60% occupied and at least 2 free rooms of the next better type that fits the guests.',
+                        'Offer the upgrade at the same price, then move the room after check-in. Nothing changes unless you do it.'),
                 ] : null;
             }),
         ]);
@@ -276,6 +330,13 @@ class SmartHints
                 'text' => "{$g->full_name} may already exist".($g->phone ? " ({$g->phone})" : '').'.',
                 'why' => 'Same phone number, ID number or name. Use the existing guest to keep their history together.',
                 'tone' => 'warn', 'link' => "/guests/{$g->id}", 'data' => ['guest_id' => $g->id, 'name' => $g->full_name],
+                'explain' => self::explain(array_values(array_filter([
+                    ['Existing guest', $g->full_name],
+                    $byPhone && $g->phone && substr((string) preg_replace('/\D/', '', $g->phone), -9) === $digits ? ['Same phone', $g->phone] : null,
+                    $byId && $g->id_number === trim((string) $q['id_number']) ? ['Same ID number', 'Yes'] : null,
+                    $byName && mb_strtolower($g->first_name) === mb_strtolower($first) && mb_strtolower((string) $g->last_name) === mb_strtolower($last) ? ['Same name', $g->full_name] : null,
+                ])), 'We compare the last 9 digits of the phone, the exact ID number and the full name with guests already saved.',
+                    'Open the existing guest and book with them, so all stays and bills stay in one place. If it is a different person, carry on.'),
             ];
         })]);
     }
@@ -310,6 +371,12 @@ class SmartHints
             return [
                 'text' => "At the end of your shift you should have about {$base} ".number_format((float) $total).' in the drawer.',
                 'why' => self::money($base, $now).' now (start + cash taken), plus about '.self::money($base, $more).' that usually comes in by '.HotelClock::local($end, $hotel)->format('H:i').' on this weekday.',
+                'explain' => self::explain([
+                    ['In the drawer now (start + cash taken − refunds)', self::money($base, $now)],
+                    ['Usually still to come by '.HotelClock::local($end, $hotel)->format('H:i'), self::money($base, $more)],
+                    ['Expected at the end', self::money($base, $total)],
+                ], 'Cash that came in at this branch in the same hours on the same weekday, over the last 4 weeks, averaged. An 8-hour shift is assumed.',
+                    'Count the drawer at the end and compare. Only the count you enter when closing is saved.'),
             ];
         })]);
     }
@@ -337,6 +404,14 @@ class SmartHints
                 'text' => "Clean {$first} first".($soon ? " ({$soon} with guests arriving today)" : '').'. About '.intdiv($minutes, 60).' h '.($minutes % 60).' min for '.$tasks->count().' rooms.',
                 'why' => "Rooms with arrivals today come first, then floor by floor. A room takes about {$avg} min here; {$people} ".($people === 1 ? 'housekeeper' : 'housekeepers').'.',
                 'data' => ['order' => $ordered->pluck('id')],
+                'explain' => self::explain([
+                    ['Rooms to clean', $tasks->count()],
+                    ['With a guest arriving today', $soon],
+                    ['Average time per room (last 30 days)', "{$avg} min"],
+                    ['Housekeepers', $people],
+                    ['Order', $ordered->map(fn ($t) => $t->room?->number)->filter()->implode(', ')],
+                ], 'Rooms with a guest arriving today first (earliest arrival first), then floor by floor. Time = rooms × average minutes ÷ housekeepers.',
+                    'Start with the first rooms in the list. Mark each room done so reception sees it is ready.'),
             ];
         })]);
     }
@@ -363,6 +438,10 @@ class SmartHints
             return [
                 'text' => $busiest['date']->format('l j M').' looks busy: '.$busiest['moves'].' check-ins and check-outs. Consider one more person at reception.',
                 'why' => 'The other days of the next week average '.round($others).'.', 'tone' => 'warn',
+                'explain' => self::explain(array_merge(
+                    $days->map(fn ($d) => [$d['date']->format('D j M'), $d['moves'].' check-ins and check-outs'])->all(),
+                ), 'Booked arrivals and departures for each of the next 7 days. A day is called busy with at least 8 and 1.5 times the other days.',
+                    'Add a person to the roster for that day, or move a day off.'),
             ];
         })]);
     }
@@ -392,6 +471,12 @@ class SmartHints
             return [
                 'text' => "Occupancy {$now['occupancy']}% (".($occ >= 0 ? '+' : '')."{$occ} points), revenue {$hotel->default_currency} ".number_format((float) $now['revenue']).($rev !== null ? ' ('.($rev >= 0 ? '+' : '')."{$rev}%)" : '').'.',
                 'why' => $why, 'tone' => ($rev ?? $occ) >= 0 ? 'ok' : 'warn',
+                'explain' => self::explain([
+                    ['Occupancy, this period / before', $now['occupancy'].'% / '.$before['occupancy'].'%'],
+                    ['Revenue, this period', self::money($hotel->default_currency, $now['revenue'])],
+                    ['Revenue, the period before', self::money($hotel->default_currency, $before['revenue'])],
+                    ['Bookings made / cancelled', $now['bookings'].' / '.$cancelNow.' (before: '.$before['bookings'].' / '.$cancelBefore.')'],
+                ], "The dates you chose ({$length} days) compared with the same number of days just before them."),
             ];
         })]);
     }
@@ -409,6 +494,8 @@ class SmartHints
             return $used >= $limit * 0.75 ? [
                 'text' => $left > 0 ? "You can add {$left} more ".($left === 1 ? 'room' : 'rooms').' on your plan.' : 'You have reached the room limit of your plan.',
                 'why' => "{$used} of {$limit} rooms used.", 'tone' => $left > 0 ? 'info' : 'warn', 'link' => '/settings/subscription',
+                'explain' => self::explain([['Rooms on your plan', $limit], ['Rooms added', $used], ['Still possible', max(0, $left)]],
+                    'Shown when 75% or more of the rooms on your plan are used.', 'To add more rooms, ask HotelMS for a bigger plan.'),
             ] : null;
         })]);
     }
@@ -431,6 +518,12 @@ class SmartHints
                 'text' => "{$now} bookings made across hotels so far today".($change !== null ? ' ('.($change >= 0 ? '+' : '')."{$change}% on last week)" : '').'.'
                     .($quiet ? " {$quiet} ".($quiet === 1 ? 'hotel has' : 'hotels have').' not used the system for 7 days.' : ''),
                 'why' => "Same time last week: {$then} bookings.", 'tone' => $quiet ? 'warn' : 'ok', 'link' => $quiet ? '/admin/reports' : null,
+                'explain' => self::explain([
+                    ['Bookings made today so far', $now],
+                    ['Same time last week', $then],
+                    ['Hotels quiet for 7 days', $quiet],
+                ], 'All hotels except demo hotels, Addis Ababa time. "Quiet" means no change of any kind in the hotel for 7 days.',
+                    $quiet ? 'Call the quiet hotels: they may need help or be about to leave.' : null),
             ];
         })]);
     }

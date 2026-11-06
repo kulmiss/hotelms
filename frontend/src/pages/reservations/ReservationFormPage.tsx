@@ -53,6 +53,7 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
   const me = useMe()
   const can = useCan()
   const lookups = useLookups()
+  const [payLater, setPayLater] = useState(false)
   const branches = me.data?.branches ?? []
 
   const [branchId, setBranchId] = useState<number>(existing?.branch?.id ?? branches[0]?.id ?? 0)
@@ -104,7 +105,7 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
 
   function submit() {
     if (!input || !chosenGuest) return
-    save.mutate({ ...input, guest_id: chosenGuest.id }, { onSuccess: (res) => navigate(`/reservations/${res.data.id}`, { replace: true }) })
+    save.mutate({ ...input, guest_id: chosenGuest.id, ...(!existing && payLater ? { pay_later: true } : {}) }, { onSuccess: (res) => navigate(`/reservations/${res.data.id}`, { replace: true }) })
   }
 
   const title = existing ? t('reservations.editTitle', { code: existing.code }) : t('reservations.new')
@@ -293,7 +294,16 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
           <h2 className="text-sm font-semibold">{t('reservations.form.summary')}</h2>
           {!rooms.length && <p className="text-[13px] text-muted">{t('reservations.form.pickRooms')}</p>}
           {quoteError && <Alert>{Object.values(quoteError.errors)[0]?.[0] ?? quoteError.message}</Alert>}
-          {quote.data && rooms.length > 0 && <QuoteSummary q={quote.data.data} />}
+          {quote.data && rooms.length > 0 && <QuoteSummary q={payLater ? { ...quote.data.data, deposit_required: '0' } : quote.data.data} />}
+          {!existing && lookups.data?.pay_later && (
+            <label className="flex min-h-touch items-start gap-2 text-[13px]">
+              <input type="checkbox" className="mt-0.5 size-4 accent-accent" checked={payLater} onChange={(e) => setPayLater(e.target.checked)} />
+              <span className="flex flex-col">
+                {t('payLater.option')}
+                <span className="text-xs text-muted">{t('payLater.bookingHint')}</span>
+              </span>
+            </label>
+          )}
           {firstError && <Alert>{firstError}</Alert>}
           {!chosenGuest && rooms.length > 0 && <p className="text-xs text-warn-text">{t('reservations.form.needGuest')}</p>}
           <Button size="lg" disabled={!input || !chosenGuest || !quote.data || !!quoteError || save.isPending} onClick={submit}>
