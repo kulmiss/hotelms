@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Admin\HotelUserController;
 use App\Http\Controllers\Api\Admin\ImpersonationController;
 use App\Http\Controllers\Api\Admin\PlanController as AdminPlanController;
 use App\Http\Controllers\Api\Admin\PlatformActivityController;
+use App\Http\Controllers\Api\Admin\PlatformContentController;
 use App\Http\Controllers\Api\Admin\PlatformReportController;
 use App\Http\Controllers\Api\Admin\PlatformSettingsController;
 use App\Http\Controllers\Api\Admin\SubscriptionPaymentController;
@@ -41,9 +42,7 @@ use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\Reports\AutomationController;
 use App\Http\Controllers\Api\Reports\InsightController;
 use App\Http\Controllers\Api\Reports\ReportController;
-use App\Http\Controllers\Api\Admin\PlatformContentController;
 use App\Http\Controllers\Api\SearchController;
-use App\Http\Controllers\Api\WhatsNewController;
 use App\Http\Controllers\Api\SecurityController;
 use App\Http\Controllers\Api\Settings\BranchSettingsController;
 use App\Http\Controllers\Api\Settings\CancellationPolicyController;
@@ -61,6 +60,7 @@ use App\Http\Controllers\Api\Settings\RoomTypeController;
 use App\Http\Controllers\Api\Settings\TaxController;
 use App\Http\Controllers\Api\SmartController;
 use App\Http\Controllers\Api\SupportController;
+use App\Http\Controllers\Api\WhatsNewController;
 use Illuminate\Support\Facades\Route;
 
 /*

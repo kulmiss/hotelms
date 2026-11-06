@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Mail\HotelInvoiceMail;
 use App\Models\Hotel;
 use App\Models\HotelInvoice;
 use App\Models\PlatformSetting;

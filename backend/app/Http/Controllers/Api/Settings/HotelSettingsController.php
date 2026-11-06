@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api\Settings;
 
-use App\Models\HotelInvoice;
 use App\Http\Controllers\Controller;
+use App\Models\HotelInvoice;
 use App\Models\HotelModule;
 use App\Models\Room;
 use App\Services\HotelModules;
