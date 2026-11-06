@@ -44,7 +44,6 @@ use App\Http\Controllers\Api\Reports\ReportController;
 use App\Http\Controllers\Api\Admin\PlatformContentController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\WhatsNewController;
-use App\Http\Controllers\Api\SmartController;
 use App\Http\Controllers\Api\SecurityController;
 use App\Http\Controllers\Api\Settings\BranchSettingsController;
 use App\Http\Controllers\Api\Settings\CancellationPolicyController;
@@ -60,6 +59,7 @@ use App\Http\Controllers\Api\Settings\RateRuleController;
 use App\Http\Controllers\Api\Settings\RoomController;
 use App\Http\Controllers\Api\Settings\RoomTypeController;
 use App\Http\Controllers\Api\Settings\TaxController;
+use App\Http\Controllers\Api\SmartController;
 use App\Http\Controllers\Api\SupportController;
 use Illuminate\Support\Facades\Route;
 
