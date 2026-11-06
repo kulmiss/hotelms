@@ -209,7 +209,7 @@ export function useLoginAsHotel(hotelId: number) {
   })
 }
 
-export const useResetDemo = (hotelId: number) => useAdminMutation(() => post(`/admin/hotels/${hotelId}/demo/reset`))
+export const useResetDemo = (hotelId: number) => useAdminMutation(() => post<{ data: { id: number } }>(`/admin/hotels/${hotelId}/demo/reset`))
 
 export type PlatformReport = {
   income: { month: string; totals: Record<string, string> | []; by_plan: { plan: string; currency: string; total: string; payments: number }[] }[]

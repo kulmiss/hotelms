@@ -294,7 +294,8 @@
       "typeName": "Type \"{{name}}\" to confirm",
       "confirmClose": "Close account",
       "reopen": "Reopen hotel",
-      "closedBanner": "This hotel is closed. Its data will be deleted for good on {{date}}. Reopen to keep it."
+      "closedBanner": "This hotel is closed. Its data will be deleted for good on {{date}}. Reopen to keep it.",
+      "notFound": "This hotel no longer exists. Go back to the hotels list."
     },
     "billing": {
       "monthly": "Monthly",
