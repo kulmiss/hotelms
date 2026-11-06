@@ -2505,6 +2505,9 @@
   "smart": {
     "label": "Smart",
     "why": "Why?",
+    "how": "How it was worked out:",
+    "whatToDo": "What you can do:",
+    "never": "Smart tips only suggest. They never change anything by themselves.",
     "open": "Open",
     "dismiss": "Hide this tip",
     "phoneCheck": "Check the number: Ethiopian mobiles look like +251 9XX XXX XXX."
