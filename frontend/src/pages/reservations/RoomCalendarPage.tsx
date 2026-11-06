@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -63,7 +64,8 @@ export function RoomCalendarPage() {
         {cal.data && <span className="text-[13px] text-muted">{t('roomCal.booked', { count: booked, days })}</span>}
       </div>
 
-      <Card className="overflow-x-auto p-0">
+      {cal.data && !room && <Alert tone="info">{t('roomCal.otherBranch')}</Alert>}
+      <Card className={cn('overflow-x-auto p-0', cal.data && !room && 'hidden')}>
         <div className="grid min-w-[640px] grid-cols-7 text-[11px] font-semibold text-muted">
           {[1, 2, 3, 4, 5, 6, 7].map((wd) => (
             <div key={wd} className="border-b border-border bg-sunken px-2 py-2 text-center">

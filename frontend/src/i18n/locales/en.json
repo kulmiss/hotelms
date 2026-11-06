@@ -2527,6 +2527,7 @@
     "open": "Room calendar",
     "title": "Room {{number}}",
     "titlePlain": "Room calendar",
+    "otherBranch": "This room is not in the branch you are looking at. Open it from the room board of its branch.",
     "booked": "{{count}} of {{days}} nights booked",
     "free": "Free",
     "arrives": "arrives {{time}}",

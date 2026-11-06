@@ -122,4 +122,26 @@ class HotelLifecycleTest extends TestCase
         File::deleteDirectory($dir);
         File::deleteDirectory($dir.'-copy');
     }
+
+    public function test_uploaded_photos_are_mirrored_with_the_daily_backup(): void
+    {
+        $dir = storage_path('framework/testing/backups-files');
+        $source = storage_path('app/private/payment-proofs/99999');
+        File::deleteDirectory($dir);
+        config(['hotelms.backups.path' => $dir, 'hotelms.backups.copy_path' => $dir.'-copy']);
+        File::ensureDirectoryExists($source);
+        File::put("{$source}/slip.jpg", 'photo');
+
+        $this->assertSame(['copied' => 2, 'removed' => 0], app(Backups::class)->syncFiles()); // backup folder + second copy
+        $this->assertFileExists("{$dir}/files/payment-proofs/99999/slip.jpg");
+        $this->assertFileExists("{$dir}-copy/files/payment-proofs/99999/slip.jpg");
+        $this->assertSame(['copied' => 0, 'removed' => 0], app(Backups::class)->syncFiles()); // nothing new
+
+        File::delete("{$source}/slip.jpg"); // deleted (e.g. the hotel's "delete after" rule): gone from backups too
+        $this->assertSame(['copied' => 0, 'removed' => 2], app(Backups::class)->syncFiles());
+
+        File::deleteDirectory($source);
+        File::deleteDirectory($dir);
+        File::deleteDirectory($dir.'-copy');
+    }
 }

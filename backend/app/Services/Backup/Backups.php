@@ -77,8 +77,51 @@ class Backups
             $copied = File::copy($path, "{$copy}/{$kind}/{$name}");
         }
         $this->prune($kind);
+        if ($kind === 'daily') {
+            $this->syncFiles();
+        }
 
         return ['file' => $path, 'tables' => count($tables), 'rows' => $rows, 'bytes' => (int) filesize($path), 'copied' => $copied];
+    }
+
+    /** Uploaded files kept by the hotels (payment proofs, encrypted ID photos). */
+    public const FILE_FOLDERS = ['payment-proofs', 'guest-ids'];
+
+    /**
+     * Daily: the uploaded files are mirrored next to the database backups (and to the second copy),
+     * new files copied, deleted ones removed (so the hotels' "delete after" rules hold in backups too).
+     *
+     * @return array{copied: int, removed: int}
+     */
+    public function syncFiles(): array
+    {
+        $copied = 0;
+        $removed = 0;
+        $targets = array_filter([$this->folder().'/files', ($c = config('hotelms.backups.copy_path')) ? "{$c}/files" : null]);
+        foreach (self::FILE_FOLDERS as $folder) {
+            $source = storage_path("app/private/{$folder}");
+            $have = File::isDirectory($source) ? collect(File::allFiles($source))->mapWithKeys(fn ($f) => [$f->getRelativePathname() => $f->getPathname()]) : collect();
+            foreach ($targets as $target) {
+                $dir = "{$target}/{$folder}";
+                File::ensureDirectoryExists($dir, 0700);
+                foreach ($have as $relative => $path) {
+                    $to = "{$dir}/{$relative}";
+                    if (! File::exists($to)) {
+                        File::ensureDirectoryExists(dirname($to), 0700);
+                        File::copy($path, $to);
+                        $copied++;
+                    }
+                }
+                foreach (File::allFiles($dir) as $old) {
+                    if (! $have->has($old->getRelativePathname())) {
+                        File::delete($old->getPathname());
+                        $removed++;
+                    }
+                }
+            }
+        }
+
+        return ['copied' => $copied, 'removed' => $removed];
     }
 
     /** Opens the newest backup and checks it is complete. @return array{ok: bool, file: ?string, problem: ?string, tables: int} */
