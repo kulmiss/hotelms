@@ -16,16 +16,16 @@ use App\Http\Middleware\OneAtATime;
 use App\Http\Middleware\RecordProblems;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetTenantContext;
+use App\Services\Watchdog\WatchEvents;
 use Carbon\Exceptions\InvalidFormatException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use App\Services\Watchdog\WatchEvents;
-use Illuminate\Auth\AuthenticationException;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
-use Illuminate\Routing\Middleware\SubstituteBindings;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
