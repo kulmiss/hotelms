@@ -2,8 +2,8 @@
 
 namespace App\Services\Modules;
 
-use App\Models\HousekeepingTask;
 use App\Models\Hotel;
+use App\Models\HousekeepingTask;
 use App\Models\Reservation;
 use App\Models\Room;
 use App\Models\User;
