@@ -111,7 +111,7 @@ export function ReservationPage() {
               </span>
             </Info>
             <Info label={t('reservations.guests')}>
-              <span>{t('reservations.people', { adults: r.adults, children: r.children })}</span>
+              <span>{t('reservations.people', { adults: t('reservations.adultsCount', { count: r.adults }), children: t('reservations.childrenCount', { count: r.children }) })}</span>
               <span className="text-xs text-muted">{t(`reservations.sources.${r.source}`)}</span>
             </Info>
             {r.notes && (

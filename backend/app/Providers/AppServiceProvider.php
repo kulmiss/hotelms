@@ -16,8 +16,11 @@ use App\Services\PlatformPermissions;
 use App\Services\Switches;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -36,6 +39,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->automationHooks();
+
+        // Development: write slow database work to the log, so slow screens are found early.
+        if (! $this->app->isProduction()) {
+            DB::whenQueryingForLongerThan(1000, fn ($connection, QueryExecuted $event) => Log::warning('Slow request: '.round($event->time).' ms on one query', ['sql' => $event->sql]));
+            Model::handleLazyLoadingViolationUsing(fn ($model, string $relation) => Log::info('Loaded one by one (add ->with()): '.$model::class.'::'.$relation));
+            Model::preventLazyLoading(! $this->app->runningUnitTests());
+        }
 
         // Slow down password guessing: 5 tries a minute per email and device.
         RateLimiter::for('login', fn (Request $request) => Limit::perMinute(5)->by(

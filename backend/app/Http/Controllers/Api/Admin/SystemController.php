@@ -32,8 +32,9 @@ class SystemController extends Controller
         }
 
         try {
-            Cache::put('hotelms:health_probe', 1, 10);
-            $checks['cache'] = ['ok' => Cache::get('hotelms:health_probe') === 1, 'driver' => config('cache.default')];
+            $probe = bin2hex(random_bytes(4)); // a string: every cache driver gives it back the same
+            Cache::put('hotelms:health_probe', $probe, 10);
+            $checks['cache'] = ['ok' => Cache::get('hotelms:health_probe') === $probe, 'driver' => config('cache.default')];
         } catch (Throwable) {
             $checks['cache'] = ['ok' => false, 'driver' => config('cache.default'), 'problem' => 'The cache does not work.'];
         }

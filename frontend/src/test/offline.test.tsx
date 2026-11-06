@@ -40,6 +40,13 @@ describe('offline mode', () => {
     const b = new QueryClient()
     startOfflineCopy(b)
     expect(b.getQueryData(['desk', 'today', 1])).toMatchObject({ arrivals: [{ code: 'BL-26-00001' }] })
+    // Online, "who am I" is always asked again (an old copy could be a finished support session).
+    expect(b.getQueryData(['me'])).toBeUndefined()
+    const offline = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+    const c = new QueryClient()
+    startOfflineCopy(c)
+    expect(c.getQueryData(['me'])).toMatchObject({ user: { id: 7 } })
+    offline.mockRestore()
 
     wipeOfflineCopy()
     expect(localStorage.getItem('hms_offline:7')).toBeNull()

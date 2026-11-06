@@ -48,6 +48,8 @@ trait LogsActivity
     {
         return array_diff_key($attributes, array_flip([
             'password', 'remember_token', 'attendance_pin', 'two_factor_secret', 'two_factor_recovery_codes', 'updated_at', 'created_at', 'last_login_at',
+            // Bookkeeping by the system itself (checked every few minutes): not a change anyone made.
+            'last_checked_at', 'next_run_at', 'last_run_at', 'last_sent_at', 'last_error', 'last_seen_at', 'last_fired_at', 'fired_count',
         ]));
     }
 }

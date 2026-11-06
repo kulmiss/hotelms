@@ -32,7 +32,11 @@ export function startOfflineCopy(client: QueryClient): () => void {
     userId = null
   }
   if (userId) {
+    const online = typeof navigator === 'undefined' || navigator.onLine !== false
     for (const s of read(userId)) {
+      // Online, "who am I" always comes fresh from the server: a saved copy could be an older
+      // role or a finished support session, and would send the person to the wrong screen.
+      if (online && s.key[0] === 'me') continue
       if (client.getQueryData(s.key) === undefined) client.setQueryData(s.key, s.data, { updatedAt: s.at })
     }
   }

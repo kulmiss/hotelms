@@ -93,4 +93,22 @@ class TeamAndSystemTest extends TestCase
             ->assertJsonStructure(['today' => ['bookings', 'money', 'occupancy', 'staff_online', 'open_support'], 'top_hotels', 'activity']);
         $this->getJson('/api/v1/admin/activity')->assertOk()->assertJsonStructure(['data', 'meta']);
     }
+
+    public function test_system_checks_do_not_fill_the_activity_log(): void
+    {
+        $hotel = Hotel::factory()->create(['status' => 'active', 'plan_id' => Plan::factory()->create()->id]);
+        app(HotelDefaults::class)->apply($hotel);
+        $this->artisan('reports:automation --alerts')->assertSuccessful();
+        $before = ActivityLog::withoutGlobalScope('hotel')->count();
+        $this->travel(20)->minutes();
+        $this->artisan('reports:automation --alerts')->assertSuccessful();
+        $this->artisan('reports:automation')->assertSuccessful();
+
+        $this->assertSame($before, ActivityLog::withoutGlobalScope('hotel')->count());
+    }
+
+    public function test_the_cache_check_works_with_any_driver(): void
+    {
+        $this->actingAs(User::factory()->superAdmin()->create())->getJson('/api/v1/admin/system')->assertOk()->assertJsonPath('data.checks.cache.ok', true);
+    }
 }

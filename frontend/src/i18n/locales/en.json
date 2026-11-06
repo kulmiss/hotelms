@@ -1140,7 +1140,7 @@
     "later": "Later",
     "editTitle": "Change {{code}}",
     "checkInOut": "Check-in {{in}} · check-out {{out}}",
-    "people": "{{adults}} adults, {{children}} children",
+    "people": "{{adults}}, {{children}}",
     "markNoShow": "Mark no-show",
     "cancel": "Cancel booking",
     "cancelTitle": "Cancel this booking",
@@ -1211,7 +1211,11 @@
       "pickRooms": "Add rooms to see the price.",
       "needGuest": "Choose or add the guest to book.",
       "book": "Book"
-    }
+    },
+    "adultsCount_one": "{{count}} adult",
+    "adultsCount_other": "{{count}} adults",
+    "childrenCount_one": "{{count}} child",
+    "childrenCount_other": "{{count}} children"
   },
   "desk": {
     "subtitle": "Live room status, today's arrivals and departures.",
@@ -2170,7 +2174,7 @@
     "departure": "Departure",
     "rooms": "Room(s)",
     "people": "Guests",
-    "peopleLine": "{{adults}} adults, {{children}} children",
+    "peopleLine": "{{adults}}, {{children}}",
     "stayType": "Stay type",
     "total": "Total",
     "paid": "Paid so far",
