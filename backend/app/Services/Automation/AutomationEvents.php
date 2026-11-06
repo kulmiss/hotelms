@@ -104,7 +104,7 @@ class AutomationEvents
         if ($guest && $this->a->enabled($hotel, 'welcome_back')) {
             $past = Reservation::where('guest_id', $guest->id)->where('id', '!=', $r->id)->where('status', 'checked_out')->count();
             if ($past > 0 && $this->a->once($hotel, 'welcome_back', "r{$r->id}")) {
-                $this->a->tell($hotel, 'welcome_back', $this->a->recipients($hotel, 'welcome_back', $r->branch_id), "Welcome back, {$name}", "Stay number ".($past + 1).' with us.'.($guest->notes ? " Notes: {$guest->notes}" : ''), $link);
+                $this->a->tell($hotel, 'welcome_back', $this->a->recipients($hotel, 'welcome_back', $r->branch_id), "Welcome back, {$name}", 'Stay number '.($past + 1).' with us.'.($guest->notes ? " Notes: {$guest->notes}" : ''), $link);
             }
         }
         // 7. Birthday during the stay.
