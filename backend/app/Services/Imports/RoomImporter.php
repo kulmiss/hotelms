@@ -4,6 +4,8 @@ namespace App\Services\Imports;
 
 use App\Models\Branch;
 use App\Models\Import;
+use App\Models\Reservation;
+use App\Models\ReservationRoom;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\User;
@@ -82,8 +84,14 @@ class RoomImporter
             throw ValidationException::withMessages(['import' => 'This import can no longer be undone (24 hours have passed or it was already undone).']);
         }
 
-        DB::transaction(function () use ($import, $user) {
-            Room::whereIn('id', $import->created_ids['rooms'] ?? [])->get()->each->delete();
+        $rooms = $import->created_ids['rooms'] ?? [];
+        if (ReservationRoom::whereIn('room_id', $rooms)->whereIn('status', Reservation::ACTIVE)->exists()
+            || ReservationRoom::whereIn('room_type_id', $import->created_ids['room_types'] ?? [])->whereIn('status', Reservation::ACTIVE)->exists()) {
+            throw ValidationException::withMessages(['import' => 'Some imported rooms already have guests or bookings, so this import cannot be undone. Change those bookings first.']);
+        }
+
+        DB::transaction(function () use ($import, $user, $rooms) {
+            Room::whereIn('id', $rooms)->get()->each->delete();
             RoomType::whereIn('id', $import->created_ids['room_types'] ?? [])->whereDoesntHave('rooms')->get()->each->delete();
             $import->update(['undone_at' => now(), 'undone_by' => $user->id]);
         });
