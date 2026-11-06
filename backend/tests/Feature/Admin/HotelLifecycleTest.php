@@ -11,6 +11,7 @@ use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 use ZipArchive;
 
@@ -55,8 +56,17 @@ class HotelLifecycleTest extends TestCase
         $this->artisan('hotelms:purge-closed-hotels')->assertSuccessful();
         $this->assertTrue(Hotel::withTrashed()->whereKey($this->hotel->id)->exists());
 
+        // Its files go too (payment proofs, ID photos); other hotels' files stay.
+        Storage::fake('local');
+        Storage::disk('local')->put("payment-proofs/{$this->hotel->id}/a.jpg", 'x');
+        Storage::disk('local')->put("guest-ids/{$this->hotel->id}/b.bin", 'x');
+        Storage::disk('local')->put("guest-ids/{$this->other->id}/c.bin", 'x');
+
         $this->travel(2)->days();
         $this->artisan('hotelms:purge-closed-hotels')->assertSuccessful();
+        $this->assertFalse(Storage::disk('local')->exists("payment-proofs/{$this->hotel->id}/a.jpg"));
+        $this->assertFalse(Storage::disk('local')->exists("guest-ids/{$this->hotel->id}/b.bin"));
+        $this->assertTrue(Storage::disk('local')->exists("guest-ids/{$this->other->id}/c.bin"));
         $this->assertFalse(Hotel::withTrashed()->whereKey($this->hotel->id)->exists());
         $this->assertSame(0, DB::table('users')->where('hotel_id', $this->hotel->id)->count());
         $this->assertSame(0, DB::table('guests')->where('hotel_id', $this->hotel->id)->count());

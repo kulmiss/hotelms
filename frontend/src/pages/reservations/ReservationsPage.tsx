@@ -12,7 +12,7 @@ import { Tabs } from '@/components/ui/Tabs'
 import { useMe } from '@/lib/auth'
 import { cn } from '@/lib/cn'
 import { date, money } from '@/lib/format'
-import { addDays, daysBetween, localDate, localTime, STATUS_TONES, today, useCalendar, useReservations, type CalendarData, type ReservationStatus } from '@/lib/front'
+import { addDays, daysBetween, localDate, localTime, STATUS_TONES, today, useCalendar, useReservations, sleepingOn, type CalendarData, type ReservationStatus } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { useDebounced } from '@/lib/useDebounced'
 import { Pager } from '@/pages/guests/GuestsPage'
@@ -217,6 +217,7 @@ function ReservationCalendar() {
   const branches = me.data?.branches ?? []
   const [branchId, setBranchId] = useState<number | null>(null)
   const [from, setFrom] = useState(() => today())
+  const [day, setDay] = useState<string | null>(null) // the day opened as "room by room"
   const current = branchId ?? branches[0]?.id ?? null
   const cal = useCalendar(current, from, DAYS)
   const days = Array.from({ length: DAYS }, (_, i) => addDays(from, i))
@@ -285,6 +286,8 @@ function ReservationCalendar() {
           {date(from)} – {date(addDays(from, DAYS - 1))}
         </span>
       </div>
+      <p className="text-xs text-muted">{t('roomCal.hint')}</p>
+      {day && data && <DayRooms day={day} data={data} branchId={current} onClose={() => setDay(null)} />}
       <Card className="overflow-x-auto p-0">
         <div className="min-w-[960px]">
           <div className="grid border-b border-border bg-sunken text-[11px] font-semibold text-muted" style={{ gridTemplateColumns: `7rem repeat(${DAYS}, minmax(0, 1fr))` }}>
@@ -292,9 +295,16 @@ function ReservationCalendar() {
             {days.map((d) => {
               const wd = new Date(`${d}T00:00:00`).getDay()
               return (
-                <div key={d} className={cn('border-l border-border px-1 py-2 text-center', d === today() && 'bg-accent/10 text-accent-text', (wd === 0 || wd === 6) && 'text-text')}>
+                <button
+                  key={d}
+                  type="button"
+                  aria-pressed={day === d}
+                  title={t('roomCal.dayTitle', { date: date(d) })}
+                  onClick={() => setDay(day === d ? null : d)}
+                  className={cn('border-l border-border px-1 py-2 text-center transition duration-75 hover:bg-surface hover:text-accent-text', d === today() && 'bg-accent/10 text-accent-text', (wd === 0 || wd === 6) && 'text-text', day === d && 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent')}
+                >
                   {t(`common.weekdays.${wd === 0 ? 7 : wd}`)} {Number(d.slice(8, 10))}
-                </div>
+                </button>
               )
             })}
           </div>
@@ -303,7 +313,13 @@ function ReservationCalendar() {
             return (
               <div key={row.key} className="relative grid border-b border-border last:border-b-0" style={{ gridTemplateColumns: `7rem repeat(${DAYS}, minmax(0, 1fr))` }}>
                 <div className="flex flex-col justify-center px-3 py-1.5">
-                  <span className={cn('text-[13px] font-medium', !row.roomId && 'text-muted italic')}>{row.label}</span>
+                  {row.roomId ? (
+                    <Link to={`/rooms/${row.roomId}/calendar?branch=${current}`} title={t('roomCal.open')} className="text-[13px] font-medium hover:text-accent-text hover:underline">
+                      {row.label}
+                    </Link>
+                  ) : (
+                    <span className="text-[13px] font-medium text-muted italic">{row.label}</span>
+                  )}
                   <span className="text-[11px] text-muted">{row.sub}</span>
                 </div>
                 {days.map((d) => (
@@ -329,5 +345,78 @@ function ReservationCalendar() {
         </div>
       </Card>
     </div>
+  )
+}
+
+/** One day, room by room: who is in each room that night, who arrives, who leaves, and which rooms are free. */
+function DayRooms({ day, data, branchId, onClose }: { day: string; data: CalendarData; branchId: number | null; onClose: () => void }) {
+  const { t } = useTranslation()
+  const rows = data.rooms.map((room) => {
+    const mine = data.bookings.filter((b) => b.room_id === room.id)
+    const night = sleepingOn(mine, day)
+    const leaving = mine.find((b) => localDate(b.check_out_at) === day && b !== night && b.status !== 'cancelled' && b.status !== 'no_show')
+    const state = night ? (localDate(night.check_in_at) === day ? 'arriving' : 'staying') : 'free'
+    return { room, night, leaving, state }
+  })
+  const free = rows.filter((r) => r.state === 'free').length
+  const waiting = data.bookings.filter((b) => b.room_id === null && sleepingOn([b], day)).length
+
+  return (
+    <Card className="flex flex-col gap-3 animate-page-in">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-col">
+          <h2 className="text-sm font-semibold">{t('roomCal.dayTitle', { date: date(day) })}</h2>
+          <span className="text-xs text-muted">
+            {t('roomCal.daySummary', { free, total: rows.length })}
+            {waiting > 0 && ` · ${t('roomCal.waiting', { count: waiting })}`}
+          </span>
+        </div>
+        <Button variant="ghost" onClick={onClose}>
+          {t('common.close')}
+        </Button>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[560px] text-left text-[13px]">
+          <thead className="bg-sunken text-xs text-muted">
+            <tr>
+              <th className="px-3 py-2 font-semibold">{t('reservations.room')}</th>
+              <th className="px-3 py-2 font-semibold">{t('roomCal.thatNight')}</th>
+              <th className="px-3 py-2 font-semibold">{t('roomCal.leavingCol')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(({ room, night, leaving, state }) => (
+              <tr key={room.id} className="border-t border-border">
+                <td className="px-3 py-1.5">
+                  <Link to={`/rooms/${room.id}/calendar?branch=${branchId ?? ''}`} className="font-medium hover:text-accent-text hover:underline">
+                    {room.number}
+                  </Link>
+                  <span className="ml-2 text-xs text-muted">{room.room_type}</span>
+                </td>
+                <td className="px-3 py-1.5">
+                  {night ? (
+                    <Link to={`/reservations/${night.reservation_id}`} className="flex items-center gap-2 hover:text-accent-text">
+                      <Badge tone={state === 'arriving' ? 'info' : 'accent'}>{t(`roomCal.states.${state}`)}</Badge>
+                      <span className="truncate">{night.guest ?? night.code}</span>
+                    </Link>
+                  ) : (
+                    <Badge tone="ok">{t('roomCal.states.free')}</Badge>
+                  )}
+                </td>
+                <td className="px-3 py-1.5 text-muted">
+                  {leaving ? (
+                    <Link to={`/reservations/${leaving.reservation_id}`} className="hover:text-accent-text">
+                      {leaving.guest ?? leaving.code}
+                    </Link>
+                  ) : (
+                    '—'
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Card>
   )
 }

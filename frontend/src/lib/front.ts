@@ -247,10 +247,10 @@ export function useRecordPayment(id: number) {
   })
 }
 
-export const useCalendar = (branchId: number | null, from: string, days: number) =>
+export const useCalendar = (branchId: number | null, from: string, days: number, roomId?: number) =>
   useQuery({
-    queryKey: ['reservations', 'calendar', branchId, from, days],
-    queryFn: () => api<CalendarData>(`/reservations/calendar?${qs({ branch_id: branchId, from, days })}`),
+    queryKey: ['reservations', 'calendar', branchId, from, days, roomId ?? null],
+    queryFn: () => api<CalendarData>(`/reservations/calendar?${qs({ branch_id: branchId, from, days, room_id: roomId })}`),
     enabled: !!branchId,
     placeholderData: keepPreviousData,
   })
@@ -272,6 +272,16 @@ export const useLookups = () => useQuery({ queryKey: ['reservations', 'lookups']
 
 /** "2026-11-12T14:00:00+03:00" → "2026-11-12" (the hotel's own date). */
 export const localDate = (iso: string) => iso.slice(0, 10)
+
+/** The booking that has the room on `day` (local date): staying that night, or a day-use / hourly stay on that day. */
+export function sleepingOn<B extends { check_in_at: string; check_out_at: string; status: ReservationStatus }>(bookings: B[], day: string): B | undefined {
+  return bookings.find((b) => {
+    if (b.status === 'cancelled' || b.status === 'no_show') return false
+    const inD = localDate(b.check_in_at)
+    const outD = localDate(b.check_out_at)
+    return (inD <= day && day < outD) || (inD === day && outD === day)
+  })
+}
 /** → "14:00" */
 export const localTime = (iso: string) => iso.slice(11, 16)
 

@@ -36,6 +36,7 @@ export const pages = {
   reservationForm: () => import('@/pages/reservations/ReservationFormPage'),
   roomBoard: () => import('@/pages/desk/RoomBoardPage'),
   walkIn: () => import('@/pages/desk/WalkInPage'),
+  roomCalendar: () => import('@/pages/reservations/RoomCalendarPage'),
   billing: () => import('@/pages/billing/BillingPage'),
   invoice: () => import('@/pages/billing/InvoicePage'),
   invoicePrint: () => import('@/pages/billing/InvoicePrintPage'),

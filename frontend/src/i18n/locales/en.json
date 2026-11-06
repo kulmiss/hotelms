@@ -2514,6 +2514,24 @@
     "approvedToast": "Approved and done",
     "rejectedToast": "Rejected – nothing was changed"
   },
+  "roomCal": {
+    "open": "Room calendar",
+    "title": "Room {{number}}",
+    "titlePlain": "Room calendar",
+    "booked": "{{count}} of {{days}} nights booked",
+    "free": "Free",
+    "arrives": "arrives {{time}}",
+    "leaves": "{{guest}} leaves",
+    "list": "Bookings this month",
+    "hint": "Tap a day to see every room that day. Tap a room number to see its month.",
+    "dayTitle": "{{date}} – room by room",
+    "daySummary": "{{free}} of {{total}} rooms free that night",
+    "waiting_one": "{{count}} booking still needs a room",
+    "waiting_other": "{{count}} bookings still need a room",
+    "thatNight": "That night",
+    "leavingCol": "Leaving that day",
+    "states": { "staying": "Staying", "arriving": "Arriving", "free": "Free" }
+  },
   "idPhoto": {
     "title": "ID / passport photo",
     "optional": "(optional)",

@@ -217,7 +217,7 @@ class ReservationController extends Controller
     /** Rooms × days for a branch, with the bookings on each room (and unassigned ones per type). */
     public function calendar(Request $request): JsonResponse
     {
-        $data = $request->validate(['branch_id' => ['required', 'integer'], 'from' => ['required', 'date'], 'days' => ['nullable', 'integer', 'between:1,62']]);
+        $data = $request->validate(['branch_id' => ['required', 'integer'], 'from' => ['required', 'date'], 'days' => ['nullable', 'integer', 'between:1,62'], 'room_id' => ['nullable', 'integer']]);
         $user = $request->user();
         $hotel = $user->hotel;
         $branch = $user->accessibleBranches()->firstWhere('id', (int) $data['branch_id']);
@@ -229,6 +229,7 @@ class ReservationController extends Controller
         $rooms = Room::with('roomType:id,name')->where('branch_id', $branch->id)->orderByRaw('LENGTH(number)')->orderBy('number')->get(['id', 'number', 'floor', 'status', 'room_type_id']);
         $bookings = ReservationRoom::with(['reservation:id,code,status,guest_id,stay_type', 'reservation.guest:id,first_name,last_name', 'roomType:id,name'])
             ->whereHas('reservation', fn ($q) => $q->where('branch_id', $branch->id))
+            ->when($data['room_id'] ?? null, fn ($q, $room) => $q->where('room_id', (int) $room)) // one room's calendar
             ->whereIn('status', [...Reservation::ACTIVE, 'checked_out'])
             ->where('check_in_at', '<', $to->copy()->utc())->where('check_out_at', '>', $from->copy()->utc())
             ->get()

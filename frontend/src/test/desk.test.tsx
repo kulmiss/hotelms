@@ -153,6 +153,49 @@ describe('quick check-in', () => {
   })
 })
 
+describe('room calendars', () => {
+  const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const now = new Date()
+  const first = new Date(now.getFullYear(), now.getMonth(), 1)
+  const day1 = iso(first)
+  const day3 = iso(new Date(first.getFullYear(), first.getMonth(), 3))
+  const calendar = {
+    from: day1,
+    days: 31,
+    rooms: [
+      { id: 1, number: '101', floor: '1', status: 'occupied', room_type_id: 3, room_type: 'Standard' },
+      { id: 2, number: '102', floor: '1', status: 'available', room_type_id: 3, room_type: 'Standard' },
+    ],
+    bookings: [{ id: 21, reservation_id: 9, code: 'BL-26-00001', guest: 'Abebe Kebede', status: 'confirmed', stay_type: 'nightly', room_id: 1, room_type_id: 3, room_type: 'Standard', check_in_at: `${day1}T14:00:00+03:00`, check_out_at: `${day3}T12:00:00+03:00` }],
+  }
+
+  it("shows one room's month: who stays each night and the free nights", async () => {
+    const fetchMock = mockApi({ 'GET /me': { body: me() }, 'GET /reservations/calendar': { body: calendar } })
+    renderApp('/rooms/1/calendar?branch=1')
+
+    expect(await screen.findByRole('heading', { name: 'Room 101' })).toBeInTheDocument()
+    expect(screen.getByText(/^2 of \d+ nights booked$/)).toBeInTheDocument()
+    expect(screen.getAllByText(/Abebe Kebede/).length).toBeGreaterThan(1)
+    expect(screen.getAllByText('Free').length).toBeGreaterThan(20)
+    await waitFor(() => expect(fetchMock.mock.calls.some(([u]) => String(u).includes('room_id=1'))).toBe(true))
+  })
+
+  it('opens a day as room by room from the reservations calendar', async () => {
+    const todayIso = iso(now)
+    const later = iso(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2))
+    const booking = { ...calendar.bookings[0], check_in_at: `${todayIso}T14:00:00+03:00`, check_out_at: `${later}T12:00:00+03:00` }
+    mockApi({ 'GET /me': { body: me() }, 'GET /reservations/calendar': { body: { ...calendar, from: todayIso, days: 14, bookings: [booking] } } })
+    renderApp('/reservations?view=calendar')
+
+    const dayNumber = String(now.getDate())
+    const header = (await screen.findAllByRole('button', { pressed: false })).find((b) => b.textContent?.trim().endsWith(` ${dayNumber}`))
+    expect(header).toBeDefined()
+    await userEvent.click(header!)
+    expect(await screen.findByText('1 of 2 rooms free that night')).toBeInTheDocument()
+    expect(screen.getByText('Arriving')).toBeInTheDocument()
+  })
+})
+
 describe('guest ID photo', () => {
   it('asks for the ID photo before check-in when the hotel needs it', async () => {
     let photo = false

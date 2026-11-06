@@ -56,6 +56,7 @@ class DemoHotel
                     DB::table($table)->where('hotel_id', $old->id)->delete();
                 }
                 User::withTrashed()->where('hotel_id', $old->id)->forceDelete();
+                HotelClosing::deleteFiles($old->id, $old->getAttribute('logo_path'));
                 $old->forceDelete();
             }));
 

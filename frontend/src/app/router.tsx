@@ -44,6 +44,7 @@ const ReservationPage = lazy(() => pages.reservation().then((m) => ({ default: m
 const ReservationFormPage = lazy(() => pages.reservationForm().then((m) => ({ default: m.ReservationFormPage })))
 const RoomBoardPage = lazy(() => pages.roomBoard().then((m) => ({ default: m.RoomBoardPage })))
 const WalkInPage = lazy(() => pages.walkIn().then((m) => ({ default: m.WalkInPage })))
+const RoomCalendarPage = lazy(() => pages.roomCalendar().then((m) => ({ default: m.RoomCalendarPage })))
 const BillingPage = lazy(() => pages.billing().then((m) => ({ default: m.BillingPage })))
 const InvoicePage = lazy(() => pages.invoice().then((m) => ({ default: m.InvoicePage })))
 const InvoicePrintPage = lazy(() => pages.invoicePrint().then((m) => ({ default: m.InvoicePrintPage })))
@@ -174,6 +175,10 @@ export const routes = [
           {
             element: <RequirePermission permission="frontdesk.walk_in" />,
             children: [{ path: 'rooms/walk-in', element: page(<WalkInPage />) }],
+          },
+          {
+            element: <RequirePermission permission="reservations.view" />,
+            children: [{ path: 'rooms/:id/calendar', element: page(<RoomCalendarPage />) }],
           },
           {
             element: <RequirePermission permission="invoices.view" />,

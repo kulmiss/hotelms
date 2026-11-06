@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { ArrowRightEndOnRectangleIcon, ArrowRightStartOnRectangleIcon, UserPlusIcon } from '@heroicons/react/24/outline'
+import { ArrowRightEndOnRectangleIcon, ArrowRightStartOnRectangleIcon, CalendarDaysIcon, UserPlusIcon } from '@heroicons/react/24/outline'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
@@ -101,7 +101,7 @@ function Board({ branchId }: { branchId: number | null }) {
           </span>
         ))}
       </div>
-      {selected && <RoomPanel room={selected} onClose={() => setOpen(null)} />}
+      {selected && <RoomPanel room={selected} branchId={branchId} onClose={() => setOpen(null)} />}
       {floors.map((f) => (
         <div key={f} className="flex flex-col gap-2">
           {floors.length > 1 && <h2 className="text-xs font-semibold text-muted">{f ? t('desk.floor', { floor: f }) : t('desk.noFloor')}</h2>}
@@ -147,7 +147,7 @@ function Board({ branchId }: { branchId: number | null }) {
 }
 
 /** Tap a room: who is in it, and quick status changes. */
-function RoomPanel({ room, onClose }: { room: BoardRoom; onClose: () => void }) {
+function RoomPanel({ room, branchId, onClose }: { room: BoardRoom; branchId: number | null; onClose: () => void }) {
   const { t } = useTranslation()
   const can = useCan()
   const change = useRoomStatus()
@@ -176,9 +176,17 @@ function RoomPanel({ room, onClose }: { room: BoardRoom; onClose: () => void }) 
             {room.room_type} · {t(`roomStatus.${room.status}`)}
           </span>
         </div>
-        <Button variant="ghost" onClick={onClose}>
-          {t('common.close')}
-        </Button>
+        <div className="flex gap-1">
+          {can('reservations.view') && (
+            <Link to={`/rooms/${room.id}/calendar${branchId ? `?branch=${branchId}` : ''}`} className={buttonClass('secondary')}>
+              <CalendarDaysIcon aria-hidden className="size-4" />
+              {t('roomCal.open')}
+            </Link>
+          )}
+          <Button variant="ghost" onClick={onClose}>
+            {t('common.close')}
+          </Button>
+        </div>
       </div>
       {room.stay && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-sunken px-3 py-2 text-[13px]">
