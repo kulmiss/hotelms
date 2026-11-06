@@ -5,9 +5,14 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PlatformSetting;
 use App\Services\ActivityLogger;
+use App\Services\Notify\MailSettings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class PlatformSettingsController extends Controller
 {
@@ -33,7 +38,27 @@ class PlatformSettingsController extends Controller
             'email_footer' => ['sometimes', 'nullable', 'string', 'max:300'],
             'telegram_bot_token' => ['sometimes', 'nullable', 'string', 'max:100', 'regex:/^(\d+:[A-Za-z0-9_-]{20,}|•+.*)$/'],
             'telegram_bot_username' => ['sometimes', 'nullable', 'string', 'max:60', 'regex:/^@?[A-Za-z0-9_]{3,}$/'],
+            'mail_host' => ['sometimes', 'nullable', 'string', 'max:120', 'regex:/^[A-Za-z0-9.\-]+$/'],
+            'mail_port' => ['sometimes', 'integer', 'between:1,65535'],
+            'mail_encryption' => ['sometimes', 'in:tls,ssl,none'],
+            'mail_username' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'mail_password' => ['sometimes', 'nullable', 'string', 'max:200'],
+            'mail_from_address' => ['sometimes', 'nullable', 'email', 'max:120'],
         ]);
+        // The mail server decides where every system email comes from: the Owner only.
+        if (array_intersect_key($data, array_flip(MailSettings::KEYS)) && $request->user()->platform_role !== 'owner') {
+            abort(403, 'Only the Owner can change the mail server.');
+        }
+        // The password is shown masked; sending the masked value back keeps the saved one. Saved encrypted.
+        if (array_key_exists('mail_password', $data)) {
+            if (is_string($data['mail_password']) && str_starts_with($data['mail_password'], '•')) {
+                unset($data['mail_password']);
+            } elseif (is_string($data['mail_password']) && $data['mail_password'] !== '') {
+                $data['mail_password'] = Crypt::encryptString($data['mail_password']);
+            } else {
+                $data['mail_password'] = null;
+            }
+        }
         // The token is shown masked; sending the masked value back keeps the saved one.
         if (array_key_exists('telegram_bot_token', $data) && is_string($data['telegram_bot_token']) && str_starts_with($data['telegram_bot_token'], '•')) {
             unset($data['telegram_bot_token']);
@@ -48,7 +73,7 @@ class PlatformSettingsController extends Controller
         }
         $changed = array_keys(array_diff_assoc(array_map('json_encode', $data), array_map('json_encode', array_intersect_key($before, $data))));
         if ($changed) {
-            $hide = fn (array $v) => array_key_exists('telegram_bot_token', $v) ? ['telegram_bot_token' => '(secret)'] + $v : $v;
+            $hide = fn (array $v) => array_merge($v, array_intersect_key(['telegram_bot_token' => '(secret)', 'mail_password' => '(secret)'], $v));
             $log->log('platform.settings', 'Platform settings changed: '.implode(', ', $changed), null, [
                 'old' => $hide(array_intersect_key($before, array_flip($changed))),
                 'new' => $hide(array_intersect_key($data, array_flip($changed))),
@@ -56,6 +81,21 @@ class PlatformSettingsController extends Controller
         }
 
         return response()->json(['data' => $this->present()]);
+    }
+
+    /** Owner: send a test email to yourself with the saved mail server; says what went wrong if it fails. */
+    public function testEmail(Request $request): JsonResponse
+    {
+        abort_unless($request->user()->platform_role === 'owner', 403, 'Only the Owner can test the mail server.');
+        MailSettings::apply();
+        try {
+            app('mail.manager')->forgetMailers();
+            Mail::raw('This is a test email from '.PlatformSetting::read('platform_name').'. The mail server works.', fn ($m) => $m->to($request->user()->email)->subject('Test email'));
+        } catch (Throwable $e) {
+            throw ValidationException::withMessages(['mail_host' => 'Sending failed: '.mb_substr($e->getMessage(), 0, 300)]);
+        }
+
+        return response()->json(['message' => 'Sent to '.$request->user()->email.'.']);
     }
 
     /** Upload or remove the logo shown in the sidebar, sign-in page and emails. */
@@ -81,6 +121,7 @@ class PlatformSettingsController extends Controller
         $values['brand_logo_url'] = self::logoUrl($values['brand_logo_path'] ?? null);
         $token = $values['telegram_bot_token'] ?? null;
         $values['telegram_bot_token'] = $token ? '••••••'.substr((string) $token, -4) : null; // never sent back in full
+        $values['mail_password'] = ! empty($values['mail_password']) ? '••••••••' : null; // never sent back
 
         return $values;
     }

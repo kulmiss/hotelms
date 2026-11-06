@@ -8,7 +8,8 @@ import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { TabPanel, Tabs } from '@/components/ui/Tabs'
-import { usePlans, usePlatformSettings, useSaveSettings, useUploadLogo, type PlatformSettings } from '@/lib/admin'
+import { usePlans, usePlatformSettings, useSaveSettings, useTestEmail, useUploadLogo, type PlatformSettings } from '@/lib/admin'
+import { useMe } from '@/lib/auth'
 import { ApiError } from '@/lib/api'
 import { onColor } from '@/lib/brand'
 
@@ -41,7 +42,10 @@ export function PlatformSettingsPage() {
             <BrandingTab initial={settings.data.data} />
           </TabPanel>
           <TabPanel id="emails" active={tab}>
-            <EmailsTab initial={settings.data.data} />
+            <div className="flex flex-col gap-6">
+              <EmailsTab initial={settings.data.data} />
+              <MailServerTab initial={settings.data.data} />
+            </div>
           </TabPanel>
           <TabPanel id="telegram" active={tab}>
             <TelegramTab initial={settings.data.data} />
@@ -312,6 +316,64 @@ function TelegramTab({ initial }: { initial: PlatformSettings }) {
         <>
           <Field label={t('admin.settings.botToken')} value={token} autoComplete="off" hint={t('admin.settings.botTokenHint')} onChange={(e) => setToken(e.target.value)} error={error?.field('telegram_bot_token')} />
           <Field label={t('admin.settings.botUsername')} value={username} placeholder="MyHotelBot" onChange={(e) => setUsername(e.target.value)} error={error?.field('telegram_bot_username')} />
+        </>
+      )}
+    </SettingsForm>
+  )
+}
+
+/** The mail server (SMTP). Owner only. Empty = the MAIL_* lines of the server's .env file are used. */
+function MailServerTab({ initial }: { initial: PlatformSettings }) {
+  const { t } = useTranslation()
+  const me = useMe()
+  const owner = me.data?.platform?.role === 'owner'
+  const [host, setHost] = useState(initial.mail_host ?? '')
+  const [port, setPort] = useState(String(initial.mail_port ?? 587))
+  const [encryption, setEncryption] = useState<'tls' | 'ssl' | 'none'>(initial.mail_encryption ?? 'tls')
+  const [username, setUsername] = useState(initial.mail_username ?? '')
+  const [password, setPassword] = useState(initial.mail_password ?? '')
+  const [from, setFrom] = useState(initial.mail_from_address ?? '')
+  const test = useTestEmail()
+  const testError = test.error instanceof ApiError ? (test.error.field('mail_host') ?? test.error.message) : null
+
+  if (!owner) {
+    return (
+      <Card className="flex flex-col gap-1">
+        <h2 className="text-sm font-semibold">{t('admin.settings.mailServer')}</h2>
+        <p className="text-[13px] text-muted">{t('admin.settings.mailOwnerOnly')}</p>
+      </Card>
+    )
+  }
+  return (
+    <SettingsForm
+      title={t('admin.settings.mailServer')}
+      description={t('admin.settings.mailServerHelp')}
+      onSave={() => ({ mail_host: host || null, mail_port: Number(port) || 587, mail_encryption: encryption, mail_username: username || null, mail_password: password || null, mail_from_address: from || null })}
+    >
+      {(error) => (
+        <>
+          <div className="grid gap-4 sm:grid-cols-[1fr_7rem_9rem]">
+            <Field label={t('admin.settings.mailHost')} value={host} placeholder="mail.yourdomain.com" autoComplete="off" onChange={(e) => setHost(e.target.value)} error={error?.field('mail_host')} />
+            <Field label={t('admin.settings.mailPort')} inputMode="numeric" value={port} onChange={(e) => setPort(e.target.value.replace(/\D/g, ''))} error={error?.field('mail_port')} />
+            <Select label={t('admin.settings.mailEncryption')} value={encryption} onChange={(e) => setEncryption(e.target.value as 'tls' | 'ssl' | 'none')}>
+              <option value="tls">TLS (587)</option>
+              <option value="ssl">SSL (465)</option>
+              <option value="none">{t('admin.settings.mailNone')}</option>
+            </Select>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={t('admin.settings.mailUsername')} value={username} autoComplete="off" onChange={(e) => setUsername(e.target.value)} error={error?.field('mail_username')} />
+            <Field label={t('admin.settings.mailPassword')} type="password" value={password} autoComplete="new-password" hint={t('admin.settings.mailPasswordHint')} onChange={(e) => setPassword(e.target.value)} error={error?.field('mail_password')} />
+          </div>
+          <Field label={t('admin.settings.mailFrom')} type="email" value={from} placeholder="no-reply@yourdomain.com" hint={t('admin.settings.mailFromHint')} onChange={(e) => setFrom(e.target.value)} error={error?.field('mail_from_address')} />
+          <div className="flex flex-wrap items-center gap-3">
+            <Button type="button" variant="secondary" disabled={test.isPending} onClick={() => test.mutate()}>
+              {test.isPending ? t('admin.settings.mailSending') : t('admin.settings.mailTest')}
+            </Button>
+            <span className="text-xs text-muted">{t('admin.settings.mailTestHint')}</span>
+          </div>
+          {test.isSuccess && <Alert tone="ok">{test.data.message}</Alert>}
+          {testError && <Alert>{testError}</Alert>}
         </>
       )}
     </SettingsForm>

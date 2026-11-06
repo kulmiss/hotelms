@@ -13,6 +13,7 @@ use App\Models\UserDevice;
 use App\Services\Automation\AutomationEvents;
 use App\Services\Automation\Automations;
 use App\Services\Modules\Housekeeping;
+use App\Services\Notify\MailSettings;
 use App\Services\PlatformPermissions;
 use App\Services\Switches;
 use App\Support\Tenancy\TenantContext;
@@ -39,6 +40,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // The mail server saved in Super Admin → Settings (if any), applied only when an email is sent.
+        $this->app->resolving('mail.manager', fn () => MailSettings::apply());
         $this->automationHooks();
 
         // Development: write slow database work to the log, so slow screens are found early.
