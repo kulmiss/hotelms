@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams } from 'react-router'
+import { useParams, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { PrinterIcon } from '@heroicons/react/24/outline'
 import { Button } from '@/components/ui/Button'
@@ -16,10 +16,14 @@ export function InvoicePrintPage() {
   const { t } = useTranslation()
   const { id } = useParams()
   const q = useInvoice(Number(id))
-  const [paper, setPaper] = useState<'a4' | 'receipt'>('a4')
+  const [params] = useSearchParams()
+  const [chosen, setPaper] = useState<'a4' | 'receipt' | null>(null)
   if (!q.data) return null
   const inv = q.data.data
   const h = inv.hotel
+  // The hotel's default paper (Settings → Hotel), unless chosen here or in the link (?paper=receipt).
+  const fromLink = params.get('paper')
+  const paper = chosen ?? (fromLink === 'receipt' || fromLink === 'a4' ? fromLink : (h.receipt_paper ?? 'a4'))
   const c = inv.currency
   const small = paper === 'receipt'
 

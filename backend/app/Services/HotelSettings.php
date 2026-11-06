@@ -27,6 +27,7 @@ class HotelSettings
     public const INVOICE_DEFAULTS = [
         'invoice_prefix' => 'INV',
         'invoice_footer' => null,
+        'receipt_paper' => 'a4', // a4 or receipt (80mm) – the default when printing (decisions.md W9)
     ];
 
     /** Sign-in security (decisions.md W7). screen_lock_minutes 0 = never lock. */

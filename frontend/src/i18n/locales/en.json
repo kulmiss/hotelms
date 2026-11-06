@@ -623,7 +623,9 @@
       "prefix": "Invoice number prefix",
       "prefixHint": "Invoices will be numbered like {{prefix}}-2026-00001.",
       "footer": "Invoice footer",
-      "footerHint": "A short line at the bottom of every invoice, e.g. bank details or a thank-you."
+      "footerHint": "A short line at the bottom of every invoice, e.g. bank details or a thank-you.",
+      "paper": "Default paper for printing",
+      "paperHint": "Can be changed for each print."
     },
     "branches": {
       "help": "Each branch has its own rooms, prices and staff. Your plan sets how many branches you can have.",
@@ -2067,5 +2069,51 @@
       "system_view": "System health and activity log",
       "team_manage": "Manage the HotelMS team"
     }
+  },
+  "frontDesk": {
+    "title": "Front desk",
+    "branch": "Branch",
+    "exit": "Exit front desk mode",
+    "turnOn": "Front desk mode",
+    "today_one": "{{count}} today",
+    "today_other": "{{count}} today",
+    "swipeHint": "Tip: on a touch screen, swipe a guest to the left to check them in or out.",
+    "tiles": {
+      "checkIn": "Check in",
+      "checkOut": "Check out",
+      "walkIn": "Walk-in",
+      "takePayment": "Take payment",
+      "roomBoard": "Room board"
+    }
+  },
+  "regCard": {
+    "print": "Registration card",
+    "title": "Registration card",
+    "guest": "Guest",
+    "name": "Full name",
+    "nationality": "Nationality",
+    "idType": "ID type",
+    "idNumber": "ID number",
+    "phone": "Phone",
+    "email": "Email",
+    "birth": "Date of birth",
+    "address": "Home address",
+    "stay": "Stay",
+    "arrival": "Arrival",
+    "departure": "Departure",
+    "rooms": "Room(s)",
+    "people": "Guests",
+    "peopleLine": "{{adults}} adults, {{children}} children",
+    "stayType": "Stay type",
+    "total": "Total",
+    "paid": "Paid so far",
+    "purpose": "Purpose of visit",
+    "terms": "Terms",
+    "term1": "Check-out is at {{time}} on the day of departure. A late check-out may cost extra.",
+    "term2": "Cancellation policy: {{policy}}.",
+    "term3": "The hotel is not responsible for valuables left in the room.",
+    "term4": "By signing, I confirm the details above are correct.",
+    "guestSignature": "Guest signature",
+    "staff": "Received by: {{name}}"
   }
 }

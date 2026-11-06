@@ -7,6 +7,9 @@ import type { Page, ReservationDetail, ReservationSummary } from './front'
 
 export type StayInfo = { reservation_id: number; code: string | null; guest: string | null; check_in_at: string; check_out_at: string; balance: string; overdue: boolean }
 export type BoardRoom = { id: number; number: string; floor: string | null; status: string; room_type_id: number; room_type: string | null; notes: string | null; stay: StayInfo | null; arriving: StayInfo | null }
+/** The hotel block printed at the top of invoices, receipts and registration cards. */
+export type PrintHotel = { name: string; legal_name: string | null; tin: string | null; vat_number: string | null; address: string | null; city: string | null; phone: string | null; email: string | null; logo_url: string | null; footer: string | null; receipt_paper?: 'a4' | 'receipt' }
+
 export type TodayRow = ReservationSummary & { late: boolean; overdue: boolean; balance: string }
 
 export type CheckInInfo = {
@@ -110,7 +113,7 @@ export type InvoiceDetail = InvoiceSummary & {
   items: InvoiceItem[]
   taxes: { name: string; rate: string; is_inclusive: boolean; amount: string }[]
   payments: { id: number; type: string; amount: string; currency: string; amount_in_base: string; method: string | null; reference: string | null; refund_reason: string | null; paid_at: string; by: string | null }[]
-  hotel: { name: string; legal_name: string | null; tin: string | null; vat_number: string | null; address: string | null; city: string | null; phone: string | null; email: string | null; logo_url: string | null; footer: string | null }
+  hotel: PrintHotel
 }
 
 export type PaymentRow = { id: number; type: string; amount: string; currency: string; amount_in_base: string; method: string | null; reference: string | null; by: string | null; paid_at: string; reservation: { id: number; code: string; guest: string | null } | null; invoice: { id: number; number: string } | null }

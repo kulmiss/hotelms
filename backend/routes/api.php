@@ -151,6 +151,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
                 Route::get('/reservations/availability', [ReservationController::class, 'availability']);
                 Route::post('/reservations/quote', [ReservationController::class, 'quote']);
                 Route::get('/reservations/{id}', [ReservationController::class, 'show']);
+                Route::get('/reservations/{id}/registration-card', [ReservationController::class, 'registrationCard']);
                 Route::get('/reservations/{id}/cancellation-terms', [ReservationController::class, 'cancellationTerms']);
                 Route::post('/reservations/{id}/payments', [ReservationController::class, 'payment'])->middleware(['idempotent', 'one.at.a.time:reservation']); // payments.take / payments.refund checked inside
             });

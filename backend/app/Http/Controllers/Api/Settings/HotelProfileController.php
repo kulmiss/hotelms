@@ -31,10 +31,12 @@ class HotelProfileController extends Controller
             'address' => ['nullable', 'string', 'max:200'],
             'invoice_prefix' => ['required', 'alpha_dash', 'max:10'],
             'invoice_footer' => ['nullable', 'string', 'max:300'],
+            'receipt_paper' => ['sometimes', 'in:a4,receipt'],
         ]);
 
-        $request->user()->hotel->update(collect($data)->except(['invoice_prefix', 'invoice_footer'])->all());
-        $this->settings->put(['invoice_prefix' => strtoupper($data['invoice_prefix']), 'invoice_footer' => $data['invoice_footer'] ?? null]);
+        $request->user()->hotel->update(collect($data)->except(['invoice_prefix', 'invoice_footer', 'receipt_paper'])->all());
+        $this->settings->put(['invoice_prefix' => strtoupper($data['invoice_prefix']), 'invoice_footer' => $data['invoice_footer'] ?? null]
+            + (isset($data['receipt_paper']) ? ['receipt_paper' => $data['receipt_paper']] : []));
 
         return response()->json(['data' => $this->present($request)]);
     }

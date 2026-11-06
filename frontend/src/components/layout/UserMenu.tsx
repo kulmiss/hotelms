@@ -6,11 +6,13 @@ import {
   ComputerDesktopIcon,
   KeyIcon,
   LifebuoyIcon,
+  Squares2X2Icon,
   MoonIcon,
   SunIcon,
   UserCircleIcon,
 } from '@heroicons/react/24/outline'
 import { useLogout, useMe } from '@/lib/auth'
+import { useFrontDeskMode } from '@/lib/frontDeskMode'
 import { cn } from '@/lib/cn'
 import { useTheme, type ThemeChoice } from '@/lib/theme'
 
@@ -38,6 +40,7 @@ export function UserMenu() {
   const me = useMe()
   const logout = useLogout()
   const navigate = useNavigate()
+  const [, setFrontDesk] = useFrontDeskMode(me.data?.user.id)
   const { choice, setChoice } = useTheme()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -128,6 +131,21 @@ export function UserMenu() {
               <KeyIcon aria-hidden className="size-4 text-icon" />
               {t('topbar.changePassword')}
             </Link>
+            {!user.is_super_admin && me.data.permissions.includes('frontdesk.view') && (
+              <button
+                role="menuitem"
+                type="button"
+                className={item}
+                onClick={() => {
+                  setOpen(false)
+                  setFrontDesk(true)
+                  navigate('/front-desk')
+                }}
+              >
+                <Squares2X2Icon aria-hidden className="size-4 text-icon" />
+                {t('frontDesk.turnOn')}
+              </button>
+            )}
             {!user.is_super_admin && (
               <Link role="menuitem" to="/help" onClick={() => setOpen(false)} className={item}>
                 <LifebuoyIcon aria-hidden className="size-4 text-icon" />

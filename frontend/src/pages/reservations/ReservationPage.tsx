@@ -46,6 +46,11 @@ export function ReservationPage() {
         breadcrumbs={[{ label: t('nav.reservations'), to: '/reservations' }, { label: r.code }]}
         actions={
           <div className="flex flex-wrap gap-2">
+            {['confirmed', 'pending', 'checked_in'].includes(r.status) && (
+              <Link to={`/reservations/${r.id}/registration-card`} className={buttonClass('secondary')}>
+                {t('regCard.print')}
+              </Link>
+            )}
             {canArrive && can('frontdesk.check_in') && action !== 'check_in' && (
               <Button size="lg" onClick={() => setAction('check_in')}>
                 {t('desk.checkIn')}

@@ -333,9 +333,26 @@ class ReservationsTest extends TestCase
             ->assertJsonPath('bookings.0.guest', 'Abebe Kebede')->assertJsonPath('bookings.0.room_id', null);
     }
 
+    public function test_registration_card_has_the_guest_and_the_hotel_header(): void
+    {
+        $this->inHotel(fn () => $this->guest->update(['id_number' => 'ET1234567', 'nationality' => 'Ethiopian']));
+        $id = $this->actingAs($this->admin)->postJson('/api/v1/reservations', $this->booking())->json('data.id');
+        $this->putJson('/api/v1/settings/hotel', ['name' => $this->hotel->name, 'invoice_prefix' => 'INV', 'receipt_paper' => 'receipt'])->assertOk();
+
+        $this->getJson("/api/v1/reservations/{$id}/registration-card")->assertOk()
+            ->assertJsonPath('data.guest.name', 'Abebe Kebede')
+            ->assertJsonPath('data.guest.id_number', 'ET1234567')
+            ->assertJsonPath('data.hotel.receipt_paper', 'receipt')
+            ->assertJsonPath('data.reservation.code', 'BL-26-00001');
+
+        $cleaner = User::factory()->withRole($this->hotel, 'housekeeping')->create();
+        $this->actingAs($cleaner)->getJson("/api/v1/reservations/{$id}/registration-card")->assertForbidden();
+    }
+
     public function test_bookings_and_guests_of_another_hotel_are_invisible(): void
     {
         $id = $this->actingAs($this->admin)->postJson('/api/v1/reservations', $this->booking())->json('data.id');
+        $this->getJson("/api/v1/reservations/$id/registration-card")->assertOk();
 
         $other = Hotel::factory()->create(['plan_id' => $this->hotel->plan_id]);
         Branch::factory()->for($other)->create();
@@ -343,6 +360,7 @@ class ReservationsTest extends TestCase
         $stranger = User::factory()->withRole($other, 'hotel_admin')->create();
 
         $this->actingAs($stranger)->getJson("/api/v1/reservations/$id")->assertNotFound();
+        $this->getJson("/api/v1/reservations/$id/registration-card")->assertNotFound();
         $this->getJson('/api/v1/reservations')->assertJsonPath('total', 0);
         $this->getJson("/api/v1/guests/{$this->guest->id}")->assertNotFound();
         $this->postJson("/api/v1/reservations/$id/cancel", ['reason' => 'x'])->assertNotFound();

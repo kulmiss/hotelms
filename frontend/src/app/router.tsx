@@ -5,6 +5,7 @@ import { ProgressBar } from '@/components/layout/ProgressBar'
 import { RequireAuth } from '@/components/layout/RequireAuth'
 import { useMe } from '@/lib/auth'
 import { useCan } from '@/lib/hotel'
+import { useFrontDeskMode } from '@/lib/frontDeskMode'
 import { ChangePasswordPage } from '@/pages/ChangePasswordPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
@@ -46,6 +47,8 @@ const WalkInPage = lazy(() => pages.walkIn().then((m) => ({ default: m.WalkInPag
 const BillingPage = lazy(() => pages.billing().then((m) => ({ default: m.BillingPage })))
 const InvoicePage = lazy(() => pages.invoice().then((m) => ({ default: m.InvoicePage })))
 const InvoicePrintPage = lazy(() => pages.invoicePrint().then((m) => ({ default: m.InvoicePrintPage })))
+const RegistrationCardPage = lazy(() => pages.registrationCard().then((m) => ({ default: m.RegistrationCardPage })))
+const FrontDeskModePage = lazy(() => pages.frontDeskMode().then((m) => ({ default: m.FrontDeskModePage })))
 const CashierPage = lazy(() => pages.cashier().then((m) => ({ default: m.CashierPage })))
 const HousekeepingPage = lazy(() => pages.housekeeping().then((m) => ({ default: m.HousekeepingPage })))
 const ShiftsPage = lazy(() => pages.shifts().then((m) => ({ default: m.ShiftsPage })))
@@ -83,7 +86,12 @@ const page = (node: ReactNode) => <Suspense fallback={<ProgressBar />}>{node}</S
 /** The HotelMS team goes to the Super Admin area; hotel staff to their hotel. */
 function HomeRedirect() {
   const me = useMe()
-  return me.data?.user.is_super_admin ? <Navigate to="/admin" replace /> : page(<DashboardPage />)
+  const can = useCan()
+  const [frontDesk] = useFrontDeskMode(me.data?.user.id)
+  if (me.data?.user.is_super_admin) return <Navigate to="/admin" replace />
+  // A receptionist who turned on front desk mode starts there.
+  if (frontDesk && can('frontdesk.view')) return <Navigate to="/front-desk" replace />
+  return page(<DashboardPage />)
 }
 
 /** Hotel screens: only for users whose role has the permission. */
@@ -115,6 +123,14 @@ export const routes = [
       {
         element: <RequirePermission permission="invoices.print" />,
         children: [{ path: '/billing/:id/print', element: page(<InvoicePrintPage />) }],
+      },
+      {
+        element: <RequirePermission permission="reservations.view" />,
+        children: [{ path: '/reservations/:id/registration-card', element: page(<RegistrationCardPage />) }],
+      },
+      {
+        element: <RequirePermission permission="frontdesk.view" />,
+        children: [{ path: '/front-desk', element: page(<FrontDeskModePage />) }],
       },
       {
         path: '/',
