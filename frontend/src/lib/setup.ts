@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, post, put } from './api'
 import { ME_KEY } from './auth'
+import { SILENT } from './toast'
 
 export const SETUP_STEPS = ['account', 'profile', 'branches', 'room_types', 'rooms', 'payments', 'taxes', 'booking_rules', 'cancellation', 'modules', 'team', 'review'] as const
 export type SetupStepKey = (typeof SETUP_STEPS)[number]
@@ -22,6 +23,7 @@ export const useSetup = () => useQuery({ queryKey: KEY, queryFn: () => api<{ dat
 function useSetupMutation<V>(fn: (v: V) => Promise<unknown>) {
   const qc = useQueryClient()
   return useMutation({
+    meta: SILENT,
     mutationFn: fn,
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: KEY })

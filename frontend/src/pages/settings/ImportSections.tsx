@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { SILENT } from '@/lib/toast'
 import { ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
@@ -41,6 +42,7 @@ export function ImportRooms({ onDone }: { onDone?: () => void }) {
   const [checked, setChecked] = useState<Row[] | null>(null)
 
   const parse = useMutation({
+    meta: SILENT,
     mutationFn: (file: File) => upload<Parsed>('/settings/import/parse', 'file', file),
     onSuccess: (p) => {
       setParsed(p)
@@ -51,7 +53,7 @@ export function ImportRooms({ onDone }: { onDone?: () => void }) {
       if (p.columns.every((c) => m[c] !== undefined)) changeRows(build(p, m), true)
     },
   })
-  const check = useMutation({ mutationFn: (r: Row[]) => post<{ data: Report }>('/settings/import/check', { rows: r }) })
+  const check = useMutation({ meta: SILENT, mutationFn: (r: Row[]) => post<{ data: Report }>('/settings/import/check', { rows: r }) })
   const save = useMutation({
     mutationFn: (r: Row[]) => post<{ data: ImportRecord }>('/settings/import', { rows: r, file_name: parsed?.file_name }),
     onSuccess: () => {

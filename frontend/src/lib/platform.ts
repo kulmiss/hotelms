@@ -1,5 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, del, post, put } from './api'
+import { REMOVED, SILENT } from './toast'
 
 /* ---------- Support inbox (both sides) ---------- */
 
@@ -24,9 +25,9 @@ export type SupportDetail = SupportSummary & {
   team?: { id: number; name: string }[]
 }
 
-function useInvalidate<V, R>(fn: (v: V) => Promise<R>, keys: unknown[][]) {
+function useInvalidate<V, R>(fn: (v: V) => Promise<R>, keys: unknown[][], meta?: Record<string, unknown>) {
   const qc = useQueryClient()
-  return useMutation({ mutationFn: fn, onSuccess: () => keys.forEach((queryKey) => void qc.invalidateQueries({ queryKey })) })
+  return useMutation({ meta, mutationFn: fn, onSuccess: () => keys.forEach((queryKey) => void qc.invalidateQueries({ queryKey })) })
 }
 
 // Hotel side ("Help")
@@ -76,10 +77,10 @@ export type HotelLive = {
 export const useHotelOverview = (id: number) => useQuery({ queryKey: ['admin', 'hotel', id, 'overview'], queryFn: () => api<{ data: HotelOverview }>(`/admin/hotels/${id}/overview`) })
 export const useHotelLive = (id: number) => {
   const qc = useQueryClient()
-  return useMutation({ mutationFn: (reason: string) => post<{ data: HotelLive }>(`/admin/hotels/${id}/live`, { reason }), onSuccess: () => void qc.invalidateQueries({ queryKey: ['admin', 'hotel', id, 'overview'] }) })
+  return useMutation({ meta: SILENT, mutationFn: (reason: string) => post<{ data: HotelLive }>(`/admin/hotels/${id}/live`, { reason }), onSuccess: () => void qc.invalidateQueries({ queryKey: ['admin', 'hotel', id, 'overview'] }) })
 }
 export const useAddNote = (id: number) => useInvalidate((v: { body: string; channel?: string | null }) => post(`/admin/hotels/${id}/notes`, v), [['admin', 'hotel', id, 'overview']])
-export const useRemoveNote = (id: number) => useInvalidate((noteId: number) => del(`/admin/hotels/${id}/notes/${noteId}`), [['admin', 'hotel', id, 'overview']])
+export const useRemoveNote = (id: number) => useInvalidate((noteId: number) => del(`/admin/hotels/${id}/notes/${noteId}`), [['admin', 'hotel', id, 'overview']], REMOVED)
 
 /* ---------- System health, activity, team ---------- */
 

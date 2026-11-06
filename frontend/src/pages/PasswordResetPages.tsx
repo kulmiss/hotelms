@@ -2,6 +2,7 @@ import { useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
+import { SILENT } from '@/lib/toast'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -35,6 +36,7 @@ export function ForgotPasswordPage() {
   const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const send = useMutation({
+    meta: SILENT,
     mutationFn: async (v: string) => {
       await prepareSession()
       return post('/auth/forgot-password', { email: v })
@@ -74,6 +76,7 @@ export function ResetPasswordPage() {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const reset = useMutation({
+    meta: SILENT,
     mutationFn: async () => {
       await prepareSession()
       return post('/auth/reset-password', { token: params.get('token') ?? '', email: params.get('email') ?? '', password, password_confirmation: confirm })

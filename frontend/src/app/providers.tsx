@@ -1,6 +1,8 @@
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
+import i18n from '@/i18n'
 import { ApiError } from '@/lib/api'
+import { toast } from '@/lib/toast'
 import { ME_KEY } from '@/lib/auth'
 import { startOfflineCopy } from '@/lib/offline'
 import { BrandingEffects } from '@/lib/brand'
@@ -19,7 +21,15 @@ const EMERGENCY = ['maintenance', 'read_only']
 function makeClient(): QueryClient {
   const client: QueryClient = new QueryClient({
     queryCache: new QueryCache({ onError: (e, query) => handle(e, query.queryKey[0] === ME_KEY[0]) }),
-    mutationCache: new MutationCache({ onError: (e) => handle(e, false) }),
+    mutationCache: new MutationCache({
+      onError: (e) => handle(e, false),
+      // Every change confirms itself with a short toast ("Saved."), unless the action says otherwise (meta.toast).
+      onSuccess: (_data, _vars, _ctx, mutation) => {
+        const setting = mutation.meta?.toast
+        if (setting === false) return
+        toast(i18n.t(typeof setting === 'string' ? setting : 'common.savedToast'))
+      },
+    }),
     defaultOptions: {
       queries: {
         staleTime: 30_000,

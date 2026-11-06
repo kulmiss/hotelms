@@ -1,5 +1,10 @@
 import { useSyncExternalStore } from 'react'
 
+/** Mutation meta: no "Saved" toast (sign-in steps, previews, things with their own message). */
+export const SILENT = { toast: false } as const
+/** Mutation meta: "Removed." instead of "Saved." */
+export const REMOVED = { toast: 'common.removedToast' } as const
+
 export type Toast = { id: number; message: string; tone: 'ok' | 'info' | 'danger' }
 
 let items: Toast[] = []

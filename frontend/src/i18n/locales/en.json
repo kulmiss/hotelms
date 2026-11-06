@@ -32,7 +32,9 @@
       "7": "Sun"
     },
     "close": "Close",
-    "pageOf": "Page {{page}} of {{last}}"
+    "pageOf": "Page {{page}} of {{last}}",
+    "savedToast": "Changes saved",
+    "removedToast": "Removed"
   },
   "nav": {
     "main": "Main",

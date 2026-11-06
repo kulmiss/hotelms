@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, del, post, put } from './api'
+import { SILENT } from './toast'
 
 export type SavedView = { id: number; report_key: string; name: string; filters: Record<string, string | number | null>; is_pinned: boolean; shared_with_roles: number[] | null; mine: boolean }
 export type CustomReport = { id: number; name: string; measures: string[]; group_by: string; chart_type: 'table' | 'bar'; shared_with_roles: number[] | null; mine: boolean }
@@ -38,7 +39,7 @@ export const useCustomReports = (enabled: boolean) =>
   useQuery({ queryKey: ['custom'], queryFn: () => api<{ data: CustomReport[]; measures: string[]; groups: string[] }>('/custom-reports'), enabled })
 export const useSaveCustomReport = () => useInv(['custom'], (v: Partial<CustomReport> & { name: string; measures: string[]; group_by: string; chart_type: string }) => (v.id ? put(`/custom-reports/${v.id}`, v) : post('/custom-reports', v)))
 export const useDeleteCustomReport = () => useInv(['custom'], (id: number) => del(`/custom-reports/${id}`))
-export const useRunCustom = () => useMutation({ mutationFn: (v: { measures: string[]; group_by: string; from: string; to: string; branch_id?: number | null }) => post<{ data: CustomResult }>('/custom-reports/run', v) })
+export const useRunCustom = () => useMutation({ meta: SILENT, mutationFn: (v: { measures: string[]; group_by: string; from: string; to: string; branch_id?: number | null }) => post<{ data: CustomResult }>('/custom-reports/run', v) })
 
 export const useSchedules = () => useQuery({ queryKey: ['schedules'], queryFn: () => api<{ data: Schedule[]; reports: string[]; people: Person[] }>('/report-schedules') })
 export const useSaveSchedule = () => useInv(['schedules'], (v: Partial<Schedule>) => (v.id ? put(`/report-schedules/${v.id}`, v) : post('/report-schedules', v)))

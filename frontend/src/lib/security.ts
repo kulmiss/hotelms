@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Tone } from '@/components/ui/Badge'
 import { api, ApiError, post, put } from './api'
+import { SILENT } from './toast'
 import { ME_KEY } from './auth'
 import { date } from './format'
 import { localDate, localTime } from './front'
@@ -16,7 +17,7 @@ function useInv<V, R>(keys: (readonly unknown[])[], fn: (v: V) => Promise<R>) {
 }
 
 export const useMySecurity = () => useQuery({ queryKey: ['security', 'me'], queryFn: () => api<{ data: MySecurity }>('/me/security') })
-export const useBeginTwoFactor = () => useMutation({ mutationFn: (v: { method: 'app' | 'email'; password: string }) => post<{ data: TwoFactorStart }>('/me/security/two-factor', v) })
+export const useBeginTwoFactor = () => useMutation({ meta: SILENT, mutationFn: (v: { method: 'app' | 'email'; password: string }) => post<{ data: TwoFactorStart }>('/me/security/two-factor', v) })
 export const useConfirmTwoFactor = () => useInv([['security'], ME_KEY], (code: string) => post<{ recovery_codes: string[] }>('/me/security/two-factor/confirm', { code }))
 export const useDisableTwoFactor = () => useInv([['security'], ME_KEY], (password: string) => post('/me/security/two-factor/disable', { password }))
 export const useNewRecoveryCodes = () => useInv([['security']], (password: string) => post<{ recovery_codes: string[] }>('/me/security/recovery-codes', { password }))
@@ -34,6 +35,7 @@ export const useSaveSecuritySettings = () => useInv([['security'], ME_KEY], (v: 
 export function usePinSwitch() {
   const qc = useQueryClient()
   return useMutation({
+    meta: SILENT,
     mutationFn: (pin: string) => post('/auth/pin-switch', { pin }),
     onSuccess: () => {
       qc.removeQueries({ predicate: (q) => q.queryKey[0] !== 'me' && q.queryKey[0] !== 'branding' })
@@ -41,7 +43,7 @@ export function usePinSwitch() {
     },
   })
 }
-export const useUnlock = () => useMutation({ mutationFn: (password: string) => post('/auth/unlock', { password }) })
+export const useUnlock = () => useMutation({ meta: SILENT, mutationFn: (password: string) => post('/auth/unlock', { password }) })
 
 export const errorText = (e: unknown): string | null => (e instanceof ApiError ? (Object.values(e.errors)[0]?.[0] ?? e.message) : e ? String(e) : null)
 
