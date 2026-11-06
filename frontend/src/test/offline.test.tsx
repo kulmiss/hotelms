@@ -48,7 +48,7 @@ describe('offline mode', () => {
   it('shows the offline strip', async () => {
     mockApi({ 'GET /me': { body: makeMe() } })
     renderApp('/profile')
-    await screen.findByRole('heading', { name: 'Profile' })
+    await screen.findByRole('heading', { name: 'My profile' })
     onlineManager.setOnline(false)
     expect(await screen.findByText("You're offline.")).toBeInTheDocument()
   })

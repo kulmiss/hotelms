@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate, useLocation, useNavigate } from 'react-router'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
@@ -88,6 +88,9 @@ export function LoginPage() {
           <Button type="submit" size="lg" disabled={login.isPending || !email || !password}>
             {login.isPending ? t('login.signingIn') : t('login.submit')}
           </Button>
+          <Link to="/forgot-password" className="text-center text-sm text-accent-text hover:underline">
+            {t('login.forgot')}
+          </Link>
         </form>
         )}
       </Card>

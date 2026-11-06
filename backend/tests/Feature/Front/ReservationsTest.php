@@ -210,6 +210,18 @@ class ReservationsTest extends TestCase
         $this->postJson('/api/v1/reservations', $this->booking(['check_in' => '2026-11-20', 'check_out' => '2026-11-22', 'rooms' => [['room_type_id' => $this->standard->id], ['room_type_id' => $this->standard->id]]]))->assertCreated();
     }
 
+    public function test_a_repeated_payment_is_saved_once(): void
+    {
+        $this->actingAs($this->admin);
+        $id = $this->postJson('/api/v1/reservations', $this->booking(['check_in' => '2026-11-20', 'check_out' => '2026-11-22']))->json('data.id');
+        $pay = fn (string $key) => $this->withHeader('Idempotency-Key', $key)->postJson("/api/v1/reservations/$id/payments", ['type' => 'deposit', 'payment_method_id' => $this->cash, 'amount' => '500']);
+
+        $pay('abc-1')->assertOk()->assertJsonPath('data.paid_total', '500.00');
+        $pay('abc-1')->assertOk()->assertHeader('Idempotent-Replay', 'true')->assertJsonPath('data.paid_total', '500.00'); // the internet dropped, the app tried again
+        $pay('abc-2')->assertOk()->assertJsonPath('data.paid_total', '1000.00'); // a new, real payment
+        $this->assertSame(2, $this->inHotel(fn () => \App\Models\Payment::where('reservation_id', $id)->count()));
+    }
+
     public function test_changes_to_one_booking_run_one_at_a_time(): void
     {
         $this->actingAs($this->admin);

@@ -1,5 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api, post, put } from './api'
+import { useRef } from 'react'
+import { api, newIdempotencyKey, post, put } from './api'
 
 /* ------------------------------------------------------------- types */
 
@@ -217,9 +218,17 @@ export function useCancelReservation(id: number) {
 
 export type PaymentInput = { type: 'deposit' | 'payment' | 'refund'; payment_method_id: number; amount: string; currency: string; reference?: string; refund_reason?: string }
 
+/** Same key until the server says yes (no double payment on a bad network, see useMoneyAction). */
 export function useRecordPayment(id: number) {
   const invalidate = useInvalidate()
-  return useMutation({ mutationFn: (p: PaymentInput) => post<{ data: ReservationDetail }>(`/reservations/${id}/payments`, p), onSuccess: invalidate })
+  const key = useRef(newIdempotencyKey())
+  return useMutation({
+    mutationFn: (p: PaymentInput) => post<{ data: ReservationDetail }>(`/reservations/${id}/payments`, p, { 'Idempotency-Key': key.current }),
+    onSuccess: () => {
+      key.current = newIdempotencyKey()
+      invalidate()
+    },
+  })
 }
 
 export const useCalendar = (branchId: number | null, from: string, days: number) =>

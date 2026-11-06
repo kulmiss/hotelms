@@ -1,5 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api, del, post } from './api'
+import { useRef } from 'react'
+import { api, del, newIdempotencyKey, post } from './api'
 import type { Page, ReservationDetail, ReservationSummary } from './front'
 
 /* ------------------------------------------------------------- front desk */
@@ -48,17 +49,34 @@ export function useDeskAction<V, R>(fn: (v: V) => Promise<R>) {
   return useMutation({ mutationFn: fn, onSuccess: invalidate })
 }
 
+/**
+ * Like useDeskAction, for anything that takes money: the same Idempotency-Key is sent again
+ * until the server has said yes, so a second tap or a retry after a dropped connection never
+ * takes the money twice. After a success the next action gets a new key.
+ */
+export function useMoneyAction<V, R>(fn: (v: V, headers: Record<string, string>) => Promise<R>) {
+  const invalidate = useDeskInvalidate()
+  const key = useRef(newIdempotencyKey())
+  return useMutation({
+    mutationFn: (v: V) => fn(v, { 'Idempotency-Key': key.current }),
+    onSuccess: () => {
+      key.current = newIdempotencyKey()
+      invalidate()
+    },
+  })
+}
+
 export const useCheckIn = (id: number) =>
-  useDeskAction((v: { rooms: { id: number; room_id: number | null }[]; waive_early_fee: boolean; payment?: PaymentFields | null }) => post<{ data: ReservationDetail }>(`/reservations/${id}/check-in`, v))
+  useMoneyAction((v: { rooms: { id: number; room_id: number | null }[]; waive_early_fee: boolean; payment?: PaymentFields | null }, h) => post<{ data: ReservationDetail }>(`/reservations/${id}/check-in`, v, h))
 export const useCheckOut = (id: number) =>
-  useDeskAction((v: { waive_late_fee: boolean; approve_balance: boolean; payment?: PaymentFields | null }) => post<{ data: ReservationDetail }>(`/reservations/${id}/check-out`, v))
+  useMoneyAction((v: { waive_late_fee: boolean; approve_balance: boolean; payment?: PaymentFields | null }, h) => post<{ data: ReservationDetail }>(`/reservations/${id}/check-out`, v, h))
 export const useMoveRoom = (id: number) => useDeskAction((v: { stay: number; room_id: number }) => post<{ data: ReservationDetail }>(`/reservations/${id}/rooms/${v.stay}/move`, { room_id: v.room_id }))
 export const useExtend = (id: number) => useDeskAction((v: { check_out?: string; hours?: number }) => post<{ data: ReservationDetail }>(`/reservations/${id}/extend`, v))
 export const useApproveBalance = (id: number) => useDeskAction(() => post<{ data: ReservationDetail }>(`/reservations/${id}/approve-balance`))
 export const useRoomStatus = () => useDeskAction((v: { id: number; status: string }) => post(`/rooms/${v.id}/status`, { status: v.status }))
 export const useWalkIn = () =>
-  useDeskAction((v: { branch_id: number; stay_type: string; check_out?: string | null; hours?: number | null; guest_id: number; rooms: { room_type_id: number; room_id: number; adults: number; children: number }[]; discount_percent?: string; payment: PaymentFields }) =>
-    post<{ data: ReservationDetail }>('/front-desk/walk-in', v),
+  useMoneyAction((v: { branch_id: number; stay_type: string; check_out?: string | null; hours?: number | null; guest_id: number; rooms: { room_type_id: number; room_id: number; adults: number; children: number }[]; discount_percent?: string; payment: PaymentFields }, h: Record<string, string>) =>
+    post<{ data: ReservationDetail }>('/front-desk/walk-in', v, h),
   )
 
 /* ------------------------------------------------------------- billing */
@@ -111,7 +129,7 @@ export const useAddCharge = (id: number) =>
   useDeskAction((v: { type: 'extra' | 'discount'; charge_type_id?: number | null; description?: string; quantity?: string; unit_price?: string; discount_percent?: string }) => post<{ data: InvoiceDetail }>(`/invoices/${id}/items`, v))
 export const useRemoveItem = (id: number) => useDeskAction((itemId: number) => del(`/invoices/${id}/items/${itemId}`))
 export const useInvoicePayment = (id: number) =>
-  useDeskAction((v: { type: 'payment' | 'refund'; payment_method_id: number; amount: string; currency: string; reference?: string; refund_reason?: string }) => post<{ data: InvoiceDetail }>(`/invoices/${id}/payments`, v))
+  useMoneyAction((v: { type: 'payment' | 'refund'; payment_method_id: number; amount: string; currency: string; reference?: string; refund_reason?: string }, h) => post<{ data: InvoiceDetail }>(`/invoices/${id}/payments`, v, h))
 export const useVoidInvoice = (id: number) => useDeskAction((reason: string) => post<{ data: InvoiceDetail }>(`/invoices/${id}/void`, { reason }))
 export const useSplitInvoice = (id: number) => useDeskAction(() => post<{ data: InvoiceSummary[] }>(`/invoices/${id}/split`))
 

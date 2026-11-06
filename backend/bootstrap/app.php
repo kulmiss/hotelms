@@ -9,6 +9,7 @@ use App\Http\Middleware\EnsureModuleEnabled;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsurePlatformPermission;
 use App\Http\Middleware\EnsureTwoFactorSetUp;
+use App\Http\Middleware\Idempotent;
 use App\Http\Middleware\OneAtATime;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetTenantContext;
@@ -41,6 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'device' => EnsureDeviceActive::class,
             'two.factor' => EnsureTwoFactorSetUp::class,
             'one.at.a.time' => OneAtATime::class,
+            'idempotent' => Idempotent::class,
             'not.impersonating' => BlockDuringImpersonation::class,
             'password.changed' => EnsurePasswordChanged::class,
             'module' => EnsureModuleEnabled::class,

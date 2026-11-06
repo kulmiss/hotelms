@@ -109,7 +109,8 @@
     "resend": "Send a new code",
     "codeResent": "A new code was sent.",
     "useRecovery": "Use a recovery code",
-    "useCode": "Use a code instead"
+    "useCode": "Use a code instead",
+    "forgot": "Forgot password?"
   },
   "password": {
     "title": "Set a new password",
@@ -1766,5 +1767,19 @@
     "cannotChange": "You're offline. Try again when the internet is back – what you typed is kept.",
     "newVersion": "A new version is ready.",
     "refresh": "Refresh"
+  },
+  "reset": {
+    "forgotTitle": "Forgot your password?",
+    "forgotIntro": "Type your email. We send you a link to set a new password.",
+    "sendLink": "Send the link",
+    "sent": "If this email has an account, a link is on its way. Check your inbox (and spam).",
+    "backToSignIn": "Back to sign in",
+    "newTitle": "Set a new password",
+    "newIntro": "Choose a new password for your account.",
+    "password": "New password",
+    "passwordHint": "At least 8 characters, with letters and numbers.",
+    "confirm": "Type it again",
+    "save": "Save new password",
+    "done": "Password changed. You can sign in now."
   }
 }

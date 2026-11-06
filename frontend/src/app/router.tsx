@@ -20,6 +20,8 @@ const HotelPage = lazy(() => pages.hotel().then((m) => ({ default: m.HotelPage }
 const PlansPage = lazy(() => pages.plans().then((m) => ({ default: m.PlansPage })))
 const PlatformSettingsPage = lazy(() => pages.platformSettings().then((m) => ({ default: m.PlatformSettingsPage })))
 const PlatformReportsPage = lazy(() => pages.platformReports().then((m) => ({ default: m.PlatformReportsPage })))
+const ForgotPasswordPage = lazy(() => import('@/pages/PasswordResetPages').then((m) => ({ default: m.ForgotPasswordPage })))
+const ResetPasswordPage = lazy(() => import('@/pages/PasswordResetPages').then((m) => ({ default: m.ResetPasswordPage })))
 const TwoStepPage = lazy(() => pages.twoStep().then((m) => ({ default: m.TwoStepPage })))
 const DevicesPage = lazy(() => pages.devices().then((m) => ({ default: m.DevicesPage })))
 const ProfilePage = lazy(() => pages.profile().then((m) => ({ default: m.ProfilePage })))
@@ -92,6 +94,8 @@ function RequireSuperAdmin() {
 
 export const routes = [
   { path: '/login', element: <LoginPage /> },
+  { path: '/forgot-password', element: page(<ForgotPasswordPage />) },
+  { path: '/reset-password', element: page(<ResetPasswordPage />) },
   {
     element: <RequireAuth />,
     children: [

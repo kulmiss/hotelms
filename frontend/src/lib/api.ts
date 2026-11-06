@@ -65,8 +65,13 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   return body as T
 }
 
-export const post = <T>(path: string, data?: unknown) =>
-  api<T>(path, { method: 'POST', body: data === undefined ? undefined : JSON.stringify(data) })
+export const post = <T>(path: string, data?: unknown, headers?: Record<string, string>) =>
+  api<T>(path, { method: 'POST', body: data === undefined ? undefined : JSON.stringify(data), headers })
+
+/** A fresh key for one payment attempt (the server answers a repeat with the first result). */
+export function newIdempotencyKey(): string {
+  return typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
 
 /** Sends a file (multipart form). Pass null to remove. */
 export async function upload<T>(path: string, field: string, file: File | null): Promise<T> {

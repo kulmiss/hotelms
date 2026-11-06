@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { cleanup, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { healthOk, makeMe, mockApi } from './mockApi'
@@ -109,5 +109,29 @@ describe('shared devices', () => {
       const call = fetchMock.mock.calls.find(([u, i]) => String(u).endsWith('/settings/security') && i?.method === 'PUT')
       expect(JSON.parse(String(call?.[1]?.body))).toEqual({ require_two_factor_staff: false, approved_devices_only: true, screen_lock_minutes: 15 })
     })
+  })
+})
+
+describe('forgot password', () => {
+  it('sends a link and sets a new password', async () => {
+    const fetchMock = mockApi({
+      'GET /sanctum/csrf-cookie': { status: 204 },
+      'GET /me': { status: 401 },
+      'POST /auth/forgot-password': { body: { message: 'ok' } },
+      'POST /auth/reset-password': { body: { message: 'ok' } },
+    })
+    renderApp('/login')
+    await userEvent.click(await screen.findByRole('link', { name: 'Forgot password?' }))
+    await userEvent.type(await screen.findByLabelText('Email'), 'meron@sheger.test')
+    await userEvent.click(screen.getByRole('button', { name: 'Send the link' }))
+    expect(await screen.findByText(/a link is on its way/)).toBeInTheDocument()
+
+    cleanup()
+    renderApp('/reset-password?token=abc&email=meron%40sheger.test')
+    await userEvent.type(await screen.findByLabelText('New password'), 'NewPass-2026')
+    await userEvent.type(screen.getByLabelText('Type it again'), 'NewPass-2026')
+    await userEvent.click(screen.getByRole('button', { name: 'Save new password' }))
+    expect(await screen.findByText('Password changed. You can sign in now.')).toBeInTheDocument()
+    expect(body(fetchMock, '/auth/reset-password')).toEqual({ token: 'abc', email: 'meron@sheger.test', password: 'NewPass-2026', password_confirmation: 'NewPass-2026' })
   })
 })
