@@ -63,7 +63,7 @@ class HotelBillingAndContentTest extends TestCase
     {
         Mail::fake();
         $id = $this->actingAs($this->owner)->postJson("/api/v1/admin/hotels/{$this->hotel->id}/invoices")->assertCreated()->json('data.id');
-        $this->actingAs($this->admin)->getJson('/api/v1/settings/subscription')->assertOk()->assertJsonPath('data.invoices.0.id', $id);
+        $this->actingAs($this->admin)->getJson('/api/v1/subscription')->assertOk()->assertJsonPath('data.invoices.0.id', $id);
         $this->getJson("/api/v1/subscription-invoices/{$id}")->assertOk()->assertJsonPath('data.number', 'HMS-2026-00001');
 
         $other = Hotel::factory()->create(['plan_id' => $this->hotel->plan_id]);
