@@ -89,7 +89,7 @@ class PlatformAutomations
         $since = now()->subDays($days);
         $week = now()->format('o-W');
         $n = 0;
-        $this->hotels()->whereIn('status', ['trial', 'active'])->where('created_at', '<=', $since)->get()->each(function (Hotel $h) use ($since, $week, $days, &$n) {
+        $this->hotels()->whereIn('status', ['trial', 'active'])->where('created_at', '<=', $since)->get()->each(function (Hotel $h) use ($week, $days, &$n) {
             $days = (int) ($this->a->option($h, 'inactive_hotel', 'days') ?: $days);
             $active = DB::table('activity_logs')->where('hotel_id', $h->id)->where('created_at', '>=', now()->subDays($days))->exists();
             if (! $active && $this->a->enabled($h, 'inactive_hotel') && $this->a->once($h, 'inactive_hotel', $week)) {

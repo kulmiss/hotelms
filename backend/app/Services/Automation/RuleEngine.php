@@ -164,7 +164,7 @@ class RuleEngine
     /**
      * "This would have fired N times in the last 7 days" – the rule checked against past records.
      *
-     * @param list<array{field: string, op: string, value: mixed}> $conditions
+     * @param  list<array{field: string, op: string, value: mixed}>  $conditions
      */
     public function test(Hotel $hotel, string $trigger, array $conditions): int
     {
