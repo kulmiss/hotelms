@@ -479,7 +479,7 @@ class FrontDeskTest extends TestCase
 
     public function test_pay_at_check_out_when_the_hotel_allows_it(): void
     {
-        $this->at('2026-11-12 15:00');
+        $this->at('2026-11-12 09:00');
         $booking = fn (array $extra = []) => $this->postJson('/api/v1/reservations', [
             'branch_id' => $this->branch->id, 'stay_type' => 'nightly', 'check_in' => '2026-11-12', 'check_out' => '2026-11-14', 'guest_id' => $this->guest->id,
             'rooms' => [['room_type_id' => $this->standard->id, 'adults' => 2]],
@@ -503,15 +503,16 @@ class FrontDeskTest extends TestCase
             'rooms' => [['room_type_id' => $this->standard->id, 'adults' => 2]], 'pay_later' => true,
         ])->assertCreated()->assertJsonPath('data.status', 'confirmed')->assertJsonPath('data.paid_total', '0.00')->json('data.id');
         $this->getJson("/api/v1/reservations/$id")->assertJsonPath('data.pay_later.by', $this->admin->name);
-        $this->checkIn($id, ['101'])->assertOk()->assertJsonPath('data.status', 'checked_in');
-
-        // …but pays everything before leaving.
-        $this->postJson("/api/v1/reservations/$id/check-out")->assertJsonValidationErrors('balance');
 
         // A pending booking can be switched to "pay at check-out".
         $pending = $booking()->assertJsonPath('data.status', 'pending')->json('data.id');
         $this->postJson("/api/v1/reservations/$pending/pay-later")->assertOk()->assertJsonPath('data.status', 'confirmed');
         $this->postJson("/api/v1/reservations/$pending/pay-later")->assertJsonValidationErrors('status');
+
+        // Checks in without paying, but pays everything before leaving.
+        $this->at('2026-11-12 15:00');
+        $this->checkIn($id, ['101'])->assertOk()->assertJsonPath('data.status', 'checked_in');
+        $this->postJson("/api/v1/reservations/$id/check-out")->assertJsonValidationErrors('balance');
 
         // Walk-in without paying now.
         $this->postJson('/api/v1/front-desk/walk-in', [
