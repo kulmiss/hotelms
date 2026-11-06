@@ -38,6 +38,7 @@ class AutomationSchedule
             'deposit_reminder', 'arrival_reminder', 'no_show_suggestion', 'shift_start_brief', 'checkout_balance_reminder', 'outstanding_follow_up',
             'close_cashier_reminder', 'exchange_rate_reminder', 'arrival_room_not_ready', 'long_maintenance', 'stayover_not_cleaned',
             'late_for_shift', 'understaffed_shift', 'price_up_suggestion', 'price_down_suggestion', 'target_risk', 'daily_report', 'weekly_summary',
+            'guest_details_missing',
         ] as $key) {
             if (! $this->a->enabled($hotel, $key)) {
                 continue;
@@ -230,6 +231,25 @@ class AutomationSchedule
                         $n += $this->tell('arrival_room_not_ready', $this->a->recipients($this->hotel, 'arrival_room_not_ready', $r->branch_id), "Room {$rr->room->number} is not ready", ($r->guest?->full_name ?? $r->code).' arrives at '.HotelClock::local($r->check_in_at, $this->hotel)->format('H:i'), '/housekeeping');
                     }
                 }
+            });
+
+        return $n;
+    }
+
+    // Quick check-in: hours after check-in the guest's ID or nationality is still missing → remind who checked them in.
+    private function guestDetailsMissing(): int
+    {
+        $hours = (int) $this->a->option($this->hotel, 'guest_details_missing', 'hours');
+        $n = 0;
+        Reservation::where('status', 'checked_in')->whereHas('guest', fn ($q) => $q->detailsMissing())
+            ->whereHas('rooms', fn ($q) => $q->where('actual_check_in_at', '<=', now()->subHours($hours)))
+            ->with(['guest', 'checkedInBy'])->get()
+            ->each(function (Reservation $r) use (&$n) {
+                if (! $this->a->once($this->hotel, 'guest_details_missing', "g{$r->guest_id}r{$r->id}")) {
+                    return;
+                }
+                $who = $r->checkedInBy && $r->checkedInBy->status === 'active' ? collect([$r->checkedInBy]) : $this->a->recipients($this->hotel, 'guest_details_missing', $r->branch_id);
+                $n += $this->tell('guest_details_missing', $who, 'Finish the guest details for '.($r->guest?->full_name ?? $r->code), 'ID number and nationality are still missing.', "/guests/{$r->guest_id}");
             });
 
         return $n;

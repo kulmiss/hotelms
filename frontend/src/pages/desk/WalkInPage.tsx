@@ -10,6 +10,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { ApiError } from '@/lib/api'
 import { useMe } from '@/lib/auth'
+import { useCan } from '@/lib/hotel'
 import { cn } from '@/lib/cn'
 import { useFreeRooms, useWalkIn } from '@/lib/desk'
 import { addDays, today, useLookups, useQuote, type BookingInput, type Guest, type StayType } from '@/lib/front'
@@ -22,6 +23,7 @@ export function WalkInPage() {
   const navigate = useNavigate()
   const me = useMe()
   const lookups = useLookups()
+  const can = useCan()
   const branches = me.data?.branches ?? []
   const [branchId, setBranchId] = useState(branches[0]?.id ?? 0)
   const [stayType, setStayType] = useState<StayType>('nightly')
@@ -29,6 +31,12 @@ export function WalkInPage() {
   const [hours, setHours] = useState(3)
   const [picked, setPicked] = useState<number[]>([])
   const [guest, setGuest] = useState<Guest | null>(null)
+  const canQuick = can('frontdesk.quick_check_in') && can('guests.create_edit')
+  const [quick, setQuick] = useState(false)
+  const [quickName, setQuickName] = useState('')
+  const [quickPhone, setQuickPhone] = useState('')
+  const quickReady = quick && quickName.trim().length >= 2 && quickPhone.trim().length >= 6
+  const hasGuest = quick ? quickReady : !!guest
   const [methodId, setMethodId] = useState(0)
   const [amount, setAmount] = useState<string | null>(null)
   const [reference, setReference] = useState('')
@@ -46,7 +54,7 @@ export function WalkInPage() {
           check_in: stayType === 'nightly' ? today() : now.slice(0, 16),
           check_out: stayType === 'nightly' ? checkOut : stayType === 'day_use' ? `${today()}T22:00` : null,
           hours: stayType === 'hourly' ? hours : null,
-          guest_id: guest?.id ?? null,
+          guest_id: quick ? null : (guest?.id ?? null),
           rooms: chosen.map((r) => ({ room_type_id: r.room_type_id, room_id: r.id, adults: 1, children: 0 })),
           walk_in: true,
         }
@@ -59,14 +67,14 @@ export function WalkInPage() {
   const quoteError = quote.error instanceof ApiError ? quote.error : null
 
   function submit() {
-    if (!input || !guest) return
+    if (!input || !hasGuest) return
     walkIn.mutate(
       {
         branch_id: branchId,
         stay_type: stayType,
         check_out: input.check_out,
         hours: input.hours,
-        guest_id: guest.id,
+        ...(quick ? { quick_guest: { name: quickName.trim(), phone: quickPhone.trim() } } : { guest_id: guest?.id }),
         rooms: chosen.map((r) => ({ room_type_id: r.room_type_id, room_id: r.id, adults: 1, children: 0 })),
         payment: { payment_method_id: methodId || lookups.data?.payment_methods[0]?.id || 0, amount: pay, reference: reference || undefined },
       },
@@ -149,8 +157,26 @@ export function WalkInPage() {
           </Card>
 
           <Card className="flex flex-col gap-3">
-            <h2 className="text-sm font-semibold">{t('reservations.form.guest')}</h2>
-            <GuestPicker value={guest} onChange={setGuest} />
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold">{t('reservations.form.guest')}</h2>
+              {canQuick && (
+                <label className="flex min-h-touch cursor-pointer items-center gap-2 text-[13px]">
+                  <input type="checkbox" className="size-4 accent-accent" checked={quick} onChange={(e) => setQuick(e.target.checked)} />
+                  {t('desk.quick.toggle')}
+                </label>
+              )}
+            </div>
+            {quick ? (
+              <div className="flex flex-col gap-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label={t('desk.quick.name')} autoComplete="off" value={quickName} onChange={(e) => setQuickName(e.target.value)} error={error?.field('quick_guest.name')} />
+                  <Field label={t('guests.phone')} type="tel" inputMode="tel" value={quickPhone} onChange={(e) => setQuickPhone(e.target.value)} error={error?.field('quick_guest.phone')} />
+                </div>
+                <p className="text-xs text-muted">{t('desk.quick.help')}</p>
+              </div>
+            ) : (
+              <GuestPicker value={guest} onChange={setGuest} />
+            )}
           </Card>
         </div>
 
@@ -174,8 +200,8 @@ export function WalkInPage() {
             </div>
           )}
           {error && !error.field('payment.amount') && <Alert>{Object.values(error.errors)[0]?.[0] ?? error.message}</Alert>}
-          {!guest && chosen.length > 0 && <p className="text-xs text-warn-text">{t('reservations.form.needGuest')}</p>}
-          <Button size="lg" disabled={!input || !guest || !q || walkIn.isPending} onClick={submit}>
+          {!hasGuest && chosen.length > 0 && <p className="text-xs text-warn-text">{quick ? t('desk.quick.needNamePhone') : t('reservations.form.needGuest')}</p>}
+          <Button size="lg" disabled={!input || !hasGuest || !q || walkIn.isPending} onClick={submit}>
             {t('desk.takePaymentCheckIn')}
           </Button>
         </Card>

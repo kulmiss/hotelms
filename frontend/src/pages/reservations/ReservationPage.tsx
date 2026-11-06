@@ -103,6 +103,11 @@ export function ReservationPage() {
                 {r.guest.full_name}
               </Link>
               <span className="text-xs text-muted">{r.guest.phone}</span>
+              {r.guest.details_missing && (
+                <Link to={`/guests/${r.guest.id}`} className="w-fit">
+                  <Badge tone="warn">{t('guests.detailsMissing')}</Badge>
+                </Link>
+              )}
             </Info>
             <Info label={t('reservations.stay')}>
               <StayText checkIn={r.check_in_at} checkOut={r.check_out_at} stayType={r.stay_type} />

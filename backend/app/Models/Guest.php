@@ -19,7 +19,7 @@ class Guest extends Model
 
     public const ID_TYPES = ['national_id', 'passport', 'kebele_id', 'driving_licence'];
 
-    protected $appends = ['full_name'];
+    protected $appends = ['full_name', 'details_missing'];
 
     protected function casts(): array
     {
@@ -85,6 +85,22 @@ class Guest extends Model
     public function reservations(): HasMany
     {
         return $this->hasMany(Reservation::class);
+    }
+
+    /** A guest checked in quickly (name and phone only): the ID or nationality is still to be filled in. */
+    public function getDetailsMissingAttribute(): ?bool
+    {
+        // Unknown when the guest was loaded without these columns (e.g. only the name).
+        if (! array_key_exists('id_number', $this->attributes) || ! array_key_exists('nationality', $this->attributes)) {
+            return null;
+        }
+
+        return blank($this->attributes['id_number']) || blank($this->attributes['nationality']);
+    }
+
+    public function scopeDetailsMissing(Builder $q): Builder
+    {
+        return $q->where(fn ($w) => $w->whereNull('id_number')->orWhere('id_number', '')->orWhereNull('nationality')->orWhere('nationality', ''));
     }
 
     /** Search by name, phone, email, or exact ID number. */

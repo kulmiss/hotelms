@@ -19,6 +19,7 @@ class GuestController extends Controller
         $guests = Guest::query()->with('guestType:id,name')
             ->search($request->input('q'))
             ->when($request->boolean('blacklisted'), fn ($q) => $q->where('is_blacklisted', true))
+            ->when($request->boolean('missing'), fn ($q) => $q->detailsMissing())
             ->withCount('reservations')
             ->orderByDesc('id')
             ->paginate(max(1, min(100, (int) $request->input('per_page', 25))))
