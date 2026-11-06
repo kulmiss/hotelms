@@ -333,6 +333,7 @@ function MailServerTab({ initial }: { initial: PlatformSettings }) {
   const [username, setUsername] = useState(initial.mail_username ?? '')
   const [password, setPassword] = useState(initial.mail_password ?? '')
   const [from, setFrom] = useState(initial.mail_from_address ?? '')
+  const [testTo, setTestTo] = useState('')
   const test = useTestEmail()
   const testError = test.error instanceof ApiError ? (test.error.field('mail_host') ?? test.error.message) : null
 
@@ -366,12 +367,15 @@ function MailServerTab({ initial }: { initial: PlatformSettings }) {
             <Field label={t('admin.settings.mailPassword')} type="password" value={password} autoComplete="new-password" hint={t('admin.settings.mailPasswordHint')} onChange={(e) => setPassword(e.target.value)} error={error?.field('mail_password')} />
           </div>
           <Field label={t('admin.settings.mailFrom')} type="email" value={from} placeholder="no-reply@yourdomain.com" hint={t('admin.settings.mailFromHint')} onChange={(e) => setFrom(e.target.value)} error={error?.field('mail_from_address')} />
-          <div className="flex flex-wrap items-center gap-3">
-            <Button type="button" variant="secondary" disabled={test.isPending} onClick={() => test.mutate()}>
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="min-w-56 flex-1">
+              <Field label={t('admin.settings.mailTestTo')} type="email" value={testTo} placeholder={me.data?.user.email} onChange={(e) => setTestTo(e.target.value)} />
+            </div>
+            <Button type="button" variant="secondary" disabled={test.isPending} onClick={() => test.mutate(testTo.trim())}>
               {test.isPending ? t('admin.settings.mailSending') : t('admin.settings.mailTest')}
             </Button>
-            <span className="text-xs text-muted">{t('admin.settings.mailTestHint')}</span>
           </div>
+          <span className="text-xs text-muted">{t('admin.settings.mailTestHint')}</span>
           {test.isSuccess && <Alert tone="ok">{test.data.message}</Alert>}
           {testError && <Alert>{testError}</Alert>}
         </>

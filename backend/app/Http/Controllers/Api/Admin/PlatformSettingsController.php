@@ -87,15 +87,16 @@ class PlatformSettingsController extends Controller
     public function testEmail(Request $request): JsonResponse
     {
         abort_unless($request->user()->platform_role === 'owner', 403, 'Only the Owner can test the mail server.');
+        $to = $request->validate(['to' => ['nullable', 'email:rfc', 'max:190']])['to'] ?? $request->user()->email;
         MailSettings::apply();
         try {
             app('mail.manager')->forgetMailers();
-            Mail::raw('This is a test email from '.PlatformSetting::read('platform_name').'. The mail server works.', fn ($m) => $m->to($request->user()->email)->subject('Test email'));
+            Mail::raw('This is a test email from '.PlatformSetting::read('platform_name').'. The mail server works.', fn ($m) => $m->to($to)->subject('Test email'));
         } catch (Throwable $e) {
             throw ValidationException::withMessages(['mail_host' => 'Sending failed: '.mb_substr($e->getMessage(), 0, 300)]);
         }
 
-        return response()->json(['message' => 'Sent to '.$request->user()->email.'.']);
+        return response()->json(['message' => 'Sent to '.$to.'. Check the inbox (and spam).']);
     }
 
     /** Upload or remove the logo shown in the sidebar, sign-in page and emails. */
