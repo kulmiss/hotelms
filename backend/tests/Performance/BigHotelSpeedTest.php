@@ -114,7 +114,7 @@ class BigHotelSpeedTest extends TestCase
         $uri = '/'.$route->uri();
         $from = now()->subDays($days)->toDateString();
         $to = now()->toDateString();
-        $q = "?from={$from}&to={$to}&date={$to}&month=".now()->format('Y-m')."&metric=room_nights&q=ab"
+        $q = "?from={$from}&to={$to}&date={$to}&month=".now()->format('Y-m').'&metric=room_nights&q=ab'
             ."&check_in={$to}&check_out=".now()->addDays(3)->toDateString().'&stay_type=nightly';
         // A month: only screens that take dates are measured again with a year.
         if ($days === 365 && ! preg_match('#reports|dashboard|calendar|payments|invoices|attendance|activity|cashier/sessions|smart#', $uri)) {
