@@ -22,6 +22,7 @@ return [
     'blacklist_warning' => ['group' => 'bookings', 'default' => true, 'to' => ['guests.blacklist'], 'urgent' => true],
     'vip_arrival' => ['group' => 'bookings', 'default' => true, 'to' => ['checkout.approve_balance'], 'options' => ['nights' => 7]],
     'cancellation_refund' => ['group' => 'bookings', 'default' => true, 'to' => ['approvals.decide']],
+    'guest_details_missing' => ['group' => 'bookings', 'default' => true, 'to' => ['frontdesk.check_in'], 'options' => ['hours' => 2]],
 
     // Front desk and money
     'shift_start_brief' => ['group' => 'money', 'default' => true, 'to' => ['assigned'], 'module' => 'shifts'],

@@ -74,6 +74,12 @@ class Reservation extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** @return BelongsTo<User, $this> */
+    public function checkedInBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'checked_in_by');
+    }
+
     public function isActive(): bool
     {
         return in_array($this->status, self::ACTIVE, true);

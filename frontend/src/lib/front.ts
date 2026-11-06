@@ -11,6 +11,8 @@ export type Guest = {
   first_name: string
   last_name: string | null
   full_name: string
+  /** ID number or nationality still to fill in (quick check-in); null when not known. */
+  details_missing?: boolean | null
   phone: string | null
   email: string | null
   nationality: string | null
@@ -150,8 +152,8 @@ function useInvalidate() {
   }
 }
 
-export const useGuests = (q: string, page = 1, enabled = true) =>
-  useQuery({ queryKey: ['guests', q, page], queryFn: () => api<Page<Guest>>(`/guests?${qs({ q, page })}`), placeholderData: keepPreviousData, enabled })
+export const useGuests = (q: string, page = 1, enabled = true, missing = false) =>
+  useQuery({ queryKey: ['guests', q, page, missing], queryFn: () => api<Page<Guest>>(`/guests?${qs({ q, page, missing: missing ? 1 : undefined })}`), placeholderData: keepPreviousData, enabled })
 
 export const useGuest = (id: number) =>
   useQuery({ queryKey: ['guests', 'one', id], queryFn: () => api<{ data: Guest; stays: (Omit<ReservationSummary, 'guest' | 'rooms' | 'source' | 'expires_at' | 'adults' | 'children' | 'deposit_required'> & { branch: string | null })[] }>(`/guests/${id}`), enabled: id > 0 })

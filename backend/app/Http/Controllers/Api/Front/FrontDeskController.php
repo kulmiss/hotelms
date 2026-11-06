@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Front;
 
 use App\Http\Controllers\Controller;
 use App\Http\Presenters\ReservationPresenter;
+use App\Models\Guest;
 use App\Models\Invoice;
 use App\Models\Reservation;
 use App\Models\ReservationRoom;
@@ -17,6 +18,8 @@ use App\Support\HotelClock;
 use App\Support\Money;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -164,7 +167,11 @@ class FrontDeskController extends Controller
             'stay_type' => ['required', Rule::in(Reservation::STAY_TYPES)],
             'check_out' => ['nullable', 'date', 'before:+3 years'],
             'hours' => ['nullable', 'integer', 'min:1', 'max:24'],
-            'guest_id' => ['required', 'integer'],
+            'guest_id' => ['required_without:quick_guest', 'nullable', 'integer'],
+            // Quick check-in: only a name and phone now, the rest later (the guest shows "Details missing").
+            'quick_guest' => ['nullable', 'array'],
+            'quick_guest.name' => ['required_with:quick_guest', 'string', 'min:2', 'max:120'],
+            'quick_guest.phone' => ['required_with:quick_guest', 'string', 'max:30', 'regex:/^[0-9+()\-\s]{6,30}$/'],
             'rooms' => ['required', 'array', 'min:1', 'max:10'],
             'rooms.*.room_type_id' => ['required', 'integer'],
             'rooms.*.room_id' => ['required', 'integer'],
@@ -174,9 +181,21 @@ class FrontDeskController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
             ...$this->paymentRules(),
         ]);
-        $reservation = $this->desk->walkIn($data, $request->user());
+        $user = $request->user();
+        if (! empty($data['quick_guest'])) {
+            abort_unless($user->hasPermission('frontdesk.quick_check_in') && $user->hasPermission('guests.create_edit'), 403, 'Your role cannot use quick check-in.');
+        }
+        $reservation = DB::transaction(function () use ($data, $user) {
+            if (! empty($data['quick_guest'])) {
+                $parts = preg_split('/\s+/', trim($data['quick_guest']['name']), 2);
+                $data['guest_id'] = Guest::create(['first_name' => mb_substr($parts[0], 0, 60), 'last_name' => isset($parts[1]) ? mb_substr($parts[1], 0, 60) : null, 'phone' => trim($data['quick_guest']['phone'])])->id;
+            }
+            unset($data['quick_guest']);
 
-        return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)], 201);
+            return $this->desk->walkIn($data, $user);
+        });
+
+        return response()->json(['data' => ReservationPresenter::detail($reservation, $user->hotel)], 201);
     }
 
     /** Free, clean rooms right now (for walk-ins), with today's price. */
@@ -185,9 +204,23 @@ class FrontDeskController extends Controller
         $branch = $this->branch($request);
         $hotel = $request->user()->hotel;
         $settings = app(HotelSettings::class)->group(HotelSettings::BOOKING_DEFAULTS);
+        $data = $request->validate([
+            'stay_type' => ['nullable', 'in:nightly,day_use,hourly'],
+            'check_out' => ['nullable', 'date_format:Y-m-d', 'before:+3 years'],
+            'hours' => ['nullable', 'integer', 'between:1,24'],
+        ]);
+        // Only rooms free for the whole stay: a clean room booked from tomorrow is not offered for three nights.
+        $zone = HotelClock::zone($hotel);
+        $until = match ($data['stay_type'] ?? 'nightly') {
+            'hourly' => now()->addHours((int) ($data['hours'] ?? 1))->addMinutes((int) $settings['hourly_cleaning_minutes']),
+            'day_use' => now($zone)->setTime(22, 0)->utc()->max(now()->addHour()),
+            default => isset($data['check_out'])
+                ? Carbon::parse($data['check_out'], $zone)->setTimeFromTimeString((string) ($branch->check_out_time ?: '12:00'))->utc()->max(now()->addHour())
+                : now()->addHour(),
+        };
 
         return response()->json([
-            'data' => $this->availability->freeRooms($branch->id, null, now(), now()->addHour())->where('status', 'available')
+            'data' => $this->availability->freeRooms($branch->id, null, now(), $until)->where('status', 'available')
                 ->load('roomType')->map(fn (Room $r) => [
                     'id' => $r->id, 'number' => $r->number, 'floor' => $r->floor, 'room_type_id' => $r->room_type_id, 'room_type' => $r->roomType?->name,
                     'nightly_price' => $r->roomType?->nightly_price, 'day_use_price' => $r->roomType?->day_use_price, 'hourly_price' => $r->roomType?->hourly_price,

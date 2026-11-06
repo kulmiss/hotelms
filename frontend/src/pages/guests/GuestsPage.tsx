@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { PlusIcon } from '@heroicons/react/20/solid'
 import { MagnifyingGlassIcon, UsersIcon } from '@heroicons/react/24/outline'
@@ -9,6 +9,7 @@ import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { Tabs } from '@/components/ui/Tabs'
 import { ApiError } from '@/lib/api'
 import { date, money } from '@/lib/format'
 import { localDate, STATUS_TONES, useBlacklist, useGuest, useGuests } from '@/lib/front'
@@ -22,7 +23,9 @@ export function GuestsPage() {
   const [q, setQ] = useState('')
   const [page, setPage] = useState(1)
   const search = useDebounced(q, 250)
-  const guests = useGuests(search, page)
+  const [params, setParams] = useSearchParams()
+  const missing = params.get('show') === 'missing'
+  const guests = useGuests(search, page, true, missing)
 
   return (
     <div className="flex flex-col gap-6">
@@ -38,6 +41,20 @@ export function GuestsPage() {
           )
         }
       />
+      <div className="max-w-sm">
+        <Tabs
+          label={t('nav.guests')}
+          active={missing ? 'missing' : 'all'}
+          onChange={(k) => {
+            setParams(k === 'missing' ? { show: 'missing' } : {})
+            setPage(1)
+          }}
+          items={[
+            { key: 'all', label: t('guests.filters.all') },
+            { key: 'missing', label: t('guests.filters.missing') },
+          ]}
+        />
+      </div>
       <div className="relative max-w-md">
         <MagnifyingGlassIcon aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-icon" />
         <input
@@ -70,6 +87,7 @@ export function GuestsPage() {
                   <Link to={`/guests/${g.id}`} className="flex min-h-touch items-center gap-2 font-medium">
                     {g.full_name}
                     {g.is_blacklisted && <Badge tone="danger">{t('guests.blacklisted')}</Badge>}
+                    {g.details_missing && <Badge tone="warn">{t('guests.detailsMissing')}</Badge>}
                   </Link>
                 </td>
                 <td className="px-4 py-1.5 text-muted">{g.phone ?? '—'}</td>
@@ -146,6 +164,7 @@ export function GuestPage() {
           )
         }
       />
+      {g.details_missing && <Alert tone="info">{t('guests.detailsMissingHelp')}</Alert>}
       <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
         <Card>{can('guests.create_edit') ? <GuestForm key={g.id} guest={g} onSaved={() => undefined} /> : renderReadOnly()}</Card>
         <div className="flex flex-col gap-4">

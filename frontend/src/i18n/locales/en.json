@@ -499,6 +499,7 @@
     "frontdesk.check_in": "Check guests in",
     "frontdesk.check_out": "Check guests out",
     "frontdesk.room_move": "Move room / extend stay",
+    "frontdesk.quick_check_in": "Quick check-in (name and phone now, the rest later)",
     "fees.waive": "Waive early check-in / late check-out fee",
     "checkout.approve_balance": "Allow check-out with unpaid balance",
     "reservations.view": "See calendar, list and details",
@@ -1071,6 +1072,9 @@
     "empty": "No guests yet. They are added when you book.",
     "noMatch": "No guest found.",
     "blacklisted": "Blacklisted",
+    "detailsMissing": "Details missing",
+    "detailsMissingHelp": "Checked in quickly: add the ID number and nationality, then save.",
+    "filters": { "all": "All guests", "missing": "Details missing" },
     "blacklistedBecause": "Blacklisted: {{reason}}",
     "duplicate": "A guest with the same phone or ID already exists: {{name}}. Check you didn't add them twice.",
     "stayHistory": "Stay history",
@@ -1246,7 +1250,15 @@
     "overdue": "Overdue",
     "pickRoom": "Clean, free rooms",
     "pickRoomFirst": "Pick a room to see the price.",
-    "noFreeRooms": "No clean room is free right now.",
+    "noFreeRooms": "No clean room is free for this stay.",
+    "quick": {
+      "toggle": "Quick check-in",
+      "name": "Guest name",
+      "help": "Only name and phone now. The guest is marked \"Details missing\" and you are reminded to add the ID later.",
+      "needNamePhone": "Type the guest's name and phone."
+    },
+    "walkInStartsNow": "A walk-in checks in now. Guest arriving on another day?",
+    "bookForLater": "Make a reservation",
     "depositRule": "Your hotel takes a deposit up front for walk-ins.",
     "fullRule": "Your hotel takes full payment up front for walk-ins.",
     "takePaymentCheckIn": "Take payment and check in",
@@ -1876,6 +1888,7 @@
         "blacklist_warning": "Blacklisted guest",
         "vip_arrival": "Long stay arrives",
         "cancellation_refund": "Refund after a cancellation",
+        "guest_details_missing": "Guest details missing",
         "shift_start_brief": "Start of shift brief",
         "checkout_balance_reminder": "Money owed before check-out",
         "outstanding_follow_up": "Follow up money owed",
@@ -2259,6 +2272,10 @@
       "cancellation_refund": {
         "name": "Refund after a cancellation",
         "what": "When a paid booking is cancelled, the refund waits in Approvals for a manager."
+      },
+      "guest_details_missing": {
+        "name": "Guest details missing",
+        "what": "Hours after a quick check-in, the person who checked the guest in is reminded to add the ID and nationality."
       },
       "shift_start_brief": {
         "name": "Start of shift brief",

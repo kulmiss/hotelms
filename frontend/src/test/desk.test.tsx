@@ -76,6 +76,51 @@ describe('front desk', () => {
   })
 })
 
+describe('quick check-in', () => {
+  it('checks a walk-in in with only name and phone', async () => {
+    const quote = {
+      stay_type: 'nightly', check_in_at: '2026-11-12T14:00:00+03:00', check_out_at: '2026-11-13T12:00:00+03:00', currency: 'ETB',
+      rooms: [{ room_type_id: 3, room_type: 'Standard', room_id: 2, room_number: '102', adults: 1, children: 0, total: '2000.00', lines: [] }],
+      subtotal: '2000.00', discount_percent: '0.00', discount_amount: '0.00', tax_total: '300.00', total: '2300.00', deposit_required: '690.00', policy_name: null,
+    }
+    const fetchMock = mockApi({
+      'GET /me': { body: makeMe({}, [...DESK, 'frontdesk.quick_check_in', 'guests.create_edit']) },
+      'GET /reservations/lookups': { body: { policies: [], payment_methods: [{ id: 1, name: 'Cash', type: 'cash' }], currencies: [] } },
+      'GET /front-desk/walk-in/rooms': { body: { data: [{ id: 2, number: '102', floor: '1', room_type_id: 3, room_type: 'Standard', nightly_price: '2000.00', day_use_price: null, hourly_price: null, max_capacity: 2, currency: 'ETB' }], walk_in_payment: 'full', now: '2026-11-12T16:00:00+03:00' } },
+      'POST /reservations/quote': { body: { data: quote } },
+      'POST /front-desk/walk-in': { status: 201, body: { data: { ...reservation, id: 12, status: 'checked_in' } } },
+    })
+    renderApp('/rooms/walk-in')
+
+    await userEvent.click(await screen.findByRole('button', { name: /102/ }))
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Quick check-in' }))
+    await userEvent.type(screen.getByLabelText('Guest name'), 'Almaz Desta')
+    await userEvent.type(screen.getByLabelText('Phone'), '0911000111')
+    const button = await screen.findByRole('button', { name: 'Take payment and check in' })
+    await waitFor(() => expect(button).toBeEnabled())
+    await userEvent.click(button)
+
+    await waitFor(() => {
+      const call = fetchMock.mock.calls.find(([url, init]) => String(url).endsWith('/front-desk/walk-in') && init?.method === 'POST')
+      const body = JSON.parse(String(call?.[1]?.body))
+      expect(body.quick_guest).toEqual({ name: 'Almaz Desta', phone: '0911000111' })
+      expect(body.guest_id).toBeUndefined()
+      expect(body.payment.amount).toBe('2300.00')
+    })
+  })
+
+  it('hides quick check-in without the permission', async () => {
+    mockApi({
+      'GET /me': { body: makeMe({}, [...DESK, 'guests.create_edit']) },
+      'GET /reservations/lookups': { body: { policies: [], payment_methods: [], currencies: [] } },
+      'GET /front-desk/walk-in/rooms': { body: { data: [], walk_in_payment: 'full', now: '2026-11-12T16:00:00+03:00' } },
+    })
+    renderApp('/rooms/walk-in')
+    expect(await screen.findByRole('heading', { name: 'Guest' })).toBeInTheDocument()
+    expect(screen.queryByRole('checkbox', { name: 'Quick check-in' })).not.toBeInTheDocument()
+  })
+})
+
 describe('billing', () => {
   it('adds an extra charge to a bill', async () => {
     const fetchMock = mockApi({

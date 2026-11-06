@@ -425,4 +425,55 @@ class FrontDeskTest extends TestCase
         $this->postJson("/api/v1/rooms/{$this->rooms['101']}/status", ['status' => 'dirty'])->assertNotFound();
         $this->assertSame(1, $this->inHotel(fn () => Invoice::count()));
     }
+
+    public function test_walk_in_offers_only_rooms_free_for_the_whole_stay(): void
+    {
+        // Room 101 is clean now but booked from tomorrow.
+        $this->actingAs($this->admin)->postJson('/api/v1/reservations', [
+            'branch_id' => $this->branch->id, 'stay_type' => 'nightly', 'check_in' => '2026-11-13', 'check_out' => '2026-11-15', 'guest_id' => $this->guest->id,
+            'rooms' => [['room_type_id' => $this->standard->id, 'room_id' => $this->rooms['101'], 'adults' => 1]],
+        ])->assertCreated();
+
+        $free = fn (string $qs) => collect($this->getJson("/api/v1/front-desk/walk-in/rooms?branch_id={$this->branch->id}&{$qs}")->assertOk()->json('data'))->pluck('number')->all();
+        $this->assertContains('101', $free('stay_type=nightly&check_out=2026-11-13')); // one night: leaves before the booking
+        $this->assertNotContains('101', $free('stay_type=nightly&check_out=2026-11-16')); // four nights: overlaps
+        $this->assertContains('102', $free('stay_type=nightly&check_out=2026-11-16'));
+    }
+
+    public function test_quick_check_in_with_name_and_phone_and_a_reminder_for_the_rest(): void
+    {
+        $this->at('2026-11-12 16:00');
+        $this->actingAs($this->receptionist);
+        $quick = fn (array $guest, string $room = '101') => $this->postJson('/api/v1/front-desk/walk-in', [
+            'branch_id' => $this->branch->id, 'stay_type' => 'nightly', 'check_out' => '2026-11-13', 'quick_guest' => $guest,
+            'rooms' => [['room_type_id' => $this->standard->id, 'room_id' => $this->rooms[$room]]],
+            'payment' => ['payment_method_id' => $this->cash, 'amount' => '2300'], // the hotel's payment rule still applies
+        ]);
+
+        $quick(['name' => 'Almaz'])->assertJsonValidationErrors('quick_guest.phone');
+        $res = $quick(['name' => 'Almaz Desta', 'phone' => '+251 911 000111'])->assertCreated()->assertJsonPath('data.status', 'checked_in');
+        $guest = $this->inHotel(fn () => Guest::findOrFail($res->json('data.guest.id')));
+        $this->assertSame(['Almaz', 'Desta', '+251 911 000111'], [$guest->first_name, $guest->last_name, $guest->phone]);
+        $this->assertTrue($guest->details_missing);
+
+        // Easy to find and finish later.
+        $this->getJson('/api/v1/guests?missing=1')->assertOk()->assertJsonCount(2, 'data'); // also the setup guest without an ID
+        $this->putJson("/api/v1/guests/{$guest->id}", ['first_name' => 'Almaz', 'last_name' => 'Desta', 'phone' => '+251 911 000111', 'id_type' => 'national_id', 'id_number' => 'ET1234567', 'nationality' => 'Ethiopian'])->assertOk();
+        $this->assertFalse($this->inHotel(fn () => Guest::findOrFail($guest->id))->details_missing);
+
+        // A reminder hours later goes to the person who checked the guest in, once, while details are missing.
+        $res2 = $quick(['name' => 'Kebede', 'phone' => '0911 222333'], '102')->assertCreated();
+        $this->at('2026-11-12 18:30');
+        $this->artisan('automations:run')->assertSuccessful();
+        $this->artisan('automations:run')->assertSuccessful();
+        $titles = DB::table('app_notifications')->where('user_id', $this->receptionist->id)->where('source', 'guest_details_missing')->pluck('title')->all();
+        $this->assertSame(['Finish the guest details for Kebede'], $titles, 'Reservation '.$res2->json('data.id'));
+
+        // Without the permission: refused, and nothing is saved.
+        DB::table('role_permissions')->where('role_id', $this->receptionist->role_id)->where('permission', 'frontdesk.quick_check_in')->delete();
+        $this->receptionist->forgetPermissionCache();
+        $before = $this->inHotel(fn () => Guest::count());
+        $quick(['name' => 'Saba', 'phone' => '0911 444555'], '201')->assertForbidden();
+        $this->assertSame($before, $this->inHotel(fn () => Guest::count()));
+    }
 }

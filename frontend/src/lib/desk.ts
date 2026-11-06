@@ -41,8 +41,25 @@ export const useBoard = (branchId: number | null) =>
 export const useToday = (branchId: number | null) =>
   useQuery({ queryKey: ['desk', 'today', branchId], queryFn: () => api<{ arrivals: TodayRow[]; departures: TodayRow[]; in_house: TodayRow[] }>(`/front-desk/today${branchQs(branchId)}`), refetchInterval: LIVE, placeholderData: keepPreviousData })
 
-export const useFreeRooms = (branchId: number | null, enabled = true) =>
-  useQuery({ queryKey: ['desk', 'free', branchId], queryFn: () => api<{ data: FreeRoom[]; walk_in_payment: 'full' | 'deposit'; now: string }>(`/front-desk/walk-in/rooms${branchQs(branchId)}`), enabled })
+/** Clean rooms free from now for the whole stay (check-out date for nights, hours for hourly). */
+export type FreeFor = { stay_type: 'nightly' | 'day_use' | 'hourly'; check_out?: string; hours?: number }
+
+export const useFreeRooms = (branchId: number | null, enabled = true, stay?: FreeFor) => {
+  const params = new URLSearchParams()
+  if (branchId) params.set('branch_id', String(branchId))
+  if (stay) {
+    params.set('stay_type', stay.stay_type)
+    if (stay.stay_type === 'nightly' && stay.check_out) params.set('check_out', stay.check_out)
+    if (stay.stay_type === 'hourly' && stay.hours) params.set('hours', String(stay.hours))
+  }
+  const qs = params.toString()
+  return useQuery({
+    queryKey: ['desk', 'free', branchId, stay ?? null],
+    queryFn: () => api<{ data: FreeRoom[]; walk_in_payment: 'full' | 'deposit'; now: string }>(`/front-desk/walk-in/rooms${qs ? `?${qs}` : ''}`),
+    enabled,
+    placeholderData: keepPreviousData,
+  })
+}
 
 export const useCheckInInfo = (id: number, enabled: boolean) => useQuery({ queryKey: ['desk', 'check-in', id], queryFn: () => api<{ data: CheckInInfo }>(`/reservations/${id}/check-in`), enabled })
 export const useCheckOutInfo = (id: number, enabled: boolean) => useQuery({ queryKey: ['desk', 'check-out', id], queryFn: () => api<{ data: CheckOutInfo }>(`/reservations/${id}/check-out`), enabled })
@@ -78,7 +95,7 @@ export const useExtend = (id: number) => useDeskAction((v: { check_out?: string;
 export const useApproveBalance = (id: number) => useDeskAction(() => post<{ data: ReservationDetail }>(`/reservations/${id}/approve-balance`))
 export const useRoomStatus = () => useDeskAction((v: { id: number; status: string }) => post(`/rooms/${v.id}/status`, { status: v.status }))
 export const useWalkIn = () =>
-  useMoneyAction((v: { branch_id: number; stay_type: string; check_out?: string | null; hours?: number | null; guest_id: number; rooms: { room_type_id: number; room_id: number; adults: number; children: number }[]; discount_percent?: string; payment: PaymentFields }, h: Record<string, string>) =>
+  useMoneyAction((v: { branch_id: number; stay_type: string; check_out?: string | null; hours?: number | null; guest_id?: number | null; quick_guest?: { name: string; phone: string }; rooms: { room_type_id: number; room_id: number; adults: number; children: number }[]; discount_percent?: string; payment: PaymentFields }, h: Record<string, string>) =>
     post<{ data: ReservationDetail }>('/front-desk/walk-in', v, h),
   )
 
