@@ -136,7 +136,8 @@ describe('collapsible sidebar', () => {
     expect(localStorage.getItem('hms-sidebar-collapsed')).toBe('1')
     // Collapsed: icons only; each link still has its name for screen readers and a tooltip.
     expect(screen.getByRole('link', { name: 'Hotels' })).toBeInTheDocument()
-    expect(screen.getAllByRole('tooltip').map((el) => el.textContent)).toContain('Hotels')
+    await userEvent.hover(screen.getByRole('link', { name: 'Hotels' }))
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Hotels')
 
     await userEvent.click(screen.getByRole('button', { name: 'Expand menu' }))
     expect(screen.getByRole('complementary')).toHaveAttribute('data-collapsed', 'false')

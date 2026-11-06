@@ -1,4 +1,5 @@
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { NavLink } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/react/24/outline'
@@ -17,8 +18,15 @@ type EntryProps = { item: NavItem; collapsed: boolean; onNavigate?: () => void }
 function NavEntry({ item, collapsed, onNavigate }: EntryProps) {
   const { t } = useTranslation()
   const label = t(`nav.${item.key}`)
+  // Collapsed: the name shows as a tooltip, placed on the page (not inside the scrolling list, which would cut it off).
+  const [tip, setTip] = useState<{ top: number; left: number } | null>(null)
+  const show = (e: { currentTarget: HTMLElement }) => {
+    if (!collapsed) return
+    const r = e.currentTarget.getBoundingClientRect()
+    setTip({ top: r.top + r.height / 2, left: r.right + 12 })
+  }
   return (
-    <li className="group/item relative">
+    <li className="relative" onPointerEnter={show} onPointerLeave={() => setTip(null)} onFocus={show} onBlur={() => setTip(null)}>
       <NavLink
         to={item.path}
         end={item.path === '/' || item.path === '/admin'}
@@ -46,14 +54,18 @@ function NavEntry({ item, collapsed, onNavigate }: EntryProps) {
           )
         }}
       </NavLink>
-      {collapsed && (
-        <span
-          role="tooltip"
-          className="pointer-events-none absolute top-1/2 left-full z-50 ml-3 hidden -translate-y-1/2 rounded-lg bg-text px-2.5 py-1.5 text-xs font-medium whitespace-nowrap text-bg opacity-0 shadow-lg transition-opacity duration-100 group-hover/item:opacity-100 group-focus-within/item:opacity-100 lg:block"
-        >
-          {label}
-        </span>
-      )}
+      {collapsed &&
+        tip &&
+        createPortal(
+          <span
+            role="tooltip"
+            style={{ top: tip.top, left: tip.left }}
+            className="pointer-events-none fixed z-50 hidden -translate-y-1/2 rounded-lg bg-text px-2.5 py-1.5 text-xs font-medium whitespace-nowrap text-bg shadow-lg animate-page-in lg:block"
+          >
+            {label}
+          </span>,
+          document.body,
+        )}
     </li>
   )
 }
@@ -128,7 +140,7 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapsed }: Sidebar
           </button>
         </header>
 
-        <nav aria-label={t('nav.main')} className="flex flex-1 flex-col overflow-x-visible overflow-y-auto px-3 py-4 lg:overflow-y-visible">
+        <nav aria-label={t('nav.main')} className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain px-3 py-4 [scrollbar-width:thin]">
           <ul className="flex flex-col gap-y-5">
             {groups.map((group, gi) => (
               <Fragment key={group.name ?? `g${gi}`}>
