@@ -8,7 +8,9 @@ export function useCountUp(target: number | undefined, duration = 600): number |
   useEffect(() => {
     if (target === undefined) return
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    if (reduce || typeof requestAnimationFrame === 'undefined') {
+    // No animation when it would not be seen (a hidden tab pauses animation frames).
+    if (reduce || typeof requestAnimationFrame === 'undefined' || document.hidden) {
+      from.current = target
       setValue(target)
       return
     }

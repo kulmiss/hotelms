@@ -74,7 +74,11 @@ export function useStopImpersonation() {
   const qc = useQueryClient()
   return useMutation({ meta: SILENT,
     mutationFn: () => post('/impersonation/stop'),
-    onSuccess: () => qc.clear(),
+    // Drop the hotel's data, then wait for "who am I" again before moving on (else /admin sees the hotel user).
+    onSuccess: async () => {
+      qc.removeQueries({ predicate: (q) => q.queryKey[0] !== ME_KEY[0] })
+      await qc.refetchQueries({ queryKey: ME_KEY })
+    },
   })
 }
 
