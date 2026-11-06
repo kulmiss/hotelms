@@ -7,6 +7,7 @@ use App\Models\Hotel;
 use App\Models\User;
 use App\Support\Money;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -103,7 +104,7 @@ class DemoTeam
      * One cashier shift per person per day for the last two weeks, holding the cash they took that day.
      * Earlier days are closed and approved (one came up a little short); today's shift is still open.
      *
-     * @param  \Illuminate\Support\Collection<string, User>  $people
+     * @param  Collection<string, User>  $people
      */
     private function cashierShifts($people, Carbon $today, string $now): void
     {
