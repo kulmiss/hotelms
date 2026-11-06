@@ -9,6 +9,7 @@ use App\Models\InvoiceItem;
 use App\Models\Payment;
 use App\Models\Reservation;
 use App\Models\Room;
+use App\Services\Modules\Housekeeping;
 use App\Models\UserDevice;
 use App\Services\Automation\AutomationEvents;
 use App\Services\Automation\Automations;
@@ -80,6 +81,16 @@ class AppServiceProvider extends ServiceProvider
         InvoiceItem::updated($after('invoiceItemUpdated'));
         CashierSession::updated($after('cashierUpdated'));
         Room::updated($after('roomUpdated'));
+        // A room that becomes dirty always gets a cleaning task (housekeepers see it in their list).
+        Room::updated(function (Room $room) {
+            if ($room->wasChanged('status') && $room->status === 'dirty') {
+                app(Housekeeping::class)->taskForDirtyRoom($room);
+            }
+            // Marked clean by hand (e.g. at reception): its open cleaning task is finished, not left behind.
+            if ($room->wasChanged('status') && $room->status === 'available') {
+                app(Housekeeping::class)->closeCleaningTasks($room);
+            }
+        });
         HousekeepingTask::created($after('taskCreated'));
         UserDevice::created($after('deviceCreated'));
     }

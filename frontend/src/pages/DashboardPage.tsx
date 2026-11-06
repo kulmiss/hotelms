@@ -27,6 +27,7 @@ import { date, money } from '@/lib/format'
 import { useCan } from '@/lib/hotel'
 import { useDashboard } from '@/lib/reports'
 import { mainNav, NAV_MODULES } from '@/app/navigation'
+import { useTasks } from '@/lib/modules'
 
 /** Today at a glance (screen-list.md 2.1). Money figures only for roles that may see revenue. */
 export function DashboardPage() {
@@ -162,6 +163,7 @@ function QuickLinks() {
   if (!items.length) return null
   return (
     <div className="flex flex-col gap-3">
+      {can('housekeeping.own_tasks') && modules.includes('housekeeping') && <RoomsToClean />}
       <h2 className="text-sm font-semibold">{t('dashboard.yourWork')}</h2>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (
@@ -172,6 +174,21 @@ function QuickLinks() {
         ))}
       </div>
     </div>
+  )
+}
+
+/** For housekeepers: how many rooms are waiting, the first few, and a big button to the list. */
+function RoomsToClean() {
+  const { t } = useTranslation()
+  const tasks = useTasks(true)
+  const list = tasks.data?.data ?? []
+  if (!tasks.data) return null
+  return (
+    <Link to="/housekeeping" className="panel flex flex-col gap-1 p-5 transition duration-150 hover:ring-accent/40">
+      <span className="text-[13px] font-medium text-muted">{t('dashboard.roomsToClean')}</span>
+      <span className="text-3xl font-semibold tabular-nums">{list.length}</span>
+      <span className="text-xs text-muted">{list.length ? list.slice(0, 6).map((x) => x.room?.number).filter(Boolean).join(', ') : t('housekeeping.allDone')}</span>
+    </Link>
   )
 }
 

@@ -139,6 +139,7 @@
     "intro": "This is the Phase 0 foundation. Hotel features arrive phase by phase.",
     "apiStatus": "API status",
     "yourWork": "Your work",
+    "roomsToClean": "Rooms to clean",
     "checking": "Checking…",
     "connected": "Connected",
     "degraded": "Database not reachable",
@@ -2535,6 +2536,10 @@
     "waiting_one": "{{count}} booking still needs a room",
     "waiting_other": "{{count}} bookings still need a room",
     "thatNight": "That night",
+    "nights_one": "{{count}} night",
+    "nights_other": "{{count}} nights",
+    "hours_one": "{{count}} hour",
+    "hours_other": "{{count}} hours",
     "leavingCol": "Leaving that day",
     "states": { "staying": "Staying", "arriving": "Arriving", "free": "Free" }
   },

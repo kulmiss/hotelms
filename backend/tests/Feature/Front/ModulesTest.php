@@ -135,6 +135,18 @@ class ModulesTest extends TestCase
             ->assertJsonPath('data.status', 'done')->assertJsonPath('data.room.status', 'available');
     }
 
+    public function test_a_room_marked_dirty_gets_one_cleaning_task_for_housekeeping(): void
+    {
+        $room = $this->inHotel(fn () => Room::where('number', '102')->first());
+        $this->actingAs($this->receptionist)->postJson("/api/v1/rooms/{$room->id}/status", ['status' => 'dirty'])->assertOk();
+        $this->postJson("/api/v1/rooms/{$room->id}/status", ['status' => 'available'])->assertOk();
+        $this->postJson("/api/v1/rooms/{$room->id}/status", ['status' => 'dirty'])->assertOk();
+
+        $tasks = $this->actingAs($this->housekeeper)->getJson('/api/v1/housekeeping/tasks')->assertOk()->json('data');
+        $this->assertCount(1, $tasks); // never two open tasks for one room
+        $this->assertSame('102', $tasks[0]['room']['number']);
+    }
+
     public function test_tasks_given_to_someone_else_cannot_be_done(): void
     {
         $room = $this->inHotel(fn () => Room::where('number', '102')->first());

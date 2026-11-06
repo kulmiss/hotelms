@@ -213,6 +213,12 @@ describe('room calendars', () => {
     await userEvent.click(header!)
     expect(await screen.findByText('1 of 2 rooms free that night')).toBeInTheDocument()
     expect(screen.getByText('Arriving')).toBeInTheDocument()
+
+    // Hovering a booking shows the dates and the number of nights.
+    await userEvent.hover(screen.getByRole('link', { name: /^Abebe Kebede, / }))
+    const tip = await screen.findByRole('tooltip')
+    expect(tip).toHaveTextContent('2 nights')
+    expect(tip).toHaveTextContent('BL-26-00001')
   })
 })
 
