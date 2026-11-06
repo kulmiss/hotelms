@@ -22,7 +22,7 @@ export function Conversation({ messages, side }: { messages: SupportMessage[]; s
           <li key={m.id} className={cn('flex flex-col gap-1', ours ? 'items-end' : 'items-start')}>
             <span className="text-xs text-muted">
               {author} · {when(m.created_at)}
-              {m.kind === 'note' && ` · ${t('support.internalNote')}`}
+              {m.kind === 'note' && ` · ${t('inbox.internalNote')}`}
             </span>
             <p
               className={cn(
@@ -42,5 +42,5 @@ export function Conversation({ messages, side }: { messages: SupportMessage[]; s
 export function SupportStatusBadge({ status }: { status: 'open' | 'waiting' | 'solved' }) {
   const { t } = useTranslation()
   const tone = status === 'solved' ? 'bg-ok-bg text-ok-text ring-ok-text/20' : status === 'waiting' ? 'bg-warn-bg text-warn-text ring-warn-text/20' : 'bg-info-bg text-info-text ring-info-text/20'
-  return <span className={cn('inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset', tone)}>{t(`support.status.${status}`)}</span>
+  return <span className={cn('inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset', tone)}>{t(`inbox.status.${status}`)}</span>
 }

@@ -138,7 +138,7 @@ export function StaffAndDevices({ hotelId }: { hotelId: number }) {
               </span>
               <span className="flex shrink-0 gap-1">
                 {s.status !== 'active' && <Badge tone="grey">{t('common.inactive')}</Badge>}
-                {s.two_factor && <Badge tone="ok">{t('team.twoStep')}</Badge>}
+                {s.two_factor && <Badge tone="ok">{t('platformTeam.twoStep')}</Badge>}
               </span>
             </li>
           ))}

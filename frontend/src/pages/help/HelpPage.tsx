@@ -113,7 +113,7 @@ function RequestView({ id }: { id: number }) {
     <Card className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="min-w-0 flex-1 font-semibold">{r.subject}</h2>
-        {r.priority === 'urgent' && <Badge tone="danger">{t('support.urgent')}</Badge>}
+        {r.priority === 'urgent' && <Badge tone="danger">{t('inbox.urgent')}</Badge>}
         <SupportStatusBadge status={r.status} />
       </div>
       <Conversation messages={r.messages} side="hotel" />

@@ -414,41 +414,61 @@
     "passwordBody": "Change the password you use to sign in."
   },
   "team": {
-    "subtitle": "People who run HotelMS and what each role may do.",
-    "add": "Add member",
-    "member": "Member",
-    "role": "Role",
-    "roleOf": "Role of {{name}}",
-    "twoStep": "Two-step sign-in",
-    "lastLogin": "Last sign-in",
-    "invited": "Not signed in yet",
-    "disable": "Turn off",
-    "enable": "Turn on",
-    "disableConfirm": "Turn off {{name}}? They are signed out at once.",
-    "added": "{{name}} was added. Give them this password; they choose their own at first sign-in.",
-    "name": "Name",
-    "email": "Email",
-    "phone": "Phone (optional)",
-    "grid": "What each role may do",
-    "gridHint": "The owner always has everything.",
-    "permission": "Permission",
-    "roles": {
-      "owner": "Owner",
-      "support": "Support",
-      "sales": "Sales",
-      "finance": "Finance",
-      "tech": "Tech"
+    "staff": {
+      "subtitle": "Everyone who can sign in to your hotel.",
+      "add": "Add staff",
+      "name": "Name",
+      "role": "Role",
+      "branches": "Branches",
+      "status": "Status",
+      "lastSignIn": "Last sign-in",
+      "allBranches": "All branches",
+      "empty": "No staff yet. Add your first team member.",
+      "statuses": {
+        "active": "Active",
+        "disabled": "Disabled"
+      },
+      "details": "Details",
+      "email": "Email (used to sign in)",
+      "ownRole": "You can't change your own role. Ask another Hotel Admin.",
+      "branchesHelp": "They can only see and work in these branches. Hotel Admins always see every branch.",
+      "create": "Add staff member",
+      "created": "{{name}} can now sign in",
+      "createdBody": "Share these sign-in details. They must choose their own password the first time they sign in.",
+      "access": "Access",
+      "disable": "Disable account",
+      "enable": "Enable account",
+      "disableHelp": "A disabled account is signed out everywhere and cannot sign in until enabled again."
     },
-    "permissions": {
-      "hotels_view": "See hotels and their data",
-      "hotels_create": "Create hotels and start trials",
-      "hotels_impersonate": "Log in as hotel",
-      "users_reset_password": "Reset hotel passwords",
-      "billing_manage": "Plans, payments, suspend hotels",
-      "switches_manage": "Switches and emergency",
-      "support_answer": "Answer support requests",
-      "system_view": "System health and activity log",
-      "team_manage": "Manage the HotelMS team"
+    "roles": {
+      "subtitle": "What each role is allowed to do. Staff get the permissions of their role.",
+      "new": "New role",
+      "locked": "Locked",
+      "default": "Default",
+      "staffCount": "Staff",
+      "permissions": "Permissions",
+      "maxDiscount": "Max discount",
+      "maxDiscountLong": "Max discount (%)",
+      "maxDiscountHint": "The biggest discount this role can give on a bill.",
+      "name": "Role name",
+      "permissionCount_one": "{{count}} permission",
+      "permissionCount_other": "{{count}} permissions",
+      "lockedHelp": "The Hotel Admin role always has every permission and cannot be changed.",
+      "ownRoleHelp": "This is your own role, so you can't change it. Ask another Hotel Admin.",
+      "all": "Select all",
+      "none": "Clear all",
+      "delete": "Delete role",
+      "create": "Create role"
+    },
+    "activity": {
+      "subtitle": "Every change in your hotel: who did it and when.",
+      "search": "Search the log",
+      "when": "When",
+      "who": "Who",
+      "what": "What happened",
+      "system": "HotelMS",
+      "empty": "Nothing recorded yet.",
+      "page": "Page {{page}} of {{of}}"
     }
   },
   "permissionGroups": {
@@ -540,33 +560,17 @@
     "reports.accounting_export": "Accounting export"
   },
   "support": {
-    "subtitle": "Questions from hotels: in the app, on Telegram and by phone.",
-    "logCall": "Log a call",
-    "mine": "Assigned to me",
-    "empty": "Nothing here.",
-    "urgent": "Urgent",
-    "normal": "Normal",
-    "priority": "Priority",
-    "statusLabel": "Status",
-    "assignee": "Assigned to",
-    "nobody": "Nobody",
-    "answer": "Your answer",
-    "reply": "Reply",
-    "replySolve": "Reply and mark solved",
-    "addNote": "Add internal note",
-    "internalNote": "internal note",
-    "channel": "How they contacted us",
-    "whatTheySaid": "What they said",
-    "status": {
-      "open": "Open",
-      "waiting": "Waiting for hotel",
-      "solved": "Solved"
-    },
-    "channels": {
-      "app": "App",
-      "telegram": "Telegram",
-      "phone": "Phone"
-    }
+    "banner": "You are signed in as {{name}} at {{hotel}} for support ({{by}}).",
+    "reason": "Reason: {{reason}}",
+    "return": "Return to admin",
+    "loginAs": "Log in as hotel",
+    "loginAsTitle": "Log in to {{hotel}}",
+    "loginAsHelp": "You'll see the hotel exactly as this user does. No password is needed. The visit, with your reason, is recorded in your log and in the hotel's own activity log.",
+    "reason_label": "Reason",
+    "reasonPlaceholder": "e.g. Help with setting up rooms",
+    "as": "Sign in as",
+    "hotelAdmin": "The Hotel Admin",
+    "enter": "Log in to hotel"
   },
   "demo": {
     "badge": "Demo",
@@ -1989,6 +1993,73 @@
     "what": {
       "live_data": "Live data",
       "log_in_as": "Logged in as hotel"
+    }
+  },
+  "inbox": {
+    "subtitle": "Questions from hotels: in the app, on Telegram and by phone.",
+    "logCall": "Log a call",
+    "mine": "Assigned to me",
+    "empty": "Nothing here.",
+    "urgent": "Urgent",
+    "normal": "Normal",
+    "priority": "Priority",
+    "statusLabel": "Status",
+    "assignee": "Assigned to",
+    "nobody": "Nobody",
+    "answer": "Your answer",
+    "reply": "Reply",
+    "replySolve": "Reply and mark solved",
+    "addNote": "Add internal note",
+    "internalNote": "internal note",
+    "channel": "How they contacted us",
+    "whatTheySaid": "What they said",
+    "status": {
+      "open": "Open",
+      "waiting": "Waiting for hotel",
+      "solved": "Solved"
+    },
+    "channels": {
+      "app": "App",
+      "telegram": "Telegram",
+      "phone": "Phone"
+    }
+  },
+  "platformTeam": {
+    "subtitle": "People who run HotelMS and what each role may do.",
+    "add": "Add member",
+    "member": "Member",
+    "role": "Role",
+    "roleOf": "Role of {{name}}",
+    "twoStep": "Two-step sign-in",
+    "lastLogin": "Last sign-in",
+    "invited": "Not signed in yet",
+    "disable": "Turn off",
+    "enable": "Turn on",
+    "disableConfirm": "Turn off {{name}}? They are signed out at once.",
+    "added": "{{name}} was added. Give them this password; they choose their own at first sign-in.",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone (optional)",
+    "grid": "What each role may do",
+    "gridHint": "The owner always has everything.",
+    "permission": "Permission",
+    "roles": {
+      "owner": "Owner",
+      "support": "Support",
+      "sales": "Sales",
+      "finance": "Finance",
+      "tech": "Tech"
+    },
+    "permissions": {
+      "hotels_view": "See hotels and their data",
+      "hotels_create": "Create hotels and start trials",
+      "hotels_impersonate": "Log in as hotel",
+      "users_reset_password": "Reset hotel passwords",
+      "billing_manage": "Plans, payments, suspend hotels",
+      "switches_manage": "Switches and emergency",
+      "support_answer": "Answer support requests",
+      "system_view": "System health and activity log",
+      "team_manage": "Manage the HotelMS team"
     }
   }
 }

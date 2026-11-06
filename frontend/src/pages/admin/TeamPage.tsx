@@ -32,11 +32,11 @@ export function TeamPage() {
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
       <PageHeader
         title={t('nav.team')}
-        subtitle={t('team.subtitle')}
+        subtitle={t('platformTeam.subtitle')}
         actions={
           <Button onClick={() => setAdding((a) => !a)}>
             <PlusIcon aria-hidden className="size-4" />
-            {t('team.add')}
+            {t('platformTeam.add')}
           </Button>
         }
       />
@@ -47,10 +47,10 @@ export function TeamPage() {
         <table className="w-full min-w-[720px] text-left text-[13px]">
           <thead className="bg-sunken">
             <tr>
-              <th className="px-5 py-3 font-medium">{t('team.member')}</th>
-              <th className="px-5 py-3 font-medium">{t('team.role')}</th>
-              <th className="px-5 py-3 font-medium">{t('team.twoStep')}</th>
-              <th className="px-5 py-3 font-medium">{t('team.lastLogin')}</th>
+              <th className="px-5 py-3 font-medium">{t('platformTeam.member')}</th>
+              <th className="px-5 py-3 font-medium">{t('platformTeam.role')}</th>
+              <th className="px-5 py-3 font-medium">{t('platformTeam.twoStep')}</th>
+              <th className="px-5 py-3 font-medium">{t('platformTeam.lastLogin')}</th>
               <th className="px-5 py-3 font-medium">
                 <span className="sr-only">{t('common.actions')}</span>
               </th>
@@ -67,7 +67,7 @@ export function TeamPage() {
                   </td>
                   <td className="px-5 py-3">
                     <select
-                      aria-label={t('team.roleOf', { name: m.name })}
+                      aria-label={t('platformTeam.roleOf', { name: m.name })}
                       value={m.role}
                       disabled={self || update.isPending}
                       onChange={(e) => update.mutate({ id: m.id, role: e.target.value })}
@@ -75,22 +75,22 @@ export function TeamPage() {
                     >
                       {roles.map((r) => (
                         <option key={r} value={r}>
-                          {t(`team.roles.${r}`)}
+                          {t(`platformTeam.roles.${r}`)}
                         </option>
                       ))}
                     </select>
                   </td>
                   <td className="px-5 py-3">{m.two_factor ? <Badge tone="ok">{t('common.on')}</Badge> : <Badge tone="warn">{t('common.off')}</Badge>}</td>
-                  <td className="px-5 py-3 text-muted">{m.invited ? t('team.invited') : date(m.last_login_at)}</td>
+                  <td className="px-5 py-3 text-muted">{m.invited ? t('platformTeam.invited') : date(m.last_login_at)}</td>
                   <td className="px-5 py-3 text-right">
                     {!self &&
                       (m.status === 'active' ? (
-                        <Button variant="ghost" disabled={update.isPending} onClick={() => window.confirm(t('team.disableConfirm', { name: m.name })) && update.mutate({ id: m.id, status: 'disabled' })}>
-                          {t('team.disable')}
+                        <Button variant="ghost" disabled={update.isPending} onClick={() => window.confirm(t('platformTeam.disableConfirm', { name: m.name })) && update.mutate({ id: m.id, status: 'disabled' })}>
+                          {t('platformTeam.disable')}
                         </Button>
                       ) : (
                         <Button variant="secondary" disabled={update.isPending} onClick={() => update.mutate({ id: m.id, status: 'active' })}>
-                          {t('team.enable')}
+                          {t('platformTeam.enable')}
                         </Button>
                       ))}
                   </td>
@@ -118,7 +118,7 @@ function AddMember({ roles, onDone }: { roles: string[]; onDone: () => void }) {
   if (password)
     return (
       <Card className="flex flex-col gap-3">
-        <p className="text-[13px]">{t('team.added', { name: f.name })}</p>
+        <p className="text-[13px]">{t('platformTeam.added', { name: f.name })}</p>
         <TempPassword password={password} emailSent={false} email={f.email} />
         <div>
           <Button variant="secondary" onClick={onDone}>
@@ -135,19 +135,19 @@ function AddMember({ roles, onDone }: { roles: string[]; onDone: () => void }) {
             <Alert>{errorOf(add.error)}</Alert>
           </div>
         )}
-        <Field label={t('team.name')} value={f.name} required maxLength={100} onChange={(e) => setF({ ...f, name: e.target.value })} />
-        <Field label={t('team.email')} type="email" value={f.email} required onChange={(e) => setF({ ...f, email: e.target.value })} />
-        <Field label={t('team.phone')} type="tel" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />
-        <Select label={t('team.role')} value={f.role} onChange={(e) => setF({ ...f, role: e.target.value })}>
+        <Field label={t('platformTeam.name')} value={f.name} required maxLength={100} onChange={(e) => setF({ ...f, name: e.target.value })} />
+        <Field label={t('platformTeam.email')} type="email" value={f.email} required onChange={(e) => setF({ ...f, email: e.target.value })} />
+        <Field label={t('platformTeam.phone')} type="tel" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />
+        <Select label={t('platformTeam.role')} value={f.role} onChange={(e) => setF({ ...f, role: e.target.value })}>
           {roles.map((r) => (
             <option key={r} value={r}>
-              {t(`team.roles.${r}`)}
+              {t(`platformTeam.roles.${r}`)}
             </option>
           ))}
         </Select>
         <div className="sm:col-span-2 lg:col-span-4">
           <Button type="submit" disabled={add.isPending}>
-            {t('team.add')}
+            {t('platformTeam.add')}
           </Button>
         </div>
       </form>
@@ -166,24 +166,24 @@ function PermissionGrid({ roles, permissions }: { roles: string[]; permissions: 
   return (
     <Card className="flex flex-col gap-4">
       <div>
-        <h2 className="text-sm font-semibold">{t('team.grid')}</h2>
-        <p className="text-xs text-muted">{t('team.gridHint')}</p>
+        <h2 className="text-sm font-semibold">{t('platformTeam.grid')}</h2>
+        <p className="text-xs text-muted">{t('platformTeam.gridHint')}</p>
       </div>
       {save.error && <Alert>{errorOf(save.error)}</Alert>}
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] text-left text-[13px]">
           <thead>
             <tr className="border-b border-border">
-              <th className="py-2 pr-4 font-medium">{t('team.permission')}</th>
+              <th className="py-2 pr-4 font-medium">{t('platformTeam.permission')}</th>
               <th className="px-2 py-2 text-center font-medium">
                 <span className="inline-flex items-center gap-1">
                   <LockClosedIcon aria-hidden className="size-3.5 text-icon" />
-                  {t('team.roles.owner')}
+                  {t('platformTeam.roles.owner')}
                 </span>
               </th>
               {roles.map((r) => (
                 <th key={r} className="px-2 py-2 text-center font-medium">
-                  {t(`team.roles.${r}`)}
+                  {t(`platformTeam.roles.${r}`)}
                 </th>
               ))}
             </tr>
@@ -191,7 +191,7 @@ function PermissionGrid({ roles, permissions }: { roles: string[]; permissions: 
           <tbody>
             {Object.keys(grid).map((p) => (
               <tr key={p} className="border-b border-border last:border-0">
-                <td className="py-2 pr-4">{t(`team.permissions.${p.replace('.', '_')}`)}</td>
+                <td className="py-2 pr-4">{t(`platformTeam.permissions.${p.replace('.', '_')}`)}</td>
                 <td className="px-2 py-2 text-center">
                   <CheckIcon aria-label={t('common.on')} className="inline size-4 text-icon" />
                 </td>
@@ -199,7 +199,7 @@ function PermissionGrid({ roles, permissions }: { roles: string[]; permissions: 
                   <td key={r} className="px-2 py-2 text-center">
                     <input
                       type="checkbox"
-                      aria-label={`${t(`team.roles.${r}`)}: ${t(`team.permissions.${p.replace('.', '_')}`)}`}
+                      aria-label={`${t(`platformTeam.roles.${r}`)}: ${t(`platformTeam.permissions.${p.replace('.', '_')}`)}`}
                       checked={grid[p]?.includes(r) ?? false}
                       onChange={() => toggle(p, r)}
                       className="size-4 accent-accent"

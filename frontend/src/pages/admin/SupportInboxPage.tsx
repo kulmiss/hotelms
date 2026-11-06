@@ -33,11 +33,11 @@ export function SupportInboxPage() {
     <div className="mx-auto flex max-w-7xl flex-col gap-6">
       <PageHeader
         title={t('nav.support')}
-        subtitle={t('support.subtitle')}
+        subtitle={t('inbox.subtitle')}
         actions={
           <Button variant="secondary" onClick={() => setOpen('call')}>
             <PhoneIcon aria-hidden className="size-4 text-icon" />
-            {t('support.logCall')}
+            {t('inbox.logCall')}
           </Button>
         }
       />
@@ -46,14 +46,14 @@ export function SupportInboxPage() {
         active={status}
         onChange={(k) => setStatus(k as SupportStatus | 'mine')}
         items={[
-          ...(['open', 'waiting', 'solved'] as const).map((s) => ({ key: s, label: `${t(`support.status.${s}`)}${counts ? ` (${counts[s]})` : ''}` })),
-          { key: 'mine', label: t('support.mine') },
+          ...(['open', 'waiting', 'solved'] as const).map((s) => ({ key: s, label: `${t(`inbox.status.${s}`)}${counts ? ` (${counts[s]})` : ''}` })),
+          { key: 'mine', label: t('inbox.mine') },
         ]}
       />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <Card className="flex flex-col p-1.5">
           {inbox.isPending && <p className="p-3 text-[13px] text-muted">{t('common.loading')}</p>}
-          {!inbox.isPending && rows.length === 0 && <p className="p-3 text-[13px] text-muted">{t('support.empty')}</p>}
+          {!inbox.isPending && rows.length === 0 && <p className="p-3 text-[13px] text-muted">{t('inbox.empty')}</p>}
           <ul className="flex flex-col">
             {rows.map((r) => (
               <li key={r.id}>
@@ -65,10 +65,10 @@ export function SupportInboxPage() {
                 >
                   <span className="flex w-full items-center justify-between gap-2">
                     <span className="truncate text-[13px] font-medium">{r.subject}</span>
-                    {r.priority === 'urgent' && <Badge tone="danger">{t('support.urgent')}</Badge>}
+                    {r.priority === 'urgent' && <Badge tone="danger">{t('inbox.urgent')}</Badge>}
                   </span>
                   <span className="text-xs text-muted">
-                    {r.hotel?.name} · {t(`support.channels.${r.channel}`)} · {when(r.last_message_at)}
+                    {r.hotel?.name} · {t(`inbox.channels.${r.channel}`)} · {when(r.last_message_at)}
                     {r.assigned_to && ` · ${r.assigned_to.name}`}
                   </span>
                 </button>
@@ -117,19 +117,19 @@ function InboxRequest({ id }: { id: number }) {
         <SupportStatusBadge status={r.status} />
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
-        <Select label={t('support.statusLabel')} value={r.status} onChange={(e) => update.mutate({ status: e.target.value as SupportStatus })}>
+        <Select label={t('inbox.statusLabel')} value={r.status} onChange={(e) => update.mutate({ status: e.target.value as SupportStatus })}>
           {(['open', 'waiting', 'solved'] as const).map((s) => (
             <option key={s} value={s}>
-              {t(`support.status.${s}`)}
+              {t(`inbox.status.${s}`)}
             </option>
           ))}
         </Select>
-        <Select label={t('support.priority')} value={r.priority} onChange={(e) => update.mutate({ priority: e.target.value as 'normal' | 'urgent' })}>
-          <option value="normal">{t('support.normal')}</option>
-          <option value="urgent">{t('support.urgent')}</option>
+        <Select label={t('inbox.priority')} value={r.priority} onChange={(e) => update.mutate({ priority: e.target.value as 'normal' | 'urgent' })}>
+          <option value="normal">{t('inbox.normal')}</option>
+          <option value="urgent">{t('inbox.urgent')}</option>
         </Select>
-        <Select label={t('support.assignee')} value={r.assigned_to?.id ?? ''} onChange={(e) => update.mutate({ assigned_to: e.target.value ? Number(e.target.value) : null })}>
-          <option value="">{t('support.nobody')}</option>
+        <Select label={t('inbox.assignee')} value={r.assigned_to?.id ?? ''} onChange={(e) => update.mutate({ assigned_to: e.target.value ? Number(e.target.value) : null })}>
+          <option value="">{t('inbox.nobody')}</option>
           {r.team?.map((m) => (
             <option key={m.id} value={m.id}>
               {m.name}
@@ -141,16 +141,16 @@ function InboxRequest({ id }: { id: number }) {
       <Conversation messages={r.messages} side="hotelms" />
       <div className="flex flex-col gap-2">
         {send.error && <Alert>{errorOf(send.error)}</Alert>}
-        <TextArea label={t('support.answer')} value={body} onChange={setBody} />
+        <TextArea label={t('inbox.answer')} value={body} onChange={setBody} />
         <div className="flex flex-wrap gap-2">
           <Button disabled={send.isPending || !body.trim()} onClick={() => submit('reply')}>
-            {t('support.reply')}
+            {t('inbox.reply')}
           </Button>
           <Button variant="secondary" disabled={send.isPending || !body.trim()} onClick={() => submit('reply', true)}>
-            {t('support.replySolve')}
+            {t('inbox.replySolve')}
           </Button>
           <Button variant="ghost" disabled={send.isPending || !body.trim()} onClick={() => submit('note')}>
-            {t('support.addNote')}
+            {t('inbox.addNote')}
           </Button>
         </div>
       </div>
@@ -174,7 +174,7 @@ function LogCall({ onDone }: { onDone: (id: number) => void }) {
   return (
     <Card>
       <form onSubmit={submit} className="flex flex-col gap-4">
-        <h2 className="font-semibold">{t('support.logCall')}</h2>
+        <h2 className="font-semibold">{t('inbox.logCall')}</h2>
         {log.error && <Alert>{errorOf(log.error)}</Alert>}
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label={t('switches.findHotel')} type="search" value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -186,13 +186,13 @@ function LogCall({ onDone }: { onDone: (id: number) => void }) {
               </option>
             ))}
           </Select>
-          <Select label={t('support.channel')} value={f.channel} onChange={(e) => setF({ ...f, channel: e.target.value as 'phone' | 'telegram' })}>
-            <option value="phone">{t('support.channels.phone')}</option>
-            <option value="telegram">{t('support.channels.telegram')}</option>
+          <Select label={t('inbox.channel')} value={f.channel} onChange={(e) => setF({ ...f, channel: e.target.value as 'phone' | 'telegram' })}>
+            <option value="phone">{t('inbox.channels.phone')}</option>
+            <option value="telegram">{t('inbox.channels.telegram')}</option>
           </Select>
           <Field label={t('help.subject')} value={f.subject} maxLength={150} required onChange={(e) => setF({ ...f, subject: e.target.value })} />
         </div>
-        <TextArea label={t('support.whatTheySaid')} value={f.body} onChange={(body) => setF({ ...f, body })} />
+        <TextArea label={t('inbox.whatTheySaid')} value={f.body} onChange={(body) => setF({ ...f, body })} />
         <label className="flex min-h-touch items-center gap-2 text-[13px]">
           <input type="checkbox" checked={f.urgent} onChange={(e) => setF({ ...f, urgent: e.target.checked })} className="size-4 accent-accent" />
           {t('help.urgent')}
