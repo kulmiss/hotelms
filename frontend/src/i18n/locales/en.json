@@ -1271,6 +1271,8 @@
       "needNamePhone": "Type the guest's name and phone."
     },
     "bookedFrom": "Booked from {{date}}",
+    "overdueHelp": "Check-out time has passed and the guest has not checked out yet.",
+    "lateHelp": "Check-in time has passed and the guest has not arrived yet.",
     "nextBooking": "Next booking: {{from}} → {{to}} · {{guest}}",
     "walkInStartsNow": "A walk-in checks in now. Guest arriving on another day?",
     "bookForLater": "Make a reservation",
