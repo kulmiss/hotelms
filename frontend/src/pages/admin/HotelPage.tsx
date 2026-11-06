@@ -46,7 +46,8 @@ export function HotelPage() {
   const [tab, setTab] = useState<HotelTab>('overview')
 
   if (hotel.isPending) return <p className="text-muted">{t('common.loading')}</p>
-  if (hotel.isError) return <Alert>{t('common.serverUnreachable')}</Alert>
+  if (hotel.isError)
+    return <Alert>{hotel.error instanceof ApiError && hotel.error.status === 404 ? t('admin.hotel.notFound') : t('common.serverUnreachable')}</Alert>
 
   const h = hotel.data.data
   const canLoginAs = me.data?.platform?.permissions.includes('hotels.impersonate') ?? false
@@ -299,8 +300,10 @@ function LoginAsPanel({ hotel, users, onDone }: { hotel: Hotel; users: { id: num
 function ResetDemoButton({ hotelId }: { hotelId: number }) {
   const { t } = useTranslation()
   const reset = useResetDemo(hotelId)
+  const navigate = useNavigate()
+  // The demo is rebuilt as a new hotel (new number), so open the new one.
   return (
-    <Button variant="secondary" disabled={reset.isPending} onClick={() => reset.mutate()}>
+    <Button variant="secondary" disabled={reset.isPending} onClick={() => reset.mutate(undefined, { onSuccess: (r) => navigate(`/admin/hotels/${r.data.id}`, { replace: true }) })}>
       {reset.isPending ? t('common.saving') : t('demo.resetNow')}
     </Button>
   )

@@ -193,6 +193,22 @@ describe('log in as hotel', () => {
     },
   }
 
+  it('opens the new demo hotel after "Reset demo now"', async () => {
+    const owner = { ...superAdmin(), platform: { role: 'owner', permissions: ['hotels.view', 'hotels.create'] } }
+    const demo = (id: number) => ({ body: { ...hotelDetail.body, data: { ...hotelDetail.body.data, id, name: `Demo ${id}`, is_demo: true } } })
+    mockApi({
+      'GET /me': { body: owner },
+      'GET /admin/hotels/1': demo(1),
+      'POST /admin/hotels/1/demo/reset': { body: { data: { id: 5 } } },
+      'GET /admin/hotels/5': demo(5),
+    })
+    renderApp('/admin/hotels/1')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Reset demo now' }))
+    expect(await screen.findByRole('heading', { name: 'Demo 5' })).toBeInTheDocument()
+    expect(screen.queryByText("Can't reach the server. Check the internet and try again.")).not.toBeInTheDocument()
+  })
+
   it('enters the hotel with a reason and shows the support banner', async () => {
     let inside = false
     const owner = { ...superAdmin(), platform: { role: 'owner', permissions: ['hotels.view', 'hotels.impersonate'] } }
