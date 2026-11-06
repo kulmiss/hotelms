@@ -17,6 +17,9 @@ class HotelSettings
         'pending_expiry_hours' => 24,
         'walk_in_payment' => 'full', // full, deposit
         'allow_pay_later' => false, // staff with the permission may let a guest pay everything at check-out
+        'id_photo_enabled' => false, // staff may take a photo of the guest's ID or passport
+        'id_photo_required' => false, // …and it is needed before check-in
+        'id_photo_keep_months' => 12, // removed this long after the guest's last stay (0 = keep)
         'early_check_in_fee_type' => 'percent', // fixed, percent (of one night)
         'early_check_in_fee_value' => '50',
         'late_check_out_fee_type' => 'percent',

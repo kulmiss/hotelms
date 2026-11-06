@@ -424,6 +424,30 @@ function BookingRulesForm({ initial }: { initial: BookingRules }) {
         </span>
       </label>
 
+      <h3 className="pt-2 text-sm font-semibold">{t('settings.rules.idPhoto')}</h3>
+      <label className="flex min-h-touch items-start gap-3 text-[13px]">
+        <input type="checkbox" className="mt-0.5 size-4 rounded accent-accent" checked={!!f.id_photo_enabled} onChange={(e) => set('id_photo_enabled', e.target.checked)} />
+        <span className="flex flex-col">
+          {t('settings.rules.idPhotoEnabled')}
+          <span className="text-xs text-muted">{t('settings.rules.idPhotoHint')}</span>
+        </span>
+      </label>
+      {!!f.id_photo_enabled && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="flex min-h-touch items-center gap-3 text-[13px]">
+            <input type="checkbox" className="size-4 rounded accent-accent" checked={!!f.id_photo_required} onChange={(e) => set('id_photo_required', e.target.checked)} />
+            {t('settings.rules.idPhotoRequired')}
+          </label>
+          <Select label={t('settings.rules.idPhotoKeep')} value={val('id_photo_keep_months')} onChange={(e) => setF({ ...f, id_photo_keep_months: Number(e.target.value) })}>
+            {[3, 6, 12, 24, 60, 0].map((m) => (
+              <option key={m} value={m}>
+                {m === 0 ? t('settings.rules.keepForever') : t('settings.rules.keepMonths', { count: m })}
+              </option>
+            ))}
+          </Select>
+        </div>
+      )}
+
       <h3 className="pt-2 text-sm font-semibold">{t('settings.rules.fees')}</h3>
       <div className="grid gap-4 sm:grid-cols-2">
         {(['early_check_in', 'late_check_out'] as const).map((k) => (

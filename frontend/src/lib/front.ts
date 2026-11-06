@@ -160,7 +160,7 @@ export const useGuests = (q: string, page = 1, enabled = true, missing = false) 
   useQuery({ queryKey: ['guests', q, page, missing], queryFn: () => api<Page<Guest>>(`/guests?${qs({ q, page, missing: missing ? 1 : undefined })}`), placeholderData: keepPreviousData, enabled })
 
 export const useGuest = (id: number) =>
-  useQuery({ queryKey: ['guests', 'one', id], queryFn: () => api<{ data: Guest; stays: (Omit<ReservationSummary, 'guest' | 'rooms' | 'source' | 'expires_at' | 'adults' | 'children' | 'deposit_required'> & { branch: string | null })[] }>(`/guests/${id}`), enabled: id > 0 })
+  useQuery({ queryKey: ['guests', 'one', id], queryFn: () => api<{ data: Guest; stays: (Omit<ReservationSummary, 'guest' | 'rooms' | 'source' | 'expires_at' | 'adults' | 'children' | 'deposit_required'> & { branch: string | null })[]; id_photo?: { mime: string; at: string | null } | null }>(`/guests/${id}`), enabled: id > 0 })
 
 export const useGuestTypes = () => useQuery({ queryKey: ['guest-types'], queryFn: () => api<{ data: GuestType[] }>('/guest-types'), staleTime: 60_000 })
 
@@ -247,10 +247,10 @@ export function useRecordPayment(id: number) {
   })
 }
 
-export const useCalendar = (branchId: number | null, from: string, days: number) =>
+export const useCalendar = (branchId: number | null, from: string, days: number, roomId?: number) =>
   useQuery({
-    queryKey: ['reservations', 'calendar', branchId, from, days],
-    queryFn: () => api<CalendarData>(`/reservations/calendar?${qs({ branch_id: branchId, from, days })}`),
+    queryKey: ['reservations', 'calendar', branchId, from, days, roomId ?? null],
+    queryFn: () => api<CalendarData>(`/reservations/calendar?${qs({ branch_id: branchId, from, days, room_id: roomId })}`),
     enabled: !!branchId,
     placeholderData: keepPreviousData,
   })
@@ -262,6 +262,8 @@ export type Lookups = {
   currencies: { code: string; symbol: string; is_default: boolean }[]
   /** May this person let a guest pay everything at check-out (hotel allows it + permission)? */
   pay_later?: boolean
+  /** Guest ID photo: turned on by the hotel, and needed before check-in? */
+  id_photo?: { enabled: boolean; required: boolean; keep_months: number }
 }
 
 export const useLookups = () => useQuery({ queryKey: ['reservations', 'lookups'], queryFn: () => api<Lookups>('/reservations/lookups'), staleTime: 60_000 })
@@ -270,6 +272,16 @@ export const useLookups = () => useQuery({ queryKey: ['reservations', 'lookups']
 
 /** "2026-11-12T14:00:00+03:00" → "2026-11-12" (the hotel's own date). */
 export const localDate = (iso: string) => iso.slice(0, 10)
+
+/** The booking that has the room on `day` (local date): staying that night, or a day-use / hourly stay on that day. */
+export function sleepingOn<B extends { check_in_at: string; check_out_at: string; status: ReservationStatus }>(bookings: B[], day: string): B | undefined {
+  return bookings.find((b) => {
+    if (b.status === 'cancelled' || b.status === 'no_show') return false
+    const inD = localDate(b.check_in_at)
+    const outD = localDate(b.check_out_at)
+    return (inD <= day && day < outD) || (inD === day && outD === day)
+  })
+}
 /** → "14:00" */
 export const localTime = (iso: string) => iso.slice(11, 16)
 

@@ -13,6 +13,7 @@ use App\Services\Billing\InvoiceService;
 use App\Services\Billing\TaxCalculator;
 use App\Services\Booking\Availability;
 use App\Services\Booking\FrontDesk;
+use App\Services\GuestIdPhotos;
 use App\Services\HotelSettings;
 use App\Support\HotelClock;
 use App\Support\Money;
@@ -41,11 +42,19 @@ class FrontDeskController extends Controller
             ->where(fn ($q) => $q->where('status', 'checked_in')
                 ->orWhere(fn ($w) => $w->whereIn('status', ['pending', 'confirmed'])->where('check_in_at', '<=', $todayEnd)))
             ->get();
+        // The next booking of each room after today (so reception sees a room is taken from a future date).
+        // (Two small queries: the first future date per room, then only those bookings; the board is polled every 30 s.)
+        $roomIds = Room::where('branch_id', $branch->id)->pluck('id');
+        $firsts = ReservationRoom::whereIn('room_id', $roomIds)->whereIn('status', ['pending', 'confirmed'])->where('check_in_at', '>', $todayEnd)
+            ->groupBy('room_id')->selectRaw('room_id, MIN(check_in_at) as first_in')->pluck('first_in', 'room_id');
+        $later = $firsts->isEmpty() ? collect() : ReservationRoom::with(['reservation.guest:id,first_name,last_name'])->whereIn('status', ['pending', 'confirmed'])
+            ->where(fn ($q) => $firsts->each(fn ($at, $room) => $q->orWhere(fn ($w) => $w->where('room_id', $room)->where('check_in_at', $at))))
+            ->get()->unique('room_id')->keyBy('room_id');
         $balances = Invoice::whereIn('reservation_id', $stays->pluck('reservation_id'))->where('status', '!=', 'void')
             ->selectRaw('reservation_id, sum(balance) as b')->groupBy('reservation_id')->pluck('b', 'reservation_id');
 
         $rooms = Room::with('roomType:id,name')->where('branch_id', $branch->id)->orderBy('floor')->orderByRaw('LENGTH(number)')->orderBy('number')->get()
-            ->map(function (Room $room) use ($stays, $balances, $hotel) {
+            ->map(function (Room $room) use ($stays, $balances, $hotel, $later) {
                 $in = $stays->first(fn ($s) => $s->room_id === $room->id && $s->status === 'checked_in');
                 $next = $stays->first(fn ($s) => $s->room_id === $room->id && $s->status !== 'checked_in');
                 $info = fn (?ReservationRoom $s) => $s ? [
@@ -57,7 +66,7 @@ class FrontDeskController extends Controller
                 return [
                     'id' => $room->id, 'number' => $room->number, 'floor' => $room->floor, 'status' => $room->status,
                     'room_type_id' => $room->room_type_id, 'room_type' => $room->roomType?->name, 'notes' => $room->notes,
-                    'stay' => $info($in), 'arriving' => $info($next),
+                    'stay' => $info($in), 'arriving' => $info($next), 'next_booking' => $info($later[$room->id] ?? null),
                 ];
             });
 
@@ -112,6 +121,7 @@ class FrontDeskController extends Controller
         return response()->json(['data' => [
             'reservation' => ReservationPresenter::detail($reservation, $hotel),
             'rooms' => $rooms,
+            'id_photo_needed' => app(GuestIdPhotos::class)->missingFor($reservation),
             'deposit_due' => $reservation->status === 'pending' ? Money::max(Money::sub((string) $reservation->deposit_required, (string) $reservation->paid_total), '0') : '0.00',
         ]]);
     }
@@ -189,6 +199,7 @@ class FrontDeskController extends Controller
         $reservation = DB::transaction(function () use ($data, $user) {
             if (! empty($data['quick_guest'])) {
                 $parts = preg_split('/\s+/', trim($data['quick_guest']['name']), 2);
+                $data['quick'] = true;
                 $data['guest_id'] = Guest::create(['first_name' => mb_substr($parts[0], 0, 60), 'last_name' => isset($parts[1]) ? mb_substr($parts[1], 0, 60) : null, 'phone' => trim($data['quick_guest']['phone'])])->id;
             }
             unset($data['quick_guest']);

@@ -78,8 +78,16 @@ class HotelClosing
             }
         });
 
+        self::deleteFiles($id, $logo);
+    }
+
+    /** The hotel's files on disk: logo, payment proofs and guest ID photos. */
+    public static function deleteFiles(int $hotelId, ?string $logo = null): void
+    {
         if ($logo) {
             Storage::disk('public')->delete($logo);
         }
+        Storage::disk('local')->deleteDirectory("payment-proofs/{$hotelId}");
+        Storage::disk('local')->deleteDirectory("guest-ids/{$hotelId}");
     }
 }

@@ -15,6 +15,7 @@ use App\Models\Room;
 use App\Services\Booking\Availability;
 use App\Services\Booking\ReservationService;
 use App\Services\Booking\StayQuote;
+use App\Services\GuestIdPhotos;
 use App\Services\Switches;
 use App\Support\HotelClock;
 use Illuminate\Http\JsonResponse;
@@ -96,6 +97,8 @@ class ReservationController extends Controller
             'payment_methods' => PaymentMethod::where('is_active', true)->orderBy('id')->get(['id', 'name', 'type']),
             // May this person let a guest pay everything at check-out (no deposit, no up-front payment)?
             'pay_later' => $this->service->canPayLater($request->user()),
+            // Guest ID photo: turned on, and needed before check-in?
+            'id_photo' => app(GuestIdPhotos::class)->rules(),
             'currencies' => HotelCurrency::orderByDesc('is_default')->orderBy('code')->when(! $multi, fn ($q) => $q->where('is_default', true))->get(['code', 'symbol', 'is_default']),
         ]);
     }
@@ -214,7 +217,7 @@ class ReservationController extends Controller
     /** Rooms × days for a branch, with the bookings on each room (and unassigned ones per type). */
     public function calendar(Request $request): JsonResponse
     {
-        $data = $request->validate(['branch_id' => ['required', 'integer'], 'from' => ['required', 'date'], 'days' => ['nullable', 'integer', 'between:1,62']]);
+        $data = $request->validate(['branch_id' => ['required', 'integer'], 'from' => ['required', 'date'], 'days' => ['nullable', 'integer', 'between:1,62'], 'room_id' => ['nullable', 'integer']]);
         $user = $request->user();
         $hotel = $user->hotel;
         $branch = $user->accessibleBranches()->firstWhere('id', (int) $data['branch_id']);
@@ -226,6 +229,7 @@ class ReservationController extends Controller
         $rooms = Room::with('roomType:id,name')->where('branch_id', $branch->id)->orderByRaw('LENGTH(number)')->orderBy('number')->get(['id', 'number', 'floor', 'status', 'room_type_id']);
         $bookings = ReservationRoom::with(['reservation:id,code,status,guest_id,stay_type', 'reservation.guest:id,first_name,last_name', 'roomType:id,name'])
             ->whereHas('reservation', fn ($q) => $q->where('branch_id', $branch->id))
+            ->when($data['room_id'] ?? null, fn ($q, $room) => $q->where('room_id', (int) $room)) // one room's calendar
             ->whereIn('status', [...Reservation::ACTIVE, 'checked_out'])
             ->where('check_in_at', '<', $to->copy()->utc())->where('check_out_at', '>', $from->copy()->utc())
             ->get()

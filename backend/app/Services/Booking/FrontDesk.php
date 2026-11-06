@@ -10,6 +10,7 @@ use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\User;
 use App\Services\Billing\InvoiceService;
+use App\Services\GuestIdPhotos;
 use App\Services\HotelSettings;
 use App\Services\PriceCalculator;
 use App\Support\HotelClock;
@@ -57,6 +58,10 @@ class FrontDesk
         }
         if (! $backfill && ($reservation->stay_type === 'nightly' ? $localToday >= $outDate : $now->gte($reservation->check_out_at))) {
             throw ValidationException::withMessages(['status' => 'This stay has already ended. Change the dates first.']);
+        }
+        // The hotel requires a photo of the guest's ID (quick check-in adds it later).
+        if (! $backfill && empty($data['skip_id_photo']) && app(GuestIdPhotos::class)->missingFor($reservation)) {
+            throw ValidationException::withMessages(['id_photo' => "Take a photo of the guest's ID or passport before check-in."]);
         }
         $payment = ! empty($data['payment']['amount']) ? $data['payment'] : null;
         if ($payment && ! $user->hasPermission('payments.take')) {
@@ -179,7 +184,7 @@ class FrontDesk
                 $reservation->update(['status' => 'confirmed', 'expires_at' => null]);
             }
 
-            return $this->checkIn($reservation->fresh(), [], $user);
+            return $this->checkIn($reservation->fresh(), ['skip_id_photo' => ! empty($data['quick'])], $user);
         });
     }
 

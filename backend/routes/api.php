@@ -154,6 +154,10 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
                 Route::put('/guests/{id}', [GuestController::class, 'update']);
             });
             Route::post('/guests/{id}/blacklist', [GuestController::class, 'blacklist'])->middleware('permission:guests.blacklist');
+            // Photo of the guest's ID or passport (when the hotel turned it on).
+            Route::get('/guests/{id}/id-photo', [GuestController::class, 'idPhoto'])->middleware('permission:guests.view');
+            Route::post('/guests/{id}/id-photo', [GuestController::class, 'storeIdPhoto'])->middleware(['permission:guests.create_edit', 'throttle:30,1']);
+            Route::delete('/guests/{id}/id-photo', [GuestController::class, 'destroyIdPhoto'])->middleware('permission:guests.create_edit');
 
             // Payment proof (optional photo or PDF); permissions are checked inside.
             Route::post('/payment-proofs', [PaymentProofController::class, 'store'])->middleware('throttle:30,1');
