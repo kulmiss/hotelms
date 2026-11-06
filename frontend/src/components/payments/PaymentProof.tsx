@@ -1,29 +1,14 @@
-import { useRef, useState, type ChangeEvent } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { CameraIcon, DocumentArrowUpIcon, PaperClipIcon, XMarkIcon } from '@heroicons/react/20/solid'
+import { PaperClipIcon, XMarkIcon } from '@heroicons/react/20/solid'
+import { PhotoPickers as Pickers } from '@/components/ui/PhotoPickers'
+import { shrink } from '@/lib/photos'
 import { Button } from '@/components/ui/Button'
 import { apiUrl, ApiError, put, upload } from '@/lib/api'
 import { cn } from '@/lib/cn'
 
 export type Proof = { id: number; mime: string }
-
-/** Photos are made smaller on the device (max 1600 px, JPEG) so they upload fast on a slow connection. */
-async function shrink(file: File): Promise<File> {
-  if (!file.type.startsWith('image/') || file.type === 'image/heic' || file.type === 'image/heif' || file.size < 400_000) return file
-  try {
-    const bitmap = await createImageBitmap(file)
-    const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height))
-    const canvas = document.createElement('canvas')
-    canvas.width = Math.round(bitmap.width * scale)
-    canvas.height = Math.round(bitmap.height * scale)
-    canvas.getContext('2d')?.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.8))
-    return blob && blob.size < file.size ? new File([blob], 'proof.jpg', { type: 'image/jpeg' }) : file
-  } catch {
-    return file // the browser cannot read it: send it as it is
-  }
-}
 
 const proofUrl = (id: number) => apiUrl(`/payment-proofs/${id}`)
 
@@ -32,32 +17,6 @@ function useUploadProof() {
     mutationFn: async (file: File) => (await upload<{ data: Proof }>('/payment-proofs', 'file', await shrink(file))).data,
     meta: { toast: false },
   })
-}
-
-/** Two hidden file inputs: the camera (on phones and tablets) and "choose a file". */
-function Pickers({ onFile, disabled }: { onFile: (f: File) => void; disabled?: boolean }) {
-  const { t } = useTranslation()
-  const camera = useRef<HTMLInputElement>(null)
-  const file = useRef<HTMLInputElement>(null)
-  const pick = (e: ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]
-    e.target.value = ''
-    if (f) onFile(f)
-  }
-  return (
-    <div className="flex flex-wrap gap-2">
-      <input ref={camera} type="file" accept="image/*" capture="environment" className="hidden" onChange={pick} aria-label={t('proof.takePhoto')} />
-      <input ref={file} type="file" accept="image/*,application/pdf" className="hidden" onChange={pick} aria-label={t('proof.chooseFile')} />
-      <Button type="button" variant="secondary" disabled={disabled} onClick={() => camera.current?.click()}>
-        <CameraIcon aria-hidden className="size-4" />
-        {t('proof.takePhoto')}
-      </Button>
-      <Button type="button" variant="secondary" disabled={disabled} onClick={() => file.current?.click()}>
-        <DocumentArrowUpIcon aria-hidden className="size-4" />
-        {t('proof.chooseFile')}
-      </Button>
-    </div>
-  )
 }
 
 /** Optional proof on a payment form: take a photo or choose a file; shows a small preview. */

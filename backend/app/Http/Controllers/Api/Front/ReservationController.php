@@ -17,6 +17,7 @@ use App\Services\Booking\ReservationService;
 use App\Services\Booking\StayQuote;
 use App\Services\Switches;
 use App\Support\HotelClock;
+use App\Services\GuestIdPhotos;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -96,6 +97,8 @@ class ReservationController extends Controller
             'payment_methods' => PaymentMethod::where('is_active', true)->orderBy('id')->get(['id', 'name', 'type']),
             // May this person let a guest pay everything at check-out (no deposit, no up-front payment)?
             'pay_later' => $this->service->canPayLater($request->user()),
+            // Guest ID photo: turned on, and needed before check-in?
+            'id_photo' => app(GuestIdPhotos::class)->rules(),
             'currencies' => HotelCurrency::orderByDesc('is_default')->orderBy('code')->when(! $multi, fn ($q) => $q->where('is_default', true))->get(['code', 'symbol', 'is_default']),
         ]);
     }

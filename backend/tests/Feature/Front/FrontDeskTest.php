@@ -13,6 +13,7 @@ use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\User;
 use App\Services\HotelDefaults;
+use App\Services\GuestIdPhotos;
 use App\Services\HotelSettings;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -573,5 +574,49 @@ class FrontDeskTest extends TestCase
         $this->assertSame('2026-11-20T14:00:00+03:00', $rooms['102']['next_booking']['check_in_at']);
         $this->assertNull($rooms['102']['arriving']);
         $this->assertNull($rooms['101']['next_booking']);
+    }
+
+    public function test_guest_id_photo_is_encrypted_can_be_required_and_is_removed_later(): void
+    {
+        Storage::fake('local');
+        $id = $this->booked(); // 12 → 14 Nov, made at 09:00
+        $photo = UploadedFile::fake()->image('passport.jpg', 600, 400);
+        $original = (string) file_get_contents($photo->getRealPath());
+
+        // Off by default.
+        $this->actingAs($this->receptionist)->post("/api/v1/guests/{$this->guest->id}/id-photo", ['file' => $photo], ['Accept' => 'application/json'])->assertJsonValidationErrors('file');
+
+        $this->inHotel(fn () => app(HotelSettings::class)->put(['id_photo_enabled' => true, 'id_photo_required' => true]));
+        $this->getJson('/api/v1/reservations/lookups')->assertJsonPath('id_photo.required', true);
+        $this->at('2026-11-12 15:00');
+        $this->getJson("/api/v1/reservations/$id/check-in")->assertJsonPath('data.id_photo_needed', true);
+        $this->checkIn($id, ['101'])->assertJsonValidationErrors('id_photo');
+
+        // Taken: stored encrypted, shown as it was.
+        $this->post("/api/v1/guests/{$this->guest->id}/id-photo", ['file' => $photo], ['Accept' => 'application/json'])->assertCreated();
+        $stored = Storage::disk('local')->allFiles('guest-ids');
+        $this->assertCount(1, $stored);
+        $this->assertNotSame($original, Storage::disk('local')->get($stored[0]));
+        $this->assertSame($original, $this->get("/api/v1/guests/{$this->guest->id}/id-photo")->assertOk()->getContent());
+        $this->getJson("/api/v1/guests/{$this->guest->id}")->assertJsonPath('id_photo.mime', 'image/jpeg');
+        $this->checkIn($id, ['101'])->assertOk();
+
+        // Quick check-in is never blocked: the photo is added later.
+        $this->postJson('/api/v1/front-desk/walk-in', [
+            'branch_id' => $this->branch->id, 'stay_type' => 'nightly', 'check_out' => '2026-11-13', 'quick_guest' => ['name' => 'Saba Tesfaye', 'phone' => '0911 555666'],
+            'rooms' => [['room_type_id' => $this->standard->id, 'room_id' => $this->rooms['102']]],
+            'payment' => ['payment_method_id' => $this->cash, 'amount' => '2300'],
+        ])->assertCreated();
+
+        // Another hotel never sees it; housekeeping neither.
+        $other = Hotel::factory()->create();
+        Branch::factory()->for($other)->create();
+        $this->actingAs(User::factory()->withRole($other, 'hotel_admin')->create())->get("/api/v1/guests/{$this->guest->id}/id-photo")->assertNotFound();
+        $this->actingAs(User::factory()->withRole($this->hotel, 'housekeeping')->create())->get("/api/v1/guests/{$this->guest->id}/id-photo")->assertForbidden();
+
+        // Removed some time after the last stay (12 months by default).
+        $this->at('2027-12-01 09:00');
+        $this->inHotel(fn () => app(GuestIdPhotos::class)->cleanUp($this->hotel));
+        $this->assertSame([], Storage::disk('local')->allFiles('guest-ids'));
     }
 }

@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\SystemController;
+use App\Models\Hotel;
 use App\Models\PaymentProof;
+use App\Services\GuestIdPhotos;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
@@ -42,3 +44,9 @@ Schedule::call(function () {
             $p->delete();
         }));
 })->name('payment-proofs:cleanup')->dailyAt('03:20')->withoutOverlapping();
+
+// Guest ID photos past the time each hotel keeps them (Booking rules): removed at night.
+Schedule::call(function () {
+    Hotel::whereIn('status', ['trial', 'active', 'grace', 'suspended'])->get()
+        ->each(fn (Hotel $hotel) => app(TenantContext::class)->runAs($hotel, fn () => app(GuestIdPhotos::class)->cleanUp($hotel)));
+})->name('guest-id-photos:cleanup')->dailyAt('03:40')->withoutOverlapping();

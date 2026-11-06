@@ -7,7 +7,10 @@ use App\Models\Guest;
 use App\Models\GuestType;
 use App\Models\Reservation;
 use App\Support\HotelClock;
+use App\Models\GuestIdPhoto;
+use App\Services\GuestIdPhotos;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -46,7 +49,37 @@ class GuestController extends Controller
                 'total' => $r->total, 'paid_total' => $r->paid_total, 'currency' => $r->currency,
             ]);
 
-        return response()->json(['data' => $guest, 'stays' => $stays]);
+        $photo = GuestIdPhoto::where('guest_id', $guest->id)->first(['id', 'mime', 'created_at']);
+
+        return response()->json(['data' => $guest, 'stays' => $stays, 'id_photo' => $photo ? ['mime' => $photo->mime, 'at' => HotelClock::iso($photo->created_at, $hotel)] : null]);
+    }
+
+    /** Take or upload a photo of the guest's ID or passport (replaces the old one). */
+    public function storeIdPhoto(Request $request, string $id, GuestIdPhotos $photos): JsonResponse
+    {
+        $guest = Guest::findOrFail($id);
+        $request->validate(['file' => ['required', 'file', 'max:8192', 'mimetypes:image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf']]);
+        $photo = $photos->save($guest, $request->file('file'), $request->user());
+
+        return response()->json(['data' => ['mime' => $photo->mime, 'at' => HotelClock::iso($photo->created_at, $request->user()->hotel)]], 201);
+    }
+
+    /** The ID photo itself (decrypted), only for staff who may see guests of this hotel. */
+    public function idPhoto(string $id, GuestIdPhotos $photos): Response
+    {
+        $guest = Guest::findOrFail($id);
+        $photo = GuestIdPhoto::where('guest_id', $guest->id)->firstOrFail();
+        $body = $photos->contents($photo);
+        abort_if($body === null, 404);
+
+        return response($body, 200, ['Content-Type' => $photo->mime, 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff', 'Content-Disposition' => 'inline']);
+    }
+
+    public function destroyIdPhoto(string $id, GuestIdPhotos $photos): JsonResponse
+    {
+        $photos->remove(Guest::findOrFail($id));
+
+        return response()->json(['message' => 'Removed.']);
     }
 
     public function store(Request $request): JsonResponse

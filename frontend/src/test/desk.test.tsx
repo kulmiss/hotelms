@@ -153,6 +153,34 @@ describe('quick check-in', () => {
   })
 })
 
+describe('guest ID photo', () => {
+  it('asks for the ID photo before check-in when the hotel needs it', async () => {
+    let photo = false
+    const fetchMock = mockApi({
+      'GET /me': { body: makeMe({}, [...DESK, 'guests.create_edit']) },
+      'GET /reservations/9': { body: { data: reservation } },
+      'GET /reservations/lookups': { body: { policies: [], payment_methods: [{ id: 1, name: 'Cash', type: 'cash' }], currencies: [], id_photo: { enabled: true, required: true, keep_months: 12 } } },
+      'GET /reservations/9/check-in': () => ({ body: { data: { reservation, rooms: [{ id: 21, room_type: 'Standard', room_id: null, room_number: null, room_status: null, free_rooms: [{ id: 1, number: '101', floor: '1' }], early_fee: null }], deposit_due: '0.00', id_photo_needed: !photo } } }),
+      'POST /guests/5/id-photo': () => {
+        photo = true
+        return { status: 201, body: { data: { mime: 'image/jpeg', at: null } } }
+      },
+    })
+    renderApp('/reservations/9?action=check-in')
+
+    expect(await screen.findByText(/needs a photo of the guest's ID/)).toBeInTheDocument()
+    const buttons = screen.getAllByRole('button', { name: 'Check in' })
+    expect(buttons[buttons.length - 1]).toBeDisabled()
+
+    await userEvent.upload(screen.getByLabelText('Take photo'), new File(['id'], 'id.jpg', { type: 'image/jpeg' }))
+    await waitFor(() => expect(fetchMock.mock.calls.some(([u, init]) => String(u).endsWith('/guests/5/id-photo') && init?.method === 'POST')).toBe(true))
+    await waitFor(() => {
+      const all = screen.getAllByRole('button', { name: 'Check in' })
+      expect(all[all.length - 1]).toBeEnabled()
+    })
+  })
+})
+
 describe('payment proof', () => {
   it('adds an optional photo to a payment', async () => {
     const fetchMock = mockApi({

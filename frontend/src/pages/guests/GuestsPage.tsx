@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { IdPhoto } from '@/components/guests/IdPhoto'
 import { PlusIcon } from '@heroicons/react/20/solid'
 import { MagnifyingGlassIcon, UsersIcon } from '@heroicons/react/24/outline'
 import { Alert } from '@/components/ui/Alert'
@@ -12,7 +13,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Tabs } from '@/components/ui/Tabs'
 import { ApiError } from '@/lib/api'
 import { date, money } from '@/lib/format'
-import { localDate, STATUS_TONES, useBlacklist, useGuest, useGuests } from '@/lib/front'
+import { localDate, STATUS_TONES, useBlacklist, useGuest, useGuests, useLookups } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { useDebounced } from '@/lib/useDebounced'
 import { GuestForm } from './GuestForm'
@@ -135,6 +136,7 @@ export function GuestPage() {
   const can = useCan()
   const guestId = Number(id ?? 0)
   const q = useGuest(guestId)
+  const lookups = useLookups()
 
   if (!guestId) {
     return (
@@ -168,6 +170,11 @@ export function GuestPage() {
       <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
         <Card>{can('guests.create_edit') ? <GuestForm key={g.id} guest={g} onSaved={() => undefined} /> : renderReadOnly()}</Card>
         <div className="flex flex-col gap-4">
+          {(lookups.data?.id_photo?.enabled || q.data.id_photo) && (
+            <Card>
+              <IdPhoto guestId={g.id} photo={q.data.id_photo ?? null} canEdit={can('guests.create_edit') && !!lookups.data?.id_photo?.enabled} />
+            </Card>
+          )}
           <Card className="flex flex-col gap-2">
             <h2 className="text-sm font-semibold">{t('guests.stayHistory')}</h2>
             {q.data.stays.length === 0 && <p className="text-[13px] text-muted">{t('guests.noStays')}</p>}

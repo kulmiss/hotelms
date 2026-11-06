@@ -13,6 +13,7 @@ use App\Services\Billing\InvoiceService;
 use App\Services\Billing\TaxCalculator;
 use App\Services\Booking\Availability;
 use App\Services\Booking\FrontDesk;
+use App\Services\GuestIdPhotos;
 use App\Services\HotelSettings;
 use App\Support\HotelClock;
 use App\Support\Money;
@@ -116,6 +117,7 @@ class FrontDeskController extends Controller
         return response()->json(['data' => [
             'reservation' => ReservationPresenter::detail($reservation, $hotel),
             'rooms' => $rooms,
+            'id_photo_needed' => app(GuestIdPhotos::class)->missingFor($reservation),
             'deposit_due' => $reservation->status === 'pending' ? Money::max(Money::sub((string) $reservation->deposit_required, (string) $reservation->paid_total), '0') : '0.00',
         ]]);
     }
@@ -193,6 +195,7 @@ class FrontDeskController extends Controller
         $reservation = DB::transaction(function () use ($data, $user) {
             if (! empty($data['quick_guest'])) {
                 $parts = preg_split('/\s+/', trim($data['quick_guest']['name']), 2);
+                $data['quick'] = true;
                 $data['guest_id'] = Guest::create(['first_name' => mb_substr($parts[0], 0, 60), 'last_name' => isset($parts[1]) ? mb_substr($parts[1], 0, 60) : null, 'phone' => trim($data['quick_guest']['phone'])])->id;
             }
             unset($data['quick_guest']);

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { IdPhoto } from '@/components/guests/IdPhoto'
 import { ProofField, type Proof } from '@/components/payments/PaymentProof'
 import { CheckIcon } from '@heroicons/react/20/solid'
 import { Alert } from '@/components/ui/Alert'
@@ -14,7 +15,7 @@ import { useMe } from '@/lib/auth'
 import { useCan } from '@/lib/hotel'
 import { cn } from '@/lib/cn'
 import { useFreeRooms, useWalkIn } from '@/lib/desk'
-import { addDays, today, useLookups, useQuote, type BookingInput, type Guest, type StayType } from '@/lib/front'
+import { addDays, today, useGuest, useLookups, useQuote, type BookingInput, type Guest, type StayType } from '@/lib/front'
 import { useDebounced } from '@/lib/useDebounced'
 import { GuestPicker, QuoteSummary } from '@/pages/reservations/ReservationFormPage'
 
@@ -32,6 +33,7 @@ export function WalkInPage() {
   const [hours, setHours] = useState(3)
   const [picked, setPicked] = useState<number[]>([])
   const [guest, setGuest] = useState<Guest | null>(null)
+  const guestDetail = useGuest(lookups.data?.id_photo?.enabled && guest ? guest.id : 0)
   const canQuick = can('frontdesk.quick_check_in') && can('guests.create_edit')
   const [quick, setQuick] = useState(false)
   const [quickName, setQuickName] = useState('')
@@ -178,7 +180,17 @@ export function WalkInPage() {
                 <p className="text-xs text-muted">{t('desk.quick.help')}</p>
               </div>
             ) : (
-              <GuestPicker value={guest} onChange={setGuest} />
+              <>
+                <GuestPicker value={guest} onChange={setGuest} />
+                {guest && lookups.data?.id_photo?.enabled && (
+                  <div className="flex flex-col gap-1.5 border-t border-border pt-3">
+                    <span className="text-[13px] font-medium">
+                      {t('idPhoto.title')} {!lookups.data.id_photo.required && <span className="font-normal text-muted">{t('idPhoto.optional')}</span>}
+                    </span>
+                    <IdPhoto compact guestId={guest.id} photo={guestDetail.data?.id_photo ?? null} canEdit={can('guests.create_edit')} />
+                  </div>
+                )}
+              </>
             )}
           </Card>
         </div>

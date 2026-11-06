@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { IdPhoto } from '@/components/guests/IdPhoto'
 import { SmartHints } from '@/components/ui/SmartHints'
 import { useSmart } from '@/lib/smart'
 import { Alert } from '@/components/ui/Alert'
@@ -119,6 +120,12 @@ export function CheckInPanel({ r, onClose }: { r: ReservationDetail; onClose: ()
           <PayFields amount={pay.amount ?? due} setAmount={pay.setAmount} methodId={pay.methodId} setMethodId={pay.setMethodId} />
         </div>
       )}
+      {d?.id_photo_needed && (
+        <div className="flex flex-col gap-2 rounded-lg bg-warn-bg/50 px-3 py-2.5">
+          <p className="text-[13px]">{t('idPhoto.needed')}</p>
+          <IdPhoto compact guestId={r.guest.id} photo={null} canEdit={can('guests.create_edit')} />
+        </div>
+      )}
       {checkIn.error && <Alert>{firstError(checkIn.error)}</Alert>}
       <div className="flex justify-end gap-2">
         <Button variant="ghost" onClick={onClose}>
@@ -126,7 +133,7 @@ export function CheckInPanel({ r, onClose }: { r: ReservationDetail; onClose: ()
         </Button>
         <Button
           size="lg"
-          disabled={!d || checkIn.isPending}
+          disabled={!d || checkIn.isPending || !!d.id_photo_needed}
           onClick={() =>
             checkIn.mutate(
               { rooms: (d?.rooms ?? []).map((x) => ({ id: x.id, room_id: roomFor(x.id, x.room_id) || null })), waive_early_fee: waive, payment: isPositive(due) ? pay.payment(due) : null },

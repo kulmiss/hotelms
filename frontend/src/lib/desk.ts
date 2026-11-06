@@ -16,6 +16,8 @@ export type CheckInInfo = {
   reservation: ReservationDetail
   rooms: { id: number; room_type: string | null; room_id: number | null; room_number: string | null; room_status: string | null; free_rooms: { id: number; number: string; floor: string | null }[]; early_fee: string | null }[]
   deposit_due: string
+  /** The hotel requires a photo of the guest's ID and there is none yet. */
+  id_photo_needed?: boolean
 }
 export type CheckOutInfo = { reservation: ReservationDetail; late_fee: string | null; balance: string }
 export type FreeRoom = { id: number; number: string; floor: string | null; room_type_id: number; room_type: string | null; nightly_price: string | null; day_use_price: string | null; hourly_price: string | null; max_capacity: number | null; currency: string | null }

@@ -160,7 +160,7 @@ export const useGuests = (q: string, page = 1, enabled = true, missing = false) 
   useQuery({ queryKey: ['guests', q, page, missing], queryFn: () => api<Page<Guest>>(`/guests?${qs({ q, page, missing: missing ? 1 : undefined })}`), placeholderData: keepPreviousData, enabled })
 
 export const useGuest = (id: number) =>
-  useQuery({ queryKey: ['guests', 'one', id], queryFn: () => api<{ data: Guest; stays: (Omit<ReservationSummary, 'guest' | 'rooms' | 'source' | 'expires_at' | 'adults' | 'children' | 'deposit_required'> & { branch: string | null })[] }>(`/guests/${id}`), enabled: id > 0 })
+  useQuery({ queryKey: ['guests', 'one', id], queryFn: () => api<{ data: Guest; stays: (Omit<ReservationSummary, 'guest' | 'rooms' | 'source' | 'expires_at' | 'adults' | 'children' | 'deposit_required'> & { branch: string | null })[]; id_photo?: { mime: string; at: string | null } | null }>(`/guests/${id}`), enabled: id > 0 })
 
 export const useGuestTypes = () => useQuery({ queryKey: ['guest-types'], queryFn: () => api<{ data: GuestType[] }>('/guest-types'), staleTime: 60_000 })
 
@@ -262,6 +262,8 @@ export type Lookups = {
   currencies: { code: string; symbol: string; is_default: boolean }[]
   /** May this person let a guest pay everything at check-out (hotel allows it + permission)? */
   pay_later?: boolean
+  /** Guest ID photo: turned on by the hotel, and needed before check-in? */
+  id_photo?: { enabled: boolean; required: boolean; keep_months: number }
 }
 
 export const useLookups = () => useQuery({ queryKey: ['reservations', 'lookups'], queryFn: () => api<Lookups>('/reservations/lookups'), staleTime: 60_000 })
