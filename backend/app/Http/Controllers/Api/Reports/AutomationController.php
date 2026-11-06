@@ -247,6 +247,20 @@ class AutomationController extends Controller
         return response()->json(['data' => $telegram->linkCode($request->user())]);
     }
 
+    /** Sends "it works" to my linked Telegram. */
+    public function telegramTest(Request $request, Telegram $telegram): JsonResponse
+    {
+        $chat = $telegram->chatFor($request->user());
+        if (! $chat) {
+            throw ValidationException::withMessages(['telegram' => 'Link your Telegram first.']);
+        }
+        if (! $telegram->send($chat, 'Test message: Telegram works. You will get your reports and alerts here.')) {
+            throw ValidationException::withMessages(['telegram' => 'Telegram did not accept the message. Check the bot token in Super Admin → Settings → Telegram, then try again.']);
+        }
+
+        return response()->json(['message' => 'Sent. Check Telegram.']);
+    }
+
     public function telegramUnlink(Request $request): JsonResponse
     {
         TelegramLink::where('user_id', $request->user()->id)->delete();

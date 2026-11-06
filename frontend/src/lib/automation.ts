@@ -54,6 +54,7 @@ export const useAckAlert = () => useInv(['alerts'], (id: number) => post(`/alert
 
 export const useTelegram = () => useQuery({ queryKey: ['telegram'], queryFn: () => api<{ enabled: boolean; bot: string | null; linked: boolean; chat_name: string | null }>('/telegram') })
 export const useTelegramLink = () => useInv(['telegram'], () => post<{ data: { code: string; url: string | null; bot: string | null } }>('/telegram/link'))
+export const useTelegramTest = () => useInv(['telegram'], () => post<{ message: string }>('/telegram/test'), SILENT)
 export const useTelegramUnlink = () => useInv(['telegram'], () => del('/telegram/link'))
 
 /* ---------- Automations (automation.md) ---------- */

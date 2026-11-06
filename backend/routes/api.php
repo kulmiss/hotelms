@@ -87,8 +87,10 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
     Route::get('/me', [MeController::class, 'show']);
     Route::put('/me/password', [MeController::class, 'updatePassword'])->middleware('not.impersonating');
     Route::put('/me', [MeController::class, 'update'])->middleware(['password.changed', 'not.impersonating']);
+    Route::put('/me/email', [MeController::class, 'updateEmail'])->middleware(['password.changed', 'not.impersonating', 'throttle:5,1']);
     Route::get('/telegram', [AutomationController::class, 'telegramStatus']);
     Route::post('/telegram/link', [AutomationController::class, 'telegramLink'])->middleware('not.impersonating');
+    Route::post('/telegram/test', [AutomationController::class, 'telegramTest'])->middleware('throttle:5,1');
     Route::delete('/telegram/link', [AutomationController::class, 'telegramUnlink'])->middleware('not.impersonating');
     Route::post('/impersonation/stop', ImpersonationStopController::class);
     Route::get('/setup', [SetupController::class, 'show']); // before the password change too (step 1 is the password)

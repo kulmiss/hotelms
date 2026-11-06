@@ -9,8 +9,8 @@ import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { ApiError, type Me } from '@/lib/api'
 import { useMe } from '@/lib/auth'
-import { useTelegram, useTelegramLink, useTelegramUnlink } from '@/lib/automation'
-import { useUpdateProfile } from '@/lib/profile'
+import { useTelegram, useTelegramLink, useTelegramTest, useTelegramUnlink } from '@/lib/automation'
+import { useUpdateEmail, useUpdateProfile } from '@/lib/profile'
 import { SecurityCards } from './security/SecurityParts'
 
 export function ProfilePage() {
@@ -45,6 +45,7 @@ function TelegramCard() {
   const q = useTelegram()
   const link = useTelegramLink()
   const unlink = useTelegramUnlink()
+  const test = useTelegramTest()
   const code = link.data?.data
   if (!q.data) return null
   return (
@@ -56,9 +57,19 @@ function TelegramCard() {
       {q.data.linked ? (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="text-sm">{t('telegram.linkedAs', { name: q.data.chat_name ?? '' })}</span>
-          <Button variant="secondary" disabled={unlink.isPending} onClick={() => unlink.mutate(undefined)}>
-            {t('telegram.unlink')}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" disabled={test.isPending} onClick={() => test.mutate(undefined)}>
+              {test.isPending ? t('telegram.sending') : t('telegram.test')}
+            </Button>
+            <Button variant="ghost" disabled={unlink.isPending} onClick={() => unlink.mutate(undefined)}>
+              {t('telegram.unlink')}
+            </Button>
+          </div>
+          {(test.isSuccess || test.error instanceof ApiError) && (
+            <div className="w-full">
+              {test.isSuccess ? <Alert tone="ok">{t('telegram.testSent')}</Alert> : <Alert>{(test.error as ApiError).field('telegram') ?? (test.error as ApiError).message}</Alert>}
+            </div>
+          )}
         </div>
       ) : (
         q.data.enabled && (
@@ -98,6 +109,7 @@ function ProfileForm({ me }: { me: Me }) {
   const [name, setName] = useState(me.user.name)
   const [phone, setPhone] = useState(me.user.phone ?? '')
   const error = update.error instanceof ApiError ? update.error : null
+  const owner = me.user.is_super_admin && me.platform?.role === 'owner' && !me.impersonation
 
   function submit(e: FormEvent) {
     e.preventDefault()
@@ -110,7 +122,14 @@ function ProfileForm({ me }: { me: Me }) {
         {update.isSuccess && <Alert tone="ok">{t('common.saved')}</Alert>}
         {update.error && !error && <Alert>{t('common.serverUnreachable')}</Alert>}
         <Field label={t('profile.name')} value={name} onChange={(e) => setName(e.target.value)} error={error?.field('name')} />
-        <Field label={t('login.email')} value={me.user.email} readOnly disabled hint={t('profile.emailHint')} />
+        <Field
+          label={t('login.email')}
+          value={me.user.email}
+          readOnly
+          disabled
+          hint={owner ? undefined : t(me.user.is_super_admin ? 'profile.emailHintTeam' : 'profile.emailHint')}
+        />
+        {owner && <ChangeEmail />}
         <Field label={t('profile.phone')} type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} error={error?.field('phone')} />
         <div className="flex justify-end">
           <Button type="submit" disabled={update.isPending || !name}>
@@ -119,5 +138,63 @@ function ProfileForm({ me }: { me: Me }) {
         </div>
       </form>
     </Card>
+  )
+}
+
+/** Platform Owner: change the sign-in email. Needs the current password; the old address gets a notice. */
+function ChangeEmail() {
+  const { t } = useTranslation()
+  const change = useUpdateEmail()
+  const [open, setOpen] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const error = change.error instanceof ApiError ? change.error : null
+
+  if (!open) {
+    return (
+      <div className="-mt-2 flex flex-wrap items-center gap-2">
+        {change.isSuccess && <Alert tone="ok">{t('profile.emailChanged')}</Alert>}
+        <Button type="button" variant="secondary" onClick={() => setOpen(true)}>
+          {t('profile.changeEmail')}
+        </Button>
+      </div>
+    )
+  }
+  return (
+    <div className="flex flex-col gap-3 rounded-lg bg-sunken p-3">
+      <Field label={t('profile.newEmail')} type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={error?.field('email')} />
+      <Field
+        label={t('profile.currentPassword')}
+        type="password"
+        autoComplete="current-password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        error={error?.field('current_password')}
+      />
+      <p className="text-xs text-muted">{t('profile.changeEmailHint')}</p>
+      <div className="flex justify-end gap-2">
+        <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+          {t('common.cancel')}
+        </Button>
+        <Button
+          type="button"
+          disabled={change.isPending || !email || !password}
+          onClick={() =>
+            change.mutate(
+              { email: email.trim(), current_password: password },
+              {
+                onSuccess: () => {
+                  setOpen(false)
+                  setEmail('')
+                  setPassword('')
+                },
+              },
+            )
+          }
+        >
+          {t('profile.saveEmail')}
+        </Button>
+      </div>
+    </div>
   )
 }
