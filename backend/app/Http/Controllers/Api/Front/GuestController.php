@@ -4,14 +4,14 @@ namespace App\Http\Controllers\Api\Front;
 
 use App\Http\Controllers\Controller;
 use App\Models\Guest;
+use App\Models\GuestIdPhoto;
 use App\Models\GuestType;
 use App\Models\Reservation;
-use App\Support\HotelClock;
-use App\Models\GuestIdPhoto;
 use App\Services\GuestIdPhotos;
+use App\Support\HotelClock;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 
 /** Guests are shared by all branches of the hotel (database-schema.md rule 1). */
