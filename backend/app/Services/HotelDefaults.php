@@ -8,6 +8,7 @@ use App\Models\HotelCurrency;
 use App\Models\HotelModule;
 use App\Models\HotelSetting;
 use App\Models\PaymentMethod;
+use App\Models\PlatformSetting;
 use App\Models\Tax;
 use App\Support\Tenancy\TenantContext;
 
@@ -26,7 +27,8 @@ class HotelDefaults
 
     public function apply(Hotel $hotel): void
     {
-        $this->tenant->runAs($hotel, function () use ($hotel) {
+        $defaults = (array) (PlatformSetting::read('new_hotel_defaults') ?? []);
+        $this->tenant->runAs($hotel, function () use ($hotel, $defaults) {
             if (! HotelCurrency::exists()) {
                 HotelCurrency::create(['code' => $hotel->default_currency ?: 'ETB', 'symbol' => $hotel->default_currency === 'USD' ? '$' : 'Br', 'is_default' => true]);
             }
@@ -38,7 +40,7 @@ class HotelDefaults
             }
 
             if (! Tax::exists()) {
-                Tax::create(['name' => 'VAT', 'rate' => '15.00', 'applies_to' => 'all', 'is_inclusive' => false, 'is_active' => true]);
+                Tax::create(['name' => 'VAT', 'rate' => (string) ($defaults['vat_rate'] ?? '15.00'), 'applies_to' => 'all', 'is_inclusive' => false, 'is_active' => true]);
                 Tax::create(['name' => 'Service charge', 'rate' => '10.00', 'applies_to' => 'all', 'is_inclusive' => false, 'is_active' => false]);
             }
 
@@ -58,7 +60,11 @@ class HotelDefaults
             }
 
             // Booking rules, invoice and attendance defaults (only missing keys).
-            $current = $this->settings->group(HotelSettings::BOOKING_DEFAULTS + HotelSettings::INVOICE_DEFAULTS + HotelSettings::ATTENDANCE_DEFAULTS);
+            $current = array_merge(
+                $this->settings->group(HotelSettings::BOOKING_DEFAULTS + HotelSettings::INVOICE_DEFAULTS + HotelSettings::ATTENDANCE_DEFAULTS),
+                // Super Admin → Content: defaults for new hotels.
+                array_filter(array_intersect_key($defaults, array_flip(['deposit_value', 'invoice_footer', 'receipt_paper'])), fn ($v) => $v !== null && $v !== ''),
+            );
             $this->settings->put(array_diff_key($current, array_flip(HotelSetting::pluck('key')->all())));
 
             // Every module in the plan starts switched on.

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('hotels:update-statuses')->hourly()->withoutOverlapping();
 Schedule::command('reservations:expire')->everyMinute()->withoutOverlapping();
 Schedule::command('reports:automation')->everyMinute()->withoutOverlapping();
+Schedule::command('subscriptions:invoices')->dailyAt('07:10')->withoutOverlapping();
 Schedule::command('automations:run')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('reports:automation --alerts')->everyFifteenMinutes()->withoutOverlapping();
 

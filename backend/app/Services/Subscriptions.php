@@ -84,6 +84,7 @@ class Subscriptions
                 'subscription_ends_at' => $end->toDateString(),
             ])->save();
             $this->status->refresh($hotel);
+            app(HotelBilling::class)->markPaid($payment);
 
             return $payment;
         });

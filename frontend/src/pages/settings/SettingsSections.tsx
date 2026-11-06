@@ -13,6 +13,8 @@ import { useMe } from '@/lib/auth'
 import { date, money } from '@/lib/format'
 import { useHotelLogo, useSettingsList, useSettingsObject, useSettingsObjectSave } from '@/lib/settings'
 import { useQueryClient } from '@tanstack/react-query'
+import { MyInvoices } from '@/pages/admin/HotelInvoices'
+import type { HotelInvoice } from '@/lib/platform'
 
 /* ------------------------------------------------------------- helpers */
 
@@ -575,6 +577,7 @@ type Subscription = {
   trial_ends_at: string | null
   subscription_ends_at: string | null
   usage: { branches: number; staff: number; rooms: number }
+  invoices?: HotelInvoice[]
 }
 
 export function SubscriptionSettings() {
@@ -616,6 +619,7 @@ export function SubscriptionSettings() {
           {meter(t('nav.staff'), s.usage.staff, s.plan?.max_staff ?? null)}
         </div>
       </Card>
+      <MyInvoices rows={s.invoices ?? []} />
     </div>
   )
 }

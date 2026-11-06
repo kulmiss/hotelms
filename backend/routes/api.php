@@ -41,7 +41,9 @@ use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\Reports\AutomationController;
 use App\Http\Controllers\Api\Reports\InsightController;
 use App\Http\Controllers\Api\Reports\ReportController;
+use App\Http\Controllers\Api\Admin\PlatformContentController;
 use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\Api\WhatsNewController;
 use App\Http\Controllers\Api\SmartController;
 use App\Http\Controllers\Api\SecurityController;
 use App\Http\Controllers\Api\Settings\BranchSettingsController;
@@ -93,6 +95,8 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
     Route::middleware(['password.changed', 'two.factor'])->group(function () {
         Route::get('/search', SearchController::class)->middleware('throttle:60,1');
         Route::get('/smart/{place}', SmartController::class)->middleware('throttle:120,1');
+        Route::get('/whats-new', [WhatsNewController::class, 'index']);
+        Route::get('/subscription-invoices/{id}', [WhatsNewController::class, 'invoice'])->middleware('permission:subscription.view');
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::post('/notifications/read', [NotificationController::class, 'read']);
         // Help: questions to HotelMS. Open even when the hotel is suspended or in maintenance.
@@ -420,6 +424,23 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
             Route::middleware('platform:system.view')->group(function () {
                 Route::get('/system', SystemController::class);
                 Route::get('/activity', PlatformActivityController::class);
+            });
+            Route::get('/hotels/{hotel}/invoices', [PlatformContentController::class, 'invoices'])->withTrashed();
+            Route::middleware('platform:billing.manage')->group(function () {
+                Route::post('/hotels/{hotel}/invoices', [PlatformContentController::class, 'issueInvoice']);
+                Route::post('/hotel-invoices/{id}/send', [PlatformContentController::class, 'sendInvoice']);
+                Route::post('/hotel-invoices/{id}/void', [PlatformContentController::class, 'voidInvoice']);
+            });
+            Route::middleware('platform:releases.manage')->group(function () {
+                Route::get('/releases', [PlatformContentController::class, 'releases']);
+                Route::post('/releases', [PlatformContentController::class, 'saveRelease']);
+                Route::put('/releases/{id}', [PlatformContentController::class, 'saveRelease']);
+                Route::post('/releases/{id}/publish', [PlatformContentController::class, 'publishRelease']);
+                Route::delete('/releases/{id}', [PlatformContentController::class, 'deleteRelease']);
+            });
+            Route::middleware('platform:content.manage')->group(function () {
+                Route::get('/content', [PlatformContentController::class, 'content']);
+                Route::put('/content', [PlatformContentController::class, 'saveContent']);
             });
             Route::middleware('platform:team.manage')->group(function () {
                 Route::get('/team', [TeamController::class, 'index']);

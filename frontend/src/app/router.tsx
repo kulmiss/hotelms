@@ -48,6 +48,10 @@ const BillingPage = lazy(() => pages.billing().then((m) => ({ default: m.Billing
 const InvoicePage = lazy(() => pages.invoice().then((m) => ({ default: m.InvoicePage })))
 const InvoicePrintPage = lazy(() => pages.invoicePrint().then((m) => ({ default: m.InvoicePrintPage })))
 const RegistrationCardPage = lazy(() => pages.registrationCard().then((m) => ({ default: m.RegistrationCardPage })))
+const ReleasesPage = lazy(() => pages.releases().then((m) => ({ default: m.ReleasesPage })))
+const ContentPage = lazy(() => pages.content().then((m) => ({ default: m.ContentPage })))
+const WhatsNewPage = lazy(() => pages.whatsNew().then((m) => ({ default: m.WhatsNewPage })))
+const SubscriptionInvoicePage = lazy(() => pages.subscriptionInvoice().then((m) => ({ default: m.SubscriptionInvoicePage })))
 const ApprovalsPage = lazy(() => pages.approvals().then((m) => ({ default: m.ApprovalsPage })))
 const FrontDeskModePage = lazy(() => pages.frontDeskMode().then((m) => ({ default: m.FrontDeskModePage })))
 const CashierPage = lazy(() => pages.cashier().then((m) => ({ default: m.CashierPage })))
@@ -133,6 +137,10 @@ export const routes = [
       {
         element: <RequirePermission permission="frontdesk.view" />,
         children: [{ path: '/front-desk', element: page(<FrontDeskModePage />) }],
+      },
+      {
+        element: <RequirePermission permission="subscription.view" />,
+        children: [{ path: '/subscription-invoices/:id', element: page(<SubscriptionInvoicePage />) }],
       },
       {
         path: '/',
@@ -248,10 +256,13 @@ export const routes = [
               { path: 'system', element: page(<SystemPage />) },
               { path: 'team', element: page(<TeamPage />) },
               { path: 'activity', element: page(<PlatformActivityPage />) },
+              { path: 'releases', element: page(<ReleasesPage />) },
+              { path: 'content', element: page(<ContentPage />) },
             ],
           },
           { path: 'profile', element: page(<ProfilePage />) },
           { path: 'help', element: page(<HelpPage />) },
+          { path: 'whats-new', element: page(<WhatsNewPage />) },
           {
             element: <RequirePermission permission="approvals.decide" />,
             children: [{ path: 'approvals', element: page(<ApprovalsPage />) }],

@@ -76,7 +76,9 @@
     "system": "System health",
     "team": "Team",
     "platformActivity": "Activity log",
-    "approvals": "Approvals"
+    "approvals": "Approvals",
+    "releases": "Releases",
+    "content": "Content"
   },
   "topbar": {
     "search": "Search guests, rooms, bookings, bills",
@@ -2478,5 +2480,64 @@
     "open": "Open",
     "dismiss": "Hide this tip",
     "phoneCheck": "Check the number: Ethiopian mobiles look like +251 9XX XXX XXX."
+  },
+  "hotelInvoices": {
+    "title": "Invoice",
+    "listTitle": "Invoices from HotelMS",
+    "next": "Next period to bill: {{from}} – {{to}}",
+    "issue": "Make invoice now",
+    "none": "No invoices yet. They are made a week before the paid period ends.",
+    "dueOn": "due {{date}}",
+    "emailed": "emailed",
+    "send": "Email again",
+    "void": "Void",
+    "voidConfirm": "Void invoice {{number}}?",
+    "issuedToast": "Invoice made and emailed",
+    "sentToast": "Invoice emailed",
+    "status": {
+      "unpaid": "Unpaid",
+      "paid": "Paid",
+      "void": "Void"
+    },
+    "due": "Due",
+    "description": "Description",
+    "amount": "Amount",
+    "total": "Total",
+    "howToPay": "How to pay",
+    "line": "{{plan}} plan, {{cycle}} ({{rooms}} rooms)"
+  },
+  "releases": {
+    "live": "Live version: {{version}}",
+    "new": "New note",
+    "how": "Code updates are installed by following docs/hosting.md (upload, then migrate). Write here what changed: hotels see it under \"What's new\".",
+    "draft": "Draft",
+    "publishedOn": "Published {{date}}",
+    "publish": "Publish",
+    "publishConfirm": "Show this note to every hotel now?",
+    "none": "No notes yet.",
+    "version": "Version",
+    "title": "Title",
+    "body": "What changed (plain words)",
+    "publishedToast": "Published to all hotels"
+  },
+  "content": {
+    "subtitle": "Texts and defaults the HotelMS team controls. Messages to hotels (banners) are on the Switches screen.",
+    "invoiceTitle": "On HotelMS invoices",
+    "billingName": "Company name",
+    "billingTin": "TIN",
+    "billingAddress": "Address",
+    "paymentInstructions": "How hotels pay (bank account, telebirr…)",
+    "welcomeTitle": "Welcome email",
+    "welcomeMessage": "Extra text in the welcome email to new Hotel Admins",
+    "defaultsTitle": "Defaults for new hotels",
+    "defaultsHelp": "Used when a new hotel is created; each hotel can change them later.",
+    "deposit": "Deposit %",
+    "vat": "VAT %"
+  },
+  "whatsNew": {
+    "title": "What's new",
+    "version": "You are on version {{version}}",
+    "none": "Nothing new yet.",
+    "new": "New"
   }
 }

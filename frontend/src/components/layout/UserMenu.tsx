@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import {
   ArrowLeftStartOnRectangleIcon,
   ComputerDesktopIcon,
+  GiftIcon,
   KeyIcon,
   LifebuoyIcon,
   Squares2X2Icon,
@@ -13,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useLogout, useMe } from '@/lib/auth'
 import { useFrontDeskMode } from '@/lib/frontDeskMode'
+import { useHasWhatsNew } from '@/lib/whatsNew'
 import { cn } from '@/lib/cn'
 import { useTheme, type ThemeChoice } from '@/lib/theme'
 
@@ -41,6 +43,7 @@ export function UserMenu() {
   const logout = useLogout()
   const navigate = useNavigate()
   const [, setFrontDesk] = useFrontDeskMode(me.data?.user.id)
+  const hasNews = useHasWhatsNew(me.data?.user.id)
   const { choice, setChoice } = useTheme()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -146,6 +149,11 @@ export function UserMenu() {
                 {t('frontDesk.turnOn')}
               </button>
             )}
+            <Link role="menuitem" to="/whats-new" onClick={() => setOpen(false)} className={item}>
+              <GiftIcon aria-hidden className="size-4 text-icon" />
+              <span className="flex-1">{t('whatsNew.title')}</span>
+              {hasNews && <span aria-label={t('whatsNew.new')} className="size-2 rounded-full bg-accent" />}
+            </Link>
             {!user.is_super_admin && (
               <Link role="menuitem" to="/help" onClick={() => setOpen(false)} className={item}>
                 <LifebuoyIcon aria-hidden className="size-4 text-icon" />

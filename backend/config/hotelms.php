@@ -41,6 +41,8 @@ return [
         'switches.manage' => ['tech'],
         'support.answer' => ['support', 'sales', 'tech'],
         'system.view' => ['tech'],
+        'releases.manage' => ['tech'],
+        'content.manage' => ['support'],
         'team.manage' => [],
     ],
 

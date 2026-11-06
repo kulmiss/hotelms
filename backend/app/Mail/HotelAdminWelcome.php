@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App\Mail\Concerns\Branded;
 use App\Models\Hotel;
+use App\Models\PlatformSetting;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -28,6 +29,6 @@ class HotelAdminWelcome extends Mailable
 
     public function content(): Content
     {
-        return new Content(markdown: 'mail.hotel-admin-welcome', with: $this->brandData());
+        return new Content(markdown: 'mail.hotel-admin-welcome', with: $this->brandData() + ['welcomeMessage' => PlatformSetting::read('welcome_message')]);
     }
 }

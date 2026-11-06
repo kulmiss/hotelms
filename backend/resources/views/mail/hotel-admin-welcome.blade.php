@@ -14,6 +14,10 @@ You will be asked to choose your own password when you sign in for the first tim
 Sign in
 </x-mail::button>
 
+@if ($welcomeMessage)
+{{ $welcomeMessage }}
+
+@endif
 @if ($hotel->trial_ends_at)
 Your free trial runs until {{ $hotel->trial_ends_at->format('j F Y') }}.
 @endif
