@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Banner;
 use App\Models\Branch;
 use App\Models\Hotel;
 use App\Models\User;
@@ -12,7 +13,6 @@ use App\Services\HotelSetup;
 use App\Services\Impersonation;
 use App\Services\Security\TwoFactor;
 use App\Services\Switches;
-use App\Models\Banner;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;

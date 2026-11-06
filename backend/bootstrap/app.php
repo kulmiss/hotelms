@@ -6,10 +6,11 @@ use App\Http\Middleware\EnsureDeviceActive;
 use App\Http\Middleware\EnsureHotelPermission;
 use App\Http\Middleware\EnsureHotelWritable;
 use App\Http\Middleware\EnsureModuleEnabled;
+use App\Http\Middleware\EnsureNoEmergency;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsurePlatformPermission;
+use App\Http\Middleware\EnsureSwitchOn;
 use App\Http\Middleware\EnsureTwoFactorSetUp;
-use App\Http\Middleware\EnsureNoEmergency;
 use App\Http\Middleware\Idempotent;
 use App\Http\Middleware\OneAtATime;
 use App\Http\Middleware\SecurityHeaders;
@@ -46,7 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'one.at.a.time' => OneAtATime::class,
             'idempotent' => Idempotent::class,
             'emergency' => EnsureNoEmergency::class,
-            'switch' => \App\Http\Middleware\EnsureSwitchOn::class,
+            'switch' => EnsureSwitchOn::class,
             'not.impersonating' => BlockDuringImpersonation::class,
             'password.changed' => EnsurePasswordChanged::class,
             'module' => EnsureModuleEnabled::class,

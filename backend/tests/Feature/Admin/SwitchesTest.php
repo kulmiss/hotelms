@@ -5,9 +5,13 @@ namespace Tests\Feature\Admin;
 use App\Models\Branch;
 use App\Models\Hotel;
 use App\Models\Plan;
+use App\Models\RoomType;
 use App\Models\User;
 use App\Services\HotelDefaults;
+use App\Services\Switches;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 /** Super Admin switches (decisions.md W4): everyone → plan → hotel, gifts, schedules, emergency, banners. */
@@ -39,7 +43,7 @@ class SwitchesTest extends TestCase
         $this->admin = User::factory()->withRole($this->hotel, 'hotel_admin')->create();
     }
 
-    private function set(array $data): \Illuminate\Testing\TestResponse
+    private function set(array $data): TestResponse
     {
         return $this->actingAs($this->owner)->postJson('/api/v1/admin/switches', $data + ['starts_at' => null, 'ends_at' => null]);
     }
@@ -70,7 +74,7 @@ class SwitchesTest extends TestCase
     {
         $this->set(['key' => 'feature.hourly_stays', 'level' => 'hotel', 'target_id' => $this->hotel->id, 'value' => false]);
         $branch = Branch::where('hotel_id', $this->hotel->id)->first();
-        $type = app(\App\Support\Tenancy\TenantContext::class)->runAs($this->hotel, fn () => \App\Models\RoomType::create(['branch_id' => $branch->id, 'name' => 'Deluxe', 'base_capacity' => 2, 'max_capacity' => 2, 'nightly_price' => '3000', 'hourly_price' => '300', 'currency' => 'ETB']));
+        $type = app(TenantContext::class)->runAs($this->hotel, fn () => RoomType::create(['branch_id' => $branch->id, 'name' => 'Deluxe', 'base_capacity' => 2, 'max_capacity' => 2, 'nightly_price' => '3000', 'hourly_price' => '300', 'currency' => 'ETB']));
         $this->actingAs($this->admin)->getJson('/api/v1/reservations/lookups')->assertJsonPath('stay_types', ['nightly', 'day_use']);
         $this->postJson('/api/v1/reservations/quote', ['branch_id' => $branch->id, 'stay_type' => 'hourly', 'check_in' => now()->addDay()->format('Y-m-d').'T10:00', 'hours' => 3, 'rooms' => [['room_type_id' => $type->id]]])
             ->assertJsonValidationErrors('stay_type');
@@ -84,14 +88,14 @@ class SwitchesTest extends TestCase
         $this->assertContains('housekeeping', $this->getJson('/api/v1/me')->json('hotel.modules'));
 
         $this->travel(8)->days();
-        app(\App\Services\Switches::class)->flush();
+        app(Switches::class)->flush();
         $this->assertNotContains('housekeeping', $this->getJson('/api/v1/me')->json('hotel.modules')); // the gift ended
 
         // Scheduled: the room limit goes up from tomorrow.
         $this->set(['key' => 'limit.rooms', 'level' => 'hotel', 'target_id' => $this->hotel->id, 'value' => 50, 'starts_at' => now()->addDay()->toIso8601String()])->assertCreated();
         $this->assertSame(10, $this->hotel->fresh()->limit('rooms'));
         $this->travel(2)->days();
-        app(\App\Services\Switches::class)->flush();
+        app(Switches::class)->flush();
         $this->assertSame(50, $this->hotel->fresh()->limit('rooms'));
     }
 

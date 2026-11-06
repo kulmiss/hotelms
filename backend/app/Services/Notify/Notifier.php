@@ -5,6 +5,7 @@ namespace App\Services\Notify;
 use App\Mail\ReportMail;
 use App\Models\Hotel;
 use App\Models\User;
+use App\Services\Switches;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
@@ -43,7 +44,7 @@ class Notifier
         }
 
         if (in_array('telegram', $channels, true)) {
-            if (! app(\App\Services\Switches::class)->on($hotel, 'feature.telegram')) {
+            if (! app(Switches::class)->on($hotel, 'feature.telegram')) {
                 $problems[] = 'Telegram is switched off for this hotel.';
             } elseif (! $this->telegram->enabled()) {
                 $problems[] = 'Telegram is not set up (Super Admin → Settings → Telegram).';
