@@ -200,6 +200,7 @@ class ReservationController extends Controller
             'amount' => ['required', 'decimal:0,2', 'gt:0', 'max:99999999'],
             'currency' => ['nullable', 'string', 'size:3'],
             'reference' => ['nullable', 'string', 'max:100'],
+            'proof_id' => ['nullable', 'integer'],
             'refund_reason' => ['nullable', 'required_if:type,refund', 'string', 'max:200'],
         ]);
         $permission = $data['type'] === 'refund' ? 'payments.refund' : 'payments.take';

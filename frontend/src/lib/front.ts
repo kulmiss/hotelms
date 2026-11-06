@@ -88,7 +88,7 @@ export type ReservationDetail = Omit<ReservationSummary, 'guest' | 'rooms'> & {
     guests: { id: number; name: string }[]
   }[]
   invoices?: { id: number; number: string; status: string; total: string; paid_total: string; balance: string; reservation_room_id: number | null }[]
-  payments: { id: number; type: 'deposit' | 'payment' | 'refund'; amount: string; currency: string; amount_in_base: string; method: string | null; reference: string | null; refund_reason: string | null; paid_at: string; by: string | null }[]
+  payments: { id: number; type: 'deposit' | 'payment' | 'refund'; amount: string; currency: string; amount_in_base: string; method: string | null; reference: string | null; refund_reason: string | null; paid_at: string; by: string | null; proof?: { id: number; mime: string } | null }[]
 }
 
 export type AvailableType = {
@@ -232,7 +232,7 @@ export function usePayLater(id: number) {
   })
 }
 
-export type PaymentInput = { type: 'deposit' | 'payment' | 'refund'; payment_method_id: number; amount: string; currency: string; reference?: string; refund_reason?: string }
+export type PaymentInput = { type: 'deposit' | 'payment' | 'refund'; payment_method_id: number; amount: string; currency: string; reference?: string; refund_reason?: string; proof_id?: number }
 
 /** Same key until the server says yes (no double payment on a bad network, see useMoneyAction). */
 export function useRecordPayment(id: number) {

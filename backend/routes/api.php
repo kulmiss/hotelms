@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\DemoController;
 use App\Http\Controllers\Api\Front\FrontDeskController;
 use App\Http\Controllers\Api\Front\GuestController;
 use App\Http\Controllers\Api\Front\InvoiceController;
+use App\Http\Controllers\Api\Front\PaymentProofController;
 use App\Http\Controllers\Api\Front\ReservationController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\Hotel\ActivityLogController;
@@ -153,6 +154,11 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
                 Route::put('/guests/{id}', [GuestController::class, 'update']);
             });
             Route::post('/guests/{id}/blacklist', [GuestController::class, 'blacklist'])->middleware('permission:guests.blacklist');
+
+            // Payment proof (optional photo or PDF); permissions are checked inside.
+            Route::post('/payment-proofs', [PaymentProofController::class, 'store'])->middleware('throttle:30,1');
+            Route::get('/payment-proofs/{id}', [PaymentProofController::class, 'show']);
+            Route::put('/payments/{payment}/proof', [PaymentProofController::class, 'attach']);
 
             // Reservations.
             Route::middleware('permission:reservations.view')->group(function () {

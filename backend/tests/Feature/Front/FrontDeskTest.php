@@ -17,7 +17,9 @@ use App\Services\HotelSettings;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -519,5 +521,44 @@ class FrontDeskTest extends TestCase
             'branch_id' => $this->branch->id, 'stay_type' => 'nightly', 'check_out' => '2026-11-13', 'guest_id' => $this->guest->id, 'pay_later' => true,
             'rooms' => [['room_type_id' => $this->deluxe->id, 'room_id' => $this->rooms['201']]],
         ])->assertCreated()->assertJsonPath('data.status', 'checked_in')->assertJsonPath('data.paid_total', '0.00');
+    }
+
+    public function test_payment_proof_photo_is_optional_private_and_can_be_added_later(): void
+    {
+        Storage::fake('local');
+        $this->actingAs($this->receptionist);
+        $id = $this->postJson('/api/v1/reservations', [
+            'branch_id' => $this->branch->id, 'stay_type' => 'nightly', 'check_in' => '2026-11-12', 'check_out' => '2026-11-13', 'guest_id' => $this->guest->id,
+            'rooms' => [['room_type_id' => $this->standard->id]],
+        ])->assertCreated()->json('data.id');
+
+        // Only images and PDFs.
+        $this->postJson('/api/v1/payment-proofs', ['file' => UploadedFile::fake()->create('virus.exe', 10, 'application/x-msdownload')])->assertJsonValidationErrors('file');
+        $proof = $this->postJson('/api/v1/payment-proofs', ['file' => UploadedFile::fake()->image('slip.jpg', 800, 600)])->assertCreated()->json('data.id');
+
+        // Sent with the payment.
+        $this->postJson("/api/v1/reservations/$id/payments", ['type' => 'deposit', 'payment_method_id' => $this->cash, 'amount' => '690', 'proof_id' => $proof])->assertCreated();
+        $payment = $this->getJson("/api/v1/reservations/$id")->assertJsonPath('data.payments.0.proof.id', $proof)->json('data.payments.0.id');
+        $this->get("/api/v1/payment-proofs/$proof")->assertOk()->assertHeader('Content-Type', 'image/jpeg');
+
+        // A proof is used once.
+        $this->putJson("/api/v1/payments/$payment/proof", ['proof_id' => $proof])->assertJsonValidationErrors('proof_id');
+
+        // Added later to a payment without proof (e.g. taken at check-out).
+        $this->postJson("/api/v1/reservations/$id/payments", ['type' => 'payment', 'payment_method_id' => $this->cash, 'amount' => '100'])->assertCreated();
+        $second = collect($this->getJson("/api/v1/reservations/$id")->json('data.payments'))->firstWhere('proof', null)['id'];
+        $pdf = $this->postJson('/api/v1/payment-proofs', ['file' => UploadedFile::fake()->create('slip.pdf', 50, 'application/pdf')])->assertCreated()->json('data.id');
+        $this->putJson("/api/v1/payments/$second/proof", ['proof_id' => $pdf])->assertOk();
+
+        // Another hotel never sees it.
+        $other = Hotel::factory()->create();
+        Branch::factory()->for($other)->create();
+        $stranger = User::factory()->withRole($other, 'hotel_admin')->create();
+        $this->actingAs($stranger)->get("/api/v1/payment-proofs/$proof")->assertNotFound();
+
+        // Housekeeping cannot upload or look.
+        $cleaner = User::factory()->withRole($this->hotel, 'housekeeping')->create();
+        $this->actingAs($cleaner)->get("/api/v1/payment-proofs/$proof")->assertForbidden();
+        $this->postJson('/api/v1/payment-proofs', ['file' => UploadedFile::fake()->image('x.jpg')])->assertForbidden();
     }
 }

@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { ProofField, ProofLink, type Proof } from '@/components/payments/PaymentProof'
 import { SmartHints } from '@/components/ui/SmartHints'
 import { useSmart } from '@/lib/smart'
 import { Alert } from '@/components/ui/Alert'
@@ -167,6 +168,7 @@ export function ReservationPage() {
                       {p.reference && ` · ${p.reference}`}
                       {p.refund_reason && ` · ${p.refund_reason}`}
                     </span>
+                    <ProofLink paymentId={p.id} proof={p.proof} canAdd={can('payments.take')} />
                   </span>
                   <span className={p.type === 'refund' ? 'text-danger-text tabular-nums' : 'tabular-nums'}>
                     {p.type === 'refund' ? '− ' : ''}
@@ -229,6 +231,7 @@ function PaymentForm({ r, onDone }: { r: ReservationDetail; onDone: () => void }
   const due = r.status === 'pending' ? subMoney(r.deposit_required, r.paid_total) : r.balance
   const [f, setF] = useState<PaymentInput>({ type: types[0] ?? 'deposit', payment_method_id: 0, amount: isPositive(due) ? due : '', currency: r.currency, reference: '', refund_reason: '' })
   const methodId = f.payment_method_id || lookups.data?.payment_methods[0]?.id || 0
+  const [proof, setProof] = useState<Proof | null>(null)
   const error = pay.error instanceof ApiError ? pay.error : null
 
   return (
@@ -237,7 +240,7 @@ function PaymentForm({ r, onDone }: { r: ReservationDetail; onDone: () => void }
       className="grid gap-3 rounded-lg bg-sunken p-4 sm:grid-cols-3"
       onSubmit={(e) => {
         e.preventDefault()
-        pay.mutate({ ...f, payment_method_id: methodId }, { onSuccess: onDone })
+        pay.mutate({ ...f, payment_method_id: methodId, proof_id: proof?.id }, { onSuccess: onDone })
       }}
     >
       <Select label={t('reservations.paymentType')} value={f.type} onChange={(e) => setF({ ...f, type: e.target.value as PaymentInput['type'] })}>
@@ -271,6 +274,9 @@ function PaymentForm({ r, onDone }: { r: ReservationDetail; onDone: () => void }
         )}
       </div>
       <Field label={t('reservations.reference')} value={f.reference ?? ''} hint={t('reservations.referenceHint')} onChange={(e) => setF({ ...f, reference: e.target.value })} />
+      <div className="sm:col-span-3">
+        <ProofField value={proof} onChange={setProof} />
+      </div>
       {f.type === 'refund' && <Field label={t('reservations.refundReason')} value={f.refund_reason ?? ''} onChange={(e) => setF({ ...f, refund_reason: e.target.value })} error={error?.field('refund_reason')} />}
       {pay.error && !error && <Alert>{t('common.serverUnreachable')}</Alert>}
       {error && !Object.keys(error.errors).length && <Alert>{error.message}</Alert>}

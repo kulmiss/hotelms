@@ -2505,6 +2505,18 @@
     "approvedToast": "Approved and done",
     "rejectedToast": "Rejected – nothing was changed"
   },
+  "proof": {
+    "label": "Payment proof",
+    "optional": "(optional photo or PDF)",
+    "takePhoto": "Take photo",
+    "chooseFile": "Choose file",
+    "added": "Proof added",
+    "remove": "Remove proof",
+    "uploading": "Uploading…",
+    "view": "Proof",
+    "add": "Add proof",
+    "saved": "Proof added."
+  },
   "payLater": {
     "option": "Pay at check-out",
     "bookingHint": "No deposit: the booking is confirmed now and the guest pays everything before leaving.",

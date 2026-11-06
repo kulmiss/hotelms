@@ -40,7 +40,7 @@ class ReservationPresenter
     /** @return array<string, mixed> */
     public static function detail(Reservation $r, Hotel $hotel): array
     {
-        $r->load(['guest', 'branch:id,name,code', 'rooms.roomType:id,name', 'rooms.room:id,number', 'rooms.rates', 'rooms.guests:id,first_name,last_name', 'payments.method:id,name', 'payments.receiver:id,name', 'creator:id,name', 'payLaterBy:id,name', 'invoices']);
+        $r->load(['guest', 'branch:id,name,code', 'rooms.roomType:id,name', 'rooms.room:id,number', 'rooms.rates', 'rooms.guests:id,first_name,last_name', 'payments.method:id,name', 'payments.receiver:id,name', 'payments.proof', 'creator:id,name', 'payLaterBy:id,name', 'invoices']);
 
         return array_merge(self::summary($r, $hotel), [
             'guest' => $r->guest,
@@ -80,6 +80,7 @@ class ReservationPresenter
                 'id' => $p->id, 'type' => $p->type, 'amount' => $p->amount, 'currency' => $p->currency, 'amount_in_base' => $p->amount_in_base,
                 'method' => $p->method?->name, 'reference' => $p->reference, 'refund_reason' => $p->refund_reason,
                 'paid_at' => HotelClock::iso($p->paid_at, $hotel), 'by' => $p->receiver?->name,
+                'proof' => $p->proof ? ['id' => $p->proof->id, 'mime' => $p->proof->mime] : null,
             ])->values(),
         ]);
     }

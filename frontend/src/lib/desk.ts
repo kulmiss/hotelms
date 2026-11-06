@@ -19,7 +19,7 @@ export type CheckInInfo = {
 }
 export type CheckOutInfo = { reservation: ReservationDetail; late_fee: string | null; balance: string }
 export type FreeRoom = { id: number; number: string; floor: string | null; room_type_id: number; room_type: string | null; nightly_price: string | null; day_use_price: string | null; hourly_price: string | null; max_capacity: number | null; currency: string | null }
-export type PaymentFields = { payment_method_id: number; amount: string; currency?: string; reference?: string }
+export type PaymentFields = { payment_method_id: number; amount: string; currency?: string; reference?: string; proof_id?: number }
 
 const branchQs = (branchId: number | null) => (branchId ? `?branch_id=${branchId}` : '')
 
@@ -129,7 +129,7 @@ export type InvoiceDetail = InvoiceSummary & {
   stay: { check_in_at: string; check_out_at: string; status: string; rooms: { id: number; room_number: string | null; room_type: string | null }[] } | null
   items: InvoiceItem[]
   taxes: { name: string; rate: string; is_inclusive: boolean; amount: string }[]
-  payments: { id: number; type: string; amount: string; currency: string; amount_in_base: string; method: string | null; reference: string | null; refund_reason: string | null; paid_at: string; by: string | null }[]
+  payments: { id: number; type: string; amount: string; currency: string; amount_in_base: string; method: string | null; reference: string | null; refund_reason: string | null; paid_at: string; by: string | null; proof?: { id: number; mime: string } | null }[]
   hotel: PrintHotel
 }
 
@@ -149,7 +149,7 @@ export const useAddCharge = (id: number) =>
   useDeskAction((v: { type: 'extra' | 'discount'; charge_type_id?: number | null; description?: string; quantity?: string; unit_price?: string; discount_percent?: string }) => post<{ data: InvoiceDetail }>(`/invoices/${id}/items`, v))
 export const useRemoveItem = (id: number) => useDeskAction((itemId: number) => del(`/invoices/${id}/items/${itemId}`))
 export const useInvoicePayment = (id: number) =>
-  useMoneyAction((v: { type: 'payment' | 'refund'; payment_method_id: number; amount: string; currency: string; reference?: string; refund_reason?: string }, h) => post<{ data: InvoiceDetail }>(`/invoices/${id}/payments`, v, h))
+  useMoneyAction((v: { type: 'payment' | 'refund'; payment_method_id: number; amount: string; currency: string; reference?: string; refund_reason?: string; proof_id?: number }, h) => post<{ data: InvoiceDetail }>(`/invoices/${id}/payments`, v, h))
 export const useVoidInvoice = (id: number) => useDeskAction((reason: string) => post<{ data: InvoiceDetail }>(`/invoices/${id}/void`, { reason }))
 export const useSplitInvoice = (id: number) => useDeskAction(() => post<{ data: InvoiceSummary[] }>(`/invoices/${id}/split`))
 

@@ -153,6 +153,29 @@ describe('quick check-in', () => {
   })
 })
 
+describe('payment proof', () => {
+  it('adds an optional photo to a payment', async () => {
+    const fetchMock = mockApi({
+      'GET /me': { body: me() },
+      'GET /reservations/9': { body: { data: reservation } },
+      'GET /reservations/lookups': { body: { policies: [], payment_methods: [{ id: 1, name: 'Bank transfer', type: 'bank_transfer' }], currencies: [] } },
+      'POST /payment-proofs': { status: 201, body: { data: { id: 77, mime: 'image/jpeg' } } },
+      'POST /reservations/9/payments': { status: 201, body: { data: {} } },
+    })
+    renderApp('/reservations/9')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Record payment' }))
+    await userEvent.upload(screen.getByLabelText('Choose file'), new File(['slip'], 'slip.jpg', { type: 'image/jpeg' }))
+    expect(await screen.findByText('Proof added')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Save payment' }))
+
+    await waitFor(() => {
+      const call = fetchMock.mock.calls.find(([url, init]) => String(url).endsWith('/reservations/9/payments') && init?.method === 'POST')
+      expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ proof_id: 77 })
+    })
+  })
+})
+
 describe('billing', () => {
   it('adds an extra charge to a bill', async () => {
     const fetchMock = mockApi({

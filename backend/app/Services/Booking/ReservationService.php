@@ -25,6 +25,7 @@ use App\Support\Money;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Api\Front\PaymentProofController;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -194,6 +195,8 @@ class ReservationService
                 'paid_at' => now(),
                 'received_by' => $user->id,
             ]);
+            // Optional proof (photo or PDF) uploaded just before.
+            PaymentProofController::link(isset($data['proof_id']) ? (int) $data['proof_id'] : null, $payment, $user->id);
             $this->refreshPaid($reservation);
             $this->confirmIfPaid($reservation->refresh());
             if ($invoice) {

@@ -7,6 +7,7 @@ use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['hotel_id', 'branch_id', 'reservation_id', 'invoice_id', 'payment_method_id', 'cashier_session_id', 'type', 'amount', 'currency', 'exchange_rate', 'amount_in_base', 'reference', 'refund_reason', 'paid_at', 'received_by'])]
 class Payment extends Model
@@ -18,6 +19,12 @@ class Payment extends Model
     protected function casts(): array
     {
         return ['amount' => 'decimal:2', 'exchange_rate' => 'decimal:6', 'amount_in_base' => 'decimal:2', 'paid_at' => 'datetime'];
+    }
+
+    /** @return HasOne<PaymentProof, $this> */
+    public function proof(): HasOne
+    {
+        return $this->hasOne(PaymentProof::class)->latestOfMany();
     }
 
     /** @return BelongsTo<PaymentMethod, $this> */

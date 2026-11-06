@@ -282,6 +282,7 @@ class FrontDeskController extends Controller
             'payment.amount' => ['nullable', 'decimal:0,2', 'min:0', 'max:99999999'],
             'payment.currency' => ['nullable', 'string', 'size:3'],
             'payment.reference' => ['nullable', 'string', 'max:100'],
+            'payment.proof_id' => ['nullable', 'integer'],
         ];
     }
 

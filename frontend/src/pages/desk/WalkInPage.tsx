@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { ProofField, type Proof } from '@/components/payments/PaymentProof'
 import { CheckIcon } from '@heroicons/react/20/solid'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
@@ -40,6 +41,7 @@ export function WalkInPage() {
   const [methodId, setMethodId] = useState(0)
   const [amount, setAmount] = useState<string | null>(null)
   const [reference, setReference] = useState('')
+  const [proof, setProof] = useState<Proof | null>(null)
   const [payLater, setPayLater] = useState(false)
   const free = useFreeRooms(branchId || null, true, { stay_type: stayType, check_out: checkOut, hours })
   const walkIn = useWalkIn()
@@ -77,7 +79,7 @@ export function WalkInPage() {
         hours: input.hours,
         ...(quick ? { quick_guest: { name: quickName.trim(), phone: quickPhone.trim() } } : { guest_id: guest?.id }),
         rooms: chosen.map((r) => ({ room_type_id: r.room_type_id, room_id: r.id, adults: 1, children: 0 })),
-        ...(payLater ? { pay_later: true } : { payment: { payment_method_id: methodId || lookups.data?.payment_methods[0]?.id || 0, amount: pay, reference: reference || undefined } }),
+        ...(payLater ? { pay_later: true } : { payment: { payment_method_id: methodId || lookups.data?.payment_methods[0]?.id || 0, amount: pay, reference: reference || undefined, proof_id: proof?.id } }),
       },
       { onSuccess: (res) => navigate(`/reservations/${res.data.id}`, { replace: true }) },
     )
@@ -207,6 +209,7 @@ export function WalkInPage() {
               </Select>
               <Field label={t('reservations.amount')} inputMode="decimal" value={pay} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ''))} error={error?.field('payment.amount')} />
               <Field label={t('reservations.reference')} value={reference} onChange={(e) => setReference(e.target.value)} />
+              <ProofField value={proof} onChange={setProof} />
             </div>
           )}
           {error && !error.field('payment.amount') && <Alert>{Object.values(error.errors)[0]?.[0] ?? error.message}</Alert>}

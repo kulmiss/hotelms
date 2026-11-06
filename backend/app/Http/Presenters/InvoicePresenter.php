@@ -33,7 +33,7 @@ class InvoicePresenter
     /** @return array<string, mixed> */
     public static function detail(Invoice $i, Hotel $hotel): array
     {
-        $i->load(['items.taxes', 'payments.method:id,name', 'payments.receiver:id,name', 'reservation.rooms.room:id,number', 'reservation.rooms.roomType:id,name', 'guest', 'branch']);
+        $i->load(['items.taxes', 'payments.method:id,name', 'payments.receiver:id,name', 'payments.proof', 'reservation.rooms.room:id,number', 'reservation.rooms.roomType:id,name', 'guest', 'branch']);
         $taxes = [];
         foreach ($i->items as $item) {
             foreach ($item->taxes as $tax) {
@@ -67,6 +67,7 @@ class InvoicePresenter
                 'id' => $p->id, 'type' => $p->type, 'amount' => $p->amount, 'currency' => $p->currency, 'amount_in_base' => $p->amount_in_base,
                 'method' => $p->method?->name, 'reference' => $p->reference, 'refund_reason' => $p->refund_reason,
                 'paid_at' => HotelClock::iso($p->paid_at, $hotel), 'by' => $p->receiver?->name,
+                'proof' => $p->proof ? ['id' => $p->proof->id, 'mime' => $p->proof->mime] : null,
             ])->values(),
             'hotel' => self::printHeader($hotel),
         ]);
