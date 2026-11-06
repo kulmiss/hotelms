@@ -199,3 +199,21 @@
     display: none;
   }
 }
+
+/* A setting found by the settings search: a short accent glow. */
+.find-flash {
+  border-radius: 0.5rem;
+  animation: find-flash 2s ease-out both;
+}
+
+@keyframes find-flash {
+  0%,
+  40% {
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 55%, transparent);
+    background-color: color-mix(in oklab, var(--color-accent) 10%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 3px transparent;
+    background-color: transparent;
+  }
+}

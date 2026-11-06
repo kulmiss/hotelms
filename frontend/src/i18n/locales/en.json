@@ -601,6 +601,7 @@
   },
   "settings": {
     "subtitle": "How your hotel works: profile, money, rules and features.",
+    "search": { "label": "Search settings", "placeholder": "Search settings, e.g. VAT", "none": "No setting found." },
     "sections": {
       "profile": "Hotel profile",
       "branches": "Branches",
@@ -2001,7 +2002,8 @@
       "bill": "Bill",
       "hotel": "Hotel",
       "person": "Person",
-      "answer": "Answer"
+      "answer": "Answer",
+      "setting": "Setting"
     }
   },
   "help": {
