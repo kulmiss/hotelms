@@ -27,7 +27,8 @@ class GuestController extends Controller
             ->orderByDesc('id')
             ->paginate(max(1, min(100, (int) $request->input('per_page', 25))))
             // The list shows only the end of the ID number; the full number is on the guest's own page.
-            ->through(fn (Guest $g) => $g->setAttribute('id_number', Guest::maskId($g->id_number)));
+            // (Plain arrays, so the masked number is not encrypted again just to be shown.)
+            ->through(fn (Guest $g) => ['id_number' => Guest::maskId($g->id_number)] + $g->toArray());
 
         return response()->json($guests);
     }

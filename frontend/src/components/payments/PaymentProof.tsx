@@ -77,7 +77,7 @@ export function ProofLink({ paymentId, proof, canAdd }: { paymentId: number; pro
   const up = useUploadProof()
   const attach = useMutation({
     mutationFn: (proofId: number) => put(`/payments/${paymentId}/proof`, { proof_id: proofId }),
-    onSuccess: () => qc.invalidateQueries(),
+    onSuccess: () => Promise.all(['reservations', 'invoices', 'desk'].map((k) => qc.invalidateQueries({ queryKey: [k] }))),
     meta: { toast: 'proof.saved' },
   })
   const file = useRef<HTMLInputElement>(null)

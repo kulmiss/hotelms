@@ -43,9 +43,13 @@ class FrontDeskController extends Controller
                 ->orWhere(fn ($w) => $w->whereIn('status', ['pending', 'confirmed'])->where('check_in_at', '<=', $todayEnd)))
             ->get();
         // The next booking of each room after today (so reception sees a room is taken from a future date).
-        $later = ReservationRoom::with(['reservation.guest:id,first_name,last_name'])->whereNotNull('room_id')->whereIn('status', ['pending', 'confirmed'])
-            ->whereHas('reservation', fn ($q) => $q->where('branch_id', $branch->id))->where('check_in_at', '>', $todayEnd)
-            ->orderBy('check_in_at')->get()->unique('room_id')->keyBy('room_id');
+        // (Two small queries: the first future date per room, then only those bookings; the board is polled every 30 s.)
+        $roomIds = Room::where('branch_id', $branch->id)->pluck('id');
+        $firsts = ReservationRoom::whereIn('room_id', $roomIds)->whereIn('status', ['pending', 'confirmed'])->where('check_in_at', '>', $todayEnd)
+            ->groupBy('room_id')->selectRaw('room_id, MIN(check_in_at) as first_in')->pluck('first_in', 'room_id');
+        $later = $firsts->isEmpty() ? collect() : ReservationRoom::with(['reservation.guest:id,first_name,last_name'])->whereIn('status', ['pending', 'confirmed'])
+            ->where(fn ($q) => $firsts->each(fn ($at, $room) => $q->orWhere(fn ($w) => $w->where('room_id', $room)->where('check_in_at', $at))))
+            ->get()->unique('room_id')->keyBy('room_id');
         $balances = Invoice::whereIn('reservation_id', $stays->pluck('reservation_id'))->where('status', '!=', 'void')
             ->selectRaw('reservation_id, sum(balance) as b')->groupBy('reservation_id')->pluck('b', 'reservation_id');
 
