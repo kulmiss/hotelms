@@ -168,6 +168,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
             });
             Route::post('/reservations', [ReservationController::class, 'store'])->middleware('permission:reservations.create');
             Route::put('/reservations/{id}', [ReservationController::class, 'update'])->middleware(['permission:reservations.edit', 'one.at.a.time:reservation']);
+            Route::post('/reservations/{id}/pay-later', [ReservationController::class, 'payLater'])->middleware(['permission:reservations.edit', 'one.at.a.time:reservation']);
             Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->middleware(['permission:reservations.cancel', 'one.at.a.time:reservation']);
             Route::post('/reservations/{id}/no-show', [ReservationController::class, 'noShow'])->middleware(['permission:reservations.no_show', 'one.at.a.time:reservation']);
 

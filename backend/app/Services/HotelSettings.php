@@ -16,6 +16,7 @@ class HotelSettings
         'deposit_value' => '30',
         'pending_expiry_hours' => 24,
         'walk_in_payment' => 'full', // full, deposit
+        'allow_pay_later' => false, // staff with the permission may let a guest pay everything at check-out
         'early_check_in_fee_type' => 'percent', // fixed, percent (of one night)
         'early_check_in_fee_value' => '50',
         'late_check_out_fee_type' => 'percent',

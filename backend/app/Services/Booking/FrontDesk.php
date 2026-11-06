@@ -157,7 +157,11 @@ class FrontDesk
 
         return DB::transaction(function () use ($data, $user, $rules) {
             $preview = $this->reservations->preview($data, $user);
-            $required = $rules['walk_in_payment'] === 'deposit' ? $preview['deposit_required'] : $preview['total'];
+            $payLater = ! empty($data['pay_later']);
+            if ($payLater) {
+                $this->reservations->assertPayLater($user);
+            }
+            $required = $payLater ? '0.00' : ($rules['walk_in_payment'] === 'deposit' ? $preview['deposit_required'] : $preview['total']);
             $paid = (string) ($data['payment']['amount'] ?? '0');
             if (Money::isPositive($required) && empty($data['payment']['payment_method_id'])) {
                 throw ValidationException::withMessages(['payment.amount' => 'Take '.$required.' '.$preview['currency'].' before check-in.']);

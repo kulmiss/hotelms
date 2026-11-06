@@ -59,6 +59,8 @@ export type PriceLine = { date: string; label: string; amount: string; rule_name
 
 export type ReservationDetail = Omit<ReservationSummary, 'guest' | 'rooms'> & {
   guest: Guest
+  /** Allowed to pay everything at check-out, and by whom. */
+  pay_later?: { by: string | null; at: string | null } | null
   notes: string | null
   subtotal: string
   discount_percent: string
@@ -113,6 +115,8 @@ export type BookingInput = StayInput & {
   source?: string
   notes?: string | null
   walk_in?: boolean
+  /** No deposit or up-front payment: the guest pays at check-out. */
+  pay_later?: boolean
 }
 
 export type Quote = {
@@ -218,6 +222,16 @@ export function useCancelReservation(id: number) {
   })
 }
 
+/** Confirm a pending booking without a deposit: the guest pays everything at check-out. */
+export function usePayLater(id: number) {
+  const invalidate = useInvalidate()
+  return useMutation({
+    mutationFn: () => post<{ data: ReservationDetail }>(`/reservations/${id}/pay-later`, {}),
+    onSuccess: invalidate,
+    meta: { toast: 'payLater.done' },
+  })
+}
+
 export type PaymentInput = { type: 'deposit' | 'payment' | 'refund'; payment_method_id: number; amount: string; currency: string; reference?: string; refund_reason?: string }
 
 /** Same key until the server says yes (no double payment on a bad network, see useMoneyAction). */
@@ -246,6 +260,8 @@ export type Lookups = {
   policies: { id: number; name: string; free_until_hours: number | null; penalty_type: string; penalty_value: string; is_default: boolean }[]
   payment_methods: { id: number; name: string; type: string }[]
   currencies: { code: string; symbol: string; is_default: boolean }[]
+  /** May this person let a guest pay everything at check-out (hotel allows it + permission)? */
+  pay_later?: boolean
 }
 
 export const useLookups = () => useQuery({ queryKey: ['reservations', 'lookups'], queryFn: () => api<Lookups>('/reservations/lookups'), staleTime: 60_000 })

@@ -62,7 +62,11 @@ class ReservationService
             $this->lockTypes($data);
             $plan = $this->plan($data, $user, null);
             $hotel = $user->hotel;
-            $pending = Money::isPositive($plan['deposit_required']);
+            $payLater = ! empty($data['pay_later']);
+            if ($payLater) {
+                $this->assertPayLater($user);
+            }
+            $pending = ! $payLater && Money::isPositive($plan['deposit_required']);
 
             $reservation = Reservation::create([
                 'branch_id' => $plan['branch']->id,
@@ -88,6 +92,8 @@ class ReservationService
                 'paid_total' => '0.00',
                 'notes' => $data['notes'] ?? null,
                 'created_by' => $user->id,
+                'pay_later_by' => $payLater ? $user->id : null,
+                'pay_later_at' => $payLater ? now() : null,
             ]);
             $this->saveRooms($reservation, $plan);
 
@@ -527,6 +533,35 @@ class ReservationService
         $in = Money::sum($payments->where('type', '!=', 'refund')->pluck('amount_in_base')->map(fn ($v) => (string) $v));
         $out = Money::sum($payments->where('type', 'refund')->pluck('amount_in_base')->map(fn ($v) => (string) $v));
         $reservation->update(['paid_total' => Money::sub($in, $out)]);
+    }
+
+    /** "Pay at check-out": the hotel allows it (Booking rules) and the person has the permission. */
+    public function canPayLater(User $user): bool
+    {
+        return (bool) $this->settings->group(HotelSettings::BOOKING_DEFAULTS)['allow_pay_later'] && $user->hasPermission('payments.pay_later');
+    }
+
+    public function assertPayLater(User $user): void
+    {
+        if (! $this->canPayLater($user)) {
+            throw ValidationException::withMessages(['pay_later' => 'Paying at check-out is not allowed for you. Ask your manager.']);
+        }
+    }
+
+    /** A pending booking is confirmed without a deposit: the guest pays everything at check-out. */
+    public function payLater(Reservation $reservation, User $user): Reservation
+    {
+        $this->assertPayLater($user);
+        if ($reservation->status !== 'pending') {
+            throw ValidationException::withMessages(['status' => 'Only bookings waiting for a deposit can be changed to pay at check-out.']);
+        }
+
+        return DB::transaction(function () use ($reservation, $user) {
+            $reservation->update(['status' => 'confirmed', 'expires_at' => null, 'pay_later_by' => $user->id, 'pay_later_at' => now()]);
+            $reservation->rooms()->update(['status' => 'confirmed']);
+
+            return $reservation->fresh();
+        });
     }
 
     public function confirmIfPaid(Reservation $reservation): void

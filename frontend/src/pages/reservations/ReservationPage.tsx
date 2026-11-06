@@ -13,7 +13,7 @@ import { Select } from '@/components/ui/Select'
 import { ApiError } from '@/lib/api'
 import { compareMoney, isPositive, subMoney } from '@/lib/decimal'
 import { date, money } from '@/lib/format'
-import { localDate, localTime, STATUS_TONES, today, useCancellationTerms, useCancelReservation, useLookups, useRecordPayment, useReservation, type PaymentInput, type ReservationDetail } from '@/lib/front'
+import { localDate, localTime, STATUS_TONES, today, useCancellationTerms, useCancelReservation, useLookups, usePayLater, useRecordPayment, useReservation, type PaymentInput, type ReservationDetail } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { Line, QuoteSummary } from './ReservationFormPage'
 import { StayText } from './ReservationsPage'
@@ -29,6 +29,8 @@ export function ReservationPage() {
   const [action, setAction] = useState<'pay' | 'cancel' | 'no_show' | 'check_in' | 'check_out' | 'change' | null>(() =>
     params.get('action') === 'check-in' ? 'check_in' : params.get('action') === 'check-out' ? 'check_out' : null,
   )
+  const lookups = useLookups()
+  const payLater = usePayLater(Number(id))
   if (!q.data) return null
   const r = q.data.data
   const editable = r.status === 'pending' || r.status === 'confirmed'
@@ -44,6 +46,7 @@ export function ReservationPage() {
             <Badge tone={STATUS_TONES[r.status]}>{t(`reservations.statuses.${r.status}`)}</Badge>
             <span>{r.branch?.name}</span>
             {r.status === 'pending' && r.expires_at && <span className="text-warn-text">{t('reservations.expiresAt', { time: `${date(localDate(r.expires_at))} ${localTime(r.expires_at)}` })}</span>}
+            {r.pay_later && <Badge tone="info">{t('payLater.badge', { name: r.pay_later.by ?? '—' })}</Badge>}
           </span>
         }
         breadcrumbs={[{ label: t('nav.reservations'), to: '/reservations' }, { label: r.code }]}
@@ -67,6 +70,11 @@ export function ReservationPage() {
             {r.status === 'checked_in' && can('frontdesk.room_move') && (
               <Button variant="secondary" onClick={() => setAction('change')}>
                 {t('desk.changeStay')}
+              </Button>
+            )}
+            {r.status === 'pending' && can('reservations.edit') && lookups.data?.pay_later && (
+              <Button variant="secondary" disabled={payLater.isPending} onClick={() => payLater.mutate()}>
+                {t('payLater.option')}
               </Button>
             )}
             {editable && can('reservations.edit') && (

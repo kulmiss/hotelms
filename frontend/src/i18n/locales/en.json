@@ -500,6 +500,7 @@
     "frontdesk.check_out": "Check guests out",
     "frontdesk.room_move": "Move room / extend stay",
     "frontdesk.quick_check_in": "Quick check-in (name and phone now, the rest later)",
+    "payments.pay_later": "Pay at check-out (no deposit or up-front payment)",
     "fees.waive": "Waive early check-in / late check-out fee",
     "checkout.approve_balance": "Allow check-out with unpaid balance",
     "reservations.view": "See calendar, list and details",
@@ -727,6 +728,8 @@
       "walkIn": "Walk-in guests pay",
       "walkInFull": "The full stay up front",
       "walkInDeposit": "A deposit up front",
+      "payLater": "Some guests may pay everything at check-out",
+      "payLaterHint": "People with the \"Pay at check-out\" permission can skip the deposit and the up-front payment for a guest. The guest still pays before leaving.",
       "fees": "Early check-in and late check-out",
       "early_check_in": "Early check-in fee",
       "late_check_out": "Late check-out fee",
@@ -2501,6 +2504,14 @@
     "reject": "Reject",
     "approvedToast": "Approved and done",
     "rejectedToast": "Rejected – nothing was changed"
+  },
+  "payLater": {
+    "option": "Pay at check-out",
+    "bookingHint": "No deposit: the booking is confirmed now and the guest pays everything before leaving.",
+    "walkInHint": "Check in without payment now. The guest pays everything before leaving.",
+    "checkInNow": "Check in (pay at check-out)",
+    "badge": "Pays at check-out · allowed by {{name}}",
+    "done": "Confirmed. The guest pays at check-out."
   },
   "smart": {
     "label": "Smart",

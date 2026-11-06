@@ -40,7 +40,7 @@ class ReservationPresenter
     /** @return array<string, mixed> */
     public static function detail(Reservation $r, Hotel $hotel): array
     {
-        $r->load(['guest', 'branch:id,name,code', 'rooms.roomType:id,name', 'rooms.room:id,number', 'rooms.rates', 'rooms.guests:id,first_name,last_name', 'payments.method:id,name', 'payments.receiver:id,name', 'creator:id,name', 'invoices']);
+        $r->load(['guest', 'branch:id,name,code', 'rooms.roomType:id,name', 'rooms.room:id,number', 'rooms.rates', 'rooms.guests:id,first_name,last_name', 'payments.method:id,name', 'payments.receiver:id,name', 'creator:id,name', 'payLaterBy:id,name', 'invoices']);
 
         return array_merge(self::summary($r, $hotel), [
             'guest' => $r->guest,
@@ -60,6 +60,8 @@ class ReservationPresenter
             'cancel_reason' => $r->cancel_reason,
             'created_by' => $r->creator?->name,
             'created_at' => HotelClock::iso($r->created_at, $hotel),
+            // Allowed to pay everything at check-out (no deposit or up-front payment), and by whom.
+            'pay_later' => $r->pay_later_at ? ['by' => $r->payLaterBy?->name, 'at' => HotelClock::iso($r->pay_later_at, $hotel)] : null,
             'rooms' => $r->rooms->map(fn (ReservationRoom $rr) => [
                 'id' => $rr->id,
                 'room_type_id' => $rr->room_type_id,

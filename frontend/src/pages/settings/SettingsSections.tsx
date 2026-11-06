@@ -416,6 +416,13 @@ function BookingRulesForm({ initial }: { initial: BookingRules }) {
         <option value="full">{t('settings.rules.walkInFull')}</option>
         <option value="deposit">{t('settings.rules.walkInDeposit')}</option>
       </Select>
+      <label className="flex min-h-touch items-start gap-3 text-[13px]">
+        <input type="checkbox" className="mt-0.5 size-4 rounded accent-accent" checked={!!f.allow_pay_later} onChange={(e) => set('allow_pay_later', e.target.checked)} />
+        <span className="flex flex-col">
+          {t('settings.rules.payLater')}
+          <span className="text-xs text-muted">{t('settings.rules.payLaterHint')}</span>
+        </span>
+      </label>
 
       <h3 className="pt-2 text-sm font-semibold">{t('settings.rules.fees')}</h3>
       <div className="grid gap-4 sm:grid-cols-2">

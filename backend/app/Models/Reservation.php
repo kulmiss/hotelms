@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable([
     'hotel_id', 'branch_id', 'code', 'guest_id', 'source', 'stay_type', 'check_in_at', 'check_out_at', 'adults', 'children',
     'status', 'expires_at', 'cancellation_policy_id', 'policy_snapshot', 'currency', 'subtotal', 'discount_percent', 'discount_amount', 'tax_total',
-    'total', 'deposit_required', 'paid_total', 'cancellation_fee', 'notes', 'created_by', 'checked_in_by', 'checked_out_by', 'cancelled_at', 'cancel_reason', 'cancelled_by',
+    'total', 'deposit_required', 'paid_total', 'cancellation_fee', 'notes', 'created_by', 'checked_in_by', 'checked_out_by', 'pay_later_by', 'pay_later_at', 'cancelled_at', 'cancel_reason', 'cancelled_by',
 ])]
 class Reservation extends Model
 {
@@ -72,6 +72,12 @@ class Reservation extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function payLaterBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'pay_later_by');
     }
 
     /** @return BelongsTo<User, $this> */

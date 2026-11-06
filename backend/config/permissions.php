@@ -32,6 +32,7 @@ return [
             'frontdesk.view' => [$BM, $RC],
             'frontdesk.walk_in' => [$BM, $RC],
             'frontdesk.quick_check_in' => [$BM, $RC], // walk-in with only name and phone; the rest later
+            'payments.pay_later' => [$BM], // no deposit or up-front payment: the guest pays at check-out
             'frontdesk.check_in' => [$BM, $RC],
             'frontdesk.check_out' => [$BM, $RC],
             'frontdesk.room_move' => [$BM, $RC],
