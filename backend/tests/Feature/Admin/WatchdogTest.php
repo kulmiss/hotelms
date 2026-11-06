@@ -88,7 +88,7 @@ class WatchdogTest extends TestCase
         $f = $this->open('snooping')->first();
         $this->assertNotNull($f, 'Expected a snooping finding (branch '.$theirs.')');
         $this->assertSame($this->a->id, $f->hotel_id);
-        $this->assertStringContainsString('Curious Clerk', json_encode($f->details));
+        $this->assertStringContainsString('Curious Clerk', json_encode($f->details, JSON_UNESCAPED_SLASHES));
     }
 
     public function test_data_of_two_hotels_mixed_is_found_and_closes_when_repaired(): void
@@ -105,7 +105,7 @@ class WatchdogTest extends TestCase
         $f = $this->open('mixed_hotels')->first();
         $this->assertSame('critical', $f->severity);
         $this->assertSame($this->a->id, $f->hotel_id);
-        $this->assertStringContainsString('Lalibela Inn', json_encode($f->details));
+        $this->assertStringContainsString('Lalibela Inn', json_encode($f->details, JSON_UNESCAPED_SLASHES));
 
         DB::table('rooms')->where('id', $room->id)->update(['branch_id' => $branchA]);
         $this->check();
@@ -121,8 +121,8 @@ class WatchdogTest extends TestCase
         $this->check();
 
         $f = $this->open('server_error')->first();
-        $this->assertStringContainsString('Insights.php:120', json_encode($f->details));
-        $this->assertStringContainsString('/api/v1/reports/daily', json_encode($f->details));
+        $this->assertStringContainsString('Insights.php:120', json_encode($f->details, JSON_UNESCAPED_SLASHES));
+        $this->assertStringContainsString('/api/v1/reports/daily', json_encode($f->details, JSON_UNESCAPED_SLASHES));
     }
 
     public function test_only_the_owner_and_tech_see_it_and_can_mark_fixed_or_mute(): void
