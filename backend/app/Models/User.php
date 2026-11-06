@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Services\PlatformPermissions;
 use App\Models\Concerns\LogsActivity;
+use App\Services\PlatformPermissions;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
