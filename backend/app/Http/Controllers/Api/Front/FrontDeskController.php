@@ -41,11 +41,15 @@ class FrontDeskController extends Controller
             ->where(fn ($q) => $q->where('status', 'checked_in')
                 ->orWhere(fn ($w) => $w->whereIn('status', ['pending', 'confirmed'])->where('check_in_at', '<=', $todayEnd)))
             ->get();
+        // The next booking of each room after today (so reception sees a room is taken from a future date).
+        $later = ReservationRoom::with(['reservation.guest:id,first_name,last_name'])->whereNotNull('room_id')->whereIn('status', ['pending', 'confirmed'])
+            ->whereHas('reservation', fn ($q) => $q->where('branch_id', $branch->id))->where('check_in_at', '>', $todayEnd)
+            ->orderBy('check_in_at')->get()->unique('room_id')->keyBy('room_id');
         $balances = Invoice::whereIn('reservation_id', $stays->pluck('reservation_id'))->where('status', '!=', 'void')
             ->selectRaw('reservation_id, sum(balance) as b')->groupBy('reservation_id')->pluck('b', 'reservation_id');
 
         $rooms = Room::with('roomType:id,name')->where('branch_id', $branch->id)->orderBy('floor')->orderByRaw('LENGTH(number)')->orderBy('number')->get()
-            ->map(function (Room $room) use ($stays, $balances, $hotel) {
+            ->map(function (Room $room) use ($stays, $balances, $hotel, $later) {
                 $in = $stays->first(fn ($s) => $s->room_id === $room->id && $s->status === 'checked_in');
                 $next = $stays->first(fn ($s) => $s->room_id === $room->id && $s->status !== 'checked_in');
                 $info = fn (?ReservationRoom $s) => $s ? [
@@ -57,7 +61,7 @@ class FrontDeskController extends Controller
                 return [
                     'id' => $room->id, 'number' => $room->number, 'floor' => $room->floor, 'status' => $room->status,
                     'room_type_id' => $room->room_type_id, 'room_type' => $room->roomType?->name, 'notes' => $room->notes,
-                    'stay' => $info($in), 'arriving' => $info($next),
+                    'stay' => $info($in), 'arriving' => $info($next), 'next_booking' => $info($later[$room->id] ?? null),
                 ];
             });
 

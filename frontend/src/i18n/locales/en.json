@@ -1261,6 +1261,8 @@
       "help": "Only name and phone now. The guest is marked \"Details missing\" and you are reminded to add the ID later.",
       "needNamePhone": "Type the guest's name and phone."
     },
+    "bookedFrom": "Booked from {{date}}",
+    "nextBooking": "Next booking: {{from}} → {{to}} · {{guest}}",
     "walkInStartsNow": "A walk-in checks in now. Guest arriving on another day?",
     "bookForLater": "Make a reservation",
     "depositRule": "Your hotel takes a deposit up front for walk-ins.",
@@ -1340,7 +1342,6 @@
     "printTitle": "Invoice",
     "printVoid": "VOID",
     "billTo": "Bill to",
-    "guestSignature": "Guest signature",
     "cashierSignature": "Cashier"
   },
   "cashier": {

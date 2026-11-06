@@ -6,7 +6,7 @@ import type { Page, ReservationDetail, ReservationSummary } from './front'
 /* ------------------------------------------------------------- front desk */
 
 export type StayInfo = { reservation_id: number; code: string | null; guest: string | null; check_in_at: string; check_out_at: string; balance: string; overdue: boolean }
-export type BoardRoom = { id: number; number: string; floor: string | null; status: string; room_type_id: number; room_type: string | null; notes: string | null; stay: StayInfo | null; arriving: StayInfo | null }
+export type BoardRoom = { id: number; number: string; floor: string | null; status: string; room_type_id: number; room_type: string | null; notes: string | null; stay: StayInfo | null; arriving: StayInfo | null; next_booking?: StayInfo | null }
 /** The hotel block printed at the top of invoices, receipts and registration cards. */
 export type PrintHotel = { name: string; legal_name: string | null; tin: string | null; vat_number: string | null; address: string | null; city: string | null; phone: string | null; email: string | null; logo_url: string | null; footer: string | null; receipt_paper?: 'a4' | 'receipt' }
 

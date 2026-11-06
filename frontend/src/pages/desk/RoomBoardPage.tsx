@@ -133,6 +133,9 @@ function Board({ branchId }: { branchId: number | null }) {
                   ) : (
                     <span className="mt-auto text-[11px] text-muted">{t(`roomStatus.${r.status}`)}</span>
                   )}
+                  {!r.arriving && r.next_booking && (
+                    <span className="text-[11px] text-accent-text">{t('desk.bookedFrom', { date: date(localDate(r.next_booking.check_in_at)) })}</span>
+                  )}
                 </button>
               ))}
           </div>
@@ -198,6 +201,16 @@ function RoomPanel({ room, onClose }: { room: BoardRoom; onClose: () => void }) 
           <Link to={`/reservations/${room.arriving.reservation_id}?action=check-in`} className={buttonClass('primary')}>
             <ArrowRightEndOnRectangleIcon aria-hidden className="size-4" />
             {t('desk.checkIn')}
+          </Link>
+        </div>
+      )}
+      {room.next_booking && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-sunken px-3 py-2 text-[13px]">
+          <span>
+            {t('desk.nextBooking', { from: date(localDate(room.next_booking.check_in_at)), to: date(localDate(room.next_booking.check_out_at)), guest: room.next_booking.guest ?? '' })}
+          </span>
+          <Link to={`/reservations/${room.next_booking.reservation_id}`} className="font-medium text-accent-text hover:underline">
+            {room.next_booking.code}
           </Link>
         </div>
       )}

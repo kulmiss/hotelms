@@ -131,8 +131,7 @@ export function InvoicePrintPage() {
         {h.footer && <footer className="mt-6 border-t border-black/20 pt-2 text-center text-black/70">{h.footer}</footer>}
         {!small && (
           <div className="mt-10 grid grid-cols-2 gap-10 text-black/70">
-            <span className="border-t border-black/40 pt-1">{t('billing.guestSignature')}</span>
-            <span className="border-t border-black/40 pt-1">{t('billing.cashierSignature')}</span>
+            <span className="col-start-2 border-t border-black/40 pt-1">{t('billing.cashierSignature')}</span>
           </div>
         )}
       </article>

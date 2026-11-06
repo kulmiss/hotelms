@@ -561,4 +561,17 @@ class FrontDeskTest extends TestCase
         $this->actingAs($cleaner)->get("/api/v1/payment-proofs/$proof")->assertForbidden();
         $this->postJson('/api/v1/payment-proofs', ['file' => UploadedFile::fake()->image('x.jpg')])->assertForbidden();
     }
+
+    public function test_room_board_shows_the_next_future_booking_of_a_room(): void
+    {
+        $this->actingAs($this->admin)->postJson('/api/v1/reservations', [
+            'branch_id' => $this->branch->id, 'stay_type' => 'nightly', 'check_in' => '2026-11-20', 'check_out' => '2026-11-22', 'guest_id' => $this->guest->id,
+            'rooms' => [['room_type_id' => $this->standard->id, 'room_id' => $this->rooms['102'], 'adults' => 1]],
+        ])->assertCreated();
+
+        $rooms = collect($this->getJson("/api/v1/front-desk/board?branch_id={$this->branch->id}")->assertOk()->json('data'))->keyBy('number');
+        $this->assertSame('2026-11-20T14:00:00+03:00', $rooms['102']['next_booking']['check_in_at']);
+        $this->assertNull($rooms['102']['arriving']);
+        $this->assertNull($rooms['101']['next_booking']);
+    }
 }
