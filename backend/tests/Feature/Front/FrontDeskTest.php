@@ -425,4 +425,18 @@ class FrontDeskTest extends TestCase
         $this->postJson("/api/v1/rooms/{$this->rooms['101']}/status", ['status' => 'dirty'])->assertNotFound();
         $this->assertSame(1, $this->inHotel(fn () => Invoice::count()));
     }
+
+    public function test_walk_in_offers_only_rooms_free_for_the_whole_stay(): void
+    {
+        // Room 101 is clean now but booked from tomorrow.
+        $this->actingAs($this->admin)->postJson('/api/v1/reservations', [
+            'branch_id' => $this->branch->id, 'stay_type' => 'nightly', 'check_in' => '2026-11-13', 'check_out' => '2026-11-15', 'guest_id' => $this->guest->id,
+            'rooms' => [['room_type_id' => $this->standard->id, 'room_id' => $this->rooms['101'], 'adults' => 1]],
+        ])->assertCreated();
+
+        $free = fn (string $qs) => collect($this->getJson("/api/v1/front-desk/walk-in/rooms?branch_id={$this->branch->id}&{$qs}")->assertOk()->json('data'))->pluck('number')->all();
+        $this->assertContains('101', $free('stay_type=nightly&check_out=2026-11-13')); // one night: leaves before the booking
+        $this->assertNotContains('101', $free('stay_type=nightly&check_out=2026-11-16')); // four nights: overlaps
+        $this->assertContains('102', $free('stay_type=nightly&check_out=2026-11-16'));
+    }
 }

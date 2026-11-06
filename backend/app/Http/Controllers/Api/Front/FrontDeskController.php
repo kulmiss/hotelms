@@ -16,6 +16,7 @@ use App\Services\HotelSettings;
 use App\Support\HotelClock;
 use App\Support\Money;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -185,9 +186,23 @@ class FrontDeskController extends Controller
         $branch = $this->branch($request);
         $hotel = $request->user()->hotel;
         $settings = app(HotelSettings::class)->group(HotelSettings::BOOKING_DEFAULTS);
+        $data = $request->validate([
+            'stay_type' => ['nullable', 'in:nightly,day_use,hourly'],
+            'check_out' => ['nullable', 'date_format:Y-m-d', 'before:+3 years'],
+            'hours' => ['nullable', 'integer', 'between:1,24'],
+        ]);
+        // Only rooms free for the whole stay: a clean room booked from tomorrow is not offered for three nights.
+        $zone = HotelClock::zone($hotel);
+        $until = match ($data['stay_type'] ?? 'nightly') {
+            'hourly' => now()->addHours((int) ($data['hours'] ?? 1))->addMinutes((int) $settings['hourly_cleaning_minutes']),
+            'day_use' => now($zone)->setTime(22, 0)->utc()->max(now()->addHour()),
+            default => isset($data['check_out'])
+                ? Carbon::parse($data['check_out'], $zone)->setTimeFromTimeString((string) ($branch->check_out_time ?: '12:00'))->utc()->max(now()->addHour())
+                : now()->addHour(),
+        };
 
         return response()->json([
-            'data' => $this->availability->freeRooms($branch->id, null, now(), now()->addHour())->where('status', 'available')
+            'data' => $this->availability->freeRooms($branch->id, null, now(), $until)->where('status', 'available')
                 ->load('roomType')->map(fn (Room $r) => [
                     'id' => $r->id, 'number' => $r->number, 'floor' => $r->floor, 'room_type_id' => $r->room_type_id, 'room_type' => $r->roomType?->name,
                     'nightly_price' => $r->roomType?->nightly_price, 'day_use_price' => $r->roomType?->day_use_price, 'hourly_price' => $r->roomType?->hourly_price,

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { CheckIcon } from '@heroicons/react/20/solid'
 import { Alert } from '@/components/ui/Alert'
@@ -32,7 +32,7 @@ export function WalkInPage() {
   const [methodId, setMethodId] = useState(0)
   const [amount, setAmount] = useState<string | null>(null)
   const [reference, setReference] = useState('')
-  const free = useFreeRooms(branchId || null)
+  const free = useFreeRooms(branchId || null, true, { stay_type: stayType, check_out: checkOut, hours })
   const walkIn = useWalkIn()
 
   const rooms = (free.data?.data ?? []).filter((r) => (stayType === 'nightly' ? true : stayType === 'hourly' ? r.hourly_price !== null : r.day_use_price !== null))
@@ -117,6 +117,12 @@ export function WalkInPage() {
               {stayType === 'nightly' && <Field label={t('reservations.form.checkOut')} type="date" min={addDays(today(), 1)} value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />}
               {stayType === 'hourly' && <Field label={t('reservations.form.hours')} type="number" inputMode="numeric" min={1} max={24} value={String(hours)} onChange={(e) => setHours(Math.max(1, Number(e.target.value) || 1))} />}
             </div>
+            <p className="text-xs text-muted">
+              {t('desk.walkInStartsNow')}{' '}
+              <Link to="/reservations/new" className="font-medium text-accent-text underline">
+                {t('desk.bookForLater')}
+              </Link>
+            </p>
           </Card>
 
           <Card className="flex flex-col gap-3">
