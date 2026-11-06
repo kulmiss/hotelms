@@ -47,6 +47,7 @@ class RateRuleController extends ResourceController
     /** Price for each night of a stay, showing which rule was used. */
     public function preview(Request $request, PriceCalculator $prices): JsonResponse
     {
+        $request->validate(['from' => ['required', 'date']]);
         $data = $request->validate([
             'room_type_id' => ['required', 'integer'],
             'from' => ['required', 'date'],

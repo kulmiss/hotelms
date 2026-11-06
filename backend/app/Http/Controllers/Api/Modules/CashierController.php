@@ -57,6 +57,7 @@ class CashierController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
+        $request->validate(['from' => ['nullable', 'date'], 'to' => ['nullable', 'date']]);
         $all = $user->hasPermission('cashier.view_all');
         $hotel = $user->hotel;
         $page = CashierSession::with(['user:id,name', 'approver:id,name', 'branch:id,name', 'balances'])

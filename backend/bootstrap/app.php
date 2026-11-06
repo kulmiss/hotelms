@@ -55,4 +55,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+        // A badly typed date anywhere is the person's input, not a server error.
+        $exceptions->render(fn (\Carbon\Exceptions\InvalidFormatException $e, Request $request) => $request->is('api/*')
+            ? response()->json(['message' => 'One of the dates is not valid.', 'code' => 'invalid_date'], 422)
+            : null);
     })->create();

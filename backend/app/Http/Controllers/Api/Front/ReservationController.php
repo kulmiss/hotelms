@@ -28,6 +28,7 @@ class ReservationController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $request->validate(['from' => ['nullable', 'date'], 'to' => ['nullable', 'date'], 'q' => ['nullable', 'string', 'max:100'], 'branch_id' => ['nullable', 'integer'], 'status' => ['nullable', 'string', 'max:100']]);
         $hotel = $request->user()->hotel;
         $branches = $request->user()->accessibleBranches()->pluck('id');
         $q = trim((string) $request->input('q'));

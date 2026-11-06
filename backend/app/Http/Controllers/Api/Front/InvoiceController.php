@@ -125,6 +125,7 @@ class InvoiceController extends Controller
 
     public function payments(Request $request): JsonResponse
     {
+        $request->validate(['from' => ['nullable', 'date'], 'to' => ['nullable', 'date']]);
         $hotel = $request->user()->hotel;
         $page = Payment::with(['method:id,name', 'receiver:id,name', 'reservation:id,code,guest_id', 'reservation.guest:id,first_name,last_name', 'invoice:id,number'])
             ->whereIn('branch_id', $request->user()->accessibleBranches()->pluck('id'))
