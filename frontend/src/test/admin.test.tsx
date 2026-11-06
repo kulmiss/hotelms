@@ -196,10 +196,14 @@ describe('log in as hotel', () => {
   it('opens the new demo hotel after "Reset demo now"', async () => {
     const owner = { ...superAdmin(), platform: { role: 'owner', permissions: ['hotels.view', 'hotels.create'] } }
     const demo = (id: number) => ({ body: { ...hotelDetail.body, data: { ...hotelDetail.body.data, id, name: `Demo ${id}`, is_demo: true } } })
+    let wiped = false // after the reset the old demo hotel is gone (404), like the real server
     mockApi({
       'GET /me': { body: owner },
-      'GET /admin/hotels/1': demo(1),
-      'POST /admin/hotels/1/demo/reset': { body: { data: { id: 5 } } },
+      'GET /admin/hotels/1': () => (wiped ? { status: 404, body: { message: 'Not found' } } : demo(1)),
+      'POST /admin/hotels/1/demo/reset': () => {
+        wiped = true
+        return { body: { data: { id: 5 } } }
+      },
       'GET /admin/hotels/5': demo(5),
     })
     renderApp('/admin/hotels/1')
@@ -207,6 +211,7 @@ describe('log in as hotel', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Reset demo now' }))
     expect(await screen.findByRole('heading', { name: 'Demo 5' })).toBeInTheDocument()
     expect(screen.queryByText("Can't reach the server. Check the internet and try again.")).not.toBeInTheDocument()
+    expect(screen.queryByText('This hotel no longer exists. Go back to the hotels list.')).not.toBeInTheDocument()
   })
 
   it('enters the hotel with a reason and shows the support banner', async () => {
