@@ -28,7 +28,7 @@ export function RoomBoardPage() {
   const branches = me.data?.branches ?? []
   const [params, setParams] = useSearchParams()
   const tab = (TABS as readonly string[]).includes(params.get('tab') ?? '') ? (params.get('tab') as Tab) : 'board'
-  const [branchId, setBranchId] = useState<number | null>(null)
+  const [branchId, setBranchId] = useState<number | null>(() => Number(params.get('branch')) || null)
   const current = branchId ?? branches[0]?.id ?? null
   const today = useToday(current)
 
@@ -77,8 +77,17 @@ export function RoomBoardPage() {
 function Board({ branchId }: { branchId: number | null }) {
   const { t } = useTranslation()
   const board = useBoard(branchId)
+  const [params] = useSearchParams()
   const [open, setOpen] = useState<BoardRoom | null>(null)
   const rooms = board.data?.data ?? []
+  // From the search box: open that room straight away.
+  const fromSearch = Number(params.get('room')) || null
+  const [shownSearch, setShownSearch] = useState<number | null>(null)
+  if (fromSearch && fromSearch !== shownSearch && rooms.length) {
+    setShownSearch(fromSearch)
+    const hit = rooms.find((r) => r.id === fromSearch)
+    if (hit) setOpen(hit)
+  }
   const floors = [...new Set(rooms.map((r) => r.floor ?? ''))]
   const selected = open ? (rooms.find((r) => r.id === open.id) ?? open) : null
 

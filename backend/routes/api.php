@@ -32,6 +32,7 @@ use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\Reports\AutomationController;
 use App\Http\Controllers\Api\Reports\InsightController;
 use App\Http\Controllers\Api\Reports\ReportController;
+use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\SecurityController;
 use App\Http\Controllers\Api\Settings\BranchSettingsController;
 use App\Http\Controllers\Api\Settings\CancellationPolicyController;
@@ -79,6 +80,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
 
     // Everything below needs a password the user chose themselves.
     Route::middleware(['password.changed', 'two.factor'])->group(function () {
+        Route::get('/search', SearchController::class)->middleware('throttle:60,1');
         // Your own security (open before two-step sign-in is set up: see EnsureTwoFactorSetUp).
         Route::middleware('not.impersonating')->group(function () {
             Route::get('/me/security', [SecurityController::class, 'show']);

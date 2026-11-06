@@ -45,7 +45,7 @@ export function SettingsLayout() {
       <PageHeader title={t('nav.settings')} subtitle={t('settings.subtitle')} />
       <div className="flex flex-col gap-6 lg:flex-row">
         <nav aria-label={t('nav.settings')} className="lg:w-56 lg:shrink-0">
-          <ul className="flex gap-1 overflow-x-auto lg:flex-col">
+          <ul className="no-scrollbar flex gap-1 overflow-x-auto lg:flex-col">
             {sections.map((s) => (
               <li key={s.key}>
                 <NavLink

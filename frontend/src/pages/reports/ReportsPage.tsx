@@ -104,7 +104,7 @@ export function ReportsPage() {
       />
       <div className="flex flex-col gap-6 lg:flex-row">
         <nav aria-label={t('reports.library')} className="lg:w-52 lg:shrink-0 print:hidden">
-          <ul className="flex gap-1 overflow-x-auto lg:flex-col">
+          <ul className="no-scrollbar flex gap-1 overflow-x-auto lg:flex-col">
             {allowed.map((r) => (
               <li key={r.key}>
                 <button

@@ -71,7 +71,7 @@
     "devices": "Devices"
   },
   "topbar": {
-    "search": "Search guests, rooms, bookings",
+    "search": "Search guests, rooms, bookings, bills",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "notifications": "Notifications",
@@ -1784,5 +1784,18 @@
     "confirm": "Type it again",
     "save": "Save new password",
     "done": "Password changed. You can sign in now."
+  },
+  "search": {
+    "adminLabel": "Search hotels and people",
+    "results": "Search results",
+    "none": "Nothing found for \"{{q}}\".",
+    "types": {
+      "booking": "Booking",
+      "guest": "Guest",
+      "room": "Room",
+      "bill": "Bill",
+      "hotel": "Hotel",
+      "person": "Person"
+    }
   }
 }
