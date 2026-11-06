@@ -43,7 +43,9 @@ class Notifier
         }
 
         if (in_array('telegram', $channels, true)) {
-            if (! $this->telegram->enabled()) {
+            if (! app(\App\Services\Switches::class)->on($hotel, 'feature.telegram')) {
+                $problems[] = 'Telegram is switched off for this hotel.';
+            } elseif (! $this->telegram->enabled()) {
                 $problems[] = 'Telegram is not set up (Super Admin → Settings → Telegram).';
             } else {
                 foreach ($users as $user) {

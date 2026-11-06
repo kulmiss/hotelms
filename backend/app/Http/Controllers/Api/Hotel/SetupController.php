@@ -25,7 +25,7 @@ class SetupController extends Controller
                 'status' => $hotel->status,
                 'plan' => ($hotel->trialPlan ?? $hotel->plan)?->name,
                 'trial_ends_at' => $hotel->trial_ends_at?->toDateString(),
-                'max_rooms' => $hotel->effectivePlan()?->max_rooms,
+                'max_rooms' => $hotel->limit('rooms'),
             ],
         ]]);
     }

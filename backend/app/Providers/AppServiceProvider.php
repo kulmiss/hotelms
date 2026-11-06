@@ -14,6 +14,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // One tenant context per request / job.
         $this->app->scoped(TenantContext::class);
+        // Switch values are read once per request / job.
+        $this->app->scoped(\App\Services\Switches::class);
     }
 
     public function boot(): void

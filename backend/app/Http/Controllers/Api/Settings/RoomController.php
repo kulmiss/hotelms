@@ -174,6 +174,6 @@ class RoomController extends Controller
     /** @return array{used: int, max: int|null} */
     private function limitInfo(Request $request): array
     {
-        return ['used' => Room::count(), 'max' => $request->user()->hotel->effectivePlan()?->max_rooms];
+        return ['used' => Room::count(), 'max' => $request->user()->hotel->limit('rooms')];
     }
 }

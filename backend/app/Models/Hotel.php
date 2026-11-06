@@ -81,6 +81,14 @@ class Hotel extends Model
     }
 
     /** The plan whose features apply right now (trial plan during the trial). */
+    /** Room / branch / staff limit: a Super Admin switch (W4) wins over the plan. null = no limit. */
+    public function limit(string $what): ?int
+    {
+        $switch = app(\App\Services\Switches::class)->value($this, "limit.{$what}");
+
+        return $switch !== null ? (int) $switch : $this->effectivePlan()?->{"max_{$what}"};
+    }
+
     public function effectivePlan(): ?Plan
     {
         return $this->status === 'trial' && $this->trialPlan ? $this->trialPlan : $this->plan;

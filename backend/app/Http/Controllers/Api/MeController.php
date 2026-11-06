@@ -11,6 +11,8 @@ use App\Services\HotelSettings;
 use App\Services\HotelSetup;
 use App\Services\Impersonation;
 use App\Services\Security\TwoFactor;
+use App\Services\Switches;
+use App\Models\Banner;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -66,6 +68,9 @@ class MeController extends Controller
                 'setup' => $user->isHotelAdmin() ? $this->setup($hotel, $user) : null,
             ] : null,
             'security' => $this->security($request, $user, $hotel),
+            // Feature switches the screens need (W4); banners from HotelMS.
+            'switches' => $hotel ? collect(app(Switches::class)->all($hotel))->filter(fn ($v, $k) => str_starts_with($k, 'feature.'))->map(fn ($v) => (bool) $v['value'])->mapWithKeys(fn ($v, $k) => [substr($k, 8) => $v]) : (object) [],
+            'banners' => $hotel ? Banner::active()->latest()->get()->filter(fn (Banner $b) => $b->isFor($hotel))->map(fn (Banner $b) => ['id' => $b->id, 'message' => $b->message, 'tone' => $b->tone])->values() : [],
             'branches' => $user->accessibleBranches()
                 ->map(fn (Branch $branch) => ['id' => $branch->id, 'name' => $branch->name])
                 ->values(),

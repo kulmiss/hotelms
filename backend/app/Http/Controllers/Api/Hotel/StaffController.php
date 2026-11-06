@@ -190,7 +190,7 @@ class StaffController extends Controller
     /** The plan's staff limit counts active accounts (disabled ones do not count). */
     private function guardStaffLimit(User $actor): void
     {
-        $max = $actor->hotel->effectivePlan()?->max_staff;
+        $max = $actor->hotel->limit('staff');
         $used = User::where('hotel_id', $actor->hotel_id)->where('status', 'active')->count();
         if ($max !== null && $used >= $max) {
             throw ValidationException::withMessages(['email' => "Your plan allows {$max} active staff accounts ({$used} used). Disable someone or upgrade the plan."]);
