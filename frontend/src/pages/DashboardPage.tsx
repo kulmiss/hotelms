@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { SmartHints } from '@/components/ui/SmartHints'
+import { useSmart } from '@/lib/smart'
 import {
   ArrowRightEndOnRectangleIcon,
   ArrowRightStartOnRectangleIcon,
@@ -35,6 +37,7 @@ export function DashboardPage() {
   const isHotelUser = !!me.data?.hotel
   const dash = useDashboard(branchId)
   const d = isHotelUser && can('dashboard.view') ? dash.data?.data : undefined
+  const smart = useSmart('dashboard', { branch_id: branchId }, isHotelUser && can('dashboard.view'))
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
@@ -57,6 +60,7 @@ export function DashboardPage() {
         )}
       </div>
       <FinishSetupCard />
+      <SmartHints hints={smart.data?.data} />
 
       {d && (
         <>

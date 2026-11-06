@@ -24,6 +24,10 @@ class Switches
             $automations["automation.{$key}"] = ['type' => 'bool', 'group' => 'automations', 'default' => true];
         }
 
+        foreach (array_keys(config('smart', [])) as $key) {
+            $automations["smart.{$key}"] = ['type' => 'bool', 'group' => 'smart', 'default' => true];
+        }
+
         return config('switches') + $automations;
     }
 

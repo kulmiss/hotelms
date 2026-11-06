@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { SmartHints } from '@/components/ui/SmartHints'
+import { useSmart } from '@/lib/smart'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert } from '@/components/ui/Alert'
 import { Badge, type Tone } from '@/components/ui/Badge'
@@ -91,6 +93,7 @@ export function RoomsSettings() {
   const types = useSettingsList<RoomType>(`/settings/room-types?branch_id=${branchId ?? ''}`)
   const rooms = useSettingsList<Record<string, unknown>>(`/settings/rooms?branch_id=${branchId ?? ''}`)
   const limit = rooms.data?.limit as Limit | undefined
+  const smart = useSmart('rooms_settings')
   const statuses = ['available', 'occupied', 'dirty', 'cleaning', 'maintenance', 'out_of_order']
   const typeOptions = (types.data?.data ?? []).map((x) => ({ value: String(x.id), label: x.name }))
 
@@ -123,6 +126,7 @@ export function RoomsSettings() {
               </Badge>
             )}
           </div>
+          <SmartHints hints={smart.data?.data} />
           {types.data && <RoomGenerator key={branchId} types={types.data.data} />}
           <ImportToggle />
         </div>

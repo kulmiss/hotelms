@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { SmartHints } from '@/components/ui/SmartHints'
+import { useSmart } from '@/lib/smart'
 import { ArrowDownTrayIcon, PrinterIcon } from '@heroicons/react/24/outline'
 import { Badge } from '@/components/ui/Badge'
 import { Bars, Delta } from '@/components/ui/Delta'
@@ -127,6 +129,7 @@ export function ReportsPage() {
             {t(`reports.names.${key}`)} · {date(f.from)} – {date(f.to)}
           </h2>
           {!OWN_FILTERS.includes(key) && <Filters f={f} setF={setF} branches={branches} />}
+          {!OWN_FILTERS.includes(key) && key !== 'custom' && <ReportSummary f={f} />}
           {!OWN_FILTERS.includes(key) && key !== 'custom' && <SavedViews key={key} reportKey={key} f={f} apply={setF} />}
           {key === 'custom' && <CustomReportBuilder f={f} />}
           {key === 'schedules' && <SchedulesReport />}
@@ -527,4 +530,11 @@ function HousekeepingReport({ f }: { f: ReportFilters }) {
       <SimpleTable head={[t('cashier.person'), t('housekeeping.type'), t('reports.tasksDone'), t('reports.minutesEach')]} rows={d.rows.map((r) => [r.name, t(`housekeeping.types.${r.type}`), r.tasks, r.minutes ?? '—'])} />
     </Card>
   )
+}
+
+/** ✨ One line at the top of a report: how the period went against the one before. */
+function ReportSummary({ f }: { f: ReportFilters }) {
+  const can = useCan()
+  const smart = useSmart('report', { from: f.from, to: f.to, branch_id: f.branch_id }, can(['reports.revenue', 'reports.occupancy']))
+  return <SmartHints hints={smart.data?.data} className="print:hidden" />
 }

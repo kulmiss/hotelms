@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { SmartHints } from '@/components/ui/SmartHints'
+import { useSmart } from '@/lib/smart'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -64,12 +66,20 @@ export function CheckInPanel({ r, onClose }: { r: ReservationDetail; onClose: ()
   const d = info.data?.data
   const early = addMoney(...(d?.rooms ?? []).map((x) => x.early_fee ?? '0'))
   const due = d?.deposit_due ?? '0.00'
-  const roomFor = (stayId: number, fallback: number | null) => picks[stayId] ?? fallback ?? 0
+  // ✨ Suggested rooms (guest's usual room, else the one used least) fill the empty choices.
+  const smart = useSmart('check_in', { id: r.id })
+  const suggested = (smart.data?.data.find((h) => h.key === 'best_room')?.data?.rooms ?? {}) as Record<string, number>
+  const roomFor = (stayId: number, fallback: number | null) => {
+    const hint = suggested[String(stayId)]
+    const free = d?.rooms.find((x) => x.id === stayId)?.free_rooms.some((f) => f.id === hint)
+    return picks[stayId] ?? fallback ?? (hint && free ? hint : 0)
+  }
 
   return (
     <Card className="flex flex-col gap-4 ring-accent/40 animate-page-in">
       <h2 className="text-sm font-semibold">{t('desk.checkInTitle')}</h2>
       {info.error && <Alert>{firstError(info.error)}</Alert>}
+      <SmartHints hints={smart.data?.data} />
       {d?.rooms.map((x) => {
         const taken = new Set(Object.entries(picks).filter(([k]) => Number(k) !== x.id).map(([, v]) => v))
         const options = [...(x.room_id && !x.free_rooms.some((f) => f.id === x.room_id) ? [{ id: x.room_id, number: `${x.room_number} (${t(`roomStatus.${x.room_status ?? 'dirty'}`)})`, floor: null }] : []), ...x.free_rooms]

@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { SmartHints } from '@/components/ui/SmartHints'
+import { useSmart } from '@/lib/smart'
+import { useMe } from '@/lib/auth'
+import { useCurrentBranch } from '@/lib/branch'
 import { CheckIcon, PlayIcon } from '@heroicons/react/20/solid'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
@@ -31,10 +35,14 @@ export function HousekeepingPage() {
     ...(can('housekeeping.assign') ? ['assign'] : []),
   ]
   const tab = tabs.includes(params.get('tab') ?? '') ? (params.get('tab') as string) : tabs[0]
+  const me = useMe()
+  const { current } = useCurrentBranch(me.data)
+  const smart = useSmart('housekeeping', { branch_id: current?.id }, Boolean(current))
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={t('nav.housekeeping')} subtitle={t('housekeeping.subtitle')} />
+      <SmartHints hints={smart.data?.data} />
       <div className="max-w-md">
         <Tabs label={t('nav.housekeeping')} active={tab} onChange={(k) => setParams({ tab: k })} items={tabs.map((k) => ({ key: k, label: t(`housekeeping.tabs.${k}`) }))} />
       </div>

@@ -3,10 +3,12 @@ import { cleanup } from '@testing-library/react'
 import { afterEach } from 'vitest'
 import '@/i18n'
 import { clearToasts } from '@/lib/toast'
+import { forgetDismissed } from '@/lib/smart'
 
 afterEach(() => {
   cleanup()
   clearToasts()
+  forgetDismissed()
   localStorage.clear()
   document.documentElement.classList.remove('dark')
 })

@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, del, post } from './api'
 import { REMOVED } from './toast'
 
-export type SwitchDef = { key: string; type: 'bool' | 'int'; group: 'modules' | 'features' | 'limits' | 'emergency' | 'automations'; default: boolean | number | null }
+export type SwitchDef = { key: string; type: 'bool' | 'int'; group: 'modules' | 'features' | 'limits' | 'emergency' | 'automations' | 'smart'; default: boolean | number | null }
 export type SwitchRow = { id: number; key: string; level: 'everyone' | 'plan' | 'hotel'; target_id: number | null; target_name: string | null; value: boolean | number | null; starts_at: string | null; ends_at: string | null; reason: string | null; scheduled: boolean; expired: boolean }
 export type BannerRow = { id: number; message: string; tone: 'info' | 'warn' | 'danger'; hotel_ids: number[] | null; plan_ids: number[] | null; starts_at: string | null; ends_at: string | null }
 export type SwitchInput = { key: string; level: SwitchRow['level']; target_id?: number | null; value: boolean | number | null; starts_at?: string | null; ends_at?: string | null; reason?: string }

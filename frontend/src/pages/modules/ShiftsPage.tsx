@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { SmartHints } from '@/components/ui/SmartHints'
+import { useSmart } from '@/lib/smart'
+import { useMe } from '@/lib/auth'
+import { useCurrentBranch } from '@/lib/branch'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
@@ -9,7 +13,6 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { ResourceList } from '@/components/ui/ResourceList'
 import { Tabs } from '@/components/ui/Tabs'
 import { ApiError } from '@/lib/api'
-import { useMe } from '@/lib/auth'
 import { date } from '@/lib/format'
 import { addDays, today } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
@@ -68,6 +71,9 @@ function RosterGrid() {
   const { t } = useTranslation()
   const [from, setFrom] = useState(() => monday(today()))
   const roster = useRoster(from, true)
+  const me = useMe()
+  const { current } = useCurrentBranch(me.data)
+  const smart = useSmart('shifts', { branch_id: current?.id }, Boolean(current))
   const assign = useAssignShift()
   const unassign = useUnassignShift()
   const days = Array.from({ length: 7 }, (_, i) => addDays(from, i))
@@ -76,6 +82,7 @@ function RosterGrid() {
 
   return (
     <div className="flex flex-col gap-3">
+      <SmartHints hints={smart.data?.data} />
       <div className="flex items-center gap-2">
         <Button variant="secondary" aria-label={t('reservations.earlier')} onClick={() => setFrom(addDays(from, -7))}>
           <ChevronLeftIcon aria-hidden className="size-4" />

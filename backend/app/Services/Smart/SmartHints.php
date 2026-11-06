@@ -1,0 +1,431 @@
+<?php
+
+namespace App\Services\Smart;
+
+use App\Models\Guest;
+use App\Models\Hotel;
+use App\Models\HousekeepingTask;
+use App\Models\Reservation;
+use App\Models\Room;
+use App\Models\RoomType;
+use App\Models\User;
+use App\Services\Booking\Availability;
+use App\Services\Modules\Cashier;
+use App\Services\Reports\Metrics;
+use App\Services\Switches;
+use App\Support\HotelClock;
+use App\Support\Money;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Throwable;
+
+/**
+ * Smart hints (smart-features.md): plain statistics on the hotel's own data, written as clear sentences.
+ * Each hint has a "why", can be dismissed, and never changes anything. Free to run; nothing leaves the server.
+ *
+ * A hint: ['key', 'text', 'why', 'tone' (info|ok|warn), 'link'?, 'data'?]
+ */
+class SmartHints
+{
+    public function __construct(private Switches $switches) {}
+
+    public function on(?Hotel $hotel, string $key): bool
+    {
+        return $this->switches->on($hotel, 'feature.smart_hints') && $this->switches->on($hotel, "smart.{$key}");
+    }
+
+    /** @param  callable(): ?array  $make */
+    private function hint(?Hotel $hotel, string $key, callable $make): ?array
+    {
+        if (! $this->on($hotel, $key)) {
+            return null;
+        }
+        try {
+            $h = $make();
+
+            return $h ? ['key' => $key] + $h + ['tone' => 'info', 'link' => null] : null;
+        } catch (Throwable $e) {
+            report($e); // a hint is never worth an error on screen
+
+            return null;
+        }
+    }
+
+    /** @param  list<?array>  $hints  @return list<array> */
+    private static function list(array $hints): array
+    {
+        return array_values(array_filter($hints));
+    }
+
+    private static function pct(float $now, float $before): ?int
+    {
+        return $before > 0 ? (int) round(($now - $before) / $before * 100) : null;
+    }
+
+    // ------------------------------------------------------------------ dashboard
+
+    /** @param  list<int>  $branchIds */
+    public function dashboard(Hotel $hotel, User $user, array $branchIds): array
+    {
+        $today = HotelClock::now($hotel)->toDateString();
+
+        return self::list([
+            $this->hint($hotel, 'insight_of_the_day', function () use ($hotel, $user, $branchIds, $today) {
+                $m = Metrics::for($hotel, $branchIds);
+                $from = Carbon::parse($today)->subDays(6)->toDateString();
+                $now = $m->kpis($from, $today);
+                $before = $m->kpis(Carbon::parse($today)->subDays(13)->toDateString(), Carbon::parse($today)->subDays(7)->toDateString());
+                if ($user->hasPermission('dashboard.view_revenue') && Money::isPositive($now['revenue'])) {
+                    $change = self::pct((float) $now['revenue'], (float) $before['revenue']);
+                    if ($change === null) {
+                        return null;
+                    }
+                    $top = collect($m->byRoomType($from, $today))->first();
+                    $way = $change >= 0 ? 'above' : 'below';
+
+                    return [
+                        'text' => 'Revenue this week is '.abs($change)."% {$way} last week".($top && Money::isPositive($top['room_revenue']) ? ", mostly from {$top['name']} rooms." : '.'),
+                        'why' => "This week {$hotel->default_currency} {$now['revenue']}, the week before {$hotel->default_currency} {$before['revenue']}.",
+                        'tone' => $change >= 0 ? 'ok' : 'warn', 'link' => '/reports?report=performance',
+                    ];
+                }
+                if ($now['room_nights'] === 0 && $before['room_nights'] === 0) {
+                    return null;
+                }
+                $diff = round($now['occupancy'] - $before['occupancy']);
+
+                return [
+                    'text' => "Occupancy this week is {$now['occupancy']}% (".($diff >= 0 ? '+' : '')."{$diff} points on last week).",
+                    'why' => "Room nights sold: {$now['room_nights']} this week, {$before['room_nights']} the week before.", 'tone' => $diff >= 0 ? 'ok' : 'warn',
+                ];
+            }),
+            $this->hint($hotel, 'tonight', function () use ($hotel, $branchIds) {
+                $rooms = Metrics::for($hotel, $branchIds)->roomCount();
+                if ($rooms === 0) {
+                    return null;
+                }
+                $start = HotelClock::now($hotel)->startOfDay()->utc();
+                $base = fn () => DB::table('reservation_rooms as rr')->join('reservations as r', 'r.id', '=', 'rr.reservation_id')
+                    ->where('r.hotel_id', $hotel->id)->whereIn('r.branch_id', $branchIds);
+                $inHouse = $base()->where('rr.status', 'checked_in')->where('rr.check_out_at', '>', now())->count();
+                $toCome = $base()->whereIn('rr.status', ['pending', 'confirmed'])->whereBetween('rr.check_in_at', [$start, $start->copy()->addDay()])->count();
+                $expected = min(100, (int) round(($inHouse + $toCome) / $rooms * 100));
+
+                return [
+                    'text' => "Tonight looks about {$expected}% full".($toCome ? " – {$toCome} more ".($toCome === 1 ? 'arrival' : 'arrivals').' to come.' : '.'),
+                    'why' => "{$inHouse} rooms in house now plus {$toCome} arriving today, of {$rooms} rooms.", 'link' => '/rooms?tab=arrivals',
+                ];
+            }),
+        ]);
+    }
+
+    // ------------------------------------------------------------------ bookings and front desk
+
+    public function reservation(Hotel $hotel, Reservation $r): array
+    {
+        $r->loadMissing(['guest', 'rooms.room']);
+
+        return self::list([
+            $this->hint($hotel, 'no_show_risk', function () use ($r) {
+                if (! in_array($r->status, ['pending', 'confirmed'], true) || $r->check_in_at->lt(now()->subDay())) {
+                    return null;
+                }
+                $why = [];
+                $score = 0;
+                if (! Money::isPositive((string) $r->paid_total)) {
+                    $score += 2;
+                    $why[] = 'nothing paid yet';
+                }
+                $past = Reservation::where('guest_id', $r->guest_id)->where('id', '!=', $r->id)->get(['status']);
+                $lost = $past->whereIn('status', ['no_show', 'cancelled'])->count();
+                if ($lost > 0) {
+                    $score += 2 * min($lost, 2);
+                    $why[] = "{$lost} earlier ".($lost === 1 ? 'booking' : 'bookings').' cancelled or not shown';
+                }
+                if ($past->where('status', 'checked_out')->isEmpty()) {
+                    $score++;
+                    $why[] = 'first stay';
+                }
+                if (in_array($r->source, ['phone', 'other'], true)) {
+                    $score++;
+                    $why[] = "booked by {$r->source}";
+                }
+                if ($r->created_at && $r->created_at->diffInDays($r->check_in_at) > 30) {
+                    $score++;
+                    $why[] = 'booked long ago';
+                }
+
+                return $score >= 4 ? ['text' => 'This guest may not come. Call to confirm, or ask for a deposit.', 'why' => 'Because: '.implode(', ', $why).'.', 'tone' => 'warn'] : null;
+            }),
+            $this->hint($hotel, 'returning_guest', function () use ($hotel, $r) {
+                if (! $r->guest) {
+                    return null;
+                }
+                $past = Reservation::where('guest_id', $r->guest_id)->where('id', '!=', $r->id)->where('status', 'checked_out')->with('rooms.room')->orderByDesc('check_out_at')->get();
+                if ($past->isEmpty()) {
+                    return null;
+                }
+                $usual = $past->flatMap(fn ($p) => $p->rooms->map(fn ($x) => $x->room?->number))->filter()->countBy()->sortDesc()->keys()->first();
+                $spent = Money::sum($past->pluck('total')->map(fn ($v) => (string) $v)->all());
+                $n = $past->count() + 1;
+                $nth = $n.(in_array($n % 100, [11, 12, 13], true) ? 'th' : ([1 => 'st', 2 => 'nd', 3 => 'rd'][$n % 10] ?? 'th'));
+
+                return [
+                    'text' => "Returning guest – {$nth} stay.".($usual ? " Usually room {$usual}." : '').($r->guest->notes ? " Note: {$r->guest->notes}" : ''),
+                    'why' => 'Last stay '.HotelClock::local($past->first()->check_out_at, $hotel)->format('d M Y').", {$r->currency} {$spent} spent so far.",
+                    'tone' => 'ok', 'link' => "/guests/{$r->guest_id}",
+                ];
+            }),
+        ]);
+    }
+
+    public function checkIn(Hotel $hotel, Reservation $r, Availability $availability): array
+    {
+        $r->loadMissing(['rooms.roomType', 'guest']);
+
+        return self::list([
+            $this->hint($hotel, 'best_room', function () use ($r, $availability) {
+                $previous = Reservation::where('guest_id', $r->guest_id)->where('id', '!=', $r->id)->where('status', 'checked_out')
+                    ->with('rooms:id,reservation_id,room_id')->get()->flatMap(fn ($p) => $p->rooms->pluck('room_id'))->filter()->countBy();
+                $used = DB::table('reservation_rooms')->where('hotel_id', $r->hotel_id)->whereNotNull('room_id')->where('check_in_at', '>=', now()->subDays(30))
+                    ->selectRaw('room_id, COUNT(*) as c')->groupBy('room_id')->pluck('c', 'room_id');
+                $picks = [];
+                $reasons = [];
+                foreach ($r->rooms as $rr) {
+                    if ($rr->room_id || $rr->status !== $r->status) {
+                        continue;
+                    }
+                    $free = $availability->freeRooms($r->branch_id, $rr->room_type_id, $rr->check_in_at, $rr->blocked_until ?? $rr->check_out_at, $r->id)
+                        ->filter(fn (Room $room) => in_array($room->status, ['available', 'clean'], true) && ! in_array($room->id, $picks, true));
+                    if ($free->isEmpty()) {
+                        continue;
+                    }
+                    $best = $free->sortBy(fn (Room $room) => sprintf('%05d-%05d-%s', 99999 - (int) ($previous[$room->id] ?? 0), (int) ($used[$room->id] ?? 0), $room->number))->first();
+                    $picks[$rr->id] = $best->id;
+                    $reasons[] = "room {$best->number}".(($previous[$best->id] ?? 0) > 0 ? ' (the guest stayed there before)' : ' (clean, used least in the last 30 days)');
+                }
+
+                return $picks ? ['text' => 'Suggested: '.implode('; ', $reasons).'.', 'why' => 'Rooms are used evenly so they wear evenly; returning guests get their usual room.', 'data' => ['rooms' => $picks]] : null;
+            }),
+            $this->hint($hotel, 'upgrade', function () use ($hotel, $r, $availability) {
+                if ($r->stay_type !== 'nightly' || $r->rooms->count() !== 1) {
+                    return null;
+                }
+                $rr = $r->rooms->first();
+                $better = RoomType::where('branch_id', $r->branch_id)->where('nightly_price', '>', $rr->roomType?->nightly_price ?? 0)
+                    ->where('max_capacity', '>=', $r->adults + $r->children)->orderBy('nightly_price')->first();
+                if (! $better) {
+                    return null;
+                }
+                $free = $availability->availableCount($better, $rr->check_in_at, $rr->blocked_until ?? $rr->check_out_at, $r->id);
+                $rooms = Metrics::for($hotel, [$r->branch_id])->roomCount();
+                $inHouse = DB::table('reservation_rooms as rr')->join('reservations as res', 'res.id', '=', 'rr.reservation_id')
+                    ->where('res.branch_id', $r->branch_id)->where('rr.status', 'checked_in')->count();
+                $occupancy = $rooms ? $inHouse / $rooms * 100 : 100;
+
+                return $free >= 2 && $occupancy < 60 ? [
+                    'text' => "Quiet night: {$better->name} has {$free} free rooms. A free upgrade makes a good impression.",
+                    'why' => 'Only '.round($occupancy).'% of rooms are occupied now.', 'tone' => 'ok',
+                ] : null;
+            }),
+        ]);
+    }
+
+    /** Duplicate guest check while typing (same phone, ID number or name). */
+    public function guestCheck(Hotel $hotel, array $q): array
+    {
+        return self::list([$this->hint($hotel, 'duplicate_guest', function () use ($q) {
+            $digits = substr((string) preg_replace('/\D/', '', (string) ($q['phone'] ?? '')), -9);
+            $first = trim((string) ($q['first_name'] ?? ''));
+            $last = trim((string) ($q['last_name'] ?? ''));
+            $byPhone = strlen($digits) === 9;
+            $byId = trim((string) ($q['id_number'] ?? '')) !== '';
+            $byName = $first !== '' && $last !== '';
+            if (! $byPhone && ! $byId && ! $byName) {
+                return null;
+            }
+            // Phones are stored as typed: compare the last 9 digits in PHP over the few candidates.
+            $candidates = Guest::query()
+                ->when(! empty($q['exclude_id']), fn ($w) => $w->where('id', '!=', (int) $q['exclude_id']))
+                ->where(function ($w) use ($byPhone, $digits, $byId, $q, $byName, $first, $last) {
+                    $w->whereRaw('1 = 0');
+                    if ($byPhone) {
+                        $w->orWhere('phone', 'like', '%'.substr($digits, -4));
+                    }
+                    if ($byId) {
+                        $w->orWhere('id_number_hash', Guest::idHash((string) $q['id_number']));
+                    }
+                    if ($byName) {
+                        $w->orWhere(fn ($n) => $n->where('first_name', $first)->where('last_name', $last));
+                    }
+                })->limit(50)->get();
+            $g = $candidates->first(fn (Guest $c) => ($byPhone && $c->phone && substr((string) preg_replace('/\D/', '', $c->phone), -9) === $digits)
+                || ($byId && $c->id_number === trim((string) $q['id_number']))
+                || ($byName && mb_strtolower($c->first_name) === mb_strtolower($first) && mb_strtolower($c->last_name) === mb_strtolower($last)));
+            if (! $g) {
+                return null;
+            }
+
+            return [
+                'text' => "{$g->full_name} may already exist".($g->phone ? " ({$g->phone})" : '').'.',
+                'why' => 'Same phone number, ID number or name. Use the existing guest to keep their history together.',
+                'tone' => 'warn', 'link' => "/guests/{$g->id}", 'data' => ['guest_id' => $g->id, 'name' => $g->full_name],
+            ];
+        })]);
+    }
+
+    // ------------------------------------------------------------------ money, housekeeping, staff
+
+    public function cashier(Hotel $hotel, User $user, Cashier $cashier): array
+    {
+        return self::list([$this->hint($hotel, 'cash_prediction', function () use ($hotel, $user, $cashier) {
+            $session = $cashier->current($user);
+            if (! $session) {
+                return null;
+            }
+            $base = $hotel->default_currency;
+            $now = $cashier->expected($session)[$base]['expected'] ?? '0.00';
+            // What usually comes in cash in the rest of an 8-hour shift on this weekday (last 4 weeks).
+            $end = $session->opened_at->copy()->addHours(8);
+            $more = '0.00';
+            if ($end->gt(now())) {
+                $sum = '0.00';
+                for ($w = 1; $w <= 4; $w++) {
+                    $v = DB::table('payments as p')->join('payment_methods as m', 'm.id', '=', 'p.payment_method_id')->where('p.hotel_id', $hotel->id)
+                        ->where('p.branch_id', $session->branch_id)->where('m.type', 'cash')->where('p.currency', $base)
+                        ->whereBetween('p.paid_at', [now()->subWeeks($w), $end->copy()->subWeeks($w)])
+                        ->selectRaw("SUM(CASE WHEN p.type = 'refund' THEN -p.amount ELSE p.amount END) as t")->value('t');
+                    $sum = Money::add($sum, (string) ($v ?? '0'));
+                }
+                $more = Money::round(bcdiv($sum, '4', 4));
+            }
+            $total = Money::add($now, $more);
+
+            return [
+                'text' => "At the end of your shift you should have about {$base} ".number_format((float) $total).' in the drawer.',
+                'why' => "{$base} {$now} now (start + cash taken), plus about {$base} {$more} that usually comes in by ".HotelClock::local($end, $hotel)->format('H:i').' on this weekday.',
+            ];
+        })]);
+    }
+
+    public function housekeeping(Hotel $hotel, int $branchId): array
+    {
+        return self::list([$this->hint($hotel, 'cleaning_order', function () use ($hotel, $branchId) {
+            $tasks = HousekeepingTask::where('branch_id', $branchId)->whereIn('status', ['pending', 'in_progress'])->where('type', 'cleaning')->with('room:id,number,floor')->get();
+            if ($tasks->isEmpty()) {
+                return null;
+            }
+            $start = HotelClock::now($hotel)->startOfDay()->utc();
+            $arrivals = DB::table('reservation_rooms')->where('hotel_id', $hotel->id)->whereIn('status', ['pending', 'confirmed'])
+                ->whereBetween('check_in_at', [$start, $start->copy()->addDay()])->whereNotNull('room_id')->pluck('check_in_at', 'room_id');
+            $ordered = $tasks->sortBy(fn (HousekeepingTask $t) => (isset($arrivals[$t->room_id]) ? '0'.$arrivals[$t->room_id] : '1').'|'.str_pad((string) ($t->room?->floor ?? ''), 4, '0', STR_PAD_LEFT).'|'.str_pad((string) $t->room?->number, 6, '0', STR_PAD_LEFT))->values();
+            $done = DB::table('housekeeping_tasks')->where('hotel_id', $hotel->id)->where('type', 'cleaning')->where('status', 'done')
+                ->whereNotNull('started_at')->whereNotNull('completed_at')->where('completed_at', '>=', now()->subDays(30))->get(['started_at', 'completed_at']);
+            $avg = $done->isEmpty() ? 30 : max(5, (int) round($done->avg(fn ($d) => Carbon::parse($d->started_at)->diffInMinutes(Carbon::parse($d->completed_at)))));
+            $people = max(1, User::where('hotel_id', $hotel->id)->where('status', 'active')->whereHas('role', fn ($q) => $q->where('key', 'housekeeping'))->count());
+            $minutes = (int) ceil($tasks->count() * $avg / $people);
+            $first = $ordered->take(3)->map(fn ($t) => $t->room?->number)->filter()->implode(', ');
+            $soon = $ordered->filter(fn ($t) => isset($arrivals[$t->room_id]))->count();
+
+            return [
+                'text' => "Clean {$first} first".($soon ? " ({$soon} with guests arriving today)" : '').'. About '.intdiv($minutes, 60).' h '.($minutes % 60).' min for '.$tasks->count().' rooms.',
+                'why' => "Rooms with arrivals today come first, then floor by floor. A room takes about {$avg} min here; {$people} ".($people === 1 ? 'housekeeper' : 'housekeepers').'.',
+                'data' => ['order' => $ordered->pluck('id')],
+            ];
+        })]);
+    }
+
+    public function shifts(Hotel $hotel, int $branchId): array
+    {
+        return self::list([$this->hint($hotel, 'staffing', function () use ($hotel, $branchId) {
+            $today = HotelClock::now($hotel)->startOfDay();
+            $days = collect(range(1, 7))->map(function ($i) use ($today, $branchId) {
+                $d = $today->copy()->addDays($i);
+                $from = $d->copy()->utc();
+                $to = $from->copy()->addDay();
+                $moves = Reservation::where('branch_id', $branchId)->whereIn('status', ['pending', 'confirmed', 'checked_in'])
+                    ->where(fn ($q) => $q->whereBetween('check_in_at', [$from, $to])->orWhereBetween('check_out_at', [$from, $to]))->count();
+
+                return ['date' => $d, 'moves' => $moves];
+            });
+            $busiest = $days->sortByDesc('moves')->first();
+            $others = $days->reject(fn ($d) => $d['date']->eq($busiest['date']))->avg('moves') ?? 0;
+            if ($busiest['moves'] < 8 || $busiest['moves'] < 1.5 * max(1, $others)) {
+                return null;
+            }
+
+            return [
+                'text' => $busiest['date']->format('l j M').' looks busy: '.$busiest['moves'].' check-ins and check-outs. Consider one more person at reception.',
+                'why' => 'The other days of the next week average '.round($others).'.', 'tone' => 'warn',
+            ];
+        })]);
+    }
+
+    // ------------------------------------------------------------------ reports, settings, Super Admin
+
+    /** @param  list<int>  $branchIds */
+    public function report(Hotel $hotel, array $branchIds, string $from, string $to): array
+    {
+        return self::list([$this->hint($hotel, 'report_summary', function () use ($hotel, $branchIds, $from, $to) {
+            $m = Metrics::for($hotel, $branchIds);
+            $length = (int) Carbon::parse($from)->diffInDays(Carbon::parse($to)) + 1;
+            $now = $m->kpis($from, $to);
+            $before = $m->kpis(Carbon::parse($from)->subDays($length)->toDateString(), Carbon::parse($from)->subDay()->toDateString());
+            if ($now['room_nights'] === 0 && ! Money::isPositive($now['revenue'])) {
+                return null;
+            }
+            $occ = (int) round($now['occupancy'] - $before['occupancy']);
+            $rev = self::pct((float) $now['revenue'], (float) $before['revenue']);
+            $why = "Compared with the {$length} days before.";
+            $cancelNow = (int) round($now['bookings'] * $now['cancellation_rate'] / 100);
+            $cancelBefore = (int) round($before['bookings'] * $before['cancellation_rate'] / 100);
+            if ($occ <= -5 && $cancelNow > $cancelBefore + 2) {
+                $why .= " Partly because of {$cancelNow} cancellations, against {$cancelBefore} before.";
+            }
+
+            return [
+                'text' => "Occupancy {$now['occupancy']}% (".($occ >= 0 ? '+' : '')."{$occ} points), revenue {$hotel->default_currency} ".number_format((float) $now['revenue']).($rev !== null ? ' ('.($rev >= 0 ? '+' : '')."{$rev}%)" : '').'.',
+                'why' => $why, 'tone' => ($rev ?? $occ) >= 0 ? 'ok' : 'warn',
+            ];
+        })]);
+    }
+
+    public function roomsSettings(Hotel $hotel): array
+    {
+        return self::list([$this->hint($hotel, 'plan_usage', function () use ($hotel) {
+            $limit = $hotel->limit('rooms');
+            if (! $limit) {
+                return null;
+            }
+            $used = DB::table('rooms')->where('hotel_id', $hotel->id)->whereNull('deleted_at')->count();
+            $left = $limit - $used;
+
+            return $used >= $limit * 0.75 ? [
+                'text' => $left > 0 ? "You can add {$left} more ".($left === 1 ? 'room' : 'rooms').' on your plan.' : 'You have reached the room limit of your plan.',
+                'why' => "{$used} of {$limit} rooms used.", 'tone' => $left > 0 ? 'info' : 'warn', 'link' => '/settings/subscription',
+            ] : null;
+        })]);
+    }
+
+    public function admin(): array
+    {
+        return self::list([$this->hint(null, 'platform_insight', function () {
+            $ids = DB::table('hotels')->where('is_demo', false)->whereNull('deleted_at')->pluck('id');
+            if ($ids->isEmpty()) {
+                return null;
+            }
+            $today = now('Africa/Addis_Ababa')->startOfDay()->utc();
+            $now = DB::table('reservations')->whereIn('hotel_id', $ids)->whereBetween('created_at', [$today, now()])->count();
+            $then = DB::table('reservations')->whereIn('hotel_id', $ids)->whereBetween('created_at', [$today->copy()->subWeek(), now()->subWeek()])->count();
+            $quiet = DB::table('hotels')->whereIn('id', $ids)->whereIn('status', ['trial', 'active'])
+                ->whereNotExists(fn ($q) => $q->from('activity_logs')->whereColumn('activity_logs.hotel_id', 'hotels.id')->where('activity_logs.created_at', '>=', now()->subDays(7)))->count();
+            $change = self::pct($now, $then);
+
+            return [
+                'text' => "{$now} bookings made across hotels so far today".($change !== null ? ' ('.($change >= 0 ? '+' : '')."{$change}% on last week)" : '').'.'
+                    .($quiet ? " {$quiet} ".($quiet === 1 ? 'hotel has' : 'hotels have').' not used the system for 7 days.' : ''),
+                'why' => "Same time last week: {$then} bookings.", 'tone' => $quiet ? 'warn' : 'ok', 'link' => $quiet ? '/admin/reports' : null,
+            ];
+        })]);
+    }
+}

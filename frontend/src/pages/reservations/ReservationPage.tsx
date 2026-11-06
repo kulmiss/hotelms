@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { SmartHints } from '@/components/ui/SmartHints'
+import { useSmart } from '@/lib/smart'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
@@ -22,6 +24,7 @@ export function ReservationPage() {
   const { id } = useParams()
   const can = useCan()
   const q = useReservation(Number(id))
+  const smart = useSmart('reservation', { id: Number(id) }, Number(id) > 0)
   const [params] = useSearchParams()
   const [action, setAction] = useState<'pay' | 'cancel' | 'no_show' | 'check_in' | 'check_out' | 'change' | null>(() =>
     params.get('action') === 'check-in' ? 'check_in' : params.get('action') === 'check-out' ? 'check_out' : null,
@@ -84,6 +87,8 @@ export function ReservationPage() {
           </div>
         }
       />
+
+      <SmartHints hints={smart.data?.data} />
 
       {(action === 'cancel' || action === 'no_show') && <CancelPanel r={r} noShow={action === 'no_show'} onClose={() => setAction(null)} />}
       {action === 'check_in' && canArrive && <CheckInPanel r={r} onClose={() => setAction(null)} />}

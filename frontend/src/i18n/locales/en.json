@@ -1817,14 +1817,16 @@
       "modules": "Modules",
       "features": "Features",
       "limits": "Limits",
-      "automations": "Automations"
+      "automations": "Automations",
+      "smart": "Smart hints"
     },
     "groupHints": {
       "emergency": "Use only when something is wrong. Hotels see a notice.",
       "modules": "Optional modules. Off here hides them even if the plan has them.",
       "features": "Ship new features switched off, then turn them on.",
       "limits": "Override the plan limit, e.g. a gift of extra rooms.",
-      "automations": "Each automation can be turned off for everyone, a plan or one hotel."
+      "automations": "Each automation can be turned off for everyone, a plan or one hotel.",
+      "smart": "Each smart hint can be turned off for everyone, a plan or one hotel."
     },
     "keys": {
       "module": {
@@ -1893,6 +1895,22 @@
         "trial_ending_sales": "Trial ending (sales)",
         "inactive_hotel": "Hotel not using the system",
         "stuck_in_setup": "Hotel stuck in setup"
+      },
+      "smart": {
+        "insight_of_the_day": "Insight of the day (dashboard)",
+        "tonight": "Tonight's expected occupancy",
+        "no_show_risk": "Likely no-show warning",
+        "returning_guest": "Returning guest",
+        "best_room": "Best room at check-in",
+        "upgrade": "Upgrade suggestion",
+        "duplicate_guest": "Duplicate guest check",
+        "cash_prediction": "Cash drawer prediction",
+        "cleaning_order": "Cleaning order and time",
+        "staffing": "Staffing suggestion",
+        "report_summary": "One-line report summary",
+        "plan_usage": "Plan usage warning",
+        "platform_insight": "Platform insight (Super Admin)",
+        "smart_search": "Questions in the search box"
       }
     },
     "default": "Default",
@@ -1960,7 +1978,8 @@
       "room": "Room",
       "bill": "Bill",
       "hotel": "Hotel",
-      "person": "Person"
+      "person": "Person",
+      "answer": "Answer"
     }
   },
   "help": {
@@ -2452,5 +2471,12 @@
     "reject": "Reject",
     "approvedToast": "Approved and done",
     "rejectedToast": "Rejected – nothing was changed"
+  },
+  "smart": {
+    "label": "Smart",
+    "why": "Why?",
+    "open": "Open",
+    "dismiss": "Hide this tip",
+    "phoneCheck": "Check the number: Ethiopian mobiles look like +251 9XX XXX XXX."
   }
 }

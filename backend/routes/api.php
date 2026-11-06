@@ -42,6 +42,7 @@ use App\Http\Controllers\Api\Automation\ApprovalController;
 use App\Http\Controllers\Api\Automation\AutomationSettingsController;
 use App\Http\Controllers\Api\Automation\NotificationController;
 use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\Api\SmartController;
 use App\Http\Controllers\Api\SecurityController;
 use App\Http\Controllers\Api\Settings\BranchSettingsController;
 use App\Http\Controllers\Api\Settings\CancellationPolicyController;
@@ -91,6 +92,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
     // Everything below needs a password the user chose themselves.
     Route::middleware(['password.changed', 'two.factor'])->group(function () {
         Route::get('/search', SearchController::class)->middleware('throttle:60,1');
+        Route::get('/smart/{place}', SmartController::class)->middleware('throttle:120,1');
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::post('/notifications/read', [NotificationController::class, 'read']);
         // Help: questions to HotelMS. Open even when the hotel is suspended or in maintenance.

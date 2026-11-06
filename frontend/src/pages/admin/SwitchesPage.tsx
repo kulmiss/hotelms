@@ -11,7 +11,7 @@ import { useHotels } from '@/lib/admin'
 import { ApiError } from '@/lib/api'
 import { useAddBanner, useRemoveBanner, useRemoveSwitch, useSetSwitch, useSwitches, type BannerRow, type SwitchDef, type SwitchRow } from '@/lib/switches'
 
-const GROUPS: SwitchDef['group'][] = ['emergency', 'modules', 'features', 'limits', 'automations']
+const GROUPS: SwitchDef['group'][] = ['emergency', 'modules', 'features', 'limits', 'automations', 'smart']
 
 /** "2026-11-20T09:00" from the date box → an exact time with the browser's offset. */
 const toIso = (v: string) => (v ? new Date(v).toISOString() : null)

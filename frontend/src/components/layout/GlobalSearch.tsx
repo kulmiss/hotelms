@@ -2,14 +2,14 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { BuildingOffice2Icon, CalendarDaysIcon, DocumentTextIcon, HomeModernIcon, MagnifyingGlassIcon, UserIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { BuildingOffice2Icon, CalendarDaysIcon, DocumentTextIcon, HomeModernIcon, MagnifyingGlassIcon, SparklesIcon, UserIcon, UsersIcon } from '@heroicons/react/24/outline'
 import { api } from '@/lib/api'
 import { useMe } from '@/lib/auth'
 import { cn } from '@/lib/cn'
 import { useDebounced } from '@/lib/useDebounced'
 
-type Hit = { type: 'booking' | 'guest' | 'room' | 'bill' | 'hotel' | 'person'; title: string; subtitle: string; link: string }
-const ICONS = { booking: CalendarDaysIcon, guest: UserIcon, room: HomeModernIcon, bill: DocumentTextIcon, hotel: BuildingOffice2Icon, person: UsersIcon }
+type Hit = { type: 'answer' | 'booking' | 'guest' | 'room' | 'bill' | 'hotel' | 'person'; title: string; subtitle: string; link: string }
+const ICONS = { answer: SparklesIcon, booking: CalendarDaysIcon, guest: UserIcon, room: HomeModernIcon, bill: DocumentTextIcon, hotel: BuildingOffice2Icon, person: UsersIcon }
 
 /** The search box in the top bar: guests, bookings, rooms and bills (Ctrl+K / ⌘K or "/" to jump here). */
 export function GlobalSearch() {

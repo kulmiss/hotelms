@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { SmartHints } from '@/components/ui/SmartHints'
+import { phoneLooksWrong, useSmart } from '@/lib/smart'
+import { useDebounced } from '@/lib/useDebounced'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Field } from '@/components/ui/Field'
@@ -21,6 +24,11 @@ export function GuestForm({ guest, compact = false, onSaved, onCancel }: { guest
   const error = save.error instanceof ApiError ? save.error : null
   const set = (k: keyof GuestInput) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value === '' ? null : e.target.value })
   const val = (k: keyof GuestInput) => String(f[k] ?? '')
+  // ✨ While typing: "this guest may already exist" (same phone, ID number or name).
+  const check = useDebounced({ phone: f.phone ?? '', id_number: f.id_number ?? '', first_name: f.first_name ?? '', last_name: f.last_name ?? '', exclude_id: guest?.id }, 500)
+  const filled = (check.phone.replace(/\D/g, '').length >= 9 || check.id_number.length >= 4 || (check.first_name.length >= 2 && check.last_name.length >= 2))
+  const smart = useSmart('guest_check', check, filled && !duplicate)
+  const phoneWrong = phoneLooksWrong(f.phone ?? '')
 
   function submit(e: FormEvent) {
     e.preventDefault()
@@ -41,9 +49,10 @@ export function GuestForm({ guest, compact = false, onSaved, onCancel }: { guest
     <form onSubmit={submit} noValidate className="grid gap-4 sm:grid-cols-2">
       {save.error && !error && <Alert>{t('common.serverUnreachable')}</Alert>}
       {duplicate && <Alert tone="info">{t('guests.duplicate', { name: duplicate.name })}</Alert>}
+      {filled && <SmartHints hints={smart.data?.data} className="sm:col-span-2" />}
       <Field label={t('guests.firstName')} value={val('first_name')} onChange={set('first_name')} error={error?.field('first_name')} autoFocus={compact} />
       <Field label={t('guests.lastName')} value={val('last_name')} onChange={set('last_name')} error={error?.field('last_name')} />
-      <Field label={t('guests.phone')} type="tel" inputMode="tel" value={val('phone')} onChange={set('phone')} error={error?.field('phone')} />
+      <Field label={t('guests.phone')} type="tel" inputMode="tel" value={val('phone')} onChange={set('phone')} error={error?.field('phone')} hint={phoneWrong ? t('smart.phoneCheck') : undefined} />
       {!compact && <Field label={t('guests.email')} type="email" value={val('email')} onChange={set('email')} error={error?.field('email')} />}
       <Select label={t('guests.idType')} value={val('id_type')} onChange={set('id_type')} error={error?.field('id_type')}>
         <option value="">—</option>
