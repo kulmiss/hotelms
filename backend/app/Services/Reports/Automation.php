@@ -146,7 +146,7 @@ class Automation
                     array_map(fn ($r) => [$r['code'], $r['guest'], $r['status'], $r['reason'], $r['check_in'], $r['fee']], $x['rows'])];
             })(),
             'branches' => (function () use ($hotel, $branchIds, $from, $to) {
-                $rows = DB::table('branches')->whereIn('id', $branchIds)->orderBy('name')->get(['id', 'name'])
+                $rows = DB::table('branches')->where('hotel_id', $hotel->id)->whereIn('id', $branchIds)->orderBy('name')->get(['id', 'name'])
                     ->map(fn ($b) => ['branch' => $b->name] + Metrics::for($hotel, [$b->id])->kpis($from, $to))->all();
 
                 return ['Branch comparison', array_map(fn ($r) => "{$r['branch']}: {$r['occupancy']}%, revenue {$r['revenue']}", $rows), ['Branch', 'Occupancy %', 'ADR', 'RevPAR', 'Revenue', 'Payments'],

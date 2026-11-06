@@ -42,8 +42,9 @@ class PaymentProofController extends Controller
     {
         $user = $request->user();
         abort_unless($user->hasPermission('invoices.view') || $user->hasPermission('payments.view') || $user->hasPermission('reservations.view'), 403);
-        $proof = PaymentProof::findOrFail($id);
-        abort_unless($proof->payment_id || $proof->uploaded_by === $user->id, 404);
+        $proof = PaymentProof::with('payment:id,branch_id')->findOrFail($id);
+        // Hotel: by the tenant scope. Branch: only payments of the branches this person works in.
+        abort_unless($proof->payment ? $user->accessibleBranches()->contains('id', $proof->payment->branch_id) : $proof->uploaded_by === $user->id, 404);
         abort_unless(Storage::disk('local')->exists($proof->path), 404);
 
         return Storage::disk('local')->response($proof->path, 'payment-proof-'.$proof->id.'.'.pathinfo($proof->path, PATHINFO_EXTENSION), [
@@ -56,7 +57,7 @@ class PaymentProofController extends Controller
     {
         abort_unless($request->user()->hasPermission('payments.take'), 403);
         $data = $request->validate(['proof_id' => ['required', 'integer']]);
-        $p = Payment::findOrFail($payment);
+        $p = Payment::whereIn('branch_id', $request->user()->accessibleBranches()->pluck('id'))->findOrFail($payment);
         if (! self::link((int) $data['proof_id'], $p, $request->user()->id)) {
             throw ValidationException::withMessages(['proof_id' => 'Upload the photo again.']);
         }
