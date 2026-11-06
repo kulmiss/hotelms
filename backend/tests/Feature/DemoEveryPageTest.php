@@ -95,9 +95,9 @@ class DemoEveryPageTest extends TestCase
             foreach ($this->hotelRoutes() as $route) {
                 foreach ($this->urls($route) as $url) {
                     $res = $this->getJson($url);
-                    $status = $res->status();
+                    $status = $res->getStatusCode(); // file downloads too
                     if ($status >= 500) {
-                        $failures[] = "{$role} {$url} → {$status}: ".mb_substr((string) ($res->json('message') ?? ''), 0, 200);
+                        $failures[] = "{$role} {$url} → {$status}: ".mb_substr((string) $res->baseResponse->getContent(), 0, 300);
                     }
                     if ($status === 200) {
                         $ok[$role][] = $url;
