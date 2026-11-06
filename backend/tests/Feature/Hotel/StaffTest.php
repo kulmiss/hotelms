@@ -5,6 +5,7 @@ namespace Tests\Feature\Hotel;
 use App\Mail\StaffInvite;
 use App\Models\Branch;
 use App\Models\Hotel;
+use App\Models\Plan;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\DefaultRoles;
@@ -107,7 +108,7 @@ class StaffTest extends TestCase
     public function test_the_plan_limits_active_staff_accounts(): void
     {
         $admin = $this->admin();
-        $plan = \App\Models\Plan::factory()->create(['max_staff' => 2, 'modules' => []]);
+        $plan = Plan::factory()->create(['max_staff' => 2, 'modules' => []]);
         $this->hotel->forceFill(['plan_id' => $plan->id, 'status' => 'active'])->save();
         $role = $this->roles['receptionist'];
         $new = fn (string $email) => $this->actingAs($admin)->postJson('/api/v1/staff', ['name' => 'New', 'email' => $email, 'role_id' => $role->id, 'branch_ids' => [$this->bole->id], 'send_email' => false]);
