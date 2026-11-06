@@ -22,6 +22,25 @@ describe('hotel settings', () => {
     expect(nav).not.toHaveTextContent('Attendance') // module is off
   })
 
+  it('finds a setting by name and opens its section', async () => {
+    mockApi({
+      'GET /me': { body: meAdmin() },
+      'GET /settings/hotel': { body: { data: { name: 'Sheger Hotel', legal_name: null, tin: null, vat_number: null, email: null, phone: null, city: null, address: null, logo_url: null, invoice_prefix: 'INV', invoice_footer: null } } },
+    })
+    renderApp('/settings')
+    await screen.findByLabelText('Hotel name')
+
+    await userEvent.type(screen.getByRole('combobox', { name: 'Search settings' }), 'walk-in')
+    const option = await screen.findByRole('option', { name: /Walk-in guests pay/ })
+    expect(option).toHaveTextContent('Booking rules')
+    await userEvent.click(option)
+    expect(await screen.findByRole('link', { name: 'Booking rules', current: 'page' })).toBeInTheDocument()
+
+    // Sections the role may not open are never offered.
+    await userEvent.type(screen.getByRole('combobox', { name: 'Search settings' }), 'automations')
+    expect(await screen.findByText('No setting found.')).toBeInTheDocument()
+  })
+
   it('adds a tax from the list', async () => {
     const fetchMock = mockApi({
       'GET /me': { body: meAdmin() },

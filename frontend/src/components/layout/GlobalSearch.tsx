@@ -2,14 +2,15 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { BuildingOffice2Icon, CalendarDaysIcon, DocumentTextIcon, HomeModernIcon, MagnifyingGlassIcon, SparklesIcon, UserIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { BuildingOffice2Icon, CalendarDaysIcon, Cog6ToothIcon, DocumentTextIcon, HomeModernIcon, MagnifyingGlassIcon, SparklesIcon, UserIcon, UsersIcon } from '@heroicons/react/24/outline'
 import { api } from '@/lib/api'
 import { useMe } from '@/lib/auth'
 import { cn } from '@/lib/cn'
+import { searchSettings, settingsLink, useSettingsSections } from '@/lib/settingsSearch'
 import { useDebounced } from '@/lib/useDebounced'
 
-type Hit = { type: 'answer' | 'booking' | 'guest' | 'room' | 'bill' | 'hotel' | 'person'; title: string; subtitle: string; link: string }
-const ICONS = { answer: SparklesIcon, booking: CalendarDaysIcon, guest: UserIcon, room: HomeModernIcon, bill: DocumentTextIcon, hotel: BuildingOffice2Icon, person: UsersIcon }
+type Hit = { type: 'answer' | 'booking' | 'guest' | 'room' | 'bill' | 'hotel' | 'person' | 'setting'; title: string; subtitle: string; link: string }
+const ICONS = { setting: Cog6ToothIcon, answer: SparklesIcon, booking: CalendarDaysIcon, guest: UserIcon, room: HomeModernIcon, bill: DocumentTextIcon, hotel: BuildingOffice2Icon, person: UsersIcon }
 
 /** The search box in the top bar: guests, bookings, rooms and bills (Ctrl+K / ⌘K or "/" to jump here). */
 export function GlobalSearch() {
@@ -32,7 +33,12 @@ export function GlobalSearch() {
     placeholderData: keepPreviousData,
     staleTime: 15_000,
   })
-  const hits = term.length >= 2 ? (res.data?.data ?? []) : []
+  // Settings are found on this device (no request): the first few matches come after the server's results.
+  const sections = useSettingsSections().map((s) => s.key)
+  const settingHits: Hit[] = admin
+    ? []
+    : searchSettings(t, sections, term, 3).map((h) => ({ type: 'setting', title: h.label, subtitle: h.find ? t(`settings.sections.${h.section}`) : '', link: settingsLink(h) }))
+  const hits = term.length >= 2 ? [...(res.data?.data ?? []), ...settingHits] : []
 
   useEffect(() => {
     const onKey = (e: globalThis.KeyboardEvent) => {
