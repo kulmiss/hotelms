@@ -22,6 +22,7 @@ export const SETTINGS_SECTIONS = [
   { key: 'cancellation', permission: 'settings.policies' },
   { key: 'modules', permission: 'settings.modules' },
   { key: 'attendance', permission: 'settings.attendance', module: 'attendance' },
+  { key: 'automations', permission: 'automations.manage' },
   { key: 'security', permission: 'settings.hotel' },
   { key: 'subscription', permission: 'subscription.view' },
 ] as const

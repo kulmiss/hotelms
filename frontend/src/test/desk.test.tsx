@@ -124,3 +124,41 @@ describe('billing', () => {
     expect((await screen.findAllByText(/BL-26-00001/)).length).toBeGreaterThan(0)
   })
 })
+
+describe('reception extras', () => {
+  const arrival = { ...reservation, guest: { id: 5, name: 'Abebe Kebede', phone: null }, rooms: [{ room_type: 'Standard', room_number: null }], late: false, overdue: false, balance: '3220.00' }
+
+  it('turns on front desk mode and checks in from the arrivals list', async () => {
+    localStorage.clear()
+    mockApi({
+      'GET /me': { body: me() }, 'GET /dashboard': { body: {} }, 'GET /front-desk/today': { body: { arrivals: [arrival], departures: [], in_house: [] } },
+      'GET /reservations/9': { body: { data: reservation } },
+    })
+    renderApp('/rooms')
+
+    await userEvent.click(await screen.findByRole('button', { name: /Account menu|Meron Tesfaye/ }))
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Front desk mode' }))
+    expect(await screen.findByRole('heading', { name: 'Front desk' })).toBeInTheDocument()
+    expect(await screen.findByText('Abebe Kebede')).toBeInTheDocument()
+    expect(localStorage.getItem('hms-front-desk-mode-1')).toBe('1')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Check in' }))
+    expect(await screen.findAllByText(/BL-26-00001/)).not.toHaveLength(0)
+    localStorage.clear()
+  })
+
+  it('prints a registration card', async () => {
+    const card = { reservation, guest: { name: 'Abebe Kebede', phone: '+251 911', email: null, nationality: 'Ethiopian', id_type: 'national_id', id_number: 'ET123', date_of_birth: null }, hotel: invoice.hotel, printed_by: 'Meron' }
+    mockApi({ 'GET /me': { body: me() }, 'GET /reservations/9/registration-card': { body: { data: card } } })
+    renderApp('/reservations/9/registration-card')
+    expect(await screen.findByText('ET123')).toBeInTheDocument()
+    expect(screen.getByText('Guest signature')).toBeInTheDocument()
+    expect(screen.getByText('National ID')).toBeInTheDocument()
+  })
+
+  it('prints on the hotel’s default paper', async () => {
+    mockApi({ 'GET /me': { body: me() }, 'GET /invoices/4': { body: { data: { ...invoice, hotel: { ...invoice.hotel, receipt_paper: 'receipt' } } } } })
+    renderApp('/billing/4/print')
+    expect(await screen.findByRole('button', { name: '80 mm receipt' })).toHaveAttribute('aria-pressed', 'true')
+  })
+})

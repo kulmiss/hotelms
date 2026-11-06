@@ -13,6 +13,8 @@ import { useMe } from '@/lib/auth'
 import { date, money } from '@/lib/format'
 import { useHotelLogo, useSettingsList, useSettingsObject, useSettingsObjectSave } from '@/lib/settings'
 import { useQueryClient } from '@tanstack/react-query'
+import { MyInvoices } from '@/pages/admin/HotelInvoices'
+import type { HotelInvoice } from '@/lib/platform'
 
 /* ------------------------------------------------------------- helpers */
 
@@ -77,6 +79,7 @@ type Profile = {
   logo_url: string | null
   invoice_prefix: string
   invoice_footer: string | null
+  receipt_paper: 'a4' | 'receipt'
 }
 
 export function ProfileSettings() {
@@ -119,6 +122,10 @@ function ProfileForm({ initial }: { initial: Profile }) {
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('settings.profile.prefix')} value={f.invoice_prefix} hint={t('settings.profile.prefixHint', { prefix: (f.invoice_prefix || 'INV').toUpperCase() })} onChange={set('invoice_prefix')} error={error?.field('invoice_prefix')} />
           <Field label={t('settings.profile.footer')} value={f.invoice_footer ?? ''} hint={t('settings.profile.footerHint')} onChange={set('invoice_footer')} error={error?.field('invoice_footer')} />
+          <Select label={t('settings.profile.paper')} hint={t('settings.profile.paperHint')} value={f.receipt_paper ?? 'a4'} onChange={(e) => setF({ ...f, receipt_paper: e.target.value as Profile['receipt_paper'] })}>
+            <option value="a4">{t('billing.paper.a4')}</option>
+            <option value="receipt">{t('billing.paper.receipt')}</option>
+          </Select>
         </div>
         {/* Live invoice header preview */}
         <div className="flex flex-col gap-1 rounded-lg bg-sunken p-4 text-[13px]">
@@ -570,6 +577,7 @@ type Subscription = {
   trial_ends_at: string | null
   subscription_ends_at: string | null
   usage: { branches: number; staff: number; rooms: number }
+  invoices?: HotelInvoice[]
 }
 
 export function SubscriptionSettings() {
@@ -611,6 +619,7 @@ export function SubscriptionSettings() {
           {meter(t('nav.staff'), s.usage.staff, s.plan?.max_staff ?? null)}
         </div>
       </Card>
+      <MyInvoices rows={s.invoices ?? []} />
     </div>
   )
 }

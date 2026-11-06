@@ -18,7 +18,17 @@ class Switches
     /** @return array<string, array{type: string, group: string, default: mixed}> */
     public static function registry(): array
     {
-        return config('switches');
+        // Every ready-made automation is also a switch (automation.md), listed under "automations".
+        $automations = [];
+        foreach (config('automations', []) as $key => $def) {
+            $automations["automation.{$key}"] = ['type' => 'bool', 'group' => 'automations', 'default' => true];
+        }
+
+        foreach (array_keys(config('smart', [])) as $key) {
+            $automations["smart.{$key}"] = ['type' => 'bool', 'group' => 'smart', 'default' => true];
+        }
+
+        return config('switches') + $automations;
     }
 
     public function value(?Hotel $hotel, string $key): mixed

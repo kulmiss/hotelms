@@ -2,6 +2,9 @@ import type { ComponentType, SVGProps } from 'react'
 import {
   AdjustmentsHorizontalIcon,
   AdjustmentsVerticalIcon,
+  CheckBadgeIcon,
+  NewspaperIcon,
+  RocketLaunchIcon,
   LifebuoyIcon,
   ServerStackIcon,
   ListBulletIcon,
@@ -28,6 +31,9 @@ import {
 import {
   AdjustmentsHorizontalIcon as AdjustmentsHorizontalSolid,
   AdjustmentsVerticalIcon as AdjustmentsVerticalSolid,
+  CheckBadgeIcon as CheckBadgeSolid,
+  NewspaperIcon as NewspaperSolid,
+  RocketLaunchIcon as RocketLaunchSolid,
   LifebuoyIcon as LifebuoySolid,
   ServerStackIcon as ServerStackSolid,
   ListBulletIcon as ListBulletSolid,
@@ -86,6 +92,7 @@ export const mainNav: NavItem[] = [
   { key: 'devices', path: '/devices', icon: ComputerDesktopIcon, activeIcon: ComputerDesktopSolid, group: 'team', phase: 7, permission: 'staff.manage', built: true },
   { key: 'roles', path: '/roles', icon: ShieldCheckIcon, activeIcon: ShieldCheckSolid, group: 'team', phase: 1, permission: 'roles.manage', built: true },
   { key: 'activityLog', path: '/activity-log', icon: ClipboardDocumentListIcon, activeIcon: ClipboardDocumentListSolid, group: 'team', phase: 1, permission: 'activity_log.view', built: true },
+  { key: 'approvals', path: '/approvals', icon: CheckBadgeIcon, activeIcon: CheckBadgeSolid, group: 'insights', phase: 8, permission: 'approvals.decide', built: true },
   { key: 'reports', path: '/reports', icon: ChartBarIcon, activeIcon: ChartBarSolid, group: 'insights', phase: 6, built: true, permission: ['reports.revenue', 'reports.occupancy', 'reports.payments', 'reports.outstanding', 'reports.tax', 'reports.guests', 'reports.cancellations', 'reports.branch_compare', 'reports.my_shift', 'reports.my_work', 'reports.forecast', 'reports.audit', 'reports.accounting_export', 'reports.targets_manage', 'reports.custom', 'reports.schedule', 'alerts.manage'] },
   {
     key: 'settings',
@@ -95,7 +102,7 @@ export const mainNav: NavItem[] = [
     group: 'insights',
     phase: 2,
     built: true,
-    permission: ['settings.hotel', 'settings.branches', 'settings.money', 'settings.exchange_rates', 'settings.charges', 'settings.policies', 'settings.modules', 'subscription.view'],
+    permission: ['settings.hotel', 'settings.branches', 'settings.money', 'settings.exchange_rates', 'settings.charges', 'settings.policies', 'settings.modules', 'subscription.view', 'automations.manage'],
   },
 ]
 
@@ -111,6 +118,8 @@ export const adminNav: NavItem[] = [
   { key: 'platformReports', path: '/admin/reports', icon: ChartBarIcon, activeIcon: ChartBarSolid, group: 'customers', phase: 1 },
   { key: 'plans', path: '/admin/plans', icon: TagIcon, activeIcon: TagSolid, group: 'billing', phase: 1 },
   { key: 'switches', path: '/admin/switches', icon: AdjustmentsVerticalIcon, activeIcon: AdjustmentsVerticalSolid, group: 'system', phase: 8, permission: 'switches.manage' },
+  { key: 'releases', path: '/admin/releases', icon: RocketLaunchIcon, activeIcon: RocketLaunchSolid, group: 'system', phase: 8, permission: 'releases.manage' },
+  { key: 'content', path: '/admin/content', icon: NewspaperIcon, activeIcon: NewspaperSolid, group: 'system', phase: 8, permission: 'content.manage' },
   { key: 'system', path: '/admin/system', icon: ServerStackIcon, activeIcon: ServerStackSolid, group: 'system', phase: 8, permission: 'system.view' },
   { key: 'platformActivity', path: '/admin/activity', icon: ListBulletIcon, activeIcon: ListBulletSolid, group: 'system', phase: 8, permission: 'system.view' },
   { key: 'team', path: '/admin/team', icon: UserPlusIcon, activeIcon: UserPlusSolid, group: 'system', phase: 8, permission: 'team.manage' },

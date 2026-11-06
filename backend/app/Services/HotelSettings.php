@@ -27,6 +27,7 @@ class HotelSettings
     public const INVOICE_DEFAULTS = [
         'invoice_prefix' => 'INV',
         'invoice_footer' => null,
+        'receipt_paper' => 'a4', // a4 or receipt (80mm) – the default when printing (decisions.md W9)
     ];
 
     /** Sign-in security (decisions.md W7). screen_lock_minutes 0 = never lock. */
@@ -34,6 +35,13 @@ class HotelSettings
         'require_two_factor_staff' => false,
         'approved_devices_only' => false,
         'screen_lock_minutes' => 15,
+    ];
+
+    /** Quiet hours (automation.md): no Telegram to staff in this time, except urgent messages. In-app always. */
+    public const QUIET_DEFAULTS = [
+        'quiet_hours' => true,
+        'quiet_from' => '23:00',
+        'quiet_to' => '06:00',
     ];
 
     public const ATTENDANCE_DEFAULTS = [

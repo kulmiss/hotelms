@@ -82,3 +82,16 @@ describe('app shell (signed in)', () => {
     expect(await screen.findByRole('heading', { name: 'Page not found' })).toBeInTheDocument()
   })
 })
+
+describe('toasts', () => {
+  it('shows a short message and closes it', async () => {
+    const { toast } = await import('@/lib/toast')
+    const { render, screen: s, act } = await import('@testing-library/react')
+    const { Toaster } = await import('@/components/ui/Toaster')
+    render(<Toaster />)
+    act(() => void toast('Changes saved'))
+    expect(await s.findByText('Changes saved')).toBeInTheDocument()
+    await userEvent.click(s.getByRole('button', { name: 'Close' }))
+    expect(s.queryByText('Changes saved')).not.toBeInTheDocument()
+  })
+})

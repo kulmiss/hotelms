@@ -170,6 +170,7 @@ describe('platform settings', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     expect(await screen.findByText('Saved.')).toBeInTheDocument()
+    expect(await screen.findByText('Changes saved')).toBeInTheDocument()
     const call = fetchMock.mock.calls.find(([url, init]) => String(url).endsWith('/admin/settings') && init?.method === 'PUT')
     expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ brand_color: '#7c3aed', login_message: 'Welcome back' })
   })

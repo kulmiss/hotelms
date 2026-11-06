@@ -33,6 +33,13 @@ class PlatformSetting extends Model
         // Telegram bot for reports and alerts (free; create it with @BotFather)
         'telegram_bot_token' => null,
         'telegram_bot_username' => null,
+        // Content (Super Admin → Content): on HotelMS invoices, in the welcome email, and defaults for new hotels
+        'billing_name' => null,
+        'billing_tin' => null,
+        'billing_address' => null,
+        'payment_instructions' => null,
+        'welcome_message' => null,
+        'new_hotel_defaults' => ['deposit_value' => '30', 'vat_rate' => '15.00', 'invoice_footer' => null, 'receipt_paper' => 'a4'],
     ];
 
     /** Settings anyone may read (shown on the sign-in page before login). */

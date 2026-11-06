@@ -102,6 +102,8 @@ return [
             'reports.custom' => [$BM, $AC],
             'reports.schedule' => [$BM, $AC],
             'alerts.manage' => [],
+            'automations.manage' => [],
+            'approvals.decide' => [$BM],
             'reports.accounting_export' => [$AC],
         ],
         'settings' => [

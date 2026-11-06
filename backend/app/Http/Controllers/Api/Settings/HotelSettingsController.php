@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Models\HotelInvoice;
 use App\Models\HotelModule;
 use App\Models\Room;
 use App\Services\HotelModules;
@@ -99,6 +100,8 @@ class HotelSettingsController extends Controller
             ],
             // What really applies (a Super Admin switch can lift or lower the plan's limits).
             'limits' => ['rooms' => $hotel->limit('rooms'), 'branches' => $hotel->limit('branches'), 'staff' => $hotel->limit('staff')],
+            // Invoices from HotelMS (emailed too).
+            'invoices' => HotelInvoice::where('hotel_id', $hotel->id)->where('status', '!=', 'void')->with('plan:id,name')->latest('id')->limit(24)->get()->map->present()->values(),
         ]]);
     }
 }

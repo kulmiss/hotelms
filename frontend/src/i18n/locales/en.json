@@ -32,7 +32,9 @@
       "7": "Sun"
     },
     "close": "Close",
-    "pageOf": "Page {{page}} of {{last}}"
+    "pageOf": "Page {{page}} of {{last}}",
+    "savedToast": "Changes saved",
+    "removedToast": "Removed"
   },
   "nav": {
     "main": "Main",
@@ -73,7 +75,10 @@
     "support": "Support",
     "system": "System health",
     "team": "Team",
-    "platformActivity": "Activity log"
+    "platformActivity": "Activity log",
+    "approvals": "Approvals",
+    "releases": "Releases",
+    "content": "Content"
   },
   "topbar": {
     "search": "Search guests, rooms, bookings, bills",
@@ -558,7 +563,9 @@
     "reports.custom": "Custom reports",
     "reports.schedule": "Scheduled reports",
     "alerts.manage": "Smart alerts",
-    "reports.accounting_export": "Accounting export"
+    "reports.accounting_export": "Accounting export",
+    "automations.manage": "Automations",
+    "approvals.decide": "Approve price suggestions and refunds"
   },
   "support": {
     "banner": "You are signed in as {{name}} at {{hotel}} for support ({{by}}).",
@@ -608,7 +615,8 @@
       "modules": "Modules",
       "attendance": "Attendance",
       "subscription": "Subscription",
-      "security": "Security"
+      "security": "Security",
+      "automations": "Automations"
     },
     "profile": {
       "help": "Shown on invoices and receipts.",
@@ -621,7 +629,9 @@
       "prefix": "Invoice number prefix",
       "prefixHint": "Invoices will be numbered like {{prefix}}-2026-00001.",
       "footer": "Invoice footer",
-      "footerHint": "A short line at the bottom of every invoice, e.g. bank details or a thank-you."
+      "footerHint": "A short line at the bottom of every invoice, e.g. bank details or a thank-you.",
+      "paper": "Default paper for printing",
+      "paperHint": "Can be changed for each print."
     },
     "branches": {
       "help": "Each branch has its own rooms, prices and staff. Your plan sets how many branches you can have.",
@@ -1808,13 +1818,17 @@
       "emergency": "Emergency",
       "modules": "Modules",
       "features": "Features",
-      "limits": "Limits"
+      "limits": "Limits",
+      "automations": "Automations",
+      "smart": "Smart hints"
     },
     "groupHints": {
       "emergency": "Use only when something is wrong. Hotels see a notice.",
       "modules": "Optional modules. Off here hides them even if the plan has them.",
       "features": "Ship new features switched off, then turn them on.",
-      "limits": "Override the plan limit, e.g. a gift of extra rooms."
+      "limits": "Override the plan limit, e.g. a gift of extra rooms.",
+      "automations": "Each automation can be turned off for everyone, a plan or one hotel.",
+      "smart": "Each smart hint can be turned off for everyone, a plan or one hotel."
     },
     "keys": {
       "module": {
@@ -1843,6 +1857,62 @@
       "emergency": {
         "maintenance": "Maintenance (hotels can't sign in)",
         "read_only": "Read only (no changes saved)"
+      },
+      "automation": {
+        "booking_confirmation": "Booking confirmation to the guest",
+        "deposit_reminder": "Collect the deposit",
+        "booking_expired": "Booking expired",
+        "arrival_reminder": "Arrival reminder to the guest",
+        "no_show_suggestion": "Possible no-show",
+        "welcome_back": "Welcome back",
+        "guest_birthday": "Guest birthday",
+        "blacklist_warning": "Blacklisted guest",
+        "vip_arrival": "Long stay arrives",
+        "cancellation_refund": "Refund after a cancellation",
+        "shift_start_brief": "Start of shift brief",
+        "checkout_balance_reminder": "Money owed before check-out",
+        "outstanding_follow_up": "Follow up money owed",
+        "close_cashier_reminder": "Close the cashier shift",
+        "cashier_short": "Cashier shift short",
+        "exchange_rate_reminder": "Today's exchange rates",
+        "large_discount": "Large discount or waived fee",
+        "void_after_payment": "Bill voided after payment",
+        "transfer_without_reference": "Transfer without reference",
+        "checkout_cleaning": "Clean after check-out",
+        "room_ready": "Room ready",
+        "arrival_room_not_ready": "Room not ready for arrival",
+        "long_maintenance": "Room out of use too long",
+        "hourly_cleaning": "Clean after an hourly stay",
+        "stayover_not_cleaned": "Stay-over rooms not cleaned",
+        "late_for_shift": "Late for a shift",
+        "understaffed_shift": "Shift without staff",
+        "new_device": "New device sign-in",
+        "price_up_suggestion": "Suggest a higher price",
+        "price_down_suggestion": "Suggest a lower price",
+        "target_risk": "Month below target",
+        "daily_report": "Daily report ready",
+        "weekly_summary": "Weekly summary",
+        "subscription_reminder": "Subscription ending",
+        "overdue_notice": "Payment overdue",
+        "trial_ending_sales": "Trial ending (sales)",
+        "inactive_hotel": "Hotel not using the system",
+        "stuck_in_setup": "Hotel stuck in setup"
+      },
+      "smart": {
+        "insight_of_the_day": "Insight of the day (dashboard)",
+        "tonight": "Tonight's expected occupancy",
+        "no_show_risk": "Likely no-show warning",
+        "returning_guest": "Returning guest",
+        "best_room": "Best room at check-in",
+        "upgrade": "Upgrade suggestion",
+        "duplicate_guest": "Duplicate guest check",
+        "cash_prediction": "Cash drawer prediction",
+        "cleaning_order": "Cleaning order and time",
+        "staffing": "Staffing suggestion",
+        "report_summary": "One-line report summary",
+        "plan_usage": "Plan usage warning",
+        "platform_insight": "Platform insight (Super Admin)",
+        "smart_search": "Questions in the search box"
       }
     },
     "default": "Default",
@@ -1910,7 +1980,8 @@
       "room": "Room",
       "bill": "Bill",
       "hotel": "Hotel",
-      "person": "Person"
+      "person": "Person",
+      "answer": "Answer"
     }
   },
   "help": {
@@ -2065,5 +2136,408 @@
       "system_view": "System health and activity log",
       "team_manage": "Manage the HotelMS team"
     }
+  },
+  "frontDesk": {
+    "title": "Front desk",
+    "branch": "Branch",
+    "exit": "Exit front desk mode",
+    "turnOn": "Front desk mode",
+    "today_one": "{{count}} today",
+    "today_other": "{{count}} today",
+    "swipeHint": "Tip: on a touch screen, swipe a guest to the left to check them in or out.",
+    "tiles": {
+      "checkIn": "Check in",
+      "checkOut": "Check out",
+      "walkIn": "Walk-in",
+      "takePayment": "Take payment",
+      "roomBoard": "Room board"
+    }
+  },
+  "regCard": {
+    "print": "Registration card",
+    "title": "Registration card",
+    "guest": "Guest",
+    "name": "Full name",
+    "nationality": "Nationality",
+    "idType": "ID type",
+    "idNumber": "ID number",
+    "phone": "Phone",
+    "email": "Email",
+    "birth": "Date of birth",
+    "address": "Home address",
+    "stay": "Stay",
+    "arrival": "Arrival",
+    "departure": "Departure",
+    "rooms": "Room(s)",
+    "people": "Guests",
+    "peopleLine": "{{adults}} adults, {{children}} children",
+    "stayType": "Stay type",
+    "total": "Total",
+    "paid": "Paid so far",
+    "purpose": "Purpose of visit",
+    "terms": "Terms",
+    "term1": "Check-out is at {{time}} on the day of departure. A late check-out may cost extra.",
+    "term2": "Cancellation policy: {{policy}}.",
+    "term3": "The hotel is not responsible for valuables left in the room.",
+    "term4": "By signing, I confirm the details above are correct.",
+    "guestSignature": "Guest signature",
+    "staff": "Received by: {{name}}"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "readAll": "Mark all read"
+  },
+  "automations": {
+    "help": "Things the system does by itself. Turn each one on or off. Everything is written in the activity log.",
+    "groups": {
+      "bookings": "Bookings and guests",
+      "money": "Front desk and money",
+      "rooms": "Rooms and housekeeping",
+      "staff": "Staff",
+      "revenue": "Revenue and reports"
+    },
+    "blocked": {
+      "hotelms": "Turned off by HotelMS",
+      "module": "Needs the {{module}} module"
+    },
+    "options": {
+      "hours": "Hours",
+      "nights": "Nights",
+      "days": "Days",
+      "minutes": "Minutes",
+      "time": "Time",
+      "amount": "Amount",
+      "occupancy": "Occupancy %",
+      "percent": "Percent"
+    },
+    "items": {
+      "booking_confirmation": {
+        "name": "Booking confirmation to the guest",
+        "what": "When a booking is confirmed, the guest gets an email with the dates and amount."
+      },
+      "deposit_reminder": {
+        "name": "Collect the deposit",
+        "what": "A few hours before a pending booking expires, reception is reminded to collect the deposit."
+      },
+      "booking_expired": {
+        "name": "Booking expired",
+        "what": "When an unpaid booking expires, the person who made it is told."
+      },
+      "arrival_reminder": {
+        "name": "Arrival reminder to the guest",
+        "what": "The day before arrival, the guest gets an email with the check-in time."
+      },
+      "no_show_suggestion": {
+        "name": "Possible no-show",
+        "what": "When a guest has not arrived hours after the check-in time, reception is asked to mark a no-show."
+      },
+      "welcome_back": {
+        "name": "Welcome back",
+        "what": "When a returning guest checks in, reception sees how many times they stayed."
+      },
+      "guest_birthday": {
+        "name": "Guest birthday",
+        "what": "When a guest has a birthday during the stay, reception is told."
+      },
+      "blacklist_warning": {
+        "name": "Blacklisted guest",
+        "what": "When a blacklisted guest is booked, the manager is warned."
+      },
+      "vip_arrival": {
+        "name": "Long stay arrives",
+        "what": "When a guest staying many nights checks in, the manager is told."
+      },
+      "cancellation_refund": {
+        "name": "Refund after a cancellation",
+        "what": "When a paid booking is cancelled, the refund waits in Approvals for a manager."
+      },
+      "shift_start_brief": {
+        "name": "Start of shift brief",
+        "what": "At the start of a shift, the person on duty gets the arrivals, departures and unpaid bills."
+      },
+      "checkout_balance_reminder": {
+        "name": "Money owed before check-out",
+        "what": "The day before check-out, reception is told when the guest still owes money."
+      },
+      "outstanding_follow_up": {
+        "name": "Follow up money owed",
+        "what": "Days after a guest left owing money, the accountant is reminded."
+      },
+      "close_cashier_reminder": {
+        "name": "Close the cashier shift",
+        "what": "At the end of a shift, the person is reminded to close their cashier shift."
+      },
+      "cashier_short": {
+        "name": "Cashier shift short",
+        "what": "When a cashier shift closes with less cash than expected, the manager is told."
+      },
+      "exchange_rate_reminder": {
+        "name": "Today's exchange rates",
+        "what": "If today's exchange rates are not entered by this time, the accountant is reminded."
+      },
+      "large_discount": {
+        "name": "Large discount or waived fee",
+        "what": "When a discount or waived fee is above this amount, the manager is told."
+      },
+      "void_after_payment": {
+        "name": "Bill voided after payment",
+        "what": "When a paid bill is voided, the Hotel Admin is told at once."
+      },
+      "transfer_without_reference": {
+        "name": "Transfer without reference",
+        "what": "When a non-cash payment has no reference number, the person who took it is reminded."
+      },
+      "checkout_cleaning": {
+        "name": "Clean after check-out",
+        "what": "When a guest checks out, housekeeping gets the cleaning task."
+      },
+      "room_ready": {
+        "name": "Room ready",
+        "what": "When a room is cleaned and a guest arriving today waits for it, reception is told."
+      },
+      "arrival_room_not_ready": {
+        "name": "Room not ready for arrival",
+        "what": "When a guest arrives soon and their room is not ready, housekeeping and reception are told."
+      },
+      "long_maintenance": {
+        "name": "Room out of use too long",
+        "what": "When a room stays in maintenance for days, the manager is told."
+      },
+      "hourly_cleaning": {
+        "name": "Clean after an hourly stay",
+        "what": "When an hourly stay ends, housekeeping gets the cleaning task."
+      },
+      "stayover_not_cleaned": {
+        "name": "Stay-over rooms not cleaned",
+        "what": "If occupied rooms are not cleaned by this time, housekeeping is reminded."
+      },
+      "late_for_shift": {
+        "name": "Late for a shift",
+        "what": "When someone has not clocked in after the shift started, the manager is told."
+      },
+      "understaffed_shift": {
+        "name": "Shift without staff",
+        "what": "When nobody is on tomorrow's shift, the manager is told."
+      },
+      "new_device": {
+        "name": "New device sign-in",
+        "what": "When staff sign in on a new device, the Hotel Admin is told."
+      },
+      "price_up_suggestion": {
+        "name": "Suggest a higher price",
+        "what": "When a date is almost full, a higher price is suggested for the manager to approve."
+      },
+      "price_down_suggestion": {
+        "name": "Suggest a lower price",
+        "what": "When a date is far below usual, a lower price is suggested for the manager to approve."
+      },
+      "target_risk": {
+        "name": "Month below target",
+        "what": "When the month is heading below this share of the target, the Hotel Admin is told."
+      },
+      "daily_report": {
+        "name": "Daily report ready",
+        "what": "Every night, managers are told the daily report is ready."
+      },
+      "weekly_summary": {
+        "name": "Weekly summary",
+        "what": "Every Monday morning, the Hotel Admin gets last week in short."
+      },
+      "subscription_reminder": {
+        "name": "Subscription ending",
+        "what": "7 days and 1 day before the subscription ends, the Hotel Admin is reminded."
+      },
+      "overdue_notice": {
+        "name": "Payment overdue",
+        "what": "When the payment is overdue, the Hotel Admin is told about the grace days."
+      },
+      "trial_ending_sales": {
+        "name": "Trial ending (sales)",
+        "what": "3 days before a trial ends, the sales team is told."
+      },
+      "inactive_hotel": {
+        "name": "Hotel not using the system",
+        "what": "When a hotel has not used the system for days, support is told."
+      },
+      "stuck_in_setup": {
+        "name": "Hotel stuck in setup",
+        "what": "When a hotel has not finished setup after 5 days, support is told."
+      }
+    },
+    "quiet": {
+      "title": "Quiet hours",
+      "help": "No Telegram messages to staff in this time, except urgent ones. The bell in the app still shows everything.",
+      "from": "From",
+      "to": "To"
+    },
+    "rules": {
+      "title": "Your own rules",
+      "help": "When something happens, if it matches, then do something. Rules never delete anything or move money.",
+      "new": "New rule",
+      "none": "No rules yet.",
+      "fired_one": "Ran {{count}} time",
+      "fired_other": "Ran {{count}} times",
+      "deleteConfirm": "Delete the rule \"{{name}}\"?",
+      "name": "Rule name",
+      "when": "When",
+      "if": "If (all must match)",
+      "always": "Always – add a condition to narrow it down.",
+      "field": "Field",
+      "op": "Is",
+      "value": "Value",
+      "addCondition": "Add condition",
+      "then": "Then",
+      "action": "Do this",
+      "message": "Message",
+      "who": "Tell",
+      "admins": "Hotel Admins",
+      "task": "Task",
+      "status": "Room status",
+      "addAction": "Add action",
+      "limits": "For money (refunds, price changes) the system prepares it and a manager approves it in Approvals.",
+      "test": "Test on last 7 days",
+      "testResult_one": "Would have run {{count}} time in the last 7 days",
+      "testResult_other": "Would have run {{count}} times in the last 7 days"
+    },
+    "triggers": {
+      "booking_created": "A booking is made",
+      "booking_confirmed": "A booking is confirmed",
+      "booking_cancelled": "A booking is cancelled or a no-show",
+      "checked_in": "A guest checks in",
+      "checked_out": "A guest checks out",
+      "payment_received": "A payment is taken",
+      "room_status_changed": "A room status changes",
+      "daily": "Every day at a time"
+    },
+    "fields": {
+      "branch_id": "Branch",
+      "room_type_id": "Room type",
+      "guest_type_id": "Guest type",
+      "nationality": "Nationality",
+      "source": "Booking source",
+      "stay_type": "Stay type",
+      "nights": "Nights",
+      "amount": "Amount",
+      "weekday": "Day of the week",
+      "room_status": "Room status",
+      "payment_method_type": "Payment kind"
+    },
+    "ops": {
+      "is": "is",
+      "is_not": "is not",
+      "above": "is above",
+      "below": "is below"
+    },
+    "actions": {
+      "notify": "Tell someone",
+      "booking_note": "Add a note to the booking",
+      "housekeeping_task": "Create a housekeeping task",
+      "room_status": "Change the room status"
+    },
+    "who": {
+      "frontdesk_check_in": "Reception",
+      "housekeeping_own_tasks": "Housekeepers",
+      "housekeeping_assign": "Housekeeping managers",
+      "checkout_approve_balance": "Branch managers",
+      "payments_view": "Accountants",
+      "staff_manage": "Staff managers"
+    },
+    "methodTypes": {
+      "cash": "Cash",
+      "mobile_money": "Mobile money",
+      "bank_transfer": "Bank transfer"
+    }
+  },
+  "approvals": {
+    "subtitle": "Price suggestions and refunds the system prepared. Nothing happens until you approve.",
+    "none": "Nothing waiting.",
+    "status": {
+      "pending": "Waiting",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "expired": "Expired"
+    },
+    "kinds": {
+      "price_up": "Higher price",
+      "price_down": "Lower price",
+      "refund": "Refund"
+    },
+    "usual": "usually {{usual}}% by now",
+    "needRefund": "Only people who may give refunds can approve this.",
+    "needPricing": "Only people who manage prices can approve this.",
+    "method": "Refund by",
+    "reference": "Reference (optional)",
+    "note": "Note (optional)",
+    "approve": "Approve",
+    "giveRefund": "Give refund",
+    "reject": "Reject",
+    "approvedToast": "Approved and done",
+    "rejectedToast": "Rejected – nothing was changed"
+  },
+  "smart": {
+    "label": "Smart",
+    "why": "Why?",
+    "open": "Open",
+    "dismiss": "Hide this tip",
+    "phoneCheck": "Check the number: Ethiopian mobiles look like +251 9XX XXX XXX."
+  },
+  "hotelInvoices": {
+    "title": "Invoice",
+    "listTitle": "Invoices from HotelMS",
+    "next": "Next period to bill: {{from}} – {{to}}",
+    "issue": "Make invoice now",
+    "none": "No invoices yet. They are made a week before the paid period ends.",
+    "dueOn": "due {{date}}",
+    "emailed": "emailed",
+    "send": "Email again",
+    "void": "Void",
+    "voidConfirm": "Void invoice {{number}}?",
+    "issuedToast": "Invoice made and emailed",
+    "sentToast": "Invoice emailed",
+    "status": {
+      "unpaid": "Unpaid",
+      "paid": "Paid",
+      "void": "Void"
+    },
+    "due": "Due",
+    "description": "Description",
+    "amount": "Amount",
+    "total": "Total",
+    "howToPay": "How to pay",
+    "line": "{{plan}} plan, {{cycle}} ({{rooms}} rooms)"
+  },
+  "releases": {
+    "live": "Live version: {{version}}",
+    "new": "New note",
+    "how": "Code updates are installed by following docs/hosting.md (upload, then migrate). Write here what changed: hotels see it under \"What's new\".",
+    "draft": "Draft",
+    "publishedOn": "Published {{date}}",
+    "publish": "Publish",
+    "publishConfirm": "Show this note to every hotel now?",
+    "none": "No notes yet.",
+    "version": "Version",
+    "title": "Title",
+    "body": "What changed (plain words)",
+    "publishedToast": "Published to all hotels"
+  },
+  "content": {
+    "subtitle": "Texts and defaults the HotelMS team controls. Messages to hotels (banners) are on the Switches screen.",
+    "invoiceTitle": "On HotelMS invoices",
+    "billingName": "Company name",
+    "billingTin": "TIN",
+    "billingAddress": "Address",
+    "paymentInstructions": "How hotels pay (bank account, telebirr…)",
+    "welcomeTitle": "Welcome email",
+    "welcomeMessage": "Extra text in the welcome email to new Hotel Admins",
+    "defaultsTitle": "Defaults for new hotels",
+    "defaultsHelp": "Used when a new hotel is created; each hotel can change them later.",
+    "deposit": "Deposit %",
+    "vat": "VAT %"
+  },
+  "whatsNew": {
+    "title": "What's new",
+    "version": "You are on version {{version}}",
+    "none": "Nothing new yet.",
+    "new": "New"
   }
 }

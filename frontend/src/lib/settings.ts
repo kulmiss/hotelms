@@ -1,3 +1,4 @@
+import { REMOVED } from './toast'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, del, post, put, upload } from './api'
 import { ME_KEY } from './auth'
@@ -21,6 +22,7 @@ export function useSettingsSave<T extends { id?: number }>(endpoint: string) {
 export function useSettingsDelete(endpoint: string) {
   const qc = useQueryClient()
   return useMutation({
+    meta: REMOVED,
     mutationFn: (id: number) => del(`${endpoint}/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['settings'] }),
   })

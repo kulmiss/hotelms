@@ -1,6 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, post, put, upload } from './api'
 import { BRANDING_KEY } from './brand'
+import { SILENT } from './toast'
 
 export type Plan = {
   id: number
@@ -204,6 +205,7 @@ export const useResetUserPassword = (hotelId: number) =>
 export function useLoginAsHotel(hotelId: number) {
   const qc = useQueryClient()
   return useMutation({
+    meta: SILENT,
     mutationFn: (input: { reason: string; user_id?: number }) => post(`/admin/hotels/${hotelId}/impersonate`, input),
     onSuccess: () => qc.clear(),
   })
@@ -216,6 +218,7 @@ export function useLoginAsHotel(hotelId: number) {
 export function useResetDemo(hotelId: number, onDone: (newId: number) => void) {
   const qc = useQueryClient()
   return useMutation({
+    meta: SILENT, // its own toast
     mutationFn: () => post<{ data: { id: number } }>(`/admin/hotels/${hotelId}/demo/reset`),
     onSuccess: (r) => {
       qc.removeQueries({ queryKey: ['admin', 'hotel', hotelId] })

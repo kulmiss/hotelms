@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { SmartHints } from '@/components/ui/SmartHints'
+import { useSmart } from '@/lib/smart'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -24,10 +26,12 @@ export function CashierPage() {
   const can = useCan()
   const current = useCurrentShift()
   const shift = current.data?.data
+  const smart = useSmart('cashier', {}, Boolean(shift) && can('cashier.own_shift'))
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={t('nav.cashier')} subtitle={t('cashier.subtitle')} />
+      {shift && <SmartHints hints={smart.data?.data} />}
       {can('cashier.own_shift') && current.data && (shift ? <MyShift shift={shift} /> : <OpenShift />)}
       <ShiftList />
     </div>

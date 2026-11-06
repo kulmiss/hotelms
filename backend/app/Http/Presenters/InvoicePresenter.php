@@ -42,7 +42,6 @@ class InvoicePresenter
                 $taxes[$key]['amount'] = bcadd($taxes[$key]['amount'], (string) $tax->amount, 2);
             }
         }
-        $invoiceSettings = app(HotelSettings::class)->group(HotelSettings::INVOICE_DEFAULTS);
 
         return array_merge(self::summary($i, $hotel), [
             'subtotal' => $i->subtotal,
@@ -69,12 +68,21 @@ class InvoicePresenter
                 'method' => $p->method?->name, 'reference' => $p->reference, 'refund_reason' => $p->refund_reason,
                 'paid_at' => HotelClock::iso($p->paid_at, $hotel), 'by' => $p->receiver?->name,
             ])->values(),
-            'hotel' => [
-                'name' => $hotel->name, 'legal_name' => $hotel->legal_name, 'tin' => $hotel->tin, 'vat_number' => $hotel->vat_number,
-                'address' => $hotel->address, 'city' => $hotel->city, 'phone' => $hotel->phone, 'email' => $hotel->email,
-                'logo_url' => $hotel->logo_path ? '/storage/'.$hotel->logo_path : null,
-                'footer' => $invoiceSettings['invoice_footer'],
-            ],
+            'hotel' => self::printHeader($hotel),
         ]);
+    }
+
+    /** The hotel block at the top of every printed page (invoice, receipt, registration card). @return array<string, mixed> */
+    public static function printHeader(Hotel $hotel): array
+    {
+        $settings = app(HotelSettings::class)->group(HotelSettings::INVOICE_DEFAULTS);
+
+        return [
+            'name' => $hotel->name, 'legal_name' => $hotel->legal_name, 'tin' => $hotel->tin, 'vat_number' => $hotel->vat_number,
+            'address' => $hotel->address, 'city' => $hotel->city, 'phone' => $hotel->phone, 'email' => $hotel->email,
+            'logo_url' => $hotel->logo_path ? '/storage/'.$hotel->logo_path : null,
+            'footer' => $settings['invoice_footer'],
+            'receipt_paper' => $settings['receipt_paper'] === 'receipt' ? 'receipt' : 'a4',
+        ];
     }
 }

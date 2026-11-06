@@ -31,6 +31,7 @@ import { useMe } from '@/lib/auth'
 import { date, money } from '@/lib/format'
 import { useHotelSwitches } from '@/lib/switches'
 import { toast } from '@/lib/toast'
+import { HotelInvoices } from './HotelInvoices'
 import { LiveData, NotesAndAccess, PlanUsage, StaffAndDevices } from './HotelTabs'
 import { Tabs } from '@/components/ui/Tabs'
 
@@ -180,6 +181,8 @@ export function HotelPage() {
           </ul>
         </Card>
       </div>
+
+      <HotelInvoices hotelId={h.id} canBill={me.data?.platform?.permissions.includes('billing.manage') ?? false} />
 
       <Card className="overflow-x-auto p-0">
         <h2 className="px-5 pt-5 font-semibold">{t('admin.hotel.payments')}</h2>

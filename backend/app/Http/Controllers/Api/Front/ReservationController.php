@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Front;
 
 use App\Http\Controllers\Controller;
+use App\Http\Presenters\InvoicePresenter;
 use App\Http\Presenters\ReservationPresenter;
 use App\Models\CancellationPolicy;
 use App\Models\HotelCurrency;
@@ -55,6 +56,28 @@ class ReservationController extends Controller
         $reservation = $this->find($request, $id);
 
         return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)]);
+    }
+
+    /** Registration card for the guest to sign at check-in (decisions.md W9). */
+    public function registrationCard(Request $request, string $id): JsonResponse
+    {
+        $reservation = $this->find($request, $id);
+        $hotel = $request->user()->hotel;
+        $detail = ReservationPresenter::detail($reservation, $hotel);
+        $guest = $reservation->guest;
+
+        return response()->json(['data' => [
+            'reservation' => $detail,
+            'guest' => $guest ? [
+                'name' => $guest->full_name, 'phone' => $guest->phone, 'email' => $guest->email, 'nationality' => $guest->nationality,
+                'id_type' => $guest->id_type,
+                // The ID number only for people who may see guest details.
+                'id_number' => $request->user()->hasPermission('guests.view') ? $guest->id_number : null,
+                'date_of_birth' => $guest->date_of_birth?->toDateString(),
+            ] : null,
+            'hotel' => InvoicePresenter::printHeader($hotel),
+            'printed_by' => $request->user()->name,
+        ]]);
     }
 
     /** Lists the booking screens need (front-desk staff may not open Settings). */

@@ -1,5 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, del, post, put } from './api'
+import { REMOVED, SILENT } from './toast'
 
 /* ---------- Support inbox (both sides) ---------- */
 
@@ -24,9 +25,9 @@ export type SupportDetail = SupportSummary & {
   team?: { id: number; name: string }[]
 }
 
-function useInvalidate<V, R>(fn: (v: V) => Promise<R>, keys: unknown[][]) {
+function useInvalidate<V, R>(fn: (v: V) => Promise<R>, keys: unknown[][], meta?: Record<string, unknown>) {
   const qc = useQueryClient()
-  return useMutation({ mutationFn: fn, onSuccess: () => keys.forEach((queryKey) => void qc.invalidateQueries({ queryKey })) })
+  return useMutation({ meta, mutationFn: fn, onSuccess: () => keys.forEach((queryKey) => void qc.invalidateQueries({ queryKey })) })
 }
 
 // Hotel side ("Help")
@@ -76,10 +77,10 @@ export type HotelLive = {
 export const useHotelOverview = (id: number) => useQuery({ queryKey: ['admin', 'hotel', id, 'overview'], queryFn: () => api<{ data: HotelOverview }>(`/admin/hotels/${id}/overview`) })
 export const useHotelLive = (id: number) => {
   const qc = useQueryClient()
-  return useMutation({ mutationFn: (reason: string) => post<{ data: HotelLive }>(`/admin/hotels/${id}/live`, { reason }), onSuccess: () => void qc.invalidateQueries({ queryKey: ['admin', 'hotel', id, 'overview'] }) })
+  return useMutation({ meta: SILENT, mutationFn: (reason: string) => post<{ data: HotelLive }>(`/admin/hotels/${id}/live`, { reason }), onSuccess: () => void qc.invalidateQueries({ queryKey: ['admin', 'hotel', id, 'overview'] }) })
 }
 export const useAddNote = (id: number) => useInvalidate((v: { body: string; channel?: string | null }) => post(`/admin/hotels/${id}/notes`, v), [['admin', 'hotel', id, 'overview']])
-export const useRemoveNote = (id: number) => useInvalidate((noteId: number) => del(`/admin/hotels/${id}/notes/${noteId}`), [['admin', 'hotel', id, 'overview']])
+export const useRemoveNote = (id: number) => useInvalidate((noteId: number) => del(`/admin/hotels/${id}/notes/${noteId}`), [['admin', 'hotel', id, 'overview']], REMOVED)
 
 /* ---------- System health, activity, team ---------- */
 
@@ -121,3 +122,32 @@ export const useSavePermissions = () => {
     },
   })
 }
+
+/* ---------- Subscription invoices, releases, content ---------- */
+
+export type HotelInvoice = {
+  id: number; number: string; plan: string | null; billing_cycle: string; period_start: string; period_end: string; rooms: number
+  amount: string; currency: string; status: 'unpaid' | 'paid' | 'void'; due_date: string; emailed_at: string | null; created_at: string | null
+}
+export type InvoicePrint = HotelInvoice & {
+  hotel: { name: string; legal_name: string | null; tin: string | null; address: string | null; city: string | null }
+  from: { name: string; tin: string | null; address: string | null; email: string | null; phone: string | null; payment_instructions: string | null }
+}
+export const useHotelInvoices = (hotelId: number) =>
+  useQuery({ queryKey: ['admin', 'hotel', hotelId, 'invoices'], queryFn: () => api<{ data: HotelInvoice[]; next_period: { start: string; end: string } }>(`/admin/hotels/${hotelId}/invoices`) })
+export const useIssueInvoice = (hotelId: number) => useInvalidate<void, { data: HotelInvoice; emailed: boolean }>(() => post<{ data: HotelInvoice; emailed: boolean }>(`/admin/hotels/${hotelId}/invoices`), [['admin', 'hotel', hotelId, 'invoices']], { toast: 'hotelInvoices.issuedToast' })
+export const useSendInvoice = (hotelId: number) => useInvalidate((id: number) => post(`/admin/hotel-invoices/${id}/send`), [['admin', 'hotel', hotelId, 'invoices']], { toast: 'hotelInvoices.sentToast' })
+export const useVoidInvoice = (hotelId: number) => useInvalidate((id: number) => post(`/admin/hotel-invoices/${id}/void`), [['admin', 'hotel', hotelId, 'invoices']])
+export const useInvoicePrint = (id: number) => useQuery({ queryKey: ['subscription-invoice', id], queryFn: () => api<{ data: InvoicePrint }>(`/subscription-invoices/${id}`) })
+
+export type Release = { id: number; version: string; title: string; body: string; status: 'draft' | 'published'; published_at: string | null }
+export const useReleases = () => useQuery({ queryKey: ['admin', 'releases'], queryFn: () => api<{ data: Release[]; live_version: string }>('/admin/releases') })
+export const useSaveRelease = () => useInvalidate((v: { id?: number; version: string; title: string; body: string }) => (v.id ? put(`/admin/releases/${v.id}`, v) : post('/admin/releases', v)), [['admin', 'releases']])
+export const usePublishRelease = () => useInvalidate((id: number) => post(`/admin/releases/${id}/publish`), [['admin', 'releases'], ['whats-new']], { toast: 'releases.publishedToast' })
+export const useDeleteRelease = () => useInvalidate((id: number) => del(`/admin/releases/${id}`), [['admin', 'releases']], REMOVED)
+export const useWhatsNew = () => useQuery({ queryKey: ['whats-new'], queryFn: () => api<{ data: Omit<Release, 'status'>[]; version: string }>('/whats-new'), staleTime: 10 * 60_000, retry: false })
+
+export type NewHotelDefaults = { deposit_value: string; vat_rate: string; invoice_footer: string | null; receipt_paper: 'a4' | 'receipt' }
+export type PlatformContent = { billing_name: string | null; billing_tin: string | null; billing_address: string | null; payment_instructions: string | null; welcome_message: string | null; new_hotel_defaults: NewHotelDefaults }
+export const useContent = () => useQuery({ queryKey: ['admin', 'content'], queryFn: () => api<{ data: PlatformContent }>('/admin/content') })
+export const useSaveContent = () => useInvalidate((v: PlatformContent) => put('/admin/content', v), [['admin', 'content']])

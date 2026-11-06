@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Admin\HotelUserController;
 use App\Http\Controllers\Api\Admin\ImpersonationController;
 use App\Http\Controllers\Api\Admin\PlanController as AdminPlanController;
 use App\Http\Controllers\Api\Admin\PlatformActivityController;
+use App\Http\Controllers\Api\Admin\PlatformContentController;
 use App\Http\Controllers\Api\Admin\PlatformReportController;
 use App\Http\Controllers\Api\Admin\PlatformSettingsController;
 use App\Http\Controllers\Api\Admin\SubscriptionPaymentController;
@@ -15,6 +16,9 @@ use App\Http\Controllers\Api\Admin\SwitchController;
 use App\Http\Controllers\Api\Admin\SystemController;
 use App\Http\Controllers\Api\Admin\TeamController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\Automation\ApprovalController;
+use App\Http\Controllers\Api\Automation\AutomationSettingsController;
+use App\Http\Controllers\Api\Automation\NotificationController;
 use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\BrandingController;
 use App\Http\Controllers\Api\DemoController;
@@ -54,7 +58,9 @@ use App\Http\Controllers\Api\Settings\RateRuleController;
 use App\Http\Controllers\Api\Settings\RoomController;
 use App\Http\Controllers\Api\Settings\RoomTypeController;
 use App\Http\Controllers\Api\Settings\TaxController;
+use App\Http\Controllers\Api\SmartController;
 use App\Http\Controllers\Api\SupportController;
+use App\Http\Controllers\Api\WhatsNewController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -88,6 +94,11 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
     // Everything below needs a password the user chose themselves.
     Route::middleware(['password.changed', 'two.factor'])->group(function () {
         Route::get('/search', SearchController::class)->middleware('throttle:60,1');
+        Route::get('/smart/{place}', SmartController::class)->middleware('throttle:120,1');
+        Route::get('/whats-new', [WhatsNewController::class, 'index']);
+        Route::get('/subscription-invoices/{id}', [WhatsNewController::class, 'invoice'])->middleware('permission:subscription.view');
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::post('/notifications/read', [NotificationController::class, 'read']);
         // Help: questions to HotelMS. Open even when the hotel is suspended or in maintenance.
         Route::get('/support', [SupportController::class, 'index']);
         Route::post('/support', [SupportController::class, 'store'])->middleware('throttle:20,60');
@@ -151,6 +162,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
                 Route::get('/reservations/availability', [ReservationController::class, 'availability']);
                 Route::post('/reservations/quote', [ReservationController::class, 'quote']);
                 Route::get('/reservations/{id}', [ReservationController::class, 'show']);
+                Route::get('/reservations/{id}/registration-card', [ReservationController::class, 'registrationCard']);
                 Route::get('/reservations/{id}/cancellation-terms', [ReservationController::class, 'cancellationTerms']);
                 Route::post('/reservations/{id}/payments', [ReservationController::class, 'payment'])->middleware(['idempotent', 'one.at.a.time:reservation']); // payments.take / payments.refund checked inside
             });
@@ -354,6 +366,15 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
                     Route::get('/modules', [HotelSettingsController::class, 'modules']);
                     Route::put('/modules', [HotelSettingsController::class, 'updateModules']);
                 });
+                Route::middleware('permission:automations.manage')->group(function () {
+                    Route::get('/automations', [AutomationSettingsController::class, 'index']);
+                    Route::put('/automations/quiet-hours', [AutomationSettingsController::class, 'quiet']);
+                    Route::put('/automations/{key}', [AutomationSettingsController::class, 'update']);
+                    Route::post('/automation-rules', [AutomationSettingsController::class, 'storeRule']);
+                    Route::post('/automation-rules/test', [AutomationSettingsController::class, 'testRule']);
+                    Route::put('/automation-rules/{id}', [AutomationSettingsController::class, 'updateRule']);
+                    Route::delete('/automation-rules/{id}', [AutomationSettingsController::class, 'destroyRule']);
+                });
                 Route::middleware('permission:settings.attendance')->group(function () {
                     Route::get('/attendance', [HotelSettingsController::class, 'attendance']);
                     Route::put('/attendance', [HotelSettingsController::class, 'updateAttendance']);
@@ -365,6 +386,11 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
                 });
             });
             Route::get('/subscription', [HotelSettingsController::class, 'subscription'])->middleware('permission:subscription.view');
+            Route::middleware('permission:approvals.decide')->group(function () {
+                Route::get('/approvals', [ApprovalController::class, 'index']);
+                Route::post('/approvals/{id}/approve', [ApprovalController::class, 'approve'])->middleware('one.at.a.time:approval');
+                Route::post('/approvals/{id}/reject', [ApprovalController::class, 'reject']);
+            });
         });
 
         // Super Admin (HotelMS team).
@@ -398,6 +424,23 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
             Route::middleware('platform:system.view')->group(function () {
                 Route::get('/system', SystemController::class);
                 Route::get('/activity', PlatformActivityController::class);
+            });
+            Route::get('/hotels/{hotel}/invoices', [PlatformContentController::class, 'invoices'])->withTrashed();
+            Route::middleware('platform:billing.manage')->group(function () {
+                Route::post('/hotels/{hotel}/invoices', [PlatformContentController::class, 'issueInvoice']);
+                Route::post('/hotel-invoices/{id}/send', [PlatformContentController::class, 'sendInvoice']);
+                Route::post('/hotel-invoices/{id}/void', [PlatformContentController::class, 'voidInvoice']);
+            });
+            Route::middleware('platform:releases.manage')->group(function () {
+                Route::get('/releases', [PlatformContentController::class, 'releases']);
+                Route::post('/releases', [PlatformContentController::class, 'saveRelease']);
+                Route::put('/releases/{id}', [PlatformContentController::class, 'saveRelease']);
+                Route::post('/releases/{id}/publish', [PlatformContentController::class, 'publishRelease']);
+                Route::delete('/releases/{id}', [PlatformContentController::class, 'deleteRelease']);
+            });
+            Route::middleware('platform:content.manage')->group(function () {
+                Route::get('/content', [PlatformContentController::class, 'content']);
+                Route::put('/content', [PlatformContentController::class, 'saveContent']);
             });
             Route::middleware('platform:team.manage')->group(function () {
                 Route::get('/team', [TeamController::class, 'index']);

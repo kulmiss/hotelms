@@ -9,8 +9,15 @@ use App\Models\Invoice;
 use App\Models\Reservation;
 use App\Models\Room;
 use App\Models\User;
+use App\Services\Booking\Availability;
+use App\Services\Smart\SmartHints;
+use App\Support\HotelClock;
+use App\Support\Money;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use Throwable;
 
 /**
  * The search box at the top of every screen: guests, bookings, rooms and bills of your hotel
@@ -43,6 +50,14 @@ class SearchController extends Controller
         }
 
         $branches = $user->accessibleBranches()->pluck('id');
+        // ✨ Questions in plain words ("free rooms this weekend", "unpaid over 1000", "who is in room 305", "Meron's last stay").
+        if (app(SmartHints::class)->on($user->hotel, 'smart_search')) {
+            try {
+                $results = array_merge($results, $this->answers($q, $user, $branches));
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
 
         if ($user->hasPermission('reservations.view')) {
             Reservation::with('guest:id,first_name,last_name')->whereIn('branch_id', $branches)
@@ -73,5 +88,69 @@ class SearchController extends Controller
         }
 
         return response()->json(['data' => $results]);
+    }
+
+    /**
+     * @param  Collection<int, int>  $branches
+     * @return list<array<string, string>>
+     */
+    private function answers(string $q, User $user, Collection $branches): array
+    {
+        $hotel = $user->hotel;
+        $text = mb_strtolower(trim($q));
+        $out = [];
+
+        // Free rooms today / tonight / tomorrow / this weekend.
+        if ($user->hasPermission('reservations.view') && preg_match('/\b(free|available|empty)\b.*\brooms?\b|\brooms?\b.*\b(free|available)\b/', $text)) {
+            $now = HotelClock::now($hotel)->startOfDay();
+            [$from, $to, $label] = match (true) {
+                str_contains($text, 'weekend') => [$now->isFriday() || $now->isSaturday() ? $now->copy() : $now->copy()->next(Carbon::FRIDAY), null, 'this weekend'],
+                str_contains($text, 'tomorrow') => [$now->copy()->addDay(), null, 'tomorrow'],
+                default => [$now->copy(), null, 'tonight'],
+            };
+            $from = $from->copy()->setTimeFromTimeString('14:00');
+            $to = $label === 'this weekend' ? $from->copy()->addDays(2)->setTimeFromTimeString('12:00') : $from->copy()->addDay()->setTimeFromTimeString('12:00');
+            $free = 0;
+            $parts = [];
+            foreach ($branches as $branchId) {
+                foreach (app(Availability::class)->forBranch((int) $branchId, $from->copy()->utc(), $to->copy()->utc()) as $row) {
+                    $free += $row['available'];
+                    if ($row['available'] > 0) {
+                        $parts[] = "{$row['available']} {$row['room_type']->name}";
+                    }
+                }
+            }
+            $out[] = ['type' => 'answer', 'title' => "{$free} free ".($free === 1 ? 'room' : 'rooms')." {$label}", 'subtitle' => implode(', ', array_slice($parts, 0, 4)) ?: 'Fully booked', 'link' => '/reservations/new'];
+        }
+
+        // Unpaid balances over an amount.
+        if ($user->hasPermission('invoices.view') && preg_match('/\b(unpaid|owe|owing|balances?|debts?)\b/', $text)) {
+            $min = preg_match('/(\d[\d,\.]*)/', $text, $m) ? str_replace(',', '', $m[1]) : '0';
+            $rows = Invoice::whereIn('branch_id', $branches)->whereIn('status', ['open', 'partially_paid', 'outstanding'])->where('balance', '>', is_numeric($min) ? $min : 0);
+            $count = (clone $rows)->count();
+            $sum = Money::round((string) ((clone $rows)->sum('balance') ?: '0'));
+            $out[] = ['type' => 'answer', 'title' => "{$count} unpaid ".($count === 1 ? 'bill' : 'bills').(Money::isPositive($min) ? " over {$min}" : ''), 'subtitle' => "{$hotel->default_currency} {$sum} owed in total", 'link' => '/billing'];
+        }
+
+        // Who is in room 305?
+        if ($user->hasPermission('frontdesk.view') && preg_match('/\b(who|guest)\b.*\broom\s*([a-z0-9-]+)/', $text, $m)) {
+            $stay = Reservation::whereIn('branch_id', $branches)->where('status', 'checked_in')
+                ->whereHas('rooms', fn ($r) => $r->where('status', 'checked_in')->whereHas('room', fn ($x) => $x->where('number', $m[2])))->with('guest')->first();
+            $out[] = $stay
+                ? ['type' => 'answer', 'title' => "Room {$m[2]}: ".($stay->guest?->full_name ?? $stay->code), 'subtitle' => 'Leaves '.HotelClock::local($stay->check_out_at, $hotel)->format('D d M, H:i'), 'link' => "/reservations/{$stay->id}"]
+                : ['type' => 'answer', 'title' => "Nobody is in room {$m[2]} now", 'subtitle' => 'No checked-in guest', 'link' => '/rooms'];
+        }
+
+        // Meron's last stay / last stay of Meron.
+        if ($user->hasPermission('reservations.view') && preg_match("/^(.+?)(?:'s|’s)?\s+last\s+stay$|^last\s+stay\s+(?:of\s+)?(.+)$/", $text, $m)) {
+            $name = trim($m[1] ?: ($m[2] ?? ''));
+            $stay = mb_strlen($name) >= 2 ? Reservation::whereIn('branch_id', $branches)->where('status', 'checked_out')
+                ->whereHas('guest', fn ($g) => $g->search($name))->with('guest', 'rooms.room')->orderByDesc('check_out_at')->first() : null;
+            if ($stay) {
+                $out[] = ['type' => 'answer', 'title' => ($stay->guest?->full_name ?? '')."'s last stay", 'subtitle' => HotelClock::local($stay->check_in_at, $hotel)->format('d M').' – '.HotelClock::local($stay->check_out_at, $hotel)->format('d M Y').' · room '.$stay->rooms->map(fn ($x) => $x->room?->number)->filter()->implode(', '), 'link' => "/reservations/{$stay->id}"];
+            }
+        }
+
+        return $out;
     }
 }

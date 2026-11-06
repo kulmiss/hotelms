@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { SmartHints } from '@/components/ui/SmartHints'
+import { useSmart } from '@/lib/smart'
 import { BuildingOffice2Icon, CalendarDaysIcon, CheckCircleIcon, ClockIcon, ExclamationTriangleIcon, HomeModernIcon, LifebuoyIcon, UsersIcon } from '@heroicons/react/24/outline'
 import { PlusIcon } from '@heroicons/react/20/solid'
 import { buttonClass } from '@/components/ui/Button'
@@ -14,6 +16,7 @@ import { date, money } from '@/lib/format'
 export function AdminDashboardPage() {
   const { t } = useTranslation()
   const dash = useAdminDashboard()
+  const smart = useSmart('admin')
   const d = dash.data
   const unpaid = d ? (d.hotels.by_status.grace ?? 0) + (d.hotels.by_status.suspended ?? 0) : undefined
   const income = d ? Object.entries(d.income_this_month) : []
@@ -33,6 +36,8 @@ export function AdminDashboardPage() {
           </Link>
         }
       />
+
+      <SmartHints hints={smart.data?.data} />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatTile label={t('admin.dash.totalHotels')} value={d?.hotels.total} icon={BuildingOffice2Icon} />

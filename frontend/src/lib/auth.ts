@@ -1,4 +1,5 @@
 import { wipeOfflineCopy } from './offline'
+import { SILENT } from './toast'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, ApiError, post, prepareSession, put, type Me } from './api'
 
@@ -26,7 +27,7 @@ export type LoginResult = { message?: string; two_factor?: 'app' | 'email'; emai
 
 export function useLogin() {
   const qc = useQueryClient()
-  return useMutation({
+  return useMutation({ meta: SILENT,
     mutationFn: async (input: { email: string; password: string; remember: boolean }) => {
       await prepareSession()
       return post<LoginResult>('/auth/login', input)
@@ -39,17 +40,17 @@ export function useLogin() {
 
 export function useTwoFactorLogin() {
   const qc = useQueryClient()
-  return useMutation({
+  return useMutation({ meta: SILENT,
     mutationFn: (code: string) => post('/auth/two-factor', { code }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ME_KEY }),
   })
 }
 
-export const useResendCode = () => useMutation({ mutationFn: () => post('/auth/two-factor/resend') })
+export const useResendCode = () => useMutation({ meta: SILENT, mutationFn: () => post('/auth/two-factor/resend') })
 
 export function useLogout() {
   const qc = useQueryClient()
-  return useMutation({
+  return useMutation({ meta: SILENT,
     mutationFn: () => post('/auth/logout'),
     onSettled: () => {
       wipeOfflineCopy()
@@ -71,7 +72,7 @@ export function useChangePassword() {
 /** Leave a hotel after "Log in as" and go back to the Super Admin account. */
 export function useStopImpersonation() {
   const qc = useQueryClient()
-  return useMutation({
+  return useMutation({ meta: SILENT,
     mutationFn: () => post('/impersonation/stop'),
     onSuccess: () => qc.clear(),
   })
@@ -80,7 +81,7 @@ export function useStopImpersonation() {
 /** Public "Try the demo": sign in as a demo user of the chosen role. */
 export function useDemoLogin() {
   const qc = useQueryClient()
-  return useMutation({
+  return useMutation({ meta: SILENT,
     mutationFn: async (role: string) => {
       await prepareSession()
       await post('/demo/login', { role })
