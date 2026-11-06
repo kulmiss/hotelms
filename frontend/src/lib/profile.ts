@@ -9,3 +9,12 @@ export function useUpdateProfile() {
     onSuccess: (me) => qc.setQueryData(ME_KEY, me),
   })
 }
+
+/** Platform Owner only: change the sign-in email (needs the current password). */
+export function useUpdateEmail() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { email: string; current_password: string }) => put<Me>('/me/email', input),
+    onSuccess: (me) => qc.setQueryData(ME_KEY, me),
+  })
+}

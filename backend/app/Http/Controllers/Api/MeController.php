@@ -7,6 +7,7 @@ use App\Models\Banner;
 use App\Models\Branch;
 use App\Models\Hotel;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use App\Services\HotelModules;
 use App\Services\HotelSettings;
 use App\Services\HotelSetup;
@@ -16,6 +17,8 @@ use App\Services\Switches;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
@@ -114,6 +117,38 @@ class MeController extends Controller
         ]);
 
         $request->user()->update($data);
+
+        return $this->show($request);
+    }
+
+    /**
+     * The platform Owner changes their own sign-in email (nobody above them can).
+     * Needs the current password; the old address is told about it.
+     */
+    public function updateEmail(Request $request, ActivityLogger $log): JsonResponse
+    {
+        $user = $request->user();
+        abort_unless($user->is_super_admin && $user->platform_role === 'owner', 403, 'Only the Owner can change their own email here.');
+
+        $data = $request->validate([
+            'email' => ['required', 'email:rfc', 'max:190', Rule::unique('users', 'email')->ignore($user->id)],
+            'current_password' => ['required', 'string'],
+        ]);
+        if (! Hash::check($data['current_password'], $user->password)) {
+            throw ValidationException::withMessages(['current_password' => 'The current password is not correct.']);
+        }
+
+        $old = $user->email;
+        $new = mb_strtolower(trim($data['email']));
+        if ($new !== $old) {
+            $user->forceFill(['email' => $new])->save();
+            $log->log('platform.email_changed', "Sign-in email changed from {$old} to {$new}", $user);
+            try {
+                Mail::raw("The sign-in email of your account was changed to {$new}. If this was not you, contact your hosting provider right away.", fn ($m) => $m->to($old)->subject('Your sign-in email was changed'));
+            } catch (\Throwable) {
+                // The change stands even when the old address cannot be reached.
+            }
+        }
 
         return $this->show($request);
     }

@@ -436,6 +436,13 @@
     "name": "Full name",
     "phone": "Phone",
     "emailHint": "You sign in with this email. Ask your Hotel Admin to change it.",
+    "emailHintTeam": "You sign in with this email. Ask the Owner to change it.",
+    "changeEmail": "Change email",
+    "newEmail": "New email",
+    "currentPassword": "Your current password",
+    "changeEmailHint": "You will sign in with the new email from now on. The old email gets a notice.",
+    "saveEmail": "Change email",
+    "emailChanged": "Email changed. Use the new one next time you sign in.",
     "passwordTitle": "Password",
     "passwordBody": "Change the password you use to sign in."
   },
@@ -1672,7 +1679,10 @@
     "step": "Open @{{bot}} in Telegram and send this message:",
     "open": "Open Telegram",
     "wait": "It can take up to a minute to link. The code works for 30 minutes.",
-    "check": "Check again"
+    "check": "Check again",
+    "test": "Send test message",
+    "sending": "Sending…",
+    "testSent": "Sent. Check Telegram."
   },
   "automation": {
     "viewName": "View name",
