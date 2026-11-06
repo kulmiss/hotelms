@@ -42,7 +42,7 @@ class BranchSettingsController extends ResourceController
 
     public function store(Request $request): JsonResponse
     {
-        $limit = $request->user()->hotel->effectivePlan()?->max_branches;
+        $limit = $request->user()->hotel->limit('branches');
         if ($limit !== null && Branch::count() >= $limit) {
             $this->refuse('name', "Your plan allows {$limit} branch(es). Upgrade the plan to add more.");
         }

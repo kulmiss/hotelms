@@ -5,6 +5,7 @@ import {
   ArrowLeftStartOnRectangleIcon,
   ComputerDesktopIcon,
   KeyIcon,
+  LifebuoyIcon,
   MoonIcon,
   SunIcon,
   UserCircleIcon,
@@ -127,6 +128,12 @@ export function UserMenu() {
               <KeyIcon aria-hidden className="size-4 text-icon" />
               {t('topbar.changePassword')}
             </Link>
+            {!user.is_super_admin && (
+              <Link role="menuitem" to="/help" onClick={() => setOpen(false)} className={item}>
+                <LifebuoyIcon aria-hidden className="size-4 text-icon" />
+                {t('help.menu')}
+              </Link>
+            )}
           </div>
 
           <div className="p-1">

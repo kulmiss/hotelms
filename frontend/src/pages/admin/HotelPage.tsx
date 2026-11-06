@@ -1,11 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { ArrowRightEndOnRectangleIcon, ClipboardDocumentIcon, KeyIcon } from '@heroicons/react/24/outline'
 import { CheckIcon } from '@heroicons/react/20/solid'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
+import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -29,8 +29,13 @@ import {
 import { ApiError } from '@/lib/api'
 import { useMe } from '@/lib/auth'
 import { date, money } from '@/lib/format'
+import { useHotelSwitches } from '@/lib/switches'
+import { LiveData, NotesAndAccess, PlanUsage, StaffAndDevices } from './HotelTabs'
+import { Tabs } from '@/components/ui/Tabs'
 
 type Panel = 'payment' | 'suspend' | 'trial' | 'loginAs' | 'close' | null
+
+type HotelTab = 'overview' | 'live' | 'staff' | 'notes'
 
 export function HotelPage() {
   const { t } = useTranslation()
@@ -38,6 +43,7 @@ export function HotelPage() {
   const hotel = useHotel(id)
   const me = useMe()
   const [panel, setPanel] = useState<Panel>(null)
+  const [tab, setTab] = useState<HotelTab>('overview')
 
   if (hotel.isPending) return <p className="text-muted">{t('common.loading')}</p>
   if (hotel.isError) return <Alert>{t('common.serverUnreachable')}</Alert>
@@ -104,6 +110,18 @@ export function HotelPage() {
       {panel === 'suspend' && <SuspendPanel hotelId={h.id} onDone={() => setPanel(null)} />}
       {panel === 'trial' && <TrialPanel hotel={h} onDone={() => setPanel(null)} />}
 
+      <Tabs
+        label={h.name}
+        active={tab}
+        onChange={(k) => setTab(k as HotelTab)}
+        items={(['overview', 'live', 'staff', 'notes'] as const).map((k) => ({ key: k, label: t(`hotelTabs.tabs.${k}`) }))}
+      />
+      {tab === 'live' && <LiveData hotelId={h.id} currency={h.default_currency} />}
+      {tab === 'staff' && <StaffAndDevices hotelId={h.id} />}
+      {tab === 'notes' && <NotesAndAccess hotelId={h.id} />}
+      {tab === 'overview' && (
+      <>
+      <PlanUsage hotelId={h.id} />
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="flex flex-col gap-3">
           <h2 className="font-semibold">{t('admin.hotel.subscription')}</h2>
@@ -195,7 +213,43 @@ export function HotelPage() {
           </table>
         )}
       </Card>
+
+      <HotelSwitches hotelId={h.id} canManage={me.data?.platform?.permissions.includes('switches.manage') ?? false} />
+      </>
+      )}
     </div>
+  )
+}
+
+/** What is on and off for this hotel and where it comes from (W4). Changes are made on the Switches screen. */
+function HotelSwitches({ hotelId, canManage }: { hotelId: number; canManage: boolean }) {
+  const { t } = useTranslation()
+  const rows = useHotelSwitches(hotelId)
+  if (!rows.data) return null
+  return (
+    <Card className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="font-semibold">{t('nav.switches')}</h2>
+        {canManage && (
+          <Link to="/admin/switches" className={buttonClass('secondary')}>
+            {t('switches.change')}
+          </Link>
+        )}
+      </div>
+      <ul className="grid gap-x-6 gap-y-1.5 text-[13px] sm:grid-cols-2 lg:grid-cols-3">
+        {rows.data.data.map((r) => (
+          <li key={r.key} className="flex items-center justify-between gap-2">
+            <span>{t(`switches.keys.${r.key}`)}</span>
+            <span className="flex items-center gap-1.5">
+              <span className="font-medium">
+                {r.value === null ? (r.key.startsWith('limit.') ? t('switches.planLimit') : t('switches.planDecides')) : typeof r.value === 'number' ? r.value : r.value ? t('common.on') : t('common.off')}
+              </span>
+              {r.source !== 'default' && <Badge tone={r.source === 'hotel' ? 'accent' : 'grey'}>{t(`switches.sources.${r.source}`)}</Badge>}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </Card>
   )
 }
 

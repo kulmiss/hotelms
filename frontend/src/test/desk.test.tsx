@@ -107,4 +107,20 @@ describe('billing', () => {
     expect(await screen.findByText('TIN: 0012345678')).toBeInTheDocument()
     expect(screen.getByText('Thank you')).toBeInTheDocument()
   })
+
+  it('finds a booking from the search box and opens it with the keyboard', async () => {
+    const hit = { type: 'booking', title: 'BL-26-00001 · Abebe Kebede', subtitle: 'confirmed · 12 Nov 2026', link: '/reservations/9' }
+    mockApi({
+      'GET /me': { body: me() }, 'GET /front-desk/board': { body: board }, 'GET /front-desk/today': { body: today },
+      'GET /search': { body: { data: [hit] } }, 'GET /reservations/9': { body: { data: reservation } },
+    })
+    renderApp('/rooms')
+
+    const box = await screen.findByRole('combobox', { name: 'Search guests, rooms, bookings, bills' })
+    await userEvent.type(box, 'Abebe')
+    expect(await screen.findByRole('option', { name: /BL-26-00001 · Abebe Kebede/ })).toBeInTheDocument()
+    await userEvent.keyboard('{Enter}')
+    await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument())
+    expect((await screen.findAllByText(/BL-26-00001/)).length).toBeGreaterThan(0)
+  })
 })

@@ -68,10 +68,15 @@
     "activityLog": "Activity log",
     "attendance": "Attendance",
     "platformReports": "Reports",
-    "devices": "Devices"
+    "devices": "Devices",
+    "switches": "Switches",
+    "support": "Support",
+    "system": "System health",
+    "team": "Team",
+    "platformActivity": "Activity log"
   },
   "topbar": {
-    "search": "Search guests, rooms, bookings",
+    "search": "Search guests, rooms, bookings, bills",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "notifications": "Notifications",
@@ -189,7 +194,15 @@
       "allGood": "All hotels are paid up.",
       "emptyTitle": "No hotels yet",
       "emptyBody": "Create your first hotel. You'll get its Hotel Admin's sign-in details to share, and its free trial starts right away.",
-      "createFirst": "Create the first hotel"
+      "createFirst": "Create the first hotel",
+      "bookingsToday": "Bookings made today",
+      "occupancyTonight": "Occupancy tonight (%)",
+      "staffOnline": "Hotel staff online",
+      "openSupport": "Open support requests",
+      "moneyToday": "Money taken today",
+      "moneyTodayHint": "All hotels, payments minus refunds.",
+      "topHotels": "Top hotels today",
+      "liveActivity": "Live activity"
     },
     "hotels": {
       "new": "New hotel",
@@ -1784,5 +1797,269 @@
     "confirm": "Type it again",
     "save": "Save new password",
     "done": "Password changed. You can sign in now."
+  },
+  "switches": {
+    "subtitle": "Turn features on or off for everyone, one plan or one hotel. The most specific setting wins.",
+    "groups": {
+      "emergency": "Emergency",
+      "modules": "Modules",
+      "features": "Features",
+      "limits": "Limits"
+    },
+    "groupHints": {
+      "emergency": "Use only when something is wrong. Hotels see a notice.",
+      "modules": "Optional modules. Off here hides them even if the plan has them.",
+      "features": "Ship new features switched off, then turn them on.",
+      "limits": "Override the plan limit, e.g. a gift of extra rooms."
+    },
+    "keys": {
+      "module": {
+        "housekeeping": "Housekeeping",
+        "cashier_close": "Cashier close",
+        "shifts": "Shifts",
+        "attendance": "Attendance"
+      },
+      "feature": {
+        "hourly_stays": "Hourly stays",
+        "day_use": "Day use",
+        "multi_currency": "More than one currency",
+        "custom_reports": "Custom reports",
+        "telegram": "Telegram alerts",
+        "offline": "Works offline",
+        "setup_walkthrough": "Setup walkthrough",
+        "smart_hints": "Smart hints",
+        "automations": "Automations",
+        "beta": "Beta features"
+      },
+      "limit": {
+        "rooms": "Rooms",
+        "branches": "Branches",
+        "staff": "Staff"
+      },
+      "emergency": {
+        "maintenance": "Maintenance (hotels can't sign in)",
+        "read_only": "Read only (no changes saved)"
+      }
+    },
+    "default": "Default",
+    "change": "Change",
+    "remove": "Remove",
+    "removeConfirm": "Remove this setting? The next level decides again.",
+    "planDecides": "The plan decides",
+    "planLimit": "Plan limit",
+    "ended": "Ended",
+    "startsAt": "Starts {{when}}",
+    "endsAt": "Ends {{when}}",
+    "levels": {
+      "everyone": "Everyone",
+      "plan": "Plan",
+      "hotel": "Hotel"
+    },
+    "who": "For",
+    "plan": "Plan",
+    "hotel": "Hotel",
+    "findHotel": "Find a hotel",
+    "value": "Setting",
+    "limit": "Limit",
+    "limitHint": "Leave empty to use the plan limit.",
+    "starts": "Start (optional)",
+    "startsHint": "Empty = now.",
+    "ends": "End (optional)",
+    "endsHint": "Empty = no end. Use it for gifts.",
+    "reason": "Reason (optional)",
+    "emergencyConfirm": "This affects hotels right away. Continue?",
+    "banners": {
+      "title": "Banners",
+      "hint": "A message shown at the top of the hotel screens.",
+      "none": "No banners.",
+      "message": "Message",
+      "tone": "Colour",
+      "add": "Add banner",
+      "planOnly": "Only {{plan}} plan",
+      "someHotels": "{{count}} hotels",
+      "tones": {
+        "info": "Info",
+        "warn": "Warning",
+        "danger": "Urgent"
+      },
+      "audience": "Show to"
+    },
+    "maintenance": {
+      "title": "We are improving HotelMS",
+      "body": "The system is under short maintenance. Please try again in a few minutes.",
+      "retry": "Try again"
+    },
+    "readOnly": "Read-only mode: you can look, but changes are not saved right now.",
+    "sources": {
+      "hotel": "This hotel",
+      "plan": "Plan",
+      "everyone": "Everyone"
+    }
+  },
+  "search": {
+    "adminLabel": "Search hotels and people",
+    "results": "Search results",
+    "none": "Nothing found for \"{{q}}\".",
+    "types": {
+      "booking": "Booking",
+      "guest": "Guest",
+      "room": "Room",
+      "bill": "Bill",
+      "hotel": "Hotel",
+      "person": "Person"
+    }
+  },
+  "help": {
+    "menu": "Help",
+    "title": "Help",
+    "subtitle": "Ask {{name}} a question. We answer here.",
+    "contact": "Or call us:",
+    "new": "New question",
+    "none": "No questions yet.",
+    "pick": "Choose a question on the left.",
+    "subject": "Subject",
+    "message": "Your question",
+    "urgent": "Urgent (guests are waiting)",
+    "send": "Send",
+    "answer": "Your answer",
+    "conversation": "Conversation",
+    "hotelms": "HotelMS support"
+  },
+  "system": {
+    "checked": "Checked {{when}}",
+    "checkNow": "Check again",
+    "ok": "Working",
+    "problem": "Needs attention",
+    "ms": "Answers in {{ms}} ms",
+    "lastRun": "Last run: {{when}}",
+    "jobsLine": "{{waiting}} waiting · {{failed}} failed",
+    "backupLine": "Newest: {{when}} · {{kb}} KB · {{count}} kept",
+    "freeMb": "{{mb}} MB free",
+    "checks": {
+      "database": "Database",
+      "cache": "Cache",
+      "scheduler": "Cron job (scheduler)",
+      "jobs": "Background jobs",
+      "backups": "Backups",
+      "disk": "Disk space"
+    },
+    "failedJobs": "Failed background jobs",
+    "errors": "Latest errors",
+    "noErrors": "No errors.",
+    "versions": "HotelMS {{app}} · PHP {{php}} · Laravel {{laravel}} · {{database}}"
+  },
+  "platformActivity": {
+    "subtitle": "Every change made by the HotelMS team.",
+    "search": "Search",
+    "when": "When",
+    "who": "Who",
+    "what": "What",
+    "hotel": "Hotel"
+  },
+  "hotelTabs": {
+    "tabs": {
+      "overview": "Overview",
+      "live": "Live data",
+      "staff": "Staff and devices",
+      "notes": "Notes and access"
+    },
+    "usage": "Plan usage",
+    "liveWhy": "Live data is the hotel's private information. Say why you need it; this is saved and the hotel sees it in its activity log.",
+    "reason": "Reason",
+    "showLive": "Show live data",
+    "occupancy": "Occupancy (%)",
+    "roomsLine": "{{occupied}} of {{rooms}} rooms",
+    "arrivals": "Arrivals today",
+    "departures": "Departures today",
+    "staffOnline": "Staff online",
+    "bookingsMade": "Bookings made today",
+    "paymentsToday": "Payments today",
+    "latestActivity": "Latest activity in the hotel",
+    "staff": "Staff ({{count}})",
+    "devices": "Devices ({{count}})",
+    "notes": "Team notes",
+    "newNote": "New note (only the HotelMS team sees it)",
+    "channel": "Channel",
+    "addNote": "Add note",
+    "channels": {
+      "phone": "Phone",
+      "visit": "Visit",
+      "telegram": "Telegram",
+      "email": "Email",
+      "other": "Other"
+    },
+    "access": "Who looked at this hotel's data",
+    "accessHint": "Every live-data view and \"log in as hotel\" is recorded.",
+    "what": {
+      "live_data": "Live data",
+      "log_in_as": "Logged in as hotel"
+    }
+  },
+  "inbox": {
+    "subtitle": "Questions from hotels: in the app, on Telegram and by phone.",
+    "logCall": "Log a call",
+    "mine": "Assigned to me",
+    "empty": "Nothing here.",
+    "urgent": "Urgent",
+    "normal": "Normal",
+    "priority": "Priority",
+    "statusLabel": "Status",
+    "assignee": "Assigned to",
+    "nobody": "Nobody",
+    "answer": "Your answer",
+    "reply": "Reply",
+    "replySolve": "Reply and mark solved",
+    "addNote": "Add internal note",
+    "internalNote": "internal note",
+    "channel": "How they contacted us",
+    "whatTheySaid": "What they said",
+    "status": {
+      "open": "Open",
+      "waiting": "Waiting for hotel",
+      "solved": "Solved"
+    },
+    "channels": {
+      "app": "App",
+      "telegram": "Telegram",
+      "phone": "Phone"
+    }
+  },
+  "platformTeam": {
+    "subtitle": "People who run HotelMS and what each role may do.",
+    "add": "Add member",
+    "member": "Member",
+    "role": "Role",
+    "roleOf": "Role of {{name}}",
+    "twoStep": "Two-step sign-in",
+    "lastLogin": "Last sign-in",
+    "invited": "Not signed in yet",
+    "disable": "Turn off",
+    "enable": "Turn on",
+    "disableConfirm": "Turn off {{name}}? They are signed out at once.",
+    "added": "{{name}} was added. Give them this password; they choose their own at first sign-in.",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone (optional)",
+    "grid": "What each role may do",
+    "gridHint": "The owner always has everything.",
+    "permission": "Permission",
+    "roles": {
+      "owner": "Owner",
+      "support": "Support",
+      "sales": "Sales",
+      "finance": "Finance",
+      "tech": "Tech"
+    },
+    "permissions": {
+      "hotels_view": "See hotels and their data",
+      "hotels_create": "Create hotels and start trials",
+      "hotels_impersonate": "Log in as hotel",
+      "users_reset_password": "Reset hotel passwords",
+      "billing_manage": "Plans, payments, suspend hotels",
+      "switches_manage": "Switches and emergency",
+      "support_answer": "Answer support requests",
+      "system_view": "System health and activity log",
+      "team_manage": "Manage the HotelMS team"
+    }
   }
 }

@@ -2,12 +2,18 @@
 
 use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Api\Admin\HotelController as AdminHotelController;
+use App\Http\Controllers\Api\Admin\HotelInsightController;
 use App\Http\Controllers\Api\Admin\HotelUserController;
 use App\Http\Controllers\Api\Admin\ImpersonationController;
 use App\Http\Controllers\Api\Admin\PlanController as AdminPlanController;
+use App\Http\Controllers\Api\Admin\PlatformActivityController;
 use App\Http\Controllers\Api\Admin\PlatformReportController;
 use App\Http\Controllers\Api\Admin\PlatformSettingsController;
 use App\Http\Controllers\Api\Admin\SubscriptionPaymentController;
+use App\Http\Controllers\Api\Admin\SupportController as AdminSupportController;
+use App\Http\Controllers\Api\Admin\SwitchController;
+use App\Http\Controllers\Api\Admin\SystemController;
+use App\Http\Controllers\Api\Admin\TeamController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\BrandingController;
@@ -32,6 +38,7 @@ use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\Reports\AutomationController;
 use App\Http\Controllers\Api\Reports\InsightController;
 use App\Http\Controllers\Api\Reports\ReportController;
+use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\SecurityController;
 use App\Http\Controllers\Api\Settings\BranchSettingsController;
 use App\Http\Controllers\Api\Settings\CancellationPolicyController;
@@ -47,6 +54,7 @@ use App\Http\Controllers\Api\Settings\RateRuleController;
 use App\Http\Controllers\Api\Settings\RoomController;
 use App\Http\Controllers\Api\Settings\RoomTypeController;
 use App\Http\Controllers\Api\Settings\TaxController;
+use App\Http\Controllers\Api\SupportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -79,6 +87,12 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
 
     // Everything below needs a password the user chose themselves.
     Route::middleware(['password.changed', 'two.factor'])->group(function () {
+        Route::get('/search', SearchController::class)->middleware('throttle:60,1');
+        // Help: questions to HotelMS. Open even when the hotel is suspended or in maintenance.
+        Route::get('/support', [SupportController::class, 'index']);
+        Route::post('/support', [SupportController::class, 'store'])->middleware('throttle:20,60');
+        Route::get('/support/{id}', [SupportController::class, 'show']);
+        Route::post('/support/{id}/messages', [SupportController::class, 'reply'])->middleware('throttle:60,60');
         // Your own security (open before two-step sign-in is set up: see EnsureTwoFactorSetUp).
         Route::middleware('not.impersonating')->group(function () {
             Route::get('/me/security', [SecurityController::class, 'show']);
@@ -92,7 +106,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
         });
 
         // Hotel staff. A suspended hotel is read-only.
-        Route::middleware('hotel.writable')->group(function () {
+        Route::middleware(['hotel.writable', 'emergency'])->group(function () {
             Route::get('/branches', [BranchController::class, 'index']);
             Route::put('/setup/steps/{step}', [SetupController::class, 'mark']);
             Route::post('/setup/finish', [SetupController::class, 'finish']);
@@ -245,7 +259,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
             Route::post('/saved-views', [AutomationController::class, 'saveView']);
             Route::put('/saved-views/{id}', [AutomationController::class, 'saveView']);
             Route::delete('/saved-views/{id}', [AutomationController::class, 'deleteView']);
-            Route::middleware('permission:reports.custom')->group(function () {
+            Route::middleware(['permission:reports.custom', 'switch:feature.custom_reports'])->group(function () {
                 Route::get('/custom-reports', [AutomationController::class, 'customReports']);
                 Route::post('/custom-reports', [AutomationController::class, 'saveCustomReport']);
                 Route::post('/custom-reports/run', [AutomationController::class, 'runCustom']);
@@ -357,10 +371,40 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
         Route::prefix('admin')->middleware('platform:hotels.view')->group(function () {
             Route::get('/dashboard', AdminDashboardController::class);
             Route::get('/reports/platform', [PlatformReportController::class, 'platform']);
+            Route::get('/hotels/{hotel}/switches', [SwitchController::class, 'forHotel'])->withTrashed();
+            Route::middleware('platform:switches.manage')->group(function () {
+                Route::get('/switches', [SwitchController::class, 'index']);
+                Route::post('/switches', [SwitchController::class, 'store']);
+                Route::delete('/switches/{id}', [SwitchController::class, 'destroy']);
+                Route::post('/banners', [SwitchController::class, 'storeBanner']);
+                Route::delete('/banners/{id}', [SwitchController::class, 'destroyBanner']);
+            });
             Route::get('/reports/hotel-health', [PlatformReportController::class, 'health']);
 
             Route::get('/hotels', [AdminHotelController::class, 'index']);
             Route::get('/hotels/{hotel}', [AdminHotelController::class, 'show'])->withTrashed(); // closed hotels too
+            Route::get('/hotels/{hotel}/overview', [HotelInsightController::class, 'overview'])->withTrashed();
+            Route::post('/hotels/{hotel}/live', [HotelInsightController::class, 'live']);
+            Route::post('/hotels/{hotel}/notes', [HotelInsightController::class, 'storeNote'])->withTrashed();
+            Route::delete('/hotels/{hotel}/notes/{id}', [HotelInsightController::class, 'destroyNote'])->withTrashed();
+
+            Route::middleware('platform:support.answer')->group(function () {
+                Route::get('/support', [AdminSupportController::class, 'index']);
+                Route::post('/support', [AdminSupportController::class, 'store']);
+                Route::get('/support/{id}', [AdminSupportController::class, 'show']);
+                Route::put('/support/{id}', [AdminSupportController::class, 'update']);
+                Route::post('/support/{id}/messages', [AdminSupportController::class, 'message']);
+            });
+            Route::middleware('platform:system.view')->group(function () {
+                Route::get('/system', SystemController::class);
+                Route::get('/activity', PlatformActivityController::class);
+            });
+            Route::middleware('platform:team.manage')->group(function () {
+                Route::get('/team', [TeamController::class, 'index']);
+                Route::post('/team', [TeamController::class, 'store']);
+                Route::put('/team/permissions', [TeamController::class, 'savePermissions']);
+                Route::put('/team/{id}', [TeamController::class, 'update']);
+            });
             Route::get('/plans', [AdminPlanController::class, 'index']);
             Route::get('/settings', [PlatformSettingsController::class, 'show']);
 

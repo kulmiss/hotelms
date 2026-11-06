@@ -28,7 +28,7 @@ export function Tabs({
   }
 
   return (
-    <div role="tablist" aria-label={label} className="panel flex gap-x-1 overflow-x-auto p-1">
+    <div role="tablist" aria-label={label} className="panel no-scrollbar flex gap-x-1 overflow-x-auto p-1">
       {items.map((item, i) => {
         const selected = item.key === active
         return (

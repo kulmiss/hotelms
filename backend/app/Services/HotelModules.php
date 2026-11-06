@@ -16,7 +16,15 @@ class HotelModules
     /** @return list<string> modules the hotel's current plan includes */
     public function available(Hotel $hotel): array
     {
-        return array_values($hotel->effectivePlan()?->modules ?? []);
+        // A Super Admin switch (gift or block, W4) wins over the plan.
+        $plan = $hotel->effectivePlan()?->modules ?? [];
+        $switches = app(Switches::class);
+
+        return array_values(array_filter(Plan::MODULES, function (string $m) use ($plan, $hotel, $switches) {
+            $v = $switches->value($hotel, "module.{$m}");
+
+            return $v === null ? in_array($m, $plan, true) : (bool) $v;
+        }));
     }
 
     /** @return list<string> modules switched on (and still in the plan) */

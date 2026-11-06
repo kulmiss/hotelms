@@ -94,9 +94,11 @@ class HotelSettingsController extends Controller
             'subscription_ends_at' => $hotel->subscription_ends_at?->toDateString(),
             'usage' => [
                 'branches' => $hotel->branches()->count(),
-                'staff' => $hotel->users()->count(),
+                'staff' => $hotel->users()->where('status', 'active')->count(),
                 'rooms' => Room::count(),
             ],
+            // What really applies (a Super Admin switch can lift or lower the plan's limits).
+            'limits' => ['rooms' => $hotel->limit('rooms'), 'branches' => $hotel->limit('branches'), 'staff' => $hotel->limit('staff')],
         ]]);
     }
 }

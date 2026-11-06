@@ -240,6 +240,7 @@ export const useCalendar = (branchId: number | null, from: string, days: number)
   })
 
 export type Lookups = {
+  stay_types?: ('nightly' | 'day_use' | 'hourly')[]
   policies: { id: number; name: string; free_until_hours: number | null; penalty_type: string; penalty_value: string; is_default: boolean }[]
   payment_methods: { id: number; name: string; type: string }[]
   currencies: { code: string; symbol: string; is_default: boolean }[]

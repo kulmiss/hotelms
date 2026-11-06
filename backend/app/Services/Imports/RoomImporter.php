@@ -200,7 +200,7 @@ class RoomImporter
         if (! $rows) {
             $general[] = 'The file has no rows.';
         }
-        $max = $user->hotel->effectivePlan()?->max_rooms;
+        $max = $user->hotel->limit('rooms');
         $used = Room::count();
         if ($max !== null && $used + count($rooms) > $max) {
             $general[] = "Your plan allows {$max} rooms ({$used} used); this file adds ".count($rooms).'. Upgrade the plan or import fewer rooms.';

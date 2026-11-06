@@ -1,6 +1,11 @@
 import type { ComponentType, SVGProps } from 'react'
 import {
   AdjustmentsHorizontalIcon,
+  AdjustmentsVerticalIcon,
+  LifebuoyIcon,
+  ServerStackIcon,
+  ListBulletIcon,
+  UserPlusIcon,
   BanknotesIcon,
   BuildingOffice2Icon,
   CalendarDaysIcon,
@@ -22,6 +27,11 @@ import {
 } from '@heroicons/react/24/outline'
 import {
   AdjustmentsHorizontalIcon as AdjustmentsHorizontalSolid,
+  AdjustmentsVerticalIcon as AdjustmentsVerticalSolid,
+  LifebuoyIcon as LifebuoySolid,
+  ServerStackIcon as ServerStackSolid,
+  ListBulletIcon as ListBulletSolid,
+  UserPlusIcon as UserPlusSolid,
   BanknotesIcon as BanknotesSolid,
   BuildingOffice2Icon as BuildingOffice2Solid,
   CalendarDaysIcon as CalendarDaysSolid,
@@ -97,7 +107,12 @@ export const devNav: NavItem[] = [
 export const adminNav: NavItem[] = [
   { key: 'commandCenter', path: '/admin', icon: HomeIcon, activeIcon: HomeSolid, phase: 1 },
   { key: 'hotels', path: '/admin/hotels', icon: BuildingOffice2Icon, activeIcon: BuildingOffice2Solid, group: 'customers', phase: 1 },
+  { key: 'support', path: '/admin/support', icon: LifebuoyIcon, activeIcon: LifebuoySolid, group: 'customers', phase: 8, permission: 'support.answer' },
   { key: 'platformReports', path: '/admin/reports', icon: ChartBarIcon, activeIcon: ChartBarSolid, group: 'customers', phase: 1 },
   { key: 'plans', path: '/admin/plans', icon: TagIcon, activeIcon: TagSolid, group: 'billing', phase: 1 },
+  { key: 'switches', path: '/admin/switches', icon: AdjustmentsVerticalIcon, activeIcon: AdjustmentsVerticalSolid, group: 'system', phase: 8, permission: 'switches.manage' },
+  { key: 'system', path: '/admin/system', icon: ServerStackIcon, activeIcon: ServerStackSolid, group: 'system', phase: 8, permission: 'system.view' },
+  { key: 'platformActivity', path: '/admin/activity', icon: ListBulletIcon, activeIcon: ListBulletSolid, group: 'system', phase: 8, permission: 'system.view' },
+  { key: 'team', path: '/admin/team', icon: UserPlusIcon, activeIcon: UserPlusSolid, group: 'system', phase: 8, permission: 'team.manage' },
   { key: 'platformSettings', path: '/admin/settings', icon: AdjustmentsHorizontalIcon, activeIcon: AdjustmentsHorizontalSolid, group: 'system', phase: 1 },
 ]

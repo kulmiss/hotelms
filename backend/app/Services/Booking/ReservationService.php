@@ -19,6 +19,7 @@ use App\Services\Billing\CurrencyConverter;
 use App\Services\Billing\InvoiceService;
 use App\Services\HotelSettings;
 use App\Services\Modules\Cashier;
+use App\Services\Switches;
 use App\Support\HotelClock;
 use App\Support\Money;
 use Illuminate\Support\Collection;
@@ -146,6 +147,9 @@ class ReservationService
     public function recordPayment(Reservation $reservation, array $data, User $user, ?Invoice $invoice = null): Payment
     {
         $type = $data['type'];
+        if (! empty($data['currency']) && strtoupper($data['currency']) !== $reservation->currency && ! app(Switches::class)->on($user->hotel, 'feature.multi_currency')) {
+            throw ValidationException::withMessages(['currency' => 'Payments in other currencies are not available for your hotel.']);
+        }
         // After check-in, money goes on the guest's bill.
         $invoice ??= $reservation->invoices()->where('status', '!=', 'void')->orderBy('id')->first();
         $owing = $invoice && Money::isPositive((string) $invoice->balance);
@@ -329,6 +333,11 @@ class ReservationService
     private function plan(array $data, User $user, ?Reservation $existing, bool $preview = false): array
     {
         $hotel = $user->hotel;
+        // Super Admin switches (W4): hourly stays and day use can be off for a plan or hotel.
+        $switch = ['hourly' => 'feature.hourly_stays', 'day_use' => 'feature.day_use'][$data['stay_type'] ?? ''] ?? null;
+        if ($switch && ! app(Switches::class)->on($hotel, $switch)) {
+            throw ValidationException::withMessages(['stay_type' => 'This kind of stay is not available for your hotel.']);
+        }
         $branch = $user->accessibleBranches()->firstWhere('id', (int) $data['branch_id']);
         if (! $branch) {
             throw ValidationException::withMessages(['branch_id' => 'Choose one of your branches.']);

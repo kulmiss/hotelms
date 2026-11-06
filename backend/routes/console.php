@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\SystemController;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
 
 /*
@@ -23,3 +25,6 @@ Schedule::command('hotelms:purge-closed-hotels')->dailyAt('03:30')->withoutOverl
 
 // The demo hotel starts fresh every night.
 Schedule::command('demo:reset')->dailyAt('02:30')->withoutOverlapping();
+
+// Proof that cron runs (Super Admin → System health).
+Schedule::call(fn () => Cache::forever(SystemController::HEARTBEAT, now()->toIso8601String()))->everyMinute()->name('scheduler-heartbeat');

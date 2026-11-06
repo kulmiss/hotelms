@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\LogsActivity;
+use App\Services\Switches;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -81,6 +82,14 @@ class Hotel extends Model
     }
 
     /** The plan whose features apply right now (trial plan during the trial). */
+    /** Room / branch / staff limit: a Super Admin switch (W4) wins over the plan. null = no limit. */
+    public function limit(string $what): ?int
+    {
+        $switch = app(Switches::class)->value($this, "limit.{$what}");
+
+        return $switch !== null ? (int) $switch : $this->effectivePlan()?->{"max_{$what}"};
+    }
+
     public function effectivePlan(): ?Plan
     {
         return $this->status === 'trial' && $this->trialPlan ? $this->trialPlan : $this->plan;

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\DataAccessLog;
 use App\Models\Hotel;
 use App\Models\ImpersonationLog;
 use App\Models\User;
@@ -38,6 +39,7 @@ class Impersonation
         ]);
 
         $props = ['reason' => $reason, 'as' => $target->email, 'by' => $admin->email];
+        DataAccessLog::create(['user_id' => $admin->id, 'hotel_id' => $hotel->id, 'what' => 'log_in_as', 'reason' => mb_substr($reason, 0, 200), 'created_at' => now()]);
         // Platform log (no hotel) and the hotel's own log.
         $this->log->log('support.login_as', "Signed in to {$hotel->name} as {$target->name}", null, $props + ['hotel' => $hotel->name]);
         $this->log->log('support.login_as', "HotelMS support ({$admin->name}) signed in as {$target->name}", $target, $props);

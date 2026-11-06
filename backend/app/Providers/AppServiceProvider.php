@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\PlatformPermissions;
+use App\Services\Switches;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -14,6 +16,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // One tenant context per request / job.
         $this->app->scoped(TenantContext::class);
+        // Switch values are read once per request / job.
+        $this->app->scoped(Switches::class);
+        $this->app->scoped(PlatformPermissions::class);
     }
 
     public function boot(): void

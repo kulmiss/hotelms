@@ -27,7 +27,8 @@ return [
 
     /*
     | Super Admin team roles (claude/super-admin.md). The owner always has
-    | everything. A later phase makes this editable on screen.
+    | everything. These are the defaults; the Owner changes them on the Team screen
+    | (saved as the platform setting "platform_permissions").
     */
     'platform_roles' => ['owner', 'support', 'sales', 'finance', 'tech'],
 
@@ -38,6 +39,8 @@ return [
         'users.reset_password' => ['support', 'sales', 'tech'],
         'billing.manage' => ['finance'],
         'switches.manage' => ['tech'],
+        'support.answer' => ['support', 'sales', 'tech'],
+        'system.view' => ['tech'],
         'team.manage' => [],
     ],
 

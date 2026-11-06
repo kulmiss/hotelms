@@ -14,6 +14,7 @@ use App\Models\Room;
 use App\Services\Booking\Availability;
 use App\Services\Booking\ReservationService;
 use App\Services\Booking\StayQuote;
+use App\Services\Switches;
 use App\Support\HotelClock;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -57,12 +58,20 @@ class ReservationController extends Controller
     }
 
     /** Lists the booking screens need (front-desk staff may not open Settings). */
-    public function lookups(): JsonResponse
+    public function lookups(Request $request, Switches $switches): JsonResponse
     {
+        $hotel = $request->user()->hotel;
+        $multi = $switches->on($hotel, 'feature.multi_currency');
+
         return response()->json([
+            'stay_types' => array_values(array_filter(Reservation::STAY_TYPES, fn ($t) => match ($t) {
+                'hourly' => $switches->on($hotel, 'feature.hourly_stays'),
+                'day_use' => $switches->on($hotel, 'feature.day_use'),
+                default => true,
+            })),
             'policies' => CancellationPolicy::orderByDesc('is_default')->orderBy('id')->get(['id', 'name', 'free_until_hours', 'penalty_type', 'penalty_value', 'is_default']),
             'payment_methods' => PaymentMethod::where('is_active', true)->orderBy('id')->get(['id', 'name', 'type']),
-            'currencies' => HotelCurrency::orderByDesc('is_default')->orderBy('code')->get(['code', 'symbol', 'is_default']),
+            'currencies' => HotelCurrency::orderByDesc('is_default')->orderBy('code')->when(! $multi, fn ($q) => $q->where('is_default', true))->get(['code', 'symbol', 'is_default']),
         ]);
     }
 

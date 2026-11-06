@@ -34,6 +34,15 @@ services:
       mysql: { condition: service_healthy }
       redis: { condition: service_started }
 
+  # Background work (expiring bookings, reports, alerts, Telegram, backups, demo reset),
+  # like the every-minute cron line on a real server.
+  scheduler:
+    build: ./backend
+    volumes: ['./backend:/var/www/backend']
+    # The backend container installs packages and runs migrations; this one waits for that, then runs the schedule.
+    entrypoint: ['sh', '-c', 'until php artisan migrate:status --no-interaction >/dev/null 2>&1; do sleep 5; done; exec php artisan schedule:work']
+    depends_on: [backend]
+
   frontend:
     build: ./frontend
     volumes: ['./frontend:/app']

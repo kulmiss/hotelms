@@ -136,7 +136,8 @@ describe('collapsible sidebar', () => {
     expect(localStorage.getItem('hms-sidebar-collapsed')).toBe('1')
     // Collapsed: icons only; each link still has its name for screen readers and a tooltip.
     expect(screen.getByRole('link', { name: 'Hotels' })).toBeInTheDocument()
-    expect(screen.getAllByRole('tooltip').map((el) => el.textContent)).toContain('Hotels')
+    await userEvent.hover(screen.getByRole('link', { name: 'Hotels' }))
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Hotels')
 
     await userEvent.click(screen.getByRole('button', { name: 'Expand menu' }))
     expect(screen.getByRole('complementary')).toHaveAttribute('data-collapsed', 'false')
@@ -228,5 +229,97 @@ describe('log in as hotel', () => {
     renderApp('/admin/hotels/1')
     expect(await screen.findByRole('heading', { name: 'Sheger Hotel' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Log in as hotel' })).not.toBeInTheDocument()
+  })
+})
+
+describe('switches', () => {
+  const tech = () => ({ ...superAdmin(), platform: { role: 'owner', permissions: ['hotels.view', 'switches.manage'] } })
+  const data = {
+    registry: [
+      { key: 'feature.telegram', type: 'bool', group: 'features', default: true },
+      { key: 'limit.rooms', type: 'int', group: 'limits', default: null },
+      { key: 'emergency.maintenance', type: 'bool', group: 'emergency', default: false },
+    ],
+    plans: [{ id: 2, name: 'Standard' }],
+    switches: [{ id: 7, key: 'limit.rooms', level: 'hotel', target_id: 1, target_name: 'Sheger Hotel', value: 80, starts_at: null, ends_at: '2026-12-31T00:00:00+03:00', reason: 'Gift', scheduled: false, expired: false }],
+    banners: [],
+  }
+
+  it('shows the gifts and turns a feature off for one plan', async () => {
+    const fetchMock = mockApi({ 'GET /me': { body: tech() }, 'GET /admin/switches': { body: data }, 'POST /admin/switches': { status: 201, body: { data: {} } } })
+    renderApp('/admin/switches')
+
+    expect(await screen.findByText('Hotel: Sheger Hotel')).toBeInTheDocument()
+    expect(screen.getByText('80')).toBeInTheDocument()
+    await userEvent.click(screen.getAllByRole('button', { name: 'Change' })[1])
+    await userEvent.selectOptions(screen.getByLabelText('For'), 'plan')
+    await userEvent.selectOptions(screen.getByLabelText('Plan'), '2')
+    await userEvent.selectOptions(screen.getByLabelText('Setting'), 'off')
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    const call = fetchMock.mock.calls.find(([u, i]) => String(u).endsWith('/admin/switches') && i?.method === 'POST')
+    expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ key: 'feature.telegram', level: 'plan', target_id: 2, value: false, starts_at: null, ends_at: null })
+  })
+
+  it('shows the maintenance screen to hotel staff', async () => {
+    mockApi({ 'GET /me': { body: { ...makeMe(), emergency: { maintenance: true, read_only: false } } } })
+    renderApp('/')
+    expect(await screen.findByText('We are improving HotelMS')).toBeInTheDocument()
+  })
+})
+
+
+describe('Super Admin areas', () => {
+  const owner = () => ({ ...superAdmin(), platform: { role: 'owner', permissions: ['hotels.view', 'support.answer', 'system.view', 'team.manage', 'switches.manage'] } })
+
+  it('answers a support request with a reply', async () => {
+    const req = { id: 4, subject: 'Printer', status: 'open', priority: 'urgent', channel: 'app', from: 'Meron', hotel: { id: 1, name: 'Sheger Hotel' }, assigned_to: null, last_message_at: '2026-11-06T08:00:00+03:00', created_at: null }
+    const detail = { ...req, contact: { name: 'Meron', email: 'm@x.test', phone: null }, hotel_context: { status: 'active', plan: 'Standard', city: 'Addis Ababa', phone: null, email: null }, team: [], messages: [{ id: 1, kind: 'message', body: 'Blank receipt', author: 'Meron', created_at: null }] }
+    const fetchMock = mockApi({
+      'GET /me': { body: owner() },
+      'GET /admin/support': { body: { data: [req], counts: { open: 1, waiting: 0, solved: 0 }, meta: { total: 1, last_page: 1, current_page: 1 } } },
+      'GET /admin/support/4': { body: { data: detail } },
+      'POST /admin/support/4/messages': { body: { data: detail } },
+    })
+    renderApp('/admin/support')
+
+    await userEvent.click(await screen.findByRole('button', { name: /Printer/ }))
+    expect(await screen.findByText('Blank receipt')).toBeInTheDocument()
+    await userEvent.type(screen.getByLabelText('Your answer'), 'Choose 80mm')
+    await userEvent.click(screen.getByRole('button', { name: 'Reply' }))
+    const call = fetchMock.mock.calls.find(([u, i]) => String(u).endsWith('/admin/support/4/messages') && i?.method === 'POST')
+    expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ body: 'Choose 80mm', kind: 'reply', solve: false })
+  })
+
+  it('shows system health checks', async () => {
+    const ok = { ok: true }
+    mockApi({
+      'GET /me': { body: owner() },
+      'GET /admin/system': {
+        body: {
+          data: {
+            checks: { database: { ...ok, ms: 3 }, cache: { ...ok, driver: 'database' }, scheduler: { ok: false, last_run: null, problem: 'The cron job has never run.' }, jobs: { ...ok, waiting: 0, failed: 0, recent_failures: [] }, backups: { ...ok, daily: null, small: null }, disk: { ...ok, free_mb: 9000 } },
+            errors: [], versions: { app: '1.0.0', php: '8.3', laravel: '13', database: 'mysql' }, checked_at: '2026-11-06T09:00:00+03:00',
+          },
+        },
+      },
+    })
+    renderApp('/admin/system')
+    expect(await screen.findByText('The cron job has never run.')).toBeInTheDocument()
+    expect(screen.getByText('Answers in 3 ms')).toBeInTheDocument()
+  })
+
+  it('lets a hotel ask for help', async () => {
+    const created = { id: 9, subject: 'Wifi', status: 'open', priority: 'normal', channel: 'app', from: 'Meron', last_message_at: null, created_at: null, messages: [{ id: 1, kind: 'message', body: 'No wifi', author: 'Meron', created_at: null }] }
+    const fetchMock = mockApi({ 'GET /me': { body: makeMe() }, 'GET /support': { body: { data: [] } }, 'POST /support': { status: 201, body: { data: created } }, 'GET /support/9': { body: { data: created } } })
+    renderApp('/help')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'New question' }))
+    await userEvent.type(screen.getByLabelText('Subject'), 'Wifi')
+    await userEvent.type(screen.getByLabelText('Your question'), 'No wifi')
+    await userEvent.click(screen.getByRole('button', { name: 'Send' }))
+    expect(await screen.findByText('No wifi')).toBeInTheDocument()
+    const call = fetchMock.mock.calls.find(([u, i]) => String(u).endsWith('/support') && i?.method === 'POST')
+    expect(JSON.parse(String(call?.[1]?.body))).toEqual({ subject: 'Wifi', body: 'No wifi', priority: 'normal' })
   })
 })
