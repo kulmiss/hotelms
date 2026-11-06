@@ -68,6 +68,26 @@ describe('reservations', () => {
     expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ branch_id: 1, stay_type: 'nightly', guest_id: 5, rooms: [{ room_type_id: 3, adults: 2, children: 0 }] })
   })
 
+  it('books an actual room from the "By room" tab', async () => {
+    const fetchMock = mockApi({
+      'GET /me': { body: me() },
+      'GET /reservations/lookups': { body: lookups },
+      'GET /reservations/availability': {
+        body: { data: [{ room_type_id: 3, name: 'Standard', max_capacity: 2, base_capacity: 2, total_rooms: 2, available: 2, offered: true, price: '4000.00', lines: [], currency: 'ETB', free_rooms: [{ id: 11, number: '101', floor: '1', status: 'available' }, { id: 12, number: '102', floor: '1', status: 'available' }] }], check_in_at: quote.check_in_at, check_out_at: quote.check_out_at },
+      },
+      'POST /reservations/quote': { body: { data: quote } },
+    })
+    renderApp('/reservations/new')
+
+    await userEvent.click(await screen.findByRole('tab', { name: 'By room' }))
+    await userEvent.click(await screen.findByRole('button', { name: /^102/ }))
+    expect(screen.getByRole('button', { name: /^102/ })).toHaveAttribute('aria-pressed', 'true')
+    await waitFor(() => {
+      const call = [...fetchMock.mock.calls].reverse().find(([url]) => String(url).endsWith('/reservations/quote'))
+      expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ rooms: [{ room_type_id: 3, room_id: 12, adults: 2, children: 0 }] })
+    })
+  })
+
   it('records a deposit on a booking', async () => {
     const fetchMock = mockApi({
       'GET /me': { body: me() },

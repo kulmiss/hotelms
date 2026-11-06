@@ -14,7 +14,7 @@ import { useMe } from '@/lib/auth'
 import { cn } from '@/lib/cn'
 import { date, money } from '@/lib/format'
 import { ROOM_DOTS, ROOM_TONES, useBoard, useRoomStatus, useToday, type BoardRoom, type TodayRow } from '@/lib/desk'
-import { localDate, localTime, STATUS_TONES } from '@/lib/front'
+import { localDate, localTime, STATUS_TONES, today as todayDate } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 
 const TABS = ['board', 'arrivals', 'departures', 'in_house'] as const
@@ -267,9 +267,19 @@ function TodayList({ rows, kind, loading }: { rows: TodayRow[]; kind: Exclude<Ta
               </td>
               <td className="px-4 py-1.5 text-muted">{r.rooms.map((x) => x.room_number ?? x.room_type).join(', ')}</td>
               <td className="px-4 py-1.5">
+                {/* In house: the day too (guests leave on different days); today's lists: the time is enough. */}
+                {kind === 'in_house' && localDate(r.check_out_at) !== todayDate() && `${date(localDate(r.check_out_at))} `}
                 {localTime(kind === 'arrivals' ? r.check_in_at : r.check_out_at)}
-                {r.late && <Badge tone="warn">{t('desk.late')}</Badge>}
-                {r.overdue && <Badge tone="danger">{t('desk.overdue')}</Badge>}
+                {r.late && (
+                  <span title={t('desk.lateHelp')}>
+                    <Badge tone="warn">{t('desk.late')}</Badge>
+                  </span>
+                )}
+                {r.overdue && (
+                  <span title={t('desk.overdueHelp')}>
+                    <Badge tone="danger">{t('desk.overdue')}</Badge>
+                  </span>
+                )}
               </td>
               <td className="px-4 py-1.5">
                 <Badge tone={STATUS_TONES[r.status]}>{t(`reservations.statuses.${r.status}`)}</Badge>

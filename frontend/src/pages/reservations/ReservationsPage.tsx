@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { PlusIcon } from '@heroicons/react/20/solid'
@@ -218,6 +219,11 @@ function ReservationCalendar() {
   const [branchId, setBranchId] = useState<number | null>(null)
   const [from, setFrom] = useState(() => today())
   const [day, setDay] = useState<string | null>(null) // the day opened as "room by room"
+  const [tip, setTip] = useState<{ b: CalendarBooking; x: number; y: number } | null>(null) // hover card on a booking
+  const showTip = (b: CalendarBooking, el: HTMLElement) => {
+    const r = el.getBoundingClientRect()
+    setTip({ b, x: r.left + Math.min(r.width, 240) / 2, y: r.top })
+  }
   const current = branchId ?? branches[0]?.id ?? null
   const cal = useCalendar(current, from, DAYS)
   const days = Array.from({ length: DAYS }, (_, i) => addDays(from, i))
@@ -287,6 +293,7 @@ function ReservationCalendar() {
         </span>
       </div>
       <p className="text-xs text-muted">{t('roomCal.hint')}</p>
+      {tip && createPortal(<BookingTip {...tip} />, document.body)}
       {day && data && <DayRooms day={day} data={data} branchId={current} onClose={() => setDay(null)} />}
       <Card className="overflow-x-auto p-0">
         <div className="min-w-[960px]">
@@ -330,7 +337,11 @@ function ReservationCalendar() {
                     <Link
                       key={b.id}
                       to={`/reservations/${b.reservation_id}`}
-                      title={`${b.code} · ${b.guest ?? ''}`}
+                      aria-label={`${b.guest ?? b.code}, ${date(localDate(b.check_in_at))} – ${date(localDate(b.check_out_at))}`}
+                      onMouseEnter={(e) => showTip(b, e.currentTarget)}
+                      onFocus={(e) => showTip(b, e.currentTarget)}
+                      onMouseLeave={() => setTip(null)}
+                      onBlur={() => setTip(null)}
                       className={cn('pointer-events-auto absolute flex h-7 items-center overflow-hidden rounded-md px-2 text-[11px] font-medium whitespace-nowrap ring-1 transition duration-75 hover:brightness-95', BAR[b.status])}
                       style={{ left: `${(start / DAYS) * 100}%`, width: `${((end - start) / DAYS) * 100}%`, top: 8 + line * 32 }}
                     >
@@ -418,5 +429,30 @@ function DayRooms({ day, data, branchId, onClose }: { day: string; data: Calenda
         </table>
       </div>
     </Card>
+  )
+}
+
+/** Hover card on a calendar booking: guest, dates from → to, nights, room and status. */
+function BookingTip({ b, x, y }: { b: CalendarBooking; x: number; y: number }) {
+  const { t } = useTranslation()
+  const nights = daysBetween(localDate(b.check_in_at), localDate(b.check_out_at))
+  const hours = Math.max(1, Math.round((Date.parse(b.check_out_at) - Date.parse(b.check_in_at)) / 3_600_000))
+  const below = y < 140
+  return (
+    <div
+      role="tooltip"
+      style={{ left: Math.max(8, Math.min(x, window.innerWidth - 136)), top: below ? y + 36 : y - 8 }}
+      className={cn('pointer-events-none fixed z-50 flex w-64 -translate-x-1/2 flex-col gap-1 rounded-lg bg-text px-3 py-2 text-xs text-bg shadow-lg animate-page-in', !below && '-translate-y-full')}
+    >
+      <span className="text-[13px] font-semibold">{b.guest ?? b.code}</span>
+      <span className="opacity-80">
+        {b.code} · {t(`reservations.statuses.${b.status}`)}
+      </span>
+      <span>
+        {date(localDate(b.check_in_at))} {localTime(b.check_in_at)} → {date(localDate(b.check_out_at))} {localTime(b.check_out_at)}
+      </span>
+      <span className="font-medium">{b.stay_type === 'nightly' ? t('roomCal.nights', { count: nights }) : t('roomCal.hours', { count: hours })}</span>
+      <span className="opacity-80">{b.room_type ?? ''}</span>
+    </div>
   )
 }

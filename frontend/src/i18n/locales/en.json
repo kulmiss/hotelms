@@ -139,6 +139,7 @@
     "intro": "This is the Phase 0 foundation. Hotel features arrive phase by phase.",
     "apiStatus": "API status",
     "yourWork": "Your work",
+    "roomsToClean": "Rooms to clean",
     "checking": "Checking…",
     "connected": "Connected",
     "degraded": "Database not reachable",
@@ -1270,6 +1271,8 @@
       "needNamePhone": "Type the guest's name and phone."
     },
     "bookedFrom": "Booked from {{date}}",
+    "overdueHelp": "Check-out time has passed and the guest has not checked out yet.",
+    "lateHelp": "Check-in time has passed and the guest has not arrived yet.",
     "nextBooking": "Next booking: {{from}} → {{to}} · {{guest}}",
     "walkInStartsNow": "A walk-in checks in now. Guest arriving on another day?",
     "bookForLater": "Make a reservation",
@@ -2514,6 +2517,12 @@
     "approvedToast": "Approved and done",
     "rejectedToast": "Rejected – nothing was changed"
   },
+  "pickBy": {
+    "types": "By room type",
+    "rooms": "By room",
+    "chosenRooms": "chosen: {{rooms}}",
+    "removeOne": "Remove one {{type}}"
+  },
   "roomCal": {
     "open": "Room calendar",
     "title": "Room {{number}}",
@@ -2529,6 +2538,10 @@
     "waiting_one": "{{count}} booking still needs a room",
     "waiting_other": "{{count}} bookings still need a room",
     "thatNight": "That night",
+    "nights_one": "{{count}} night",
+    "nights_other": "{{count}} nights",
+    "hours_one": "{{count}} hour",
+    "hours_other": "{{count}} hours",
     "leavingCol": "Leaving that day",
     "states": { "staying": "Staying", "arriving": "Arriving", "free": "Free" }
   },

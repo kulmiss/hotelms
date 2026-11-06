@@ -141,6 +141,26 @@ describe('quick check-in', () => {
     })
   })
 
+  it('picks a walk-in room by room type', async () => {
+    const free = (id: number, number: string) => ({ id, number, floor: '1', room_type_id: 3, room_type: 'Standard', nightly_price: '2000.00', day_use_price: null, hourly_price: null, max_capacity: 2, currency: 'ETB' })
+    const fetchMock = mockApi({
+      'GET /me': { body: me() },
+      'GET /reservations/lookups': { body: { policies: [], payment_methods: [{ id: 1, name: 'Cash', type: 'cash' }], currencies: [] } },
+      'GET /front-desk/walk-in/rooms': { body: { data: [free(3, '110'), free(2, '102')], walk_in_payment: 'full', now: '2026-11-12T16:00:00+03:00' } },
+      'POST /reservations/quote': { body: { data: { stay_type: 'nightly', check_in_at: '2026-11-12T14:00:00+03:00', check_out_at: '2026-11-13T12:00:00+03:00', currency: 'ETB', rooms: [], subtotal: '2000.00', discount_percent: '0.00', discount_amount: '0.00', tax_total: '300.00', total: '2300.00', deposit_required: '690.00', policy_name: null } } },
+    })
+    renderApp('/rooms/walk-in')
+
+    await userEvent.click(await screen.findByRole('tab', { name: 'By room type' }))
+    expect(screen.getByText('2 left', { exact: false })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /Add/ }))
+    expect(await screen.findByText(/chosen: 102/)).toBeInTheDocument() // the lowest free room number
+    await waitFor(() => {
+      const call = [...fetchMock.mock.calls].reverse().find(([url]) => String(url).endsWith('/reservations/quote'))
+      expect(JSON.parse(String(call?.[1]?.body)).rooms).toEqual([{ room_type_id: 3, room_id: 2, adults: 1, children: 0 }])
+    })
+  })
+
   it('hides quick check-in without the permission', async () => {
     mockApi({
       'GET /me': { body: makeMe({}, [...DESK, 'guests.create_edit']) },
@@ -193,6 +213,12 @@ describe('room calendars', () => {
     await userEvent.click(header!)
     expect(await screen.findByText('1 of 2 rooms free that night')).toBeInTheDocument()
     expect(screen.getByText('Arriving')).toBeInTheDocument()
+
+    // Hovering a booking shows the dates and the number of nights.
+    await userEvent.hover(screen.getByRole('link', { name: /^Abebe Kebede, / }))
+    const tip = await screen.findByRole('tooltip')
+    expect(tip).toHaveTextContent('2 nights')
+    expect(tip).toHaveTextContent('BL-26-00001')
   })
 })
 

@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { Tabs } from '@/components/ui/Tabs'
 import { IdPhoto } from '@/components/guests/IdPhoto'
 import { ProofField, type Proof } from '@/components/payments/PaymentProof'
-import { CheckIcon } from '@heroicons/react/20/solid'
+import { CheckIcon, MinusIcon, PlusIcon } from '@heroicons/react/20/solid'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -12,6 +13,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { ApiError } from '@/lib/api'
 import { useMe } from '@/lib/auth'
+import { money } from '@/lib/format'
 import { useCan } from '@/lib/hotel'
 import { cn } from '@/lib/cn'
 import { useFreeRooms, useWalkIn } from '@/lib/desk'
@@ -50,6 +52,13 @@ export function WalkInPage() {
 
   const rooms = (free.data?.data ?? []).filter((r) => (stayType === 'nightly' ? true : stayType === 'hourly' ? r.hourly_price !== null : r.day_use_price !== null))
   const chosen = rooms.filter((r) => picked.includes(r.id))
+  // "By room type": the hotel's free rooms grouped by type; Add picks the next free room of that type.
+  const [pickBy, setPickBy] = useState<'rooms' | 'types'>('rooms')
+  const typeGroups = [...new Map(rooms.map((r) => [r.room_type_id, r.room_type ?? ''])).entries()].map(([id, name]) => ({
+    id,
+    name,
+    rooms: rooms.filter((r) => r.room_type_id === id).sort((a, b) => a.number.localeCompare(b.number, undefined, { numeric: true })),
+  }))
   const now = free.data?.now ?? `${today()}T12:00:00`
   const input: BookingInput | null =
     branchId && chosen.length
@@ -139,7 +148,44 @@ export function WalkInPage() {
           </Card>
 
           <Card className="flex flex-col gap-3">
-            <h2 className="text-sm font-semibold">{t('desk.pickRoom')}</h2>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold">{t('desk.pickRoom')}</h2>
+              <div className="w-64">
+                <Tabs label={t('desk.pickRoom')} active={pickBy} onChange={(k) => setPickBy(k as 'rooms' | 'types')} items={[{ key: 'rooms', label: t('pickBy.rooms') }, { key: 'types', label: t('pickBy.types') }]} />
+              </div>
+            </div>
+            {pickBy === 'types' ? (
+              <ul className="flex flex-col divide-y divide-border">
+                {typeGroups.map((g) => {
+                  const chosen = g.rooms.filter((r) => picked.includes(r.id))
+                  const next = g.rooms.find((r) => !picked.includes(r.id))
+                  const price = stayType === 'hourly' ? g.rooms[0].hourly_price : stayType === 'day_use' ? g.rooms[0].day_use_price : g.rooms[0].nightly_price
+                  return (
+                    <li key={g.id} className="flex flex-wrap items-center justify-between gap-3 py-2.5">
+                      <div className="flex flex-col">
+                        <span className="text-[13px] font-medium">{g.name}</span>
+                        <span className="text-xs text-muted">
+                          {t('reservations.form.left', { count: g.rooms.length - chosen.length })}
+                          {chosen.length > 0 && ` · ${t('pickBy.chosenRooms', { rooms: chosen.map((r) => r.number).join(', ') })}`}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {price && <span className="text-[13px] font-semibold tabular-nums">{money(price, g.rooms[0].currency ?? undefined)}</span>}
+                        {chosen.length > 0 && (
+                          <Button variant="secondary" aria-label={t('pickBy.removeOne', { type: g.name })} onClick={() => setPicked(picked.filter((x) => x !== chosen[chosen.length - 1].id))}>
+                            <MinusIcon aria-hidden className="size-4" />
+                          </Button>
+                        )}
+                        <Button variant="secondary" disabled={!next} onClick={() => next && setPicked([...picked, next.id])}>
+                          <PlusIcon aria-hidden className="size-4" />
+                          {t('reservations.form.add')}
+                        </Button>
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-2">
               {rooms.map((r) => {
                 const on = picked.includes(r.id)
@@ -158,6 +204,7 @@ export function WalkInPage() {
                 )
               })}
             </div>
+            )}
             {free.data && rooms.length === 0 && <Alert tone="info">{t('desk.noFreeRooms')}</Alert>}
           </Card>
 

@@ -2,8 +2,10 @@
 
 namespace App\Services\Modules;
 
+use App\Models\Hotel;
 use App\Models\HousekeepingTask;
 use App\Models\Reservation;
+use App\Models\Room;
 use App\Models\User;
 use App\Services\HotelModules;
 use Illuminate\Validation\ValidationException;
@@ -22,7 +24,10 @@ class Housekeeping
             return;
         }
         foreach ($reservation->rooms()->whereNotNull('room_id')->get() as $rr) {
-            $open = HousekeepingTask::where('room_id', $rr->room_id)->where('type', 'cleaning')->where('status', '!=', 'done')->exists();
+            $open = HousekeepingTask::where('room_id', $rr->room_id)->where('type', 'cleaning')->where('status', '!=', 'done')->first();
+            if ($open && ! $open->reservation_id) {
+                $open->update(['reservation_id' => $reservation->id]); // made when the room turned dirty
+            }
             if (! $open) {
                 HousekeepingTask::create([
                     'branch_id' => $reservation->branch_id, 'room_id' => $rr->room_id, 'reservation_id' => $reservation->id,
@@ -30,6 +35,32 @@ class Housekeeping
                 ]);
             }
         }
+    }
+
+    /**
+     * Any room that becomes dirty (marked on the room board, a room move, …) gets a cleaning task,
+     * so it shows on the housekeepers' list. Never two open tasks for one room.
+     */
+    public function taskForDirtyRoom(Room $room): void
+    {
+        $hotel = Hotel::find($room->hotel_id);
+        if (! $hotel || ! $this->modules->isEnabled($hotel, 'housekeeping')) {
+            return;
+        }
+        $open = HousekeepingTask::where('room_id', $room->id)->where('type', 'cleaning')->where('status', '!=', 'done')->exists();
+        if (! $open) {
+            HousekeepingTask::create([
+                'hotel_id' => $room->hotel_id, 'branch_id' => $room->branch_id, 'room_id' => $room->id,
+                'type' => 'cleaning', 'priority' => 'normal', 'status' => 'pending', 'due_at' => now()->addHours(2), 'created_by' => auth()->id(),
+            ]);
+        }
+    }
+
+    public function closeCleaningTasks(Room $room): void
+    {
+        HousekeepingTask::where('room_id', $room->id)->where('type', 'cleaning')->where('status', '!=', 'done')
+            // (No start time: it does not count in the "minutes per room" averages.)
+            ->update(['status' => 'done', 'completed_at' => now(), 'completed_by' => auth()->id()]);
     }
 
     public function start(HousekeepingTask $task, User $user): HousekeepingTask
