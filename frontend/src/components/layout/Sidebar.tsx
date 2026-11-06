@@ -10,7 +10,7 @@ import { BrandMark, useBrand } from '@/lib/brand'
 import { cn } from '@/lib/cn'
 
 /** Sidebar module names → plan module keys. */
-const moduleKey = { cashier: 'cashier_close', housekeeping: 'housekeeping', shifts: 'shifts' } as const
+const moduleKey = { cashier: 'cashier_close', housekeeping: 'housekeeping', shifts: 'shifts', attendance: 'attendance' } as const
 
 type EntryProps = { item: NavItem; collapsed: boolean; onNavigate?: () => void }
 

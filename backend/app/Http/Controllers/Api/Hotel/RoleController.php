@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\ActivityLogger;
+use App\Support\Money;
 use App\Support\Permissions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,7 +31,7 @@ class RoleController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $this->validated($request);
-        $this->guardGrant($request->user(), $data['permissions']);
+        $this->guardGrant($request->user(), $data['permissions'], $data['max_discount_percent']);
 
         $role = DB::transaction(function () use ($data) {
             $role = Role::create([
@@ -50,7 +51,7 @@ class RoleController extends Controller
     {
         $this->guardEditable($request->user(), $role);
         $data = $this->validated($request, $role);
-        $this->guardGrant($request->user(), $data['permissions']);
+        $this->guardGrant($request->user(), $data['permissions'], $data['max_discount_percent']);
 
         DB::transaction(function () use ($role, $data) {
             $before = $role->permissionKeys();
@@ -109,11 +110,14 @@ class RoleController extends Controller
     }
 
     /** @param  list<string>  $permissions */
-    private function guardGrant(User $actor, array $permissions): void
+    private function guardGrant(User $actor, array $permissions, string $maxDiscount): void
     {
         $missing = array_diff($permissions, $actor->permissionKeys());
         if ($missing !== []) {
             throw ValidationException::withMessages(['permissions' => 'You can only give permissions you have yourself.']);
+        }
+        if (! $actor->isHotelAdmin() && Money::compare(Money::round($maxDiscount), (string) ($actor->role?->max_discount_percent ?? '0')) > 0) {
+            throw ValidationException::withMessages(['max_discount_percent' => 'You can only give a discount limit up to your own.']);
         }
     }
 

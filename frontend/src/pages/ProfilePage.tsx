@@ -9,7 +9,9 @@ import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { ApiError, type Me } from '@/lib/api'
 import { useMe } from '@/lib/auth'
+import { useTelegram, useTelegramLink, useTelegramUnlink } from '@/lib/automation'
 import { useUpdateProfile } from '@/lib/profile'
+import { SecurityCards } from './security/SecurityParts'
 
 export function ProfilePage() {
   const { t } = useTranslation()
@@ -31,7 +33,62 @@ export function ProfilePage() {
           {t('topbar.changePassword')}
         </Link>
       </Card>
+      {!me.data?.impersonation && <SecurityCards />}
+      {me.data?.hotel && !me.data.impersonation && <TelegramCard />}
     </div>
+  )
+}
+
+/** Link this account to Telegram so scheduled reports and alerts can be sent there. */
+function TelegramCard() {
+  const { t } = useTranslation()
+  const q = useTelegram()
+  const link = useTelegramLink()
+  const unlink = useTelegramUnlink()
+  const code = link.data?.data
+  if (!q.data) return null
+  return (
+    <Card className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1">
+        <h2 className="font-semibold">{t('telegram.title')}</h2>
+        <p className="text-sm text-muted">{q.data.enabled ? t('telegram.body') : t('telegram.notSetUp')}</p>
+      </div>
+      {q.data.linked ? (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span className="text-sm">{t('telegram.linkedAs', { name: q.data.chat_name ?? '' })}</span>
+          <Button variant="secondary" disabled={unlink.isPending} onClick={() => unlink.mutate(undefined)}>
+            {t('telegram.unlink')}
+          </Button>
+        </div>
+      ) : (
+        q.data.enabled && (
+          <div className="flex flex-col gap-3">
+            {code ? (
+              <div className="flex flex-col gap-2 rounded-lg bg-sunken p-3 text-sm">
+                <span>{t('telegram.step', { bot: code.bot ?? '' })}</span>
+                <span className="font-mono text-lg font-semibold tracking-wider">/start {code.code}</span>
+                {code.url && (
+                  <a href={code.url} target="_blank" rel="noreferrer" className={buttonClass('primary')}>
+                    {t('telegram.open')}
+                  </a>
+                )}
+                <span className="text-xs text-muted">{t('telegram.wait')}</span>
+                <Button variant="ghost" onClick={() => void q.refetch()}>
+                  {t('telegram.check')}
+                </Button>
+              </div>
+            ) : (
+              <div>
+                <Button disabled={link.isPending} onClick={() => link.mutate(undefined)}>
+                  {t('telegram.link')}
+                </Button>
+              </div>
+            )}
+            {link.error && <Alert>{link.error instanceof ApiError ? (Object.values(link.error.errors)[0]?.[0] ?? link.error.message) : t('common.serverUnreachable')}</Alert>}
+          </div>
+        )
+      )}
+    </Card>
   )
 }
 

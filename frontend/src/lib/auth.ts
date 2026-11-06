@@ -1,3 +1,4 @@
+import { wipeOfflineCopy } from './offline'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, ApiError, post, prepareSession, put, type Me } from './api'
 
@@ -20,22 +21,38 @@ export function useMe() {
   })
 }
 
+/** Sign-in answer: done, or the second step is needed ("app" or "email"). */
+export type LoginResult = { message?: string; two_factor?: 'app' | 'email'; email?: string | null }
+
 export function useLogin() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: { email: string; password: string; remember: boolean }) => {
       await prepareSession()
-      await post('/auth/login', input)
+      return post<LoginResult>('/auth/login', input)
     },
+    onSuccess: (r) => {
+      if (!r?.two_factor) void qc.invalidateQueries({ queryKey: ME_KEY })
+    },
+  })
+}
+
+export function useTwoFactorLogin() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (code: string) => post('/auth/two-factor', { code }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ME_KEY }),
   })
 }
+
+export const useResendCode = () => useMutation({ mutationFn: () => post('/auth/two-factor/resend') })
 
 export function useLogout() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: () => post('/auth/logout'),
     onSettled: () => {
+      wipeOfflineCopy()
       qc.clear()
       qc.setQueryData(ME_KEY, null)
     },

@@ -28,6 +28,11 @@ class PlatformSetting extends Model
         // Emails
         'email_from_name' => 'HotelMS',
         'email_footer' => null,
+        // Security: two-step sign-in required for the HotelMS team and Hotel Admins
+        'two_factor_admins' => true,
+        // Telegram bot for reports and alerts (free; create it with @BotFather)
+        'telegram_bot_token' => null,
+        'telegram_bot_username' => null,
     ];
 
     /** Settings anyone may read (shown on the sign-in page before login). */
@@ -41,6 +46,9 @@ class PlatformSetting extends Model
     public static function read(string $key): mixed
     {
         $row = static::where('key', $key)->first();
+        if (! $row && $key === 'two_factor_admins') {
+            return (bool) config('hotelms.two_factor_admins');
+        }
 
         return $row ? $row->value : (self::DEFAULTS[$key] ?? null);
     }
@@ -55,6 +63,6 @@ class PlatformSetting extends Model
     {
         $saved = static::pluck('value', 'key')->all();
 
-        return array_merge(self::DEFAULTS, array_intersect_key($saved, self::DEFAULTS));
+        return array_merge(self::DEFAULTS, ['two_factor_admins' => (bool) config('hotelms.two_factor_admins')], array_intersect_key($saved, self::DEFAULTS));
     }
 }

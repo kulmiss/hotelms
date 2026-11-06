@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Mail\TemporaryPassword;
 use App\Models\Hotel;
 use App\Models\User;
+use App\Models\UserDevice;
+use App\Services\Security\TwoFactor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -34,6 +36,8 @@ class HotelUserController extends Controller
         ])->save();
         $user->tokens()->delete();
         DB::table('sessions')->where('user_id', $user->id)->delete();
+        UserDevice::where('user_id', $user->id)->where('status', 'active')->update(['status' => 'signed_out']);
+        app(TwoFactor::class)->disable($user); // a lost phone: they set two-step sign-in up again after the new password
 
         $emailSent = false;
         if (($data['send_email'] ?? true) && ! $hotel->is_demo) {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Settings;
 
+use App\Models\Payment;
 use App\Models\PaymentMethod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -27,6 +28,9 @@ class PaymentMethodController extends ResourceController
     {
         if (PaymentMethod::where('is_active', true)->whereKeyNot($record->getKey())->doesntExist()) {
             $this->refuse('payment_method', 'Keep at least one payment method.');
+        }
+        if (Payment::where('payment_method_id', $record->getKey())->exists()) {
+            $this->refuse('payment_method', 'Payments were taken with this method. Switch it off instead.');
         }
     }
 }

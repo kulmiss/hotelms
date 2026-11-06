@@ -1,3 +1,4 @@
+import i18n from '@/i18n'
 /**
  * Small fetch wrapper for the HotelMS API (/api/v1).
  * Signs in with Sanctum's cookie session: the browser keeps the session cookie,
@@ -5,6 +6,9 @@
  */
 const ROOT = import.meta.env.VITE_API_URL ?? ''
 const BASE = ROOT + '/api/v1'
+
+/** Full URL of an API path (for downloads in a link). */
+export const apiUrl = (path: string) => BASE + path
 
 export class ApiError extends Error {
   readonly status: number
@@ -37,6 +41,10 @@ export async function prepareSession(): Promise<void> {
 }
 
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+  // Offline: nothing can be changed (read-only copy). The form keeps what was typed.
+  if ((init.method ?? 'GET') !== 'GET' && typeof navigator !== 'undefined' && navigator.onLine === false) {
+    throw new ApiError(0, i18n.t('offline.cannotChange'), { code: 'offline' })
+  }
   const token = xsrfToken()
   const res = await fetch(BASE + path, {
     ...init,
@@ -57,8 +65,13 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   return body as T
 }
 
-export const post = <T>(path: string, data?: unknown) =>
-  api<T>(path, { method: 'POST', body: data === undefined ? undefined : JSON.stringify(data) })
+export const post = <T>(path: string, data?: unknown, headers?: Record<string, string>) =>
+  api<T>(path, { method: 'POST', body: data === undefined ? undefined : JSON.stringify(data), headers })
+
+/** A fresh key for one payment attempt (the server answers a repeat with the first result). */
+export function newIdempotencyKey(): string {
+  return typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
 
 /** Sends a file (multipart form). Pass null to remove. */
 export async function upload<T>(path: string, field: string, file: File | null): Promise<T> {
@@ -113,4 +126,5 @@ export type Me = {
   permissions: string[]
   platform?: { role: string | null; permissions: string[] } | null
   impersonation?: { by: string; reason: string; started_at: string } | null
+  security?: { two_factor: 'app' | 'email' | null; two_factor_setup_required: boolean; screen_lock_minutes: number; has_pin: boolean }
 }

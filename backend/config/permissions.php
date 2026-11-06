@@ -94,6 +94,15 @@ return [
             'reports.audit' => [$BM, $AC],
             'reports.cancellations' => [$BM],
             'reports.export' => [$BM, $AC],
+            'reports.my_shift' => [$BM, $RC, $AC],
+            'reports.my_work' => [$HK],
+            'reports.forecast' => [$BM, $AC],
+            'reports.targets_manage' => [],
+            'reports.branch_compare' => [],
+            'reports.custom' => [$BM, $AC],
+            'reports.schedule' => [$BM, $AC],
+            'alerts.manage' => [],
+            'reports.accounting_export' => [$AC],
         ],
         'settings' => [
             'settings.hotel' => [],
@@ -121,6 +130,7 @@ return [
         'attendance.manual' => 'attendance',
         'attendance.report' => 'attendance',
         'settings.attendance' => 'attendance',
+        'reports.my_work' => 'housekeeping',
     ],
 
 ];

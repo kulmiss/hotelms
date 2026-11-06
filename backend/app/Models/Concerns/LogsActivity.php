@@ -47,7 +47,7 @@ trait LogsActivity
     protected function activityAttributes(array $attributes): array
     {
         return array_diff_key($attributes, array_flip([
-            'password', 'remember_token', 'attendance_pin', 'updated_at', 'created_at', 'last_login_at',
+            'password', 'remember_token', 'attendance_pin', 'two_factor_secret', 'two_factor_recovery_codes', 'updated_at', 'created_at', 'last_login_at',
         ]));
     }
 }

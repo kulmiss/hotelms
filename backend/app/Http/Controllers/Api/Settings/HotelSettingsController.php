@@ -30,9 +30,9 @@ class HotelSettingsController extends Controller
             'pending_expiry_hours' => ['required', 'integer', 'between:1,720'],
             'walk_in_payment' => ['required', Rule::in(['full', 'deposit'])],
             'early_check_in_fee_type' => ['required', Rule::in(['fixed', 'percent'])],
-            'early_check_in_fee_value' => ['required', 'decimal:0,2', 'min:0'],
+            'early_check_in_fee_value' => ['required', 'decimal:0,2', 'min:0', 'max:99999999'],
             'late_check_out_fee_type' => ['required', Rule::in(['fixed', 'percent'])],
-            'late_check_out_fee_value' => ['required', 'decimal:0,2', 'min:0'],
+            'late_check_out_fee_value' => ['required', 'decimal:0,2', 'min:0', 'max:99999999'],
             'hourly_min_hours' => ['required', 'integer', 'between:1,12'],
             'hourly_cleaning_minutes' => ['required', 'integer', 'between:0,240'],
         ]);

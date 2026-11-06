@@ -5,6 +5,7 @@ import './i18n'
 import './index.css'
 import { Providers } from './app/providers'
 import { router } from './app/router'
+import { registerServiceWorker } from './app/serviceWorker'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -13,3 +14,5 @@ createRoot(document.getElementById('root')!).render(
     </Providers>
   </StrictMode>,
 )
+
+registerServiceWorker()

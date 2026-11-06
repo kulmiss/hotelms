@@ -12,6 +12,9 @@ import { api, ApiError, post } from '@/lib/api'
 import { useMe } from '@/lib/auth'
 import { money } from '@/lib/format'
 import { useSettingsList } from '@/lib/settings'
+import { ImportRooms } from './ImportSections'
+
+export { ImportSettings } from './ImportSections'
 
 type RoomType = { id: number; branch_id: number; name: string; nightly_price: string; currency: string; rooms_count?: number }
 type Limit = { used: number; max: number | null }
@@ -98,6 +101,7 @@ export function RoomsSettings() {
         <h2 className="text-base font-semibold">{t('settings.sections.rooms')}</h2>
         <BranchSelect branches={branches} value={branchId} onChange={setBranchId} />
         <Alert tone="info">{t('settings.rooms.noTypes')}</Alert>
+        <ImportToggle />
       </div>
     )
   }
@@ -120,6 +124,7 @@ export function RoomsSettings() {
             )}
           </div>
           {types.data && <RoomGenerator key={branchId} types={types.data.data} />}
+          <ImportToggle />
         </div>
       }
       defaults={{ room_type_id: typeOptions[0]?.value ?? '', number: '', floor: '', status: 'available', notes: '' }}
@@ -145,6 +150,21 @@ const roomTones: Record<string, Tone> = { available: 'ok', occupied: 'info', dir
 function RoomStatus({ status }: { status: string }) {
   const { t } = useTranslation()
   return <Badge tone={roomTones[status] ?? 'grey'}>{t(`roomStatus.${status}`)}</Badge>
+}
+
+/** "Import from Excel" opens the importer in place (also used in the setup walkthrough). */
+function ImportToggle() {
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
+  return open ? (
+    <ImportRooms onDone={() => setOpen(false)} />
+  ) : (
+    <div>
+      <Button variant="ghost" onClick={() => setOpen(true)}>
+        {t('import.fromExcel')}
+      </Button>
+    </div>
+  )
 }
 
 type Planned = { number: string; floor: string; room_type_id: number; room_type: string }

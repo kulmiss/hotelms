@@ -32,6 +32,11 @@ export function RequireAuth() {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />
   }
 
+  // Two-step sign-in is required and not set up yet: nothing else opens until it is (after the password).
+  if (me.data.security?.two_factor_setup_required && !me.data.user.must_change_password) {
+    return location.pathname === '/two-step' ? <Outlet /> : <Navigate to="/two-step" replace />
+  }
+
   // A new Hotel Admin goes through the setup walkthrough (its first step is the new password).
   // After "Save and exit" the dashboard shows a "Finish setup" card instead.
   const setup = me.data.role?.is_hotel_admin && !me.data.impersonation ? me.data.hotel?.setup : null

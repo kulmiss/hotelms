@@ -12,7 +12,7 @@ import { usePlans, usePlatformSettings, useSaveSettings, useUploadLogo, type Pla
 import { ApiError } from '@/lib/api'
 import { onColor } from '@/lib/brand'
 
-const TABS = ['general', 'billing', 'branding', 'emails'] as const
+const TABS = ['general', 'billing', 'branding', 'emails', 'telegram'] as const
 type Tab = (typeof TABS)[number]
 
 export function PlatformSettingsPage() {
@@ -42,6 +42,9 @@ export function PlatformSettingsPage() {
           </TabPanel>
           <TabPanel id="emails" active={tab}>
             <EmailsTab initial={settings.data.data} />
+          </TabPanel>
+          <TabPanel id="telegram" active={tab}>
+            <TelegramTab initial={settings.data.data} />
           </TabPanel>
         </>
       )}
@@ -98,11 +101,12 @@ function GeneralTab({ initial }: { initial: PlatformSettings }) {
   const [email, setEmail] = useState(initial.support_email ?? '')
   const [phone, setPhone] = useState(initial.support_phone ?? '')
   const [demo, setDemo] = useState(initial.demo_public)
+  const [twoStep, setTwoStep] = useState(initial.two_factor_admins ?? true)
   return (
     <SettingsForm
       title={t('admin.settings.tabs.general')}
       description={t('admin.settings.generalHelp')}
-      onSave={() => ({ platform_name: name, support_email: email || null, support_phone: phone || null, demo_public: demo })}
+      onSave={() => ({ platform_name: name, support_email: email || null, support_phone: phone || null, demo_public: demo, two_factor_admins: twoStep })}
     >
       {(error) => (
         <>
@@ -116,6 +120,13 @@ function GeneralTab({ initial }: { initial: PlatformSettings }) {
             <span className="flex flex-col">
               <span className="font-medium">{t('admin.settings.demoPublic')}</span>
               <span className="text-muted">{t('admin.settings.demoPublicHint')}</span>
+            </span>
+          </label>
+          <label className="flex min-h-touch items-start gap-3 text-[13px]">
+            <input type="checkbox" className="mt-0.5 size-4 rounded accent-accent" checked={twoStep} onChange={(e) => setTwoStep(e.target.checked)} />
+            <span className="flex flex-col">
+              <span className="font-medium">{t('admin.settings.twoFactorAdmins')}</span>
+              <span className="text-muted">{t('admin.settings.twoFactorAdminsHint')}</span>
             </span>
           </label>
         </>
@@ -281,6 +292,26 @@ function EmailsTab({ initial }: { initial: PlatformSettings }) {
         <>
           <Field label={t('admin.settings.fromName')} value={from} hint={t('admin.settings.fromNameHint')} onChange={(e) => setFrom(e.target.value)} error={error?.field('email_from_name')} />
           <Field label={t('admin.settings.footer')} value={footer} hint={t('admin.settings.footerHint')} onChange={(e) => setFooter(e.target.value)} error={error?.field('email_footer')} />
+        </>
+      )}
+    </SettingsForm>
+  )
+}
+
+function TelegramTab({ initial }: { initial: PlatformSettings }) {
+  const { t } = useTranslation()
+  const [token, setToken] = useState(initial.telegram_bot_token ?? '')
+  const [username, setUsername] = useState(initial.telegram_bot_username ?? '')
+  return (
+    <SettingsForm
+      title={t('admin.settings.tabs.telegram')}
+      description={t('admin.settings.telegramHelp')}
+      onSave={() => ({ telegram_bot_token: token || null, telegram_bot_username: username || null })}
+    >
+      {(error) => (
+        <>
+          <Field label={t('admin.settings.botToken')} value={token} autoComplete="off" hint={t('admin.settings.botTokenHint')} onChange={(e) => setToken(e.target.value)} error={error?.field('telegram_bot_token')} />
+          <Field label={t('admin.settings.botUsername')} value={username} placeholder="MyHotelBot" onChange={(e) => setUsername(e.target.value)} error={error?.field('telegram_bot_username')} />
         </>
       )}
     </SettingsForm>

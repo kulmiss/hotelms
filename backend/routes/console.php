@@ -8,6 +8,18 @@ use Illuminate\Support\Facades\Schedule;
 */
 
 Schedule::command('hotels:update-statuses')->hourly()->withoutOverlapping();
+Schedule::command('reservations:expire')->everyMinute()->withoutOverlapping();
+Schedule::command('reports:automation')->everyMinute()->withoutOverlapping();
+Schedule::command('reports:automation --alerts')->everyFifteenMinutes()->withoutOverlapping();
+
+// Queued work, if any (no always-on worker needed).
+Schedule::command('queue:work --stop-when-empty --max-time=50')->everyMinute()->withoutOverlapping();
+
+// Backups: full every night, small every hour, checked every month (decisions.md W7).
+Schedule::command('hotelms:backup')->dailyAt('01:15')->withoutOverlapping();
+Schedule::command('hotelms:backup --small')->hourlyAt(40)->withoutOverlapping();
+Schedule::command('hotelms:backup --check')->monthlyOn(1, '06:00');
+Schedule::command('hotelms:purge-closed-hotels')->dailyAt('03:30')->withoutOverlapping();
 
 // The demo hotel starts fresh every night.
 Schedule::command('demo:reset')->dailyAt('02:30')->withoutOverlapping();

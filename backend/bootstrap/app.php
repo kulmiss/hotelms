@@ -2,11 +2,18 @@
 
 use App\Http\Middleware\BlockDuringImpersonation;
 use App\Http\Middleware\EnsureActiveUser;
+use App\Http\Middleware\EnsureDeviceActive;
 use App\Http\Middleware\EnsureHotelPermission;
 use App\Http\Middleware\EnsureHotelWritable;
+use App\Http\Middleware\EnsureModuleEnabled;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsurePlatformPermission;
+use App\Http\Middleware\EnsureTwoFactorSetUp;
+use App\Http\Middleware\Idempotent;
+use App\Http\Middleware\OneAtATime;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetTenantContext;
+use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -24,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // The React app signs in with Sanctum's cookie session.
         $middleware->statefulApi();
+        $middleware->append(SecurityHeaders::class);
 
         // Set the hotel before route model binding, so {role} etc. only find
         // the signed-in user's own hotel's records (after authentication).
@@ -32,8 +40,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'tenant' => SetTenantContext::class,
             'active' => EnsureActiveUser::class,
+            'device' => EnsureDeviceActive::class,
+            'two.factor' => EnsureTwoFactorSetUp::class,
+            'one.at.a.time' => OneAtATime::class,
+            'idempotent' => Idempotent::class,
             'not.impersonating' => BlockDuringImpersonation::class,
             'password.changed' => EnsurePasswordChanged::class,
+            'module' => EnsureModuleEnabled::class,
             'hotel.writable' => EnsureHotelWritable::class,
             'platform' => EnsurePlatformPermission::class,
             'permission' => EnsureHotelPermission::class,
@@ -43,4 +56,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+        // A badly typed date anywhere is the person's input, not a server error.
+        $exceptions->render(fn (InvalidFormatException $e, Request $request) => $request->is('api/*')
+            ? response()->json(['message' => 'One of the dates is not valid.', 'code' => 'invalid_date'], 422)
+            : null);
     })->create();

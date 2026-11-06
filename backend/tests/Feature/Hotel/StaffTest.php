@@ -5,6 +5,7 @@ namespace Tests\Feature\Hotel;
 use App\Mail\StaffInvite;
 use App\Models\Branch;
 use App\Models\Hotel;
+use App\Models\Plan;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\DefaultRoles;
@@ -102,6 +103,33 @@ class StaffTest extends TestCase
         $this->actingAs($this->manager($this->bole))->postJson('/api/v1/staff', [
             'name' => 'X', 'email' => 'x@sheger.test', 'role_id' => $this->roles['hotel_admin']->id, 'branch_ids' => [$this->bole->id],
         ])->assertUnprocessable()->assertJsonValidationErrors('role_id');
+    }
+
+    public function test_the_plan_limits_active_staff_accounts(): void
+    {
+        $admin = $this->admin();
+        $plan = Plan::factory()->create(['max_staff' => 2, 'modules' => []]);
+        $this->hotel->forceFill(['plan_id' => $plan->id, 'status' => 'active'])->save();
+        $role = $this->roles['receptionist'];
+        $new = fn (string $email) => $this->actingAs($admin)->postJson('/api/v1/staff', ['name' => 'New', 'email' => $email, 'role_id' => $role->id, 'branch_ids' => [$this->bole->id], 'send_email' => false]);
+
+        $this->assertSame(1, User::where('hotel_id', $this->hotel->id)->where('status', 'active')->count());
+        $other = $new('one@sheger.test')->assertCreated()->json('data.id');
+        $new('two@sheger.test')->assertJsonValidationErrors('email'); // 2 of 2 used
+        $this->postJson("/api/v1/staff/$other/disable")->assertOk();
+        $new('two@sheger.test')->assertCreated();
+        $this->postJson("/api/v1/staff/$other/enable")->assertJsonValidationErrors('email');
+    }
+
+    public function test_branch_manager_cannot_take_over_someone_who_can_do_more(): void
+    {
+        $manager = $this->manager($this->bole);
+        $accountant = User::factory()->withRole($this->hotel, 'accountant')->create(); // tax and accounting reports
+        $accountant->branches()->attach($this->bole);
+
+        $this->actingAs($manager)->postJson("/api/v1/staff/{$accountant->id}/reset-password")->assertForbidden();
+        $this->postJson("/api/v1/staff/{$accountant->id}/disable")->assertForbidden();
+        $this->actingAs($this->admin())->postJson("/api/v1/staff/{$accountant->id}/reset-password")->assertOk();
     }
 
     public function test_nobody_disables_themselves_or_changes_their_own_role(): void

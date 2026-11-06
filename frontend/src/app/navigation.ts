@@ -8,7 +8,9 @@ import {
   ClipboardDocumentListIcon,
   ClockIcon,
   Cog6ToothIcon,
+  ComputerDesktopIcon,
   DocumentTextIcon,
+  FingerPrintIcon,
   HomeIcon,
   SparklesIcon,
   ShieldCheckIcon,
@@ -27,7 +29,9 @@ import {
   ClipboardDocumentListIcon as ClipboardDocumentListSolid,
   ClockIcon as ClockSolid,
   Cog6ToothIcon as Cog6ToothSolid,
+  ComputerDesktopIcon as ComputerDesktopSolid,
   DocumentTextIcon as DocumentTextSolid,
+  FingerPrintIcon as FingerPrintSolid,
   HomeIcon as HomeSolid,
   SparklesIcon as SparklesSolid,
   ShieldCheckIcon as ShieldCheckSolid,
@@ -53,24 +57,26 @@ export type NavItem = {
   /** Build-plan phase that delivers this screen (for placeholders). */
   phase: number
   /** Optional module: hidden when the hotel turns it off (phase 2). */
-  module?: 'cashier' | 'housekeeping' | 'shifts'
+  module?: 'cashier' | 'housekeeping' | 'shifts' | 'attendance'
   /** Real screen exists (not a placeholder). */
   built?: boolean
 }
 
 export const mainNav: NavItem[] = [
   { key: 'dashboard', path: '/', icon: HomeIcon, activeIcon: HomeSolid, phase: 6, built: true },
-  { key: 'roomBoard', path: '/rooms', icon: Squares2X2Icon, activeIcon: Squares2X2Solid, group: 'frontDesk', phase: 4, permission: 'frontdesk.view' },
-  { key: 'reservations', path: '/reservations', icon: CalendarDaysIcon, activeIcon: CalendarDaysSolid, group: 'frontDesk', phase: 3, permission: 'reservations.view' },
-  { key: 'guests', path: '/guests', icon: UsersIcon, activeIcon: UsersSolid, group: 'frontDesk', phase: 3, permission: 'guests.view' },
-  { key: 'billing', path: '/billing', icon: DocumentTextIcon, activeIcon: DocumentTextSolid, group: 'frontDesk', phase: 4, permission: 'invoices.view' },
-  { key: 'cashier', path: '/cashier', icon: BanknotesIcon, activeIcon: BanknotesSolid, group: 'operations', phase: 5, module: 'cashier', permission: 'cashier.own_shift' },
-  { key: 'housekeeping', path: '/housekeeping', icon: SparklesIcon, activeIcon: SparklesSolid, group: 'operations', phase: 5, module: 'housekeeping', permission: 'housekeeping.view' },
-  { key: 'shifts', path: '/shifts', icon: ClockIcon, activeIcon: ClockSolid, group: 'operations', phase: 5, module: 'shifts', permission: 'shifts.view_own' },
+  { key: 'roomBoard', path: '/rooms', icon: Squares2X2Icon, activeIcon: Squares2X2Solid, group: 'frontDesk', phase: 4, permission: 'frontdesk.view', built: true },
+  { key: 'reservations', path: '/reservations', icon: CalendarDaysIcon, activeIcon: CalendarDaysSolid, group: 'frontDesk', phase: 3, permission: 'reservations.view', built: true },
+  { key: 'guests', path: '/guests', icon: UsersIcon, activeIcon: UsersSolid, group: 'frontDesk', phase: 3, permission: 'guests.view', built: true },
+  { key: 'billing', path: '/billing', icon: DocumentTextIcon, activeIcon: DocumentTextSolid, group: 'frontDesk', phase: 4, permission: 'invoices.view', built: true },
+  { key: 'cashier', path: '/cashier', icon: BanknotesIcon, activeIcon: BanknotesSolid, group: 'operations', phase: 5, module: 'cashier', permission: ['cashier.own_shift', 'cashier.view_all'], built: true },
+  { key: 'housekeeping', path: '/housekeeping', icon: SparklesIcon, activeIcon: SparklesSolid, group: 'operations', phase: 5, module: 'housekeeping', permission: 'housekeeping.view', built: true },
+  { key: 'shifts', path: '/shifts', icon: ClockIcon, activeIcon: ClockSolid, group: 'operations', phase: 5, module: 'shifts', permission: 'shifts.view_own', built: true },
+  { key: 'attendance', path: '/attendance', icon: FingerPrintIcon, activeIcon: FingerPrintSolid, group: 'operations', phase: 5, module: 'attendance', permission: ['attendance.clock', 'attendance.report'], built: true },
   { key: 'staff', path: '/staff', icon: UserGroupIcon, activeIcon: UserGroupSolid, group: 'team', phase: 1, permission: 'staff.view', built: true },
+  { key: 'devices', path: '/devices', icon: ComputerDesktopIcon, activeIcon: ComputerDesktopSolid, group: 'team', phase: 7, permission: 'staff.manage', built: true },
   { key: 'roles', path: '/roles', icon: ShieldCheckIcon, activeIcon: ShieldCheckSolid, group: 'team', phase: 1, permission: 'roles.manage', built: true },
   { key: 'activityLog', path: '/activity-log', icon: ClipboardDocumentListIcon, activeIcon: ClipboardDocumentListSolid, group: 'team', phase: 1, permission: 'activity_log.view', built: true },
-  { key: 'reports', path: '/reports', icon: ChartBarIcon, activeIcon: ChartBarSolid, group: 'insights', phase: 6 },
+  { key: 'reports', path: '/reports', icon: ChartBarIcon, activeIcon: ChartBarSolid, group: 'insights', phase: 6, built: true, permission: ['reports.revenue', 'reports.occupancy', 'reports.payments', 'reports.outstanding', 'reports.tax', 'reports.guests', 'reports.cancellations', 'reports.branch_compare', 'reports.my_shift', 'reports.my_work', 'reports.forecast', 'reports.audit', 'reports.accounting_export', 'reports.targets_manage', 'reports.custom', 'reports.schedule', 'alerts.manage'] },
   {
     key: 'settings',
     path: '/settings',
@@ -91,6 +97,7 @@ export const devNav: NavItem[] = [
 export const adminNav: NavItem[] = [
   { key: 'commandCenter', path: '/admin', icon: HomeIcon, activeIcon: HomeSolid, phase: 1 },
   { key: 'hotels', path: '/admin/hotels', icon: BuildingOffice2Icon, activeIcon: BuildingOffice2Solid, group: 'customers', phase: 1 },
+  { key: 'platformReports', path: '/admin/reports', icon: ChartBarIcon, activeIcon: ChartBarSolid, group: 'customers', phase: 1 },
   { key: 'plans', path: '/admin/plans', icon: TagIcon, activeIcon: TagSolid, group: 'billing', phase: 1 },
   { key: 'platformSettings', path: '/admin/settings', icon: AdjustmentsHorizontalIcon, activeIcon: AdjustmentsHorizontalSolid, group: 'system', phase: 1 },
 ]

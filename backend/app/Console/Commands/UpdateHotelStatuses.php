@@ -22,7 +22,11 @@ class UpdateHotelStatuses extends Command
 
         Hotel::query()->chunkById(200, function ($hotels) use ($status, &$changed) {
             foreach ($hotels as $hotel) {
-                $changed += $status->refresh($hotel) ? 1 : 0;
+                try {
+                    $changed += $status->refresh($hotel) ? 1 : 0;
+                } catch (\Throwable $e) {
+                    report($e); // one hotel's problem never stops the others
+                }
             }
         });
 

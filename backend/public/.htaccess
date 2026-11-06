@@ -1,3 +1,20 @@
+# The web app (React build, copied here by deploy/package.sh as app.html + assets/)
+# and the API live on the same domain. "/" opens the app when it is there.
+DirectoryIndex app.html index.php
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    # Built files have a hash in their name: cache them for a year. app.html: never cache.
+    <FilesMatch "\.(js|css|woff2|svg|png|webp)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    <FilesMatch "^(app\.html|sw\.js)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
@@ -17,6 +34,16 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=308]
+
+    # API, sign-in cookie and health check: Laravel.
+    RewriteCond %{REQUEST_URI} ^/(api|sanctum|up)(/|$)
+    RewriteRule ^ index.php [L]
+
+    # Any other page of the web app (e.g. /reservations/12): the React app, when it is installed.
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{DOCUMENT_ROOT}/app.html -f
+    RewriteRule ^ app.html [L]
 
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d

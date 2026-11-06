@@ -7,8 +7,10 @@ use App\Models\Branch;
 use App\Models\Hotel;
 use App\Models\User;
 use App\Services\HotelModules;
+use App\Services\HotelSettings;
 use App\Services\HotelSetup;
 use App\Services\Impersonation;
+use App\Services\Security\TwoFactor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -63,10 +65,26 @@ class MeController extends Controller
                 'modules' => app(HotelModules::class)->enabled($hotel),
                 'setup' => $user->isHotelAdmin() ? $this->setup($hotel, $user) : null,
             ] : null,
+            'security' => $this->security($request, $user, $hotel),
             'branches' => $user->accessibleBranches()
                 ->map(fn (Branch $branch) => ['id' => $branch->id, 'name' => $branch->name])
                 ->values(),
         ]);
+    }
+
+    /** What the app needs for two-step sign-in and the screen lock. */
+    private function security(Request $request, User $user, ?Hotel $hotel): array
+    {
+        $tf = app(TwoFactor::class);
+        $supporting = $request->hasSession() && $request->session()->has(Impersonation::SESSION_KEY);
+        $lock = $hotel && ! $hotel->is_demo ? (int) app(HotelSettings::class)->group(HotelSettings::SECURITY_DEFAULTS)['screen_lock_minutes'] : 0;
+
+        return [
+            'two_factor' => $tf->enabled($user) ? $user->two_factor_method : null,
+            'two_factor_setup_required' => ! $supporting && ! $tf->enabled($user) && $tf->required($user),
+            'screen_lock_minutes' => $supporting ? 0 : $lock,
+            'has_pin' => $user->attendance_pin !== null,
+        ];
     }
 
     /** @return array{completed: bool, started: bool, skipped: int, remaining: int} */

@@ -19,12 +19,33 @@ const NewHotelPage = lazy(() => pages.newHotel().then((m) => ({ default: m.NewHo
 const HotelPage = lazy(() => pages.hotel().then((m) => ({ default: m.HotelPage })))
 const PlansPage = lazy(() => pages.plans().then((m) => ({ default: m.PlansPage })))
 const PlatformSettingsPage = lazy(() => pages.platformSettings().then((m) => ({ default: m.PlatformSettingsPage })))
+const PlatformReportsPage = lazy(() => pages.platformReports().then((m) => ({ default: m.PlatformReportsPage })))
+const ForgotPasswordPage = lazy(() => import('@/pages/PasswordResetPages').then((m) => ({ default: m.ForgotPasswordPage })))
+const ResetPasswordPage = lazy(() => import('@/pages/PasswordResetPages').then((m) => ({ default: m.ResetPasswordPage })))
+const TwoStepPage = lazy(() => pages.twoStep().then((m) => ({ default: m.TwoStepPage })))
+const DevicesPage = lazy(() => pages.devices().then((m) => ({ default: m.DevicesPage })))
 const ProfilePage = lazy(() => pages.profile().then((m) => ({ default: m.ProfilePage })))
 const StaffPage = lazy(() => pages.staff().then((m) => ({ default: m.StaffPage })))
 const StaffFormPage = lazy(() => pages.staffForm().then((m) => ({ default: m.StaffFormPage })))
 const RolesPage = lazy(() => pages.roles().then((m) => ({ default: m.RolesPage })))
 const RoleFormPage = lazy(() => pages.roleForm().then((m) => ({ default: m.RoleFormPage })))
 const ActivityLogPage = lazy(() => pages.activityLog().then((m) => ({ default: m.ActivityLogPage })))
+const GuestsPage = lazy(() => pages.guests().then((m) => ({ default: m.GuestsPage })))
+const GuestPage = lazy(() => pages.guests().then((m) => ({ default: m.GuestPage })))
+const ReservationsPage = lazy(() => pages.reservations().then((m) => ({ default: m.ReservationsPage })))
+const ReservationPage = lazy(() => pages.reservation().then((m) => ({ default: m.ReservationPage })))
+const ReservationFormPage = lazy(() => pages.reservationForm().then((m) => ({ default: m.ReservationFormPage })))
+const RoomBoardPage = lazy(() => pages.roomBoard().then((m) => ({ default: m.RoomBoardPage })))
+const WalkInPage = lazy(() => pages.walkIn().then((m) => ({ default: m.WalkInPage })))
+const BillingPage = lazy(() => pages.billing().then((m) => ({ default: m.BillingPage })))
+const InvoicePage = lazy(() => pages.invoice().then((m) => ({ default: m.InvoicePage })))
+const InvoicePrintPage = lazy(() => pages.invoicePrint().then((m) => ({ default: m.InvoicePrintPage })))
+const CashierPage = lazy(() => pages.cashier().then((m) => ({ default: m.CashierPage })))
+const HousekeepingPage = lazy(() => pages.housekeeping().then((m) => ({ default: m.HousekeepingPage })))
+const ShiftsPage = lazy(() => pages.shifts().then((m) => ({ default: m.ShiftsPage })))
+const AttendancePage = lazy(() => pages.attendance().then((m) => ({ default: m.AttendancePage })))
+const KioskPage = lazy(() => pages.kiosk().then((m) => ({ default: m.KioskPage })))
+const ReportsPage = lazy(() => pages.reports().then((m) => ({ default: m.ReportsPage })))
 const SetupPage = lazy(() => pages.setup().then((m) => ({ default: m.SetupPage })))
 const SettingsLayout = lazy(() => pages.settingsLayout().then((m) => ({ default: m.SettingsLayout })))
 const section = (name: string, load: () => Promise<unknown> = pages.settings) =>
@@ -34,12 +55,14 @@ const SETTINGS_PAGES: Record<string, ReturnType<typeof section>> = {
   branches: section('BranchesSettings'),
   'room-types': section('RoomTypesSettings', pages.roomSettings),
   rooms: section('RoomsSettings', pages.roomSettings),
+  import: section('ImportSettings', pages.roomSettings),
   'rate-rules': section('RateRulesSettings', pages.roomSettings),
   'guest-types': section('GuestTypesSettings', pages.roomSettings),
   currencies: section('CurrenciesSettings'),
   taxes: section('TaxesSettings'),
   'payment-methods': section('PaymentMethodsSettings'),
   charges: section('ChargesSettings'),
+  security: section('SecuritySettings'),
   'booking-rules': section('BookingRulesSettings'),
   cancellation: section('CancellationSettings'),
   modules: section('ModulesSettings'),
@@ -58,7 +81,7 @@ function HomeRedirect() {
 }
 
 /** Hotel screens: only for users whose role has the permission. */
-function RequirePermission({ permission }: { permission: string }) {
+function RequirePermission({ permission }: { permission: string | string[] }) {
   const can = useCan()
   return can(permission) ? <Outlet /> : <Navigate to="/" replace />
 }
@@ -71,11 +94,22 @@ function RequireSuperAdmin() {
 
 export const routes = [
   { path: '/login', element: <LoginPage /> },
+  { path: '/forgot-password', element: page(<ForgotPasswordPage />) },
+  { path: '/reset-password', element: page(<ResetPasswordPage />) },
   {
     element: <RequireAuth />,
     children: [
       { path: '/change-password', element: <ChangePasswordPage /> },
+      { path: '/two-step', element: page(<TwoStepPage />) },
       { path: '/setup', element: page(<SetupPage />) },
+      {
+        element: <RequirePermission permission="attendance.clock" />,
+        children: [{ path: '/kiosk', element: page(<KioskPage />) }],
+      },
+      {
+        element: <RequirePermission permission="invoices.print" />,
+        children: [{ path: '/billing/:id/print', element: page(<InvoicePrintPage />) }],
+      },
       {
         path: '/',
         element: <AppShell />,
@@ -84,6 +118,64 @@ export const routes = [
           ...mainNav
             .filter((item) => !item.built)
             .map((item) => ({ path: item.path.slice(1), element: <PlaceholderPage item={item} /> })),
+          { path: 'reports', element: page(<ReportsPage />) },
+          {
+            element: <RequirePermission permission={['cashier.own_shift', 'cashier.view_all']} />,
+            children: [{ path: 'cashier', element: page(<CashierPage />) }],
+          },
+          {
+            element: <RequirePermission permission="housekeeping.view" />,
+            children: [{ path: 'housekeeping', element: page(<HousekeepingPage />) }],
+          },
+          {
+            element: <RequirePermission permission="shifts.view_own" />,
+            children: [{ path: 'shifts', element: page(<ShiftsPage />) }],
+          },
+          {
+            element: <RequirePermission permission={['attendance.clock', 'attendance.report']} />,
+            children: [{ path: 'attendance', element: page(<AttendancePage />) }],
+          },
+          {
+            element: <RequirePermission permission="frontdesk.view" />,
+            children: [{ path: 'rooms', element: page(<RoomBoardPage />) }],
+          },
+          {
+            element: <RequirePermission permission="frontdesk.walk_in" />,
+            children: [{ path: 'rooms/walk-in', element: page(<WalkInPage />) }],
+          },
+          {
+            element: <RequirePermission permission="invoices.view" />,
+            children: [
+              { path: 'billing', element: page(<BillingPage />) },
+              { path: 'billing/:id', element: page(<InvoicePage />) },
+            ],
+          },
+          {
+            element: <RequirePermission permission="guests.view" />,
+            children: [
+              { path: 'guests', element: page(<GuestsPage />) },
+              { path: 'guests/:id', element: page(<GuestPage />) },
+            ],
+          },
+          {
+            element: <RequirePermission permission="guests.create_edit" />,
+            children: [{ path: 'guests/new', element: page(<GuestPage />) }],
+          },
+          {
+            element: <RequirePermission permission="reservations.view" />,
+            children: [
+              { path: 'reservations', element: page(<ReservationsPage />) },
+              { path: 'reservations/:id', element: page(<ReservationPage />) },
+            ],
+          },
+          {
+            element: <RequirePermission permission="reservations.create" />,
+            children: [{ path: 'reservations/new', element: page(<ReservationFormPage />) }],
+          },
+          {
+            element: <RequirePermission permission="reservations.edit" />,
+            children: [{ path: 'reservations/:id/edit', element: page(<ReservationFormPage />) }],
+          },
           {
             element: <RequirePermission permission="staff.view" />,
             children: [
@@ -91,6 +183,10 @@ export const routes = [
               { path: 'staff/new', element: page(<StaffFormPage />) },
               { path: 'staff/:id', element: page(<StaffFormPage />) },
             ],
+          },
+          {
+            element: <RequirePermission permission="staff.manage" />,
+            children: [{ path: 'devices', element: page(<DevicesPage />) }],
           },
           {
             element: <RequirePermission permission="roles.manage" />,
@@ -122,6 +218,7 @@ export const routes = [
               { path: 'hotels/:id', element: page(<HotelPage />) },
               { path: 'plans', element: page(<PlansPage />) },
               { path: 'settings', element: page(<PlatformSettingsPage />) },
+              { path: 'reports', element: page(<PlatformReportsPage />) },
             ],
           },
           { path: 'profile', element: page(<ProfilePage />) },

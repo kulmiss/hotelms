@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Hotel;
+use App\Services\HotelClosing;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -30,6 +31,8 @@ class HotelResource extends JsonResource
             'subscription_ends_at' => $this->subscription_ends_at?->toDateString(),
             'suspended_at' => $this->suspended_at?->toIso8601String(),
             'suspend_reason' => $this->suspend_reason,
+            'closed_at' => $this->deleted_at?->toIso8601String(),
+            'deleted_for_good_on' => $this->deleted_at?->copy()->addDays(HotelClosing::KEEP_DAYS)->toDateString(),
             'branches_count' => $this->whenCounted('branches'),
             'users_count' => $this->whenCounted('users'),
             'created_at' => $this->created_at?->toIso8601String(),

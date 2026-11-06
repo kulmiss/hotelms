@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\HotelResource;
 use App\Models\Hotel;
 use App\Models\User;
+use App\Services\ActivityLogger;
+use App\Services\HotelClosing;
 use App\Services\HotelOnboarding;
 use App\Services\HotelSetup;
 use App\Services\HotelStatus;
@@ -15,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class HotelController extends Controller
 {
@@ -26,9 +29,11 @@ class HotelController extends Controller
             'status' => ['nullable', Rule::in(Hotel::STATUSES)],
             'plan_id' => ['nullable', 'integer'],
             'search' => ['nullable', 'string', 'max:100'],
+            'closed' => ['nullable', 'boolean'],
         ]);
 
         $hotels = Hotel::query()
+            ->when($request->boolean('closed'), fn ($q) => $q->onlyTrashed())
             ->with('plan')
             ->withCount(['branches', 'users'])
             ->when($request->string('search')->value(), function ($query, string $search) {
@@ -41,10 +46,11 @@ class HotelController extends Controller
             ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($request->input('plan_id'), fn ($q, $plan) => $q->where('plan_id', $plan))
             ->orderBy('name')
-            ->paginate(min((int) $request->input('per_page', 25), 100));
+            ->paginate(max(1, min((int) $request->input('per_page', 25), 100)));
 
         return HotelResource::collection($hotels)->additional([
-            'counts' => Hotel::query()->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status')->map(fn ($n) => (int) $n),
+            'counts' => Hotel::query()->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status')->map(fn ($n) => (int) $n)
+                ->put('closed', Hotel::onlyTrashed()->count()),
         ]);
     }
 
@@ -59,7 +65,7 @@ class HotelController extends Controller
             'default_currency' => ['required', 'string', 'size:3'],
             'plan_id' => ['required', 'exists:plans,id'],
             'billing_cycle' => ['required', Rule::in(['monthly', 'yearly'])],
-            'custom_price' => ['nullable', 'decimal:0,2', 'min:0'],
+            'custom_price' => ['nullable', 'decimal:0,2', 'min:0', 'max:99999999'],
             'trial_days' => ['nullable', 'integer', 'between:0,365'],
             'trial_plan_id' => ['nullable', 'exists:plans,id'],
             'admin.name' => ['required', 'string', 'max:120'],
@@ -112,7 +118,7 @@ class HotelController extends Controller
             'default_currency' => ['sometimes', 'required', 'string', 'size:3'],
             'plan_id' => ['sometimes', 'required', 'exists:plans,id'],
             'billing_cycle' => ['sometimes', 'required', Rule::in(['monthly', 'yearly'])],
-            'custom_price' => ['sometimes', 'nullable', 'decimal:0,2', 'min:0'],
+            'custom_price' => ['sometimes', 'nullable', 'decimal:0,2', 'min:0', 'max:99999999'],
         ]);
 
         $hotel->update($data);
@@ -128,6 +134,29 @@ class HotelController extends Controller
         $this->status->refresh($hotel);
 
         return new HotelResource($hotel->load(['plan', 'trialPlan']));
+    }
+
+    /** The hotel leaves: nobody can sign in; data kept 90 days (can reopen), then deleted for good. */
+    public function close(Request $request, Hotel $hotel, HotelClosing $closing): JsonResponse
+    {
+        $data = $request->validate(['reason' => ['required', 'string', 'max:200'], 'confirm_name' => ['required', 'string']]);
+        abort_if($hotel->is_demo, 422, 'The demo hotel cannot be closed.');
+        if (mb_strtolower(trim($data['confirm_name'])) !== mb_strtolower(trim($hotel->name))) {
+            throw ValidationException::withMessages(['confirm_name' => 'Type the hotel name exactly to confirm.']);
+        }
+        $closing->close($hotel, $data['reason']);
+        app(ActivityLogger::class)->log('hotel.closed', "Hotel closed: {$hotel->name}", $hotel, ['reason' => $data['reason']]);
+
+        return response()->json(['message' => 'Closed.', 'deleted_for_good_on' => now()->addDays(HotelClosing::KEEP_DAYS)->toDateString()]);
+    }
+
+    public function reopen(Hotel $hotel, HotelClosing $closing): HotelResource
+    {
+        abort_unless($hotel->trashed(), 422, 'This hotel is not closed.');
+        $closing->reopen($hotel);
+        app(ActivityLogger::class)->log('hotel.reopened', "Hotel reopened: {$hotel->name}", $hotel);
+
+        return new HotelResource($hotel->fresh()->load(['plan', 'trialPlan']));
     }
 
     public function activate(Hotel $hotel): HotelResource

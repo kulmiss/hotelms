@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { useSidebarCollapsed } from '@/lib/sidebar'
+import { ScreenLock } from './ScreenLock'
+import { ConnectionBanner } from './ConnectionBanner'
 import { SessionBanner } from './SessionBanner'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
@@ -13,6 +15,7 @@ export function AppShell() {
     <div className="flex min-h-full">
       <Sidebar open={menuOpen} collapsed={collapsed} onClose={() => setMenuOpen(false)} onToggleCollapsed={toggle} />
       <div className="flex min-w-0 flex-1 flex-col">
+        <ConnectionBanner />
         <SessionBanner />
         <Topbar onOpenMenu={() => setMenuOpen(true)} />
         <main className="flex-1 px-4 py-8 md:px-6 lg:px-8">
@@ -22,6 +25,7 @@ export function AppShell() {
           </div>
         </main>
       </div>
+      <ScreenLock />
     </div>
   )
 }

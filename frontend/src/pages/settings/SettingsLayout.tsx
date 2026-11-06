@@ -11,6 +11,7 @@ export const SETTINGS_SECTIONS = [
   { key: 'branches', permission: 'settings.branches' },
   { key: 'room-types', permission: 'settings.rooms' },
   { key: 'rooms', permission: 'settings.rooms' },
+  { key: 'import', permission: 'settings.rooms' },
   { key: 'rate-rules', permission: 'settings.pricing' },
   { key: 'guest-types', permission: 'settings.pricing' },
   { key: 'currencies', permission: 'settings.exchange_rates' },
@@ -21,6 +22,7 @@ export const SETTINGS_SECTIONS = [
   { key: 'cancellation', permission: 'settings.policies' },
   { key: 'modules', permission: 'settings.modules' },
   { key: 'attendance', permission: 'settings.attendance', module: 'attendance' },
+  { key: 'security', permission: 'settings.hotel' },
   { key: 'subscription', permission: 'subscription.view' },
 ] as const
 

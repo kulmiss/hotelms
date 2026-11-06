@@ -18,4 +18,27 @@ class BrandingController extends Controller
 
         return response()->json(['data' => $public])->header('Cache-Control', 'no-store');
     }
+
+    /** Install the web app on a tablet or phone (name and colour from the branding). */
+    public function manifest(): JsonResponse
+    {
+        $all = PlatformSetting::allValues();
+        $name = (string) ($all['platform_name'] ?? 'Hotel');
+        $color = (string) ($all['brand_color'] ?? '#0F766E');
+
+        return response()->json([
+            'name' => $name,
+            'short_name' => mb_substr($name, 0, 12),
+            'start_url' => '/',
+            'scope' => '/',
+            'display' => 'standalone',
+            'orientation' => 'any',
+            'background_color' => '#ffffff',
+            'theme_color' => $color,
+            'icons' => [
+                ['src' => '/icon-192.png', 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any maskable'],
+                ['src' => '/icon-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any maskable'],
+            ],
+        ], 200, ['Content-Type' => 'application/manifest+json', 'Cache-Control' => 'public, max-age=3600']);
+    }
 }

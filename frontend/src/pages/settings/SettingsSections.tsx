@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { PhotoIcon } from '@heroicons/react/24/outline'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
+import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { ResourceList } from '@/components/ui/ResourceList'
 import { Select } from '@/components/ui/Select'
-import { ApiError, post } from '@/lib/api'
+import { ApiError, apiUrl, post } from '@/lib/api'
+import { useMe } from '@/lib/auth'
 import { date, money } from '@/lib/format'
 import { useHotelLogo, useSettingsList, useSettingsObject, useSettingsObjectSave } from '@/lib/settings'
 import { useQueryClient } from '@tanstack/react-query'
@@ -99,7 +100,7 @@ function ProfileForm({ initial }: { initial: Profile }) {
           <span className="flex size-16 items-center justify-center overflow-hidden rounded-xl bg-sunken ring-1 ring-ring">
             {initial.logo_url ? <img src={initial.logo_url} alt="" className="size-full object-contain p-1.5" /> : <PhotoIcon aria-hidden className="size-6 text-icon" />}
           </span>
-          <input ref={input} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="sr-only" aria-label={t('settings.profile.uploadLogo')} onChange={(e) => e.target.files?.[0] && logo.mutate(e.target.files[0])} />
+          <input ref={input} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" aria-label={t('settings.profile.uploadLogo')} onChange={(e) => e.target.files?.[0] && logo.mutate(e.target.files[0])} />
           <Button variant="secondary" disabled={logo.isPending} onClick={() => input.current?.click()}>
             {initial.logo_url ? t('admin.settings.replaceLogo') : t('settings.profile.uploadLogo')}
           </Button>
@@ -500,6 +501,61 @@ export function AttendanceSettings() {
           </label>
         ))}
       </Card>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------- security */
+
+type Security = { require_two_factor_staff: boolean; approved_devices_only: boolean; screen_lock_minutes: number }
+
+export function SecuritySettings() {
+  const { t } = useTranslation()
+  const me = useMe()
+  const q = useSettingsObject<Security>('/settings/security')
+  const save = useSettingsObjectSave<Security>('/settings/security')
+  const v = q.data?.data
+  const error = save.error instanceof ApiError ? Object.values(save.error.errors)[0]?.[0] : null
+  if (!v) return null
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <h2 className="text-base font-semibold">{t('settings.sections.security')}</h2>
+        <p className="max-w-prose text-[13px] text-muted">{t('settings.security.help')}</p>
+      </div>
+      <Card className="flex flex-col gap-3">
+        {save.isSuccess && <Alert tone="ok">{t('common.saved')}</Alert>}
+        {error && <Alert>{error}</Alert>}
+        {(['require_two_factor_staff', 'approved_devices_only'] as const).map((k) => (
+          <label key={k} className="flex min-h-touch items-start gap-3 text-[13px]">
+            <input type="checkbox" className="mt-0.5 size-4 rounded accent-accent" checked={v[k]} disabled={save.isPending} onChange={(e) => save.mutate({ ...v, [k]: e.target.checked })} />
+            <span className="flex flex-col">
+              <span className="font-medium">{t(`settings.security.${k}`)}</span>
+              <span className="text-muted">{t(`settings.security.${k}Hint`)}</span>
+            </span>
+          </label>
+        ))}
+        <div className="w-60">
+          <Select label={t('settings.security.screenLock')} hint={t('settings.security.screenLockHint')} value={String(v.screen_lock_minutes)} disabled={save.isPending} onChange={(e) => save.mutate({ ...v, screen_lock_minutes: Number(e.target.value) })}>
+            {[0, 5, 10, 15, 30, 60].map((m) => (
+              <option key={m} value={m}>
+                {m === 0 ? t('settings.security.never') : t('settings.security.minutes', { count: m })}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </Card>
+      {me.data?.role?.is_hotel_admin && (
+        <Card className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <h3 className="font-semibold">{t('settings.security.exportTitle')}</h3>
+            <p className="max-w-prose text-[13px] text-muted">{t('settings.security.exportHelp')}</p>
+          </div>
+          <a className={buttonClass('secondary')} href={apiUrl('/settings/export')} download>
+            {t('settings.security.export')}
+          </a>
+        </Card>
+      )}
     </div>
   )
 }

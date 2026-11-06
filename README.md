@@ -33,3 +33,7 @@ Stop it with `Ctrl + C`. Next time, `docker compose up` (without `--build`) is e
 ## Checks
 
 Every pull request runs the backend tests (on MySQL), the code style check, and the frontend lint, type check, tests and build. A PR is only merged when all checks are green.
+
+## Going online
+
+See [docs/hosting.md](docs/hosting.md) – shared hosting (cPanel) or a VPS, backups and updates.

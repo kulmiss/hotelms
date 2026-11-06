@@ -12,7 +12,7 @@ import { useHotels } from '@/lib/admin'
 import { cn } from '@/lib/cn'
 import { date } from '@/lib/format'
 
-const FILTERS = ['', 'active', 'trial', 'grace', 'suspended'] as const
+const FILTERS = ['', 'active', 'trial', 'grace', 'suspended', 'closed'] as const
 
 export function HotelsPage() {
   const { t } = useTranslation()

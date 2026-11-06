@@ -7,7 +7,9 @@ use App\Mail\StaffInvite;
 use App\Models\Branch;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserDevice;
 use App\Services\ActivityLogger;
+use App\Services\Security\TwoFactor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +55,7 @@ class StaffController extends Controller
         $data = $this->validated($request);
         $role = $this->allowedRole($actor, (int) $data['role_id']);
         $branchIds = $this->allowedBranches($actor, $data['branch_ids'] ?? [], $role);
+        $this->guardStaffLimit($actor);
         $password = Str::password(12, symbols: false);
 
         $user = DB::transaction(function () use ($actor, $data, $role, $branchIds, $password) {
@@ -132,6 +135,9 @@ class StaffController extends Controller
     public function enable(Request $request, User $user): JsonResponse
     {
         $this->guardManageable($request->user(), $user);
+        if ($user->status !== 'active') {
+            $this->guardStaffLimit($request->user());
+        }
 
         $user->forceFill(['status' => 'active'])->save();
         $this->log->log('staff.enabled', "Staff enabled: {$user->name}", $user);
@@ -152,6 +158,7 @@ class StaffController extends Controller
             'remember_token' => Str::random(60),
         ])->save();
         $this->signOutEverywhere($user);
+        app(TwoFactor::class)->disable($user); // a lost phone: set two-step sign-in up again
         $this->log->log('staff.password_reset', "Password reset: {$user->name}", $user);
 
         return response()->json([
@@ -180,12 +187,26 @@ class StaffController extends Controller
         abort_unless($this->visibleStaff($actor)->whereKey($user->id)->exists() || $actor->is($user), 404);
     }
 
+    /** The plan's staff limit counts active accounts (disabled ones do not count). */
+    private function guardStaffLimit(User $actor): void
+    {
+        $max = $actor->hotel->effectivePlan()?->max_staff;
+        $used = User::where('hotel_id', $actor->hotel_id)->where('status', 'active')->count();
+        if ($max !== null && $used >= $max) {
+            throw ValidationException::withMessages(['email' => "Your plan allows {$max} active staff accounts ({$used} used). Disable someone or upgrade the plan."]);
+        }
+    }
+
     private function guardManageable(User $actor, User $user): void
     {
         $this->guardVisible($actor, $user);
 
         if ($user->isHotelAdmin() && ! $actor->isHotelAdmin()) {
             abort(response()->json(['message' => 'Only a Hotel Admin can change another Hotel Admin.', 'code' => 'forbidden'], 403));
+        }
+        // Nobody may take over (e.g. by resetting the password of) someone who can do more than they can.
+        if (! $actor->isHotelAdmin() && ! $actor->is($user) && array_diff($user->permissionKeys(), $actor->permissionKeys())) {
+            abort(response()->json(['message' => 'This person can do things you cannot, so only a Hotel Admin can change them.', 'code' => 'forbidden'], 403));
         }
     }
 
@@ -265,7 +286,8 @@ class StaffController extends Controller
     private function signOutEverywhere(User $user): void
     {
         $user->tokens()->delete();
-        DB::table('sessions')->where('user_id', $user->id)->delete();
+        DB::table('sessions')->where('user_id', $user->id)->delete(); // database sessions
+        UserDevice::where('user_id', $user->id)->where('status', 'active')->update(['status' => 'signed_out']); // any session driver
     }
 
     private function email(User $user, string $password, bool $isReset, bool $send): bool

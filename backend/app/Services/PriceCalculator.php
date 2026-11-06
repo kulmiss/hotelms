@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\RateRule;
 use App\Models\RoomType;
 use App\Support\Money;
+use App\Support\Tenancy\TenantContext;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -22,8 +23,8 @@ use Illuminate\Support\Collection;
  */
 class PriceCalculator
 {
-    /** @var Collection<int, RateRule>|null */
-    private ?Collection $rules = null;
+    /** @var array<int, Collection<int, RateRule>> rules per hotel (never mixed between hotels) */
+    private array $rules = [];
 
     /** @return array{amount: string, base: string, rule: ?array{id: int, name: string}} */
     public function night(RoomType $type, CarbonInterface $night, ?int $guestTypeId = null): array
@@ -103,6 +104,6 @@ class PriceCalculator
     /** @return Collection<int, RateRule> active rules of the current hotel (loaded once) */
     private function rules(): Collection
     {
-        return $this->rules ??= RateRule::where('is_active', true)->get();
+        return $this->rules[(int) app(TenantContext::class)->hotelId()] ??= RateRule::where('is_active', true)->get();
     }
 }
