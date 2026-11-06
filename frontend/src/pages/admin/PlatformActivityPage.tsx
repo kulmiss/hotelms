@@ -1,3 +1,4 @@
+import { dateTime } from '@/lib/format'
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
@@ -49,7 +50,7 @@ export function PlatformActivityPage() {
             <tbody>
               {log.data?.data.map((a) => (
                 <tr key={a.id} className="border-t border-border">
-                  <td className="px-5 py-3 whitespace-nowrap text-muted">{a.at && new Date(a.at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</td>
+                  <td className="px-5 py-3 whitespace-nowrap text-muted">{a.at && dateTime(a.at)}</td>
                   <td className="px-5 py-3">{a.user ?? '—'}</td>
                   <td className="px-5 py-3">{a.description}</td>
                   <td className="px-5 py-3">

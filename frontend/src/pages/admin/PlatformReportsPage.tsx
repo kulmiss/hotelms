@@ -146,7 +146,7 @@ export function PlatformReportsPage() {
                     <Badge tone={TONE[r.health]}>{t(`admin.reports.healthStates.${r.health}`)}</Badge>
                   </td>
                   <td className="px-4 py-2 text-right tabular-nums">{r.setup_percent}%</td>
-                  <td className="px-4 py-2 text-muted">{r.quiet_days === null ? t('admin.reports.never') : t('admin.reports.daysAgo', { count: r.quiet_days })}</td>
+                  <td className="px-4 py-2 text-muted">{r.quiet_days === null ? t('admin.reports.never') : r.quiet_days === 0 ? t('admin.reports.today') : t('admin.reports.daysAgo', { count: r.quiet_days })}</td>
                   <td className="px-4 py-2 text-right tabular-nums">{r.bookings_30_days}</td>
                 </tr>
               ))}

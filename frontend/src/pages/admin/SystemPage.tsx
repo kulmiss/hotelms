@@ -1,3 +1,4 @@
+import { dateTime, megabytes } from '@/lib/format'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/20/solid'
 import { Alert } from '@/components/ui/Alert'
@@ -7,7 +8,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { ApiError } from '@/lib/api'
 import { useSystemHealth } from '@/lib/platform'
 
-const when = (v: string | null | undefined) => (v ? new Date(v).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : '—')
+const when = (v: string | null | undefined) => dateTime(v)
 
 /** Super Admin → System health (area 8). Refreshes every minute. */
 export function SystemPage() {
@@ -23,7 +24,7 @@ export function SystemPage() {
     { key: 'scheduler', ok: c.scheduler.ok, detail: t('system.lastRun', { when: when(c.scheduler.last_run) }), problem: c.scheduler.problem },
     { key: 'jobs', ok: c.jobs.ok, detail: t('system.jobsLine', { waiting: c.jobs.waiting, failed: c.jobs.failed }) },
     { key: 'backups', ok: c.backups.ok, detail: c.backups.daily ? t('system.backupLine', { when: when(c.backups.daily.at), kb: c.backups.daily.size_kb, count: c.backups.daily.count }) : '', problem: c.backups.problem },
-    { key: 'disk', ok: c.disk.ok, detail: c.disk.free_mb !== null ? t('system.freeMb', { mb: c.disk.free_mb }) : '' },
+    { key: 'disk', ok: c.disk.ok, detail: c.disk.free_mb !== null ? t('system.freeSpace', { size: megabytes(c.disk.free_mb) }) : '' },
   ]
 
   return (

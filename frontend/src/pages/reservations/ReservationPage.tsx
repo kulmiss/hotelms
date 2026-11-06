@@ -134,7 +134,7 @@ export function ReservationPage() {
           <Card className="flex flex-col gap-3">
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-sm font-semibold">{t('reservations.payments')}</h2>
-              {(can('payments.take') || can('payments.refund')) && action !== 'pay' && (
+              {(can('payments.refund') || (can('payments.take') && (['pending', 'confirmed', 'checked_in'].includes(r.status) || isPositive(r.balance)))) && action !== 'pay' && (
                 <Button variant="secondary" onClick={() => setAction('pay')}>
                   {t('reservations.recordPayment')}
                 </Button>

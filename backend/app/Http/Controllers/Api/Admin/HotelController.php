@@ -97,8 +97,10 @@ class HotelController extends Controller
         return response()->json([
             'data' => new HotelResource($hotel),
             'branches' => $hotel->branches()->orderBy('name')->get(['id', 'name', 'city', 'status']),
-            'admins' => User::where('hotel_id', $hotel->id)->orderBy('id')->limit(5)
-                ->get(['id', 'name', 'email', 'phone', 'last_login_at', 'must_change_password']),
+            // The Hotel Admins first, then other staff (each with their role).
+            'admins' => User::where('hotel_id', $hotel->id)->with('role:id,name,key')
+                ->orderByRaw("(select case when r.key = 'hotel_admin' then 0 else 1 end from roles r where r.id = users.role_id)")->orderBy('id')->limit(5)
+                ->get(['id', 'name', 'email', 'phone', 'last_login_at', 'must_change_password', 'role_id']),
             'setup' => app(TenantContext::class)->runAs($hotel, fn () => app(HotelSetup::class)->overview(
                 $hotel,
                 User::where('hotel_id', $hotel->id)->whereHas('role', fn ($q) => $q->where('key', 'hotel_admin'))->orderBy('id')->first(),

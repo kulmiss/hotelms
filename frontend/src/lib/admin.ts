@@ -48,7 +48,7 @@ export type Hotel = {
 export type HotelDetail = {
   data: Hotel
   branches: { id: number; name: string; city: string | null; status: string }[]
-  admins: { id: number; name: string; email: string; phone: string | null; last_login_at: string | null; must_change_password: boolean }[]
+  admins: { id: number; name: string; email: string; phone: string | null; last_login_at: string | null; must_change_password: boolean; role?: { id: number; name: string; key: string } | null }[]
   payments: {
     id: number
     amount: string

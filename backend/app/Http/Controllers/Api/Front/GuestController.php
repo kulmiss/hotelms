@@ -21,7 +21,9 @@ class GuestController extends Controller
             ->when($request->boolean('blacklisted'), fn ($q) => $q->where('is_blacklisted', true))
             ->withCount('reservations')
             ->orderByDesc('id')
-            ->paginate(max(1, min(100, (int) $request->input('per_page', 25))));
+            ->paginate(max(1, min(100, (int) $request->input('per_page', 25))))
+            // The list shows only the end of the ID number; the full number is on the guest's own page.
+            ->through(fn (Guest $g) => $g->setAttribute('id_number', Guest::maskId($g->id_number)));
 
         return response()->json($guests);
     }

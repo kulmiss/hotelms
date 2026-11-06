@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { NavLink } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { adminNav, devNav, mainNav, type NavItem } from '@/app/navigation'
+import { adminNav, devNav, mainNav, NAV_MODULES, type NavItem } from '@/app/navigation'
 import { prefetchRoute } from '@/app/prefetch'
 import { useMe } from '@/lib/auth'
 import { useCan } from '@/lib/hotel'
@@ -11,7 +11,6 @@ import { BrandMark, useBrand } from '@/lib/brand'
 import { cn } from '@/lib/cn'
 
 /** Sidebar module names → plan module keys. */
-const moduleKey = { cashier: 'cashier_close', housekeeping: 'housekeeping', shifts: 'shifts', attendance: 'attendance' } as const
 
 type EntryProps = { item: NavItem; collapsed: boolean; onNavigate?: () => void }
 
@@ -81,7 +80,7 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapsed }: Sidebar
   const items = [
     ...(me.data?.user.is_super_admin
       ? adminNav.filter((item) => !item.permission || [item.permission].flat().some((p) => me.data?.platform?.permissions.includes(p)))
-      : mainNav.filter((item) => can(item.permission) && (!item.module || modules.includes(moduleKey[item.module])))),
+      : mainNav.filter((item) => can(item.permission) && (!item.module || modules.includes(NAV_MODULES[item.module])))),
     ...(import.meta.env.DEV ? devNav : []),
   ]
 

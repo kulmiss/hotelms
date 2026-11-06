@@ -66,7 +66,7 @@ export function RoomTypesSettings() {
         { label: t('settings.roomTypes.name'), render: (r) => <span className="font-medium">{String(r.name)}</span> },
         { label: t('settings.roomTypes.nightly'), render: (r) => money(String(r.nightly_price), String(r.currency)) },
         { label: t('settings.roomTypes.dayUse'), render: (r) => (r.day_use_price ? money(String(r.day_use_price), String(r.currency)) : '—') },
-        { label: t('settings.roomTypes.guests'), render: (r) => `${String(r.base_capacity)}–${String(r.max_capacity)}` },
+        { label: t('settings.roomTypes.guests'), render: (r) => (r.base_capacity === r.max_capacity ? String(r.max_capacity) : `${String(r.base_capacity)}–${String(r.max_capacity)}`) },
         { label: t('settings.roomTypes.rooms'), render: (r) => String(r.rooms_count ?? 0) },
       ]}
       fields={[
@@ -319,6 +319,13 @@ export function RateRulesSettings() {
   const { t } = useTranslation()
   const guestTypes = useSettingsList<{ id: number; name: string }>('/settings/guest-types')
   const roomTypes = useSettingsList<RoomType>('/settings/room-types')
+  const branches = useMe().data?.branches ?? []
+  // With more than one branch, each branch has its own "Standard": say which one.
+  const typeName = (x: RoomType) => (branches.length > 1 ? `${x.name} · ${branches.find((b) => b.id === x.branch_id)?.name ?? ''}` : x.name)
+  const typeLabel = (id: unknown) => {
+    const x = roomTypes.data?.data.find((y) => y.id === id)
+    return x ? typeName(x) : t('settings.rates.allTypes')
+  }
   const ruleTypes = ['weekend', 'season', 'guest_type'].map((v) => ({ value: v, label: t(`settings.rates.types.${v}`) }))
   const adjustments = ['percent', 'amount', 'fixed_price'].map((v) => ({ value: v, label: t(`settings.rates.adjustments.${v}`) }))
   const describe = (r: Record<string, unknown>) => {
@@ -344,7 +351,7 @@ export function RateRulesSettings() {
         columns={[
           { label: t('settings.rates.name'), render: (r) => <span className="font-medium">{String(r.name)}</span> },
           { label: t('settings.rates.when'), render: when },
-          { label: t('settings.rates.roomType'), render: (r) => roomTypes.data?.data.find((x) => x.id === r.room_type_id)?.name ?? t('settings.rates.allTypes') },
+          { label: t('settings.rates.roomType'), render: (r) => typeLabel(r.room_type_id) },
           { label: t('settings.rates.change'), render: describe },
           { label: t('settings.rates.priority'), render: (r) => String(r.priority) },
           { label: t('common.active'), render: (r) => (r.is_active ? <Badge tone="ok">{t('common.on')}</Badge> : <Badge tone="grey">{t('common.off')}</Badge>) },
@@ -367,7 +374,7 @@ export function RateRulesSettings() {
             label: t('settings.rates.roomType'),
             type: 'select',
             nullable: true,
-            options: [{ value: '', label: t('settings.rates.allTypes') }, ...(roomTypes.data?.data ?? []).map((x) => ({ value: String(x.id), label: x.name }))],
+            options: [{ value: '', label: t('settings.rates.allTypes') }, ...(roomTypes.data?.data ?? []).map((x) => ({ value: String(x.id), label: typeName(x) }))],
           },
           { name: 'adjustment', label: t('settings.rates.adjustment'), type: 'select', options: adjustments },
           { name: 'value', label: t('settings.rates.value'), type: 'decimal', hint: t('settings.rates.valueHint') },
@@ -375,7 +382,7 @@ export function RateRulesSettings() {
           { name: 'is_active', label: t('common.active'), type: 'checkbox' },
         ]}
       />
-      <PricePreview types={roomTypes.data?.data ?? []} guestTypes={guestTypes.data?.data ?? []} />
+      <PricePreview types={roomTypes.data?.data ?? []} typeName={typeName} guestTypes={guestTypes.data?.data ?? []} />
     </div>
   )
 }
@@ -383,7 +390,7 @@ export function RateRulesSettings() {
 type Stay = { total: string; currency: string; nights: { date: string; amount: string; rule: { name: string } | null }[] }
 
 /** Try the rules: price of a stay night by night. */
-function PricePreview({ types, guestTypes }: { types: RoomType[]; guestTypes: { id: number; name: string }[] }) {
+function PricePreview({ types, typeName, guestTypes }: { types: RoomType[]; typeName: (x: RoomType) => string; guestTypes: { id: number; name: string }[] }) {
   const { t } = useTranslation()
   const today = new Date()
   const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -410,7 +417,7 @@ function PricePreview({ types, guestTypes }: { types: RoomType[]; guestTypes: { 
         <Select label={t('settings.rates.roomType')} value={String(current)} onChange={(e) => setTypeId(Number(e.target.value))}>
           {types.map((x) => (
             <option key={x.id} value={x.id}>
-              {x.name}
+              {typeName(x)}
             </option>
           ))}
         </Select>

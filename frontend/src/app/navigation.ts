@@ -106,6 +106,9 @@ export const mainNav: NavItem[] = [
   },
 ]
 
+/** The hotel module that turns a menu item on (menu name → module key). */
+export const NAV_MODULES = { cashier: 'cashier_close', housekeeping: 'housekeeping', shifts: 'shifts', attendance: 'attendance' } as const
+
 export const devNav: NavItem[] = [
   { key: 'designSystem', path: '/design-system', icon: SwatchIcon, activeIcon: SwatchSolid, group: 'developer', phase: 0 },
 ]

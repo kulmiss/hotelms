@@ -12,7 +12,7 @@ import { Tabs } from '@/components/ui/Tabs'
 import { useMe } from '@/lib/auth'
 import { cn } from '@/lib/cn'
 import { date, money } from '@/lib/format'
-import { addDays, daysBetween, localDate, localTime, STATUS_TONES, today, useCalendar, useReservations, type ReservationStatus } from '@/lib/front'
+import { addDays, daysBetween, localDate, localTime, STATUS_TONES, today, useCalendar, useReservations, type CalendarData, type ReservationStatus } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { useDebounced } from '@/lib/useDebounced'
 import { Pager } from '@/pages/guests/GuestsPage'
@@ -209,6 +209,8 @@ const BAR: Record<ReservationStatus, string> = {
 }
 
 /** Rooms × days. Bookings without a room number yet sit on a row per room type. */
+type CalendarBooking = CalendarData['bookings'][number]
+
 function ReservationCalendar() {
   const { t } = useTranslation()
   const me = useMe()
@@ -231,8 +233,28 @@ function ReservationCalendar() {
       for (const r of data.rooms.filter((x) => x.room_type_id === typeId)) rows.push({ key: `r${r.id}`, label: r.number, sub: typeName ?? '', roomId: r.id, typeId })
     }
   }
-  // Unassigned bookings of a type are stacked on that type's row (one per line).
-  const barsFor = (row: Row) => (data?.bookings ?? []).filter((b) => (row.roomId ? b.room_id === row.roomId : b.room_id === null && b.room_type_id === row.typeId))
+  // Where a booking sits on the grid (in days from the first column).
+  const span = (b: CalendarBooking) => {
+    const start = Math.max(0, daysBetween(from, localDate(b.check_in_at)) + (b.stay_type === 'nightly' ? 0.5 : 0))
+    const end = Math.min(DAYS, daysBetween(from, localDate(b.check_out_at)) + (b.stay_type === 'nightly' ? 0.5 : 1))
+    return { start, end }
+  }
+  // Unassigned bookings of a type share that type's row: each goes on the first line where it does not overlap another.
+  const barsFor = (row: Row) => {
+    const list = (data?.bookings ?? [])
+      .filter((b) => (row.roomId ? b.room_id === row.roomId : b.room_id === null && b.room_type_id === row.typeId))
+      .map((b) => ({ b, ...span(b) }))
+      .filter((x) => x.end > 0 && x.start < DAYS)
+      .sort((a, z) => a.start - z.start)
+    const lineEnds: number[] = []
+    const placed = list.map((x) => {
+      let line = row.roomId ? 0 : lineEnds.findIndex((e) => e <= x.start)
+      if (line === -1) line = lineEnds.length
+      lineEnds[line] = x.end
+      return { ...x, line }
+    })
+    return { placed, lines: Math.max(1, lineEnds.length) }
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -276,36 +298,33 @@ function ReservationCalendar() {
               )
             })}
           </div>
-          {rows.map((row) => (
-            <div key={row.key} className="relative grid border-b border-border last:border-b-0" style={{ gridTemplateColumns: `7rem repeat(${DAYS}, minmax(0, 1fr))` }}>
-              <div className="flex flex-col justify-center px-3 py-1.5">
-                <span className={cn('text-[13px] font-medium', !row.roomId && 'text-muted italic')}>{row.label}</span>
-                <span className="text-[11px] text-muted">{row.sub}</span>
-              </div>
-              {days.map((d) => (
-                <div key={d} className={cn('min-h-11 border-l border-border', d === today() && 'bg-accent/5')} />
-              ))}
-              <div className="pointer-events-none absolute inset-y-0 right-0 left-28 py-1">
-                {barsFor(row).map((b, i) => {
-                  const start = Math.max(0, daysBetween(from, localDate(b.check_in_at)) + (b.stay_type === 'nightly' ? 0.5 : 0))
-                  const endRaw = daysBetween(from, localDate(b.check_out_at)) + (b.stay_type === 'nightly' ? 0.5 : 1)
-                  const end = Math.min(DAYS, endRaw)
-                  if (end <= 0 || start >= DAYS) return null
-                  return (
+          {rows.map((row) => {
+            const { placed, lines } = barsFor(row)
+            return (
+              <div key={row.key} className="relative grid border-b border-border last:border-b-0" style={{ gridTemplateColumns: `7rem repeat(${DAYS}, minmax(0, 1fr))` }}>
+                <div className="flex flex-col justify-center px-3 py-1.5">
+                  <span className={cn('text-[13px] font-medium', !row.roomId && 'text-muted italic')}>{row.label}</span>
+                  <span className="text-[11px] text-muted">{row.sub}</span>
+                </div>
+                {days.map((d) => (
+                  <div key={d} className={cn('border-l border-border', d === today() && 'bg-accent/5')} style={{ minHeight: `${Math.max(44, lines * 32 + 12)}px` }} />
+                ))}
+                <div className="pointer-events-none absolute inset-y-0 right-0 left-28 py-1">
+                  {placed.map(({ b, start, end, line }) => (
                     <Link
                       key={b.id}
                       to={`/reservations/${b.reservation_id}`}
                       title={`${b.code} · ${b.guest ?? ''}`}
                       className={cn('pointer-events-auto absolute flex h-7 items-center overflow-hidden rounded-md px-2 text-[11px] font-medium whitespace-nowrap ring-1 transition duration-75 hover:brightness-95', BAR[b.status])}
-                      style={{ left: `${(start / DAYS) * 100}%`, width: `${((end - start) / DAYS) * 100}%`, top: row.roomId ? 8 : 4 + (i % 2) * 18 }}
+                      style={{ left: `${(start / DAYS) * 100}%`, width: `${((end - start) / DAYS) * 100}%`, top: 8 + line * 32 }}
                     >
                       {b.guest ?? b.code}
                     </Link>
-                  )
-                })}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
           {data && rows.length === 0 && <p className="p-6 text-center text-muted">{t('reservations.noRooms')}</p>}
         </div>
       </Card>

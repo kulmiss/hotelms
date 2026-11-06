@@ -30,6 +30,8 @@ class DemoHistory
 {
     private const CHUNK = 500;
 
+    private const GUESTS = 1500;
+
     private Hotel $hotel;
 
     private string $tz;
@@ -51,6 +53,12 @@ class DemoHistory
     /** @var array<string, int> method type => id */
     private array $methods = [];
 
+    private ?int $cleaner = null; // the housekeeper who cleans the rooms
+
+    private ?int $admin = null; // the Hotel Admin (works in Piassa)
+
+    private int $bole = 0; // the first branch, where the rest of the team works
+
     private ?int $weekendRule = null;
 
     private ?int $breakfast = null;
@@ -66,7 +74,10 @@ class DemoHistory
         $this->hotel = $hotel;
         $this->tz = 'Africa/Addis_Ababa';
         $this->today = now($this->tz)->startOfDay();
-        $this->staff = array_map(fn (User $u) => $u->id, $staff);
+        $this->bole = $branches[0]->id;
+        $this->admin = User::where('hotel_id', $hotel->id)->where('email', 'demo.admin@hotelms.demo')->value('id');
+        $this->staff = array_values(array_filter(array_map(fn (User $u) => $u->id, $staff), fn ($id) => $id !== $this->admin)) ?: [$this->admin];
+        $this->cleaner = User::where('hotel_id', $hotel->id)->where('email', 'demo.housekeeping@hotelms.demo')->value('id');
         $this->load($branches);
         $this->makeGuests();
 
@@ -86,7 +97,38 @@ class DemoHistory
         // Rooms with a guest are occupied; a few others wait for cleaning.
         $occupied = DB::table('reservation_rooms')->where('hotel_id', $hotel->id)->where('status', 'checked_in')->whereNotNull('room_id')->pluck('room_id')->all();
         Room::whereIn('id', $occupied)->update(['status' => 'occupied']);
-        Room::whereNotIn('id', $occupied)->where('status', 'available')->inRandomOrder()->limit(6)->update(['status' => 'dirty']);
+        // A room cleaned before its next guest checked in today is clean; the others left today wait for cleaning.
+        $open = DB::table('housekeeping_tasks')->where('hotel_id', $hotel->id)->where('status', '!=', 'done');
+        (clone $open)->whereIn('room_id', $occupied)->update(['status' => 'done', 'started_at' => now()->subHours(2), 'completed_at' => now()->subHour(), 'completed_by' => $this->cleaner]);
+        $waiting = (clone $open)->pluck('room_id')->unique()->all();
+        Room::whereIn('id', $waiting)->update(['status' => 'dirty']);
+        // Always a few rooms to clean, also in the morning.
+        $more = Room::whereNotIn('id', $occupied)->where('status', 'available')->inRandomOrder()->limit(max(0, 4 - count($waiting)))->get();
+        Room::whereIn('id', $more->pluck('id'))->update(['status' => 'dirty']);
+        $this->toClean($more->all());
+        app(DemoTeam::class)->build($hotel, $branches, $this->today, $this->tz);
+    }
+
+    /** Rooms waiting for cleaning have a task, like after a real check-out. @param list<Room> $rooms */
+    private function toClean(array $rooms): void
+    {
+        $now = now();
+        $rows = [];
+        foreach ($rooms as $i => $room) {
+            $rows[] = [
+                'hotel_id' => $this->hotel->id, 'branch_id' => $room->branch_id, 'room_id' => $room->id, 'reservation_id' => null,
+                'assigned_to' => $i < 4 ? $this->cleaner : null, 'completed_by' => null, 'type' => 'cleaning', 'priority' => $i === 0 ? 'high' : 'normal',
+                'status' => $i === 0 ? 'in_progress' : 'pending', 'started_at' => $i === 0 ? $now->copy()->subMinutes(15)->toDateTimeString() : null,
+                'completed_at' => null, 'created_at' => $now->copy()->subMinutes(30 + $i * 10)->toDateTimeString(), 'updated_at' => $now->toDateTimeString(),
+            ];
+        }
+        DB::table('housekeeping_tasks')->insert($rows);
+    }
+
+    /** The hour of day at the hotel now. */
+    private function clock(): int
+    {
+        return (int) now($this->tz)->format('G');
     }
 
     // ------------------------------------------------------------------ setup
@@ -110,7 +152,7 @@ class DemoHistory
         $this->deposit = $settings->get('deposit_type') === 'percent' ? (string) $settings->get('deposit_value') : '30';
     }
 
-    /** 400 guests; some come back often (a few regulars, many one-time guests). */
+    /** 1,500 guests; some come back often (a few regulars, many one or two-time guests). */
     private function makeGuests(): void
     {
         $first = ['Abebe', 'Almaz', 'Bekele', 'Chaltu', 'Dawit', 'Eden', 'Fikru', 'Genet', 'Hana', 'Kebede', 'Lidya', 'Meseret', 'Nahom', 'Rahel', 'Samuel', 'Selam', 'Tigist', 'Yared', 'Zewdu', 'Meron', 'Biruk', 'Saba', 'Yonas', 'Mahlet', 'Henok', 'Bethlehem', 'Kidus', 'Ruth', 'Natnael', 'Hiwot', 'John', 'Sarah', 'Ahmed', 'Li', 'Anna', 'David', 'Fatima', 'Omar', 'Maria', 'James'];
@@ -121,7 +163,7 @@ class DemoHistory
 
         $rows = [];
         $now = now()->toDateTimeString();
-        for ($i = 0; $i < 400; $i++) {
+        for ($i = 0; $i < self::GUESTS; $i++) {
             $fi = mt_rand(0, count($first) - 1);
             $foreign = $fi >= 30 || mt_rand(1, 10) === 1;
             $idNumber = ($foreign ? 'P' : 'ET').mt_rand(1000000, 9999999);
@@ -144,11 +186,13 @@ class DemoHistory
                     default => null,
                 },
                 'notes' => $note ? Crypt::encryptString($note) : null,
-                'is_blacklisted' => $i === 399, 'blacklist_reason' => $i === 399 ? 'Left without paying' : null,
+                'is_blacklisted' => $i === self::GUESTS - 1, 'blacklist_reason' => $i === self::GUESTS - 1 ? 'Left without paying' : null,
                 'created_at' => $now, 'updated_at' => $now,
             ];
         }
-        DB::table('guests')->insert($rows);
+        foreach (array_chunk($rows, self::CHUNK) as $part) {
+            DB::table('guests')->insert($part);
+        }
         $this->guests = DB::table('guests')->where('hotel_id', $this->hotel->id)->where('is_blacklisted', false)->orderBy('id')->pluck('id')->all();
     }
 
@@ -157,7 +201,7 @@ class DemoHistory
     /** How full the hotel usually is on a date (0–1). */
     private function demand(Carbon $d): float
     {
-        $base = 0.66;
+        $base = 0.64;
         $base += match ((int) $d->month) {
             12, 1 => 0.14,      // holidays, Genna, Timket
             9 => 0.10,          // Meskel, new year
@@ -177,7 +221,7 @@ class DemoHistory
             $base *= max(0.12, 1 - $ahead / 75);
         }
 
-        return max(0.05, min(0.97, $base));
+        return max(0.05, min(0.92, $base));
     }
 
     /** @return list<array<string, mixed>> */
@@ -187,7 +231,9 @@ class DemoHistory
         $d = $this->today->copy()->subDays(365);
         $end = $this->today->copy()->addDays(60);
         while ($d->lt($end)) {
-            if (mt_rand(1, 1000) / 1000 > $this->demand($d)) {
+            // Stays last about 3 nights, so a stay starts less often than the share of full nights wanted.
+            $want = $this->demand($d);
+            if (mt_rand(1, 1000) / 1000 > $want / (3 - 2 * $want)) {
                 $d->addDay(); // an empty night
 
                 continue;
@@ -198,8 +244,13 @@ class DemoHistory
             if ($outDate->gt($end)) {
                 break;
             }
-            $out[] = $this->stay($room, $in, $outDate);
-            $d = $outDate;
+            $stay = $this->stay($room, $in, $outDate);
+            $before = $out[count($out) - 1] ?? null;
+            if ($stay['status'] === 'checked_in' && $before && $before['status'] === 'checked_in' && $before['out']->eq($in)) {
+                $stay['status'] = 'confirmed'; // the room is still taken: this guest waits
+            }
+            $out[] = $stay;
+            $d = $outDate->copy(); // a copy: moving $d on must not stretch this stay
         }
 
         return $out;
@@ -212,23 +263,30 @@ class DemoHistory
         $lead = $isWalkIn ? 0 : [0, 1, 2, 3, 5, 7, 10, 14, 21, 30, 45][mt_rand(0, 10)];
         $created = $in->copy()->subDays($lead)->setTime(mt_rand(8, 21), mt_rand(0, 59));
         if ($created->gt(now($this->tz))) {
-            $created = now($this->tz)->subMinutes(mt_rand(5, 600));
+            // Booked over the last weeks (not all today), during office hours.
+            $created = $in->gt($this->today)
+                ? $this->today->copy()->subDays(mt_rand(1, 21))->setTime(mt_rand(8, 21), mt_rand(0, 59))
+                : now($this->tz)->subMinutes(mt_rand(5, 300));
         }
         $status ??= match (true) {
             $out->lt($this->today) => 'checked_out',
-            $in->lte($this->today) && $out->gte($this->today) && $in->lt($this->today) => 'checked_in',
-            $in->eq($this->today) => mt_rand(1, 3) === 1 ? 'checked_in' : 'confirmed', // some arrived this morning
+            // Leaving today: after check-out time most have gone.
+            $out->eq($this->today) && $in->lt($this->today) => $this->clock() >= 12 && mt_rand(1, 3) <= 2 ? 'checked_out' : 'checked_in',
+            $in->lt($this->today) && $out->gt($this->today) => 'checked_in',
+            // Arriving today: a few came early; after check-in time most are here.
+            $in->eq($this->today) => mt_rand(1, 3) <= ($this->clock() >= 14 ? 2 : 1) ? 'checked_in' : 'confirmed',
             default => mt_rand(1, 7) === 1 ? 'pending' : 'confirmed',
         };
         // A few regular guests come back often.
-        $guest = mt_rand(1, 5) === 1 ? $this->guests[mt_rand(0, 24)] : $this->guests[mt_rand(0, count($this->guests) - 1)];
+        $guest = mt_rand(1, 8) === 1 ? $this->guests[mt_rand(0, 24)] : $this->guests[mt_rand(0, count($this->guests) - 1)];
 
         return [
             'room' => $room, 'in' => $in, 'out' => $out, 'status' => $status, 'created' => $created, 'guest' => $guest,
             'source' => $isWalkIn ? 'walk_in' : ['phone', 'phone', 'email', 'agent', 'other'][mt_rand(0, 4)],
             'adults' => mt_rand(1, 10) > 3 ? 2 : 1, 'children' => mt_rand(1, 10) === 1 ? 1 : 0,
             'breakfast' => mt_rand(1, 5) === 1,
-            'by' => $this->staff[mt_rand(0, count($this->staff) - 1)],
+            // Bole's team works in Bole; the Hotel Admin covers Piassa.
+            'by' => $room['branch_id'] === $this->bole ? $this->staff[mt_rand(0, count($this->staff) - 1)] : $this->admin,
         ];
     }
 
@@ -320,7 +378,8 @@ class DemoHistory
         $rows = [];
         foreach ($plan as $code => $p) {
             $checkedIn = in_array($p['status'], ['checked_in', 'checked_out'], true);
-            $assigned = $checkedIn || ($p['status'] === 'confirmed' && $p['in']->lte($this->today->copy()->addDay()) && mt_rand(0, 1));
+            // Most bookings get their room when booked; some wait for one (the "No room yet" row).
+            $assigned = $checkedIn || ($p['status'] === 'confirmed' && mt_rand(1, 10) <= 7) || ($p['status'] === 'pending' && mt_rand(1, 10) <= 4);
             $rows[] = [
                 'hotel_id' => $h, 'reservation_id' => $ids[$code], 'room_type_id' => $p['room']['room_type_id'], 'room_id' => $assigned ? $p['room']['id'] : null,
                 'check_in_at' => $p['inAt'], 'check_out_at' => $p['outAt'], 'blocked_until' => $p['outAt'],
@@ -440,7 +499,7 @@ class DemoHistory
             ];
             $ref = fn () => mt_rand(1, 5) === 1 ? null : 'TX'.mt_rand(10000000, 99999999);
             if (in_array($p['status'], ['confirmed', 'checked_in', 'checked_out'], true) && Money::isPositive($p['deposit']) && $p['source'] !== 'walk_in') {
-                $at = $p['created']->copy()->addHours(mt_rand(0, 20))->min(now($this->tz))->utc()->toDateTimeString();
+                $at = $p['created']->copy()->addMinutes(mt_rand(5, 180))->min(now($this->tz))->utc()->toDateTimeString();
                 $payments[] = $base + ['payment_method_id' => $methods[mt_rand(2, count($methods) - 1)] ?? $methods[0], 'type' => 'deposit', 'amount' => $p['deposit'], 'amount_in_base' => $p['deposit'], 'reference' => $ref(), 'paid_at' => $at, 'created_at' => $at];
                 $rest = Money::sub($p['paid'], $p['deposit']);
             } else {
@@ -454,10 +513,12 @@ class DemoHistory
             // Cleaning after each check-out in the last 30 days (the housekeeping history).
             if ($p['status'] === 'checked_out' && $p['room']['id'] && $p['out']->gte($this->today->copy()->subDays(30))) {
                 $start = Carbon::parse($p['outAt'])->addMinutes(mt_rand(10, 90));
+                $end = $start->copy()->addMinutes(mt_rand(20, 50));
+                $done = $end->lt(now()); // a room left today may still be waiting
                 $tasks[] = [
-                    'hotel_id' => $h, 'branch_id' => $p['room']['branch_id'], 'room_id' => $p['room']['id'], 'reservation_id' => $ids[$code], 'assigned_to' => null,
-                    'type' => 'cleaning', 'priority' => 'normal', 'status' => 'done', 'started_at' => $start->toDateTimeString(),
-                    'completed_at' => $start->copy()->addMinutes(mt_rand(20, 50))->toDateTimeString(), 'created_at' => $p['outAt'], 'updated_at' => $now,
+                    'hotel_id' => $h, 'branch_id' => $p['room']['branch_id'], 'room_id' => $p['room']['id'], 'reservation_id' => $ids[$code], 'assigned_to' => $this->cleaner, 'completed_by' => $done ? $this->cleaner : null,
+                    'type' => 'cleaning', 'priority' => 'normal', 'status' => $done ? 'done' : 'pending', 'started_at' => $done ? $start->toDateTimeString() : null,
+                    'completed_at' => $done ? $end->toDateTimeString() : null, 'created_at' => $p['outAt'], 'updated_at' => $now,
                 ];
             }
         }

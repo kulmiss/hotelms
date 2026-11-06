@@ -108,4 +108,16 @@ class ImpersonationTest extends TestCase
             ->postJson('/api/v1/admin/hotels/'.Hotel::factory()->create()->id.'/impersonate', ['reason' => 'x'])
             ->assertForbidden();
     }
+
+    public function test_platform_activity_shows_log_in_as_once_with_the_hotel(): void
+    {
+        $owner = User::factory()->superAdmin()->create(['name' => 'Owner']);
+        $this->actingAs($owner)->postJson("/api/v1/admin/hotels/{$this->hotel->id}/impersonate", ['reason' => 'Help with setup'])->assertOk();
+        $this->continueAs($this->hotelAdmin)->postJson('/api/v1/impersonation/stop')->assertOk();
+
+        $rows = collect($this->actingAs($owner)->getJson('/api/v1/admin/activity')->assertOk()->json('data'))->where('event', 'support.login_as')->values();
+        $this->assertCount(1, $rows);
+        $this->assertSame('Sheger Hotel', $rows[0]['hotel']['name']);
+        $this->assertSame($this->hotel->id, $rows[0]['hotel']['id']);
+    }
 }
