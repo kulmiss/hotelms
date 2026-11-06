@@ -135,7 +135,7 @@ export type InvoicePrint = HotelInvoice & {
 }
 export const useHotelInvoices = (hotelId: number) =>
   useQuery({ queryKey: ['admin', 'hotel', hotelId, 'invoices'], queryFn: () => api<{ data: HotelInvoice[]; next_period: { start: string; end: string } }>(`/admin/hotels/${hotelId}/invoices`) })
-export const useIssueInvoice = (hotelId: number) => useInvalidate((_: void) => post<{ data: HotelInvoice; emailed: boolean }>(`/admin/hotels/${hotelId}/invoices`), [['admin', 'hotel', hotelId, 'invoices']], { toast: 'hotelInvoices.issuedToast' })
+export const useIssueInvoice = (hotelId: number) => useInvalidate<void, { data: HotelInvoice; emailed: boolean }>(() => post<{ data: HotelInvoice; emailed: boolean }>(`/admin/hotels/${hotelId}/invoices`), [['admin', 'hotel', hotelId, 'invoices']], { toast: 'hotelInvoices.issuedToast' })
 export const useSendInvoice = (hotelId: number) => useInvalidate((id: number) => post(`/admin/hotel-invoices/${id}/send`), [['admin', 'hotel', hotelId, 'invoices']], { toast: 'hotelInvoices.sentToast' })
 export const useVoidInvoice = (hotelId: number) => useInvalidate((id: number) => post(`/admin/hotel-invoices/${id}/void`), [['admin', 'hotel', hotelId, 'invoices']])
 export const useInvoicePrint = (id: number) => useQuery({ queryKey: ['subscription-invoice', id], queryFn: () => api<{ data: InvoicePrint }>(`/subscription-invoices/${id}`) })
