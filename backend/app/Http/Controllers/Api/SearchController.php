@@ -13,11 +13,11 @@ use App\Services\Booking\Availability;
 use App\Services\Smart\SmartHints;
 use App\Support\HotelClock;
 use App\Support\Money;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Throwable;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 /**
  * The search box at the top of every screen: guests, bookings, rooms and bills of your hotel
