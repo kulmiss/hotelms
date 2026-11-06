@@ -34,7 +34,7 @@ export function ProfilePage() {
         </Link>
       </Card>
       {!me.data?.impersonation && <SecurityCards />}
-      {me.data?.hotel && !me.data.impersonation && <TelegramCard />}
+      {(me.data?.hotel || me.data?.user.is_super_admin) && !me.data?.impersonation && <TelegramCard />}
     </div>
   )
 }
