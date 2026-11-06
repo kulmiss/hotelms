@@ -181,7 +181,7 @@ export const useSavePlan = () =>
   )
 /** Owner: send a test email to yourself with the saved mail server. */
 export function useTestEmail() {
-  return useMutation({ mutationFn: () => post<{ message: string }>('/admin/settings/test-email'), meta: { toast: false } })
+  return useMutation({ mutationFn: (to: string) => post<{ message: string }>('/admin/settings/test-email', { to: to || null }), meta: { toast: false } })
 }
 
 export function useSaveSettings() {

@@ -391,6 +391,7 @@
       "mailFrom": "Send from (email address)",
       "mailFromHint": "Usually the same as the username.",
       "mailTest": "Send test email",
+      "mailTestTo": "Send test to (empty = your email)",
       "mailSending": "Sending…",
       "mailTestHint": "Save first, then send a test email to yourself.",
       "telegramHelp": "Create a bot with @BotFather in Telegram, then paste its token here. Staff can then link their Telegram in their profile to get reports and alerts.",

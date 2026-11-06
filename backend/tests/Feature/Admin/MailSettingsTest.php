@@ -36,7 +36,9 @@ class MailSettingsTest extends TestCase
         $this->assertSame('no-reply@example.et', config('mail.from.address'));
 
         Mail::fake();
-        $this->postJson('/api/v1/admin/settings/test-email')->assertOk()->assertJsonPath('message', 'Sent to owner@hotelms.test.');
+        $this->postJson('/api/v1/admin/settings/test-email')->assertOk()->assertJsonPath('message', 'Sent to owner@hotelms.test. Check the inbox (and spam).');
+        $this->postJson('/api/v1/admin/settings/test-email', ['to' => 'me@gmail.com'])->assertOk()->assertJsonPath('message', 'Sent to me@gmail.com. Check the inbox (and spam).');
+        $this->postJson('/api/v1/admin/settings/test-email', ['to' => 'not-an-email'])->assertUnprocessable();
     }
 
     public function test_only_the_owner_may_change_or_test_the_mail_server(): void
