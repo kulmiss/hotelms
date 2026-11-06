@@ -11,6 +11,8 @@ const apiTarget = process.env.API_PROXY_TARGET ?? 'http://localhost:8000'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // A new number for every build: the offline copy of the app knows when there is a new version.
+  define: { __APP_BUILD__: JSON.stringify(process.env.APP_BUILD ?? String(Date.now())) },
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

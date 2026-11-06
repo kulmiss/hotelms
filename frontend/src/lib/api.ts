@@ -1,3 +1,4 @@
+import i18n from '@/i18n'
 /**
  * Small fetch wrapper for the HotelMS API (/api/v1).
  * Signs in with Sanctum's cookie session: the browser keeps the session cookie,
@@ -40,6 +41,10 @@ export async function prepareSession(): Promise<void> {
 }
 
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+  // Offline: nothing can be changed (read-only copy). The form keeps what was typed.
+  if ((init.method ?? 'GET') !== 'GET' && typeof navigator !== 'undefined' && navigator.onLine === false) {
+    throw new ApiError(0, i18n.t('offline.cannotChange'), { code: 'offline' })
+  }
   const token = xsrfToken()
   const res = await fetch(BASE + path, {
     ...init,

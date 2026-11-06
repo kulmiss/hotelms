@@ -54,6 +54,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/health', HealthController::class)->name('api.health');
 Route::get('/branding', BrandingController::class);
+Route::get('/branding/manifest', [BrandingController::class, 'manifest']);
 
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
 Route::post('/demo/login', [DemoController::class, 'login'])->middleware('throttle:login');

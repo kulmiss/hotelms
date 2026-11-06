@@ -10,7 +10,7 @@ DirectoryIndex app.html index.php
     <FilesMatch "\.(js|css|woff2|svg|png|webp)$">
         Header set Cache-Control "public, max-age=31536000, immutable"
     </FilesMatch>
-    <FilesMatch "^app\.html$">
+    <FilesMatch "^(app\.html|sw\.js)$">
         Header set Cache-Control "no-cache"
     </FilesMatch>
 </IfModule>

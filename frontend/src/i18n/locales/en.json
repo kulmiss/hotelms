@@ -1758,5 +1758,13 @@
     "continue": "Continue",
     "usePassword": "Use password",
     "usePin": "Use PIN"
+  },
+  "offline": {
+    "title": "You're offline.",
+    "copyFrom": "Showing the copy from {{time}}. Nothing can be changed until the internet is back.",
+    "noCopy": "Nothing can be changed until the internet is back.",
+    "cannotChange": "You're offline. Try again when the internet is back – what you typed is kept.",
+    "newVersion": "A new version is ready.",
+    "refresh": "Refresh"
   }
 }

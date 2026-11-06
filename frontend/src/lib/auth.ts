@@ -1,3 +1,4 @@
+import { wipeOfflineCopy } from './offline'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, ApiError, post, prepareSession, put, type Me } from './api'
 
@@ -51,6 +52,7 @@ export function useLogout() {
   return useMutation({
     mutationFn: () => post('/auth/logout'),
     onSettled: () => {
+      wipeOfflineCopy()
       qc.clear()
       qc.setQueryData(ME_KEY, null)
     },

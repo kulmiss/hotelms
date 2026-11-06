@@ -2,6 +2,7 @@ import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@ta
 import { useState, type ReactNode } from 'react'
 import { ApiError } from '@/lib/api'
 import { ME_KEY } from '@/lib/auth'
+import { startOfflineCopy } from '@/lib/offline'
 import { BrandingEffects } from '@/lib/brand'
 import { ThemeProvider } from '@/lib/theme'
 
@@ -35,6 +36,7 @@ function makeClient(): QueryClient {
     }
   }
 
+  startOfflineCopy(client)
   return client
 }
 
