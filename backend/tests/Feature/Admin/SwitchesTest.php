@@ -73,7 +73,7 @@ class SwitchesTest extends TestCase
     public function test_switched_off_stays_are_refused(): void
     {
         $this->set(['key' => 'feature.hourly_stays', 'level' => 'hotel', 'target_id' => $this->hotel->id, 'value' => false]);
-        $branch = Branch::where('hotel_id', $this->hotel->id)->first();
+        $branch = Branch::withoutGlobalScope('hotel')->where('hotel_id', $this->hotel->id)->first();
         $type = app(TenantContext::class)->runAs($this->hotel, fn () => RoomType::create(['branch_id' => $branch->id, 'name' => 'Deluxe', 'base_capacity' => 2, 'max_capacity' => 2, 'nightly_price' => '3000', 'hourly_price' => '300', 'currency' => 'ETB']));
         $this->actingAs($this->admin)->getJson('/api/v1/reservations/lookups')->assertJsonPath('stay_types', ['nightly', 'day_use']);
         $this->postJson('/api/v1/reservations/quote', ['branch_id' => $branch->id, 'stay_type' => 'hourly', 'check_in' => now()->addDay()->format('Y-m-d').'T10:00', 'hours' => 3, 'rooms' => [['room_type_id' => $type->id]]])
