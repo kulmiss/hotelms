@@ -30,6 +30,7 @@ import { ApiError } from '@/lib/api'
 import { useMe } from '@/lib/auth'
 import { date, money } from '@/lib/format'
 import { useHotelSwitches } from '@/lib/switches'
+import { toast } from '@/lib/toast'
 import { LiveData, NotesAndAccess, PlanUsage, StaffAndDevices } from './HotelTabs'
 import { Tabs } from '@/components/ui/Tabs'
 
@@ -300,10 +301,13 @@ function LoginAsPanel({ hotel, users, onDone }: { hotel: Hotel; users: { id: num
 function ResetDemoButton({ hotelId }: { hotelId: number }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const reset = useResetDemo(hotelId, (id) => navigate(`/admin/hotels/${id}`, { replace: true }))
+  const reset = useResetDemo(hotelId, (id) => {
+    navigate(`/admin/hotels/${id}`, { replace: true })
+    toast(t('demo.resetDone'))
+  })
   return (
-    <Button variant="secondary" disabled={reset.isPending} onClick={() => reset.mutate()}>
-      {reset.isPending ? t('common.saving') : t('demo.resetNow')}
+    <Button variant="secondary" disabled={reset.isPending} onClick={() => reset.mutate(undefined, { onError: () => toast(t('demo.resetFailed'), 'danger') })}>
+      {reset.isPending ? t('demo.resetting') : t('demo.resetNow')}
     </Button>
   )
 }

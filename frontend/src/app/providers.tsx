@@ -5,6 +5,7 @@ import { ME_KEY } from '@/lib/auth'
 import { startOfflineCopy } from '@/lib/offline'
 import { BrandingEffects } from '@/lib/brand'
 import { ThemeProvider } from '@/lib/theme'
+import { Toaster } from '@/components/ui/Toaster'
 
 /** Codes after which the app must ask "who am I?" again (the sign-in pages take over from there). */
 const RECHECK = ['password_change_required', 'two_factor_setup_required']
@@ -49,6 +50,7 @@ export function Providers({ children }: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <BrandingEffects />
         {children}
+        <Toaster />
       </QueryClientProvider>
     </ThemeProvider>
   )
