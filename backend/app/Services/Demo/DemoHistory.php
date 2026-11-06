@@ -250,7 +250,7 @@ class DemoHistory
                 $stay['status'] = 'confirmed'; // the room is still taken: this guest waits
             }
             $out[] = $stay;
-            $d = $outDate;
+            $d = $outDate->copy(); // a copy: moving $d on must not stretch this stay
         }
 
         return $out;
