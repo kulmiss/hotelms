@@ -217,9 +217,9 @@ class ReservationsTest extends TestCase
         $id = $this->postJson('/api/v1/reservations', $this->booking(['check_in' => '2026-11-20', 'check_out' => '2026-11-22']))->json('data.id');
         $pay = fn (string $key) => $this->withHeader('Idempotency-Key', $key)->postJson("/api/v1/reservations/$id/payments", ['type' => 'deposit', 'payment_method_id' => $this->cash, 'amount' => '500']);
 
-        $pay('abc-1')->assertOk()->assertJsonPath('data.paid_total', '500.00');
-        $pay('abc-1')->assertOk()->assertHeader('Idempotent-Replay', 'true')->assertJsonPath('data.paid_total', '500.00'); // the internet dropped, the app tried again
-        $pay('abc-2')->assertOk()->assertJsonPath('data.paid_total', '1000.00'); // a new, real payment
+        $pay('abc-1')->assertCreated()->assertJsonPath('data.paid_total', '500.00');
+        $pay('abc-1')->assertCreated()->assertHeader('Idempotent-Replay', 'true')->assertJsonPath('data.paid_total', '500.00'); // the internet dropped, the app tried again
+        $pay('abc-2')->assertCreated()->assertJsonPath('data.paid_total', '1000.00'); // a new, real payment
         $this->assertSame(2, $this->inHotel(fn () => Payment::where('reservation_id', $id)->count()));
     }
 
