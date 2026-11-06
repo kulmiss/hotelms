@@ -31,7 +31,7 @@ class Reservation extends Model
     protected function casts(): array
     {
         return [
-            'check_in_at' => 'datetime', 'check_out_at' => 'datetime', 'expires_at' => 'datetime', 'cancelled_at' => 'datetime',
+            'check_in_at' => 'datetime', 'check_out_at' => 'datetime', 'expires_at' => 'datetime', 'cancelled_at' => 'datetime', 'pay_later_at' => 'datetime',
             'policy_snapshot' => 'array', 'adults' => 'integer', 'children' => 'integer',
             'subtotal' => 'decimal:2', 'discount_percent' => 'decimal:2', 'discount_amount' => 'decimal:2', 'tax_total' => 'decimal:2', 'total' => 'decimal:2',
             'deposit_required' => 'decimal:2', 'paid_total' => 'decimal:2', 'cancellation_fee' => 'decimal:2',
