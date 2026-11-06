@@ -72,7 +72,7 @@
     "switches": "Switches"
   },
   "topbar": {
-    "search": "Search guests, rooms, bookings",
+    "search": "Search guests, rooms, bookings, bills",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "notifications": "Notifications",
@@ -1708,7 +1708,10 @@
       "step1": "Install an authenticator app on your phone (Google Authenticator or Microsoft Authenticator).",
       "step2": "In the app, add an account and type this key:",
       "openOnPhone": "On this phone? Open it in the app",
-      "step3": "Type the 6-digit code the app shows."
+      "step3": "Type the 6-digit code the app shows.",
+      "scan": "In the app, tap \"+\" and scan this code:",
+      "qrLabel": "QR code for your authenticator app",
+      "orType": "Can't scan? Type this key instead:"
     },
     "emailSent": "We sent a 6-digit code to {{email}}. It works for 10 minutes.",
     "recoveryHelp": "Keep these recovery codes somewhere safe (print or write them down). If you lose your phone, each code lets you sign in once.",
@@ -1878,6 +1881,19 @@
       "hotel": "This hotel",
       "plan": "Plan",
       "everyone": "Everyone"
+    }
+  },
+  "search": {
+    "adminLabel": "Search hotels and people",
+    "results": "Search results",
+    "none": "Nothing found for \"{{q}}\".",
+    "types": {
+      "booking": "Booking",
+      "guest": "Guest",
+      "room": "Room",
+      "bill": "Bill",
+      "hotel": "Hotel",
+      "person": "Person"
     }
   }
 }

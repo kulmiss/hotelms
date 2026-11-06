@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next'
-import { Bars3Icon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { Bars3Icon } from '@heroicons/react/24/outline'
 import { useMe } from '@/lib/auth'
 import { useCurrentBranch } from '@/lib/branch'
 import { AlertBell } from './AlertBell'
+import { GlobalSearch } from './GlobalSearch'
 import { UserMenu } from './UserMenu'
 
 export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
@@ -18,15 +19,7 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
         <Bars3Icon aria-hidden className="size-5" />
       </button>
 
-      <label className="flex min-h-touch w-full max-w-xs items-center gap-x-2 rounded-lg bg-sunken px-3 ring-1 ring-transparent transition duration-75 focus-within:ring-2 focus-within:ring-accent">
-        <MagnifyingGlassIcon aria-hidden className="size-4 shrink-0 text-icon" />
-        <span className="sr-only">{t('topbar.search')}</span>
-        <input
-          type="search"
-          placeholder={t('topbar.search')}
-          className="w-full bg-transparent text-base text-text placeholder:text-icon focus:outline-none sm:text-sm"
-        />
-      </label>
+      <GlobalSearch />
 
       <div className="ml-auto flex items-center gap-x-2">
         {branches.length > 0 && (

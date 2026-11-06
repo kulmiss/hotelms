@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
+import { QrCode } from '@/components/ui/QrCode'
 import { useMe } from '@/lib/auth'
 import { cn } from '@/lib/cn'
 import {
@@ -81,7 +82,9 @@ export function TwoFactorSetup({ onDone }: { onDone: () => void }) {
         <ol className="flex list-decimal flex-col gap-3 pl-5 text-[13px]">
           <li>{t('security.app.step1')}</li>
           <li className="flex flex-col gap-2">
-            <span>{t('security.app.step2')}</span>
+            <span>{t('security.app.scan')}</span>
+            <QrCode value={start.uri} label={t('security.app.qrLabel')} />
+            <span className="text-muted">{t('security.app.orType')}</span>
             <code className="w-fit rounded-lg bg-sunken px-3 py-2 font-mono text-sm tracking-wider break-all select-all">{start.secret.match(/.{1,4}/g)?.join(' ')}</code>
             <a href={start.uri} className="w-fit text-accent-text underline">
               {t('security.app.openOnPhone')}

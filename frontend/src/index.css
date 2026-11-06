@@ -161,6 +161,11 @@
   #root {
     height: 100%;
   }
+  /* Slim, quiet scrollbars everywhere (no old-style arrows on Windows). */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--muted) 45%, transparent) transparent;
+  }
   body {
     @apply bg-bg font-sans text-sm text-text antialiased;
     font-feature-settings: 'cv11', 'ss01'; /* Inter: cleaner shapes */
@@ -184,5 +189,13 @@
   /* Filament "section": white card with a fine ring and small shadow. */
   .panel {
     @apply rounded-xl bg-surface shadow-[0_1px_2px_rgb(0_0_0/0.04)] ring-1 ring-ring;
+  }
+}
+
+/* Swipeable tab rows: scroll sideways without a visible bar. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
