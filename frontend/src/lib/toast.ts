@@ -12,6 +12,12 @@ let next = 1
 const listeners = new Set<() => void>()
 const emit = () => listeners.forEach((l) => l())
 
+/** Removes every toast (sign-out, tests). */
+export function clearToasts() {
+  items = []
+  emit()
+}
+
 /** Removes a toast (also done automatically after a few seconds). */
 export function dismissToast(id: number) {
   items = items.filter((t) => t.id !== id)
@@ -21,7 +27,8 @@ export function dismissToast(id: number) {
 /** A short message at the corner of the screen, e.g. "Demo hotel reset". Closes by itself. */
 export function toast(message: string, tone: Toast['tone'] = 'ok', ms = 4000): number {
   const id = next++
-  items = [...items.slice(-2), { id, message, tone }] // at most 3 at once
+  // The same message twice (e.g. two saves at once) shows once; at most 3 at a time.
+  items = [...items.filter((x) => x.message !== message || x.tone !== tone).slice(-2), { id, message, tone }]
   emit()
   window.setTimeout(() => dismissToast(id), ms)
   return id
