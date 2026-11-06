@@ -57,6 +57,12 @@ class SmartHints
         return array_values(array_filter($hints));
     }
 
+    /** "ETB 136,885.00" */
+    private static function money(string $currency, string|float $amount): string
+    {
+        return $currency.' '.number_format((float) $amount, 2);
+    }
+
     private static function pct(float $now, float $before): ?int
     {
         return $before > 0 ? (int) round(($now - $before) / $before * 100) : null;
@@ -85,7 +91,7 @@ class SmartHints
 
                     return [
                         'text' => 'Revenue this week is '.abs($change)."% {$way} last week".($top && Money::isPositive($top['room_revenue']) ? ", mostly from {$top['name']} rooms." : '.'),
-                        'why' => "This week {$hotel->default_currency} {$now['revenue']}, the week before {$hotel->default_currency} {$before['revenue']}.",
+                        'why' => 'This week '.self::money($hotel->default_currency, $now['revenue']).', the week before '.self::money($hotel->default_currency, $before['revenue']).'.',
                         'tone' => $change >= 0 ? 'ok' : 'warn', 'link' => '/reports?report=performance',
                     ];
                 }
@@ -172,7 +178,7 @@ class SmartHints
 
                 return [
                     'text' => "Returning guest – {$nth} stay.".($usual ? " Usually room {$usual}." : '').($r->guest->notes ? " Note: {$r->guest->notes}" : ''),
-                    'why' => 'Last stay '.HotelClock::local($past->first()->check_out_at, $hotel)->format('d M Y').", {$r->currency} {$spent} spent so far.",
+                    'why' => 'Last stay '.HotelClock::local($past->first()->check_out_at, $hotel)->format('d M Y').', '.self::money($r->currency, $spent).' spent so far.',
                     'tone' => 'ok', 'link' => "/guests/{$r->guest_id}",
                 ];
             }),
@@ -303,7 +309,7 @@ class SmartHints
 
             return [
                 'text' => "At the end of your shift you should have about {$base} ".number_format((float) $total).' in the drawer.',
-                'why' => "{$base} {$now} now (start + cash taken), plus about {$base} {$more} that usually comes in by ".HotelClock::local($end, $hotel)->format('H:i').' on this weekday.',
+                'why' => self::money($base, $now).' now (start + cash taken), plus about '.self::money($base, $more).' that usually comes in by '.HotelClock::local($end, $hotel)->format('H:i').' on this weekday.',
             ];
         })]);
     }

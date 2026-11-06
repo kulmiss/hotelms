@@ -66,7 +66,7 @@ export function RegistrationCardPage() {
           {row(t('regCard.arrival'), `${date(localDate(r.check_in_at))} ${localTime(r.check_in_at)}`)}
           {row(t('regCard.departure'), `${date(localDate(r.check_out_at))} ${localTime(r.check_out_at)}`)}
           {row(t('regCard.rooms'), r.rooms.map((x) => [x.room_number, x.room_type].filter(Boolean).join(' · ')).join(', '))}
-          {row(t('regCard.people'), t('regCard.peopleLine', { adults: r.adults, children: r.children }))}
+          {row(t('regCard.people'), t('regCard.peopleLine', { adults: t('reservations.adultsCount', { count: r.adults }), children: t('reservations.childrenCount', { count: r.children }) }))}
           {row(t('regCard.stayType'), t(`reservations.stayTypes.${r.stay_type}`))}
           {row(t('regCard.total'), money(r.total, r.currency))}
           {row(t('regCard.paid'), money(r.paid_total, r.currency))}

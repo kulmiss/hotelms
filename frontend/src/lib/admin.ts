@@ -1,5 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, post, put, upload } from './api'
+import { ME_KEY } from './auth'
 import { BRANDING_KEY } from './brand'
 import { SILENT } from './toast'
 
@@ -207,7 +208,10 @@ export function useLoginAsHotel(hotelId: number) {
   return useMutation({
     meta: SILENT,
     mutationFn: (input: { reason: string; user_id?: number }) => post(`/admin/hotels/${hotelId}/impersonate`, input),
-    onSuccess: () => qc.clear(),
+    onSuccess: async () => {
+      qc.removeQueries({ predicate: (q) => q.queryKey[0] !== ME_KEY[0] })
+      await qc.refetchQueries({ queryKey: ME_KEY })
+    },
   })
 }
 
