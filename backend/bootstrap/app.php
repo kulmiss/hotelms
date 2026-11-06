@@ -13,6 +13,7 @@ use App\Http\Middleware\Idempotent;
 use App\Http\Middleware\OneAtATime;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetTenantContext;
+use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -56,7 +57,7 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
         // A badly typed date anywhere is the person's input, not a server error.
-        $exceptions->render(fn (\Carbon\Exceptions\InvalidFormatException $e, Request $request) => $request->is('api/*')
+        $exceptions->render(fn (InvalidFormatException $e, Request $request) => $request->is('api/*')
             ? response()->json(['message' => 'One of the dates is not valid.', 'code' => 'invalid_date'], 422)
             : null);
     })->create();

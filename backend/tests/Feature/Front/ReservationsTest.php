@@ -6,6 +6,7 @@ use App\Models\Branch;
 use App\Models\ExchangeRate;
 use App\Models\Guest;
 use App\Models\Hotel;
+use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Plan;
 use App\Models\Reservation;
@@ -219,7 +220,7 @@ class ReservationsTest extends TestCase
         $pay('abc-1')->assertOk()->assertJsonPath('data.paid_total', '500.00');
         $pay('abc-1')->assertOk()->assertHeader('Idempotent-Replay', 'true')->assertJsonPath('data.paid_total', '500.00'); // the internet dropped, the app tried again
         $pay('abc-2')->assertOk()->assertJsonPath('data.paid_total', '1000.00'); // a new, real payment
-        $this->assertSame(2, $this->inHotel(fn () => \App\Models\Payment::where('reservation_id', $id)->count()));
+        $this->assertSame(2, $this->inHotel(fn () => Payment::where('reservation_id', $id)->count()));
     }
 
     public function test_changes_to_one_booking_run_one_at_a_time(): void
