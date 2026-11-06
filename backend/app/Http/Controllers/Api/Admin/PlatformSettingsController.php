@@ -102,7 +102,7 @@ class PlatformSettingsController extends Controller
     /** Upload or remove the logo shown in the sidebar, sign-in page and emails. */
     public function logo(Request $request): JsonResponse
     {
-        $request->validate(['logo' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp,svg', 'max:1024']]);
+        $request->validate(['logo' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:1024']]);
 
         $old = PlatformSetting::read('brand_logo_path');
         if ($old) {

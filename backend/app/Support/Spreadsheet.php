@@ -15,6 +15,8 @@ class Spreadsheet
 {
     public const MAX_ROWS = 2000;
 
+    private const MAX_UNPACKED_BYTES = 40 * 1024 * 1024;
+
     /** @return list<list<string>> rows of cell text (empty rows removed) */
     public static function read(string $path, string $extension): array
     {
@@ -61,6 +63,15 @@ class Spreadsheet
         $zip = new ZipArchive;
         if ($zip->open($path) !== true) {
             throw new RuntimeException('This Excel file could not be opened.');
+        }
+        // A small file that unpacks into a huge one would use up the server's memory.
+        $unpacked = 0;
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $unpacked += (int) ($zip->statIndex($i)['size'] ?? 0);
+        }
+        if ($unpacked > self::MAX_UNPACKED_BYTES) {
+            $zip->close();
+            throw new RuntimeException('This Excel file is too big. Keep it under 2,000 rows.');
         }
 
         $shared = [];

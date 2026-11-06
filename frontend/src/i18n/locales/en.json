@@ -367,7 +367,7 @@
       "loginMessageHint": "Shown under \"Sign in\". Leave empty for the default.",
       "preview": "Preview",
       "logo": "Logo",
-      "logoHelp": "PNG, JPG, WebP or SVG, up to 1 MB. Square logos look best.",
+      "logoHelp": "PNG, JPG or WebP, up to 1 MB. Square logos look best.",
       "uploadLogo": "Upload logo",
       "replaceLogo": "Replace logo",
       "removeLogo": "Remove",

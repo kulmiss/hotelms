@@ -13,6 +13,10 @@ DirectoryIndex app.html index.php
     <FilesMatch "^(app\.html|sw\.js)$">
         Header set Cache-Control "no-cache"
     </FilesMatch>
+    # Uploaded files (logos): shown as pictures only, never run as a page.
+    <If "%{REQUEST_URI} =~ m#^/storage/#">
+        Header always set Content-Security-Policy "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox"
+    </If>
 </IfModule>
 
 # Smaller downloads: compress text answers (pages, scripts, styles and the API's JSON).

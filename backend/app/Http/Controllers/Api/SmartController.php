@@ -7,6 +7,7 @@ use App\Models\Reservation;
 use App\Services\Booking\Availability;
 use App\Services\Modules\Cashier;
 use App\Services\Smart\SmartHints;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -50,12 +51,21 @@ class SmartController extends Controller
             'housekeeping' => $user->hasPermission('housekeeping.view') ? $smart->housekeeping($hotel, $branch()) : $deny(),
             'shifts' => $user->hasPermission('shifts.manage') ? $smart->shifts($hotel, $branch()) : $deny(),
             'report' => collect(['reports.revenue', 'reports.occupancy'])->contains(fn ($p) => $user->hasPermission($p))
-                ? $smart->report($hotel, $branchIds(), ...array_values($request->validate(['from' => ['required', 'date'], 'to' => ['required', 'date', 'after_or_equal:from']])))
+                ? $smart->report($hotel, $branchIds(), ...$this->period($request))
                 : $deny(),
             'rooms_settings' => $user->hasPermission('settings.rooms') ? $smart->roomsSettings($hotel) : $deny(),
             default => abort(404),
         };
 
         return response()->json(['data' => $hints]);
+    }
+
+    /** @return array{0: string, 1: string} at most 400 days, like the reports */
+    private function period(Request $request): array
+    {
+        $data = $request->validate(['from' => ['required', 'date'], 'to' => ['required', 'date', 'after_or_equal:from']]);
+        abort_if(Carbon::parse($data['from'])->diffInDays(Carbon::parse($data['to'])) > 400, 422, 'Choose at most 400 days.');
+
+        return [$data['from'], $data['to']];
     }
 }

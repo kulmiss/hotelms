@@ -129,8 +129,10 @@ class ReportController extends Controller
     public function drilldown(Request $request): JsonResponse
     {
         $user = $request->user();
-        abort_unless($user->hasPermission('reports.revenue') || $user->hasPermission('reports.occupancy') || $user->hasPermission('reports.payments'), 403);
         $data = $request->validate(['metric' => ['required', 'in:room_nights,payments'], 'date' => ['required', 'date'], 'branch_id' => ['nullable', 'integer']]);
+        // Payments need a payments or revenue report; room nights (with their prices) the revenue or occupancy report.
+        $allowed = $data['metric'] === 'payments' ? ['reports.payments', 'reports.revenue'] : ['reports.revenue', 'reports.occupancy'];
+        abort_unless(collect($allowed)->contains(fn ($p) => $user->hasPermission($p)), 403);
         $hotel = $user->hotel;
         $branchIds = $this->branchIds($request);
 
