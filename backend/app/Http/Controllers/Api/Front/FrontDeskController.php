@@ -16,8 +16,8 @@ use App\Services\HotelSettings;
 use App\Support\HotelClock;
 use App\Support\Money;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
