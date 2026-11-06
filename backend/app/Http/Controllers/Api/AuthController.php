@@ -9,6 +9,7 @@ use App\Services\Impersonation;
 use App\Services\Modules\Attendance;
 use App\Services\Security\Devices;
 use App\Services\Security\TwoFactor;
+use App\Services\Watchdog\WatchEvents;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -39,6 +40,7 @@ class AuthController extends Controller
         $user = User::where('email', $credentials['email'])->first();
 
         if (! $user || ! Auth::guard('web')->validate(['email' => $credentials['email'], 'password' => $credentials['password']])) {
+            app(WatchEvents::class)->record('login_failed', $request, 422, mb_strtolower($credentials['email']));
             throw ValidationException::withMessages(['email' => __('auth.failed')]);
         }
 

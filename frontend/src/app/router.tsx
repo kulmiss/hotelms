@@ -50,6 +50,7 @@ const InvoicePage = lazy(() => pages.invoice().then((m) => ({ default: m.Invoice
 const InvoicePrintPage = lazy(() => pages.invoicePrint().then((m) => ({ default: m.InvoicePrintPage })))
 const RegistrationCardPage = lazy(() => pages.registrationCard().then((m) => ({ default: m.RegistrationCardPage })))
 const ReleasesPage = lazy(() => pages.releases().then((m) => ({ default: m.ReleasesPage })))
+const WatchdogPage = lazy(() => pages.watchdog().then((m) => ({ default: m.WatchdogPage })))
 const ContentPage = lazy(() => pages.content().then((m) => ({ default: m.ContentPage })))
 const WhatsNewPage = lazy(() => pages.whatsNew().then((m) => ({ default: m.WhatsNewPage })))
 const SubscriptionInvoicePage = lazy(() => pages.subscriptionInvoice().then((m) => ({ default: m.SubscriptionInvoicePage })))
@@ -262,6 +263,7 @@ export const routes = [
               { path: 'team', element: page(<TeamPage />) },
               { path: 'activity', element: page(<PlatformActivityPage />) },
               { path: 'releases', element: page(<ReleasesPage />) },
+              { path: 'watchdog', element: page(<WatchdogPage />) },
               { path: 'content', element: page(<ContentPage />) },
             ],
           },

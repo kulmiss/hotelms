@@ -75,6 +75,7 @@
     "support": "Support",
     "system": "System health",
     "team": "Team",
+    "watchdog": "Watchdog",
     "platformActivity": "Activity log",
     "approvals": "Approvals",
     "releases": "Releases",
@@ -2173,6 +2174,7 @@
       "system_view": "System health and activity log",
       "releases_manage": "Release notes (What's new)",
       "content_manage": "Texts on invoices and emails",
+      "watchdog_view": "Watchdog (security, bugs, data leaks)",
       "team_manage": "Manage the HotelMS team"
     }
   },
@@ -2566,6 +2568,42 @@
     "view": "Proof",
     "add": "Add proof",
     "saved": "Proof added."
+  },
+  "watchdog": {
+    "title": "Watchdog",
+    "subtitle": "Security problems, bugs and data leaks the system notices by itself – with where they are and what to do. Checked every 10 minutes (data every hour).",
+    "checkNow": "Check now",
+    "checking": "Checking…",
+    "checked": "Checked.",
+    "lastRun": "Last check: {{time}}",
+    "open": "Open",
+    "fixed": "Fixed (30 days)",
+    "allGood": "Nothing wrong found. 👍",
+    "noneFixed": "Nothing fixed in the last 30 days.",
+    "seen_one": "Seen {{first}} · last {{last}} · {{count}} time",
+    "seen_other": "Seen {{first}} · last {{last}} · {{count}} times",
+    "fixedBy": "fixed {{time}} ({{by}})",
+    "mutedUntil": "Muted until {{time}}",
+    "whatToDo": "What to do:",
+    "openPlace": "Open",
+    "markFixed": "Mark as fixed",
+    "mute": "Mute 7 days",
+    "resolved": "Marked as fixed.",
+    "muted": "Muted for 7 days.",
+    "alert_one": "The watchdog found {{count}} serious problem.",
+    "alert_other": "The watchdog found {{count}} serious problems.",
+    "severity": { "critical": "Serious", "warning": "Warning", "info": "Info" },
+    "checks": {
+      "brute_force": "Password guessing",
+      "snooping": "Looking where not allowed",
+      "support_sign_in": "Support sign-ins",
+      "server_error": "Bug (server error)",
+      "system": "System",
+      "mixed_hotels": "Data leak between hotels",
+      "money": "Money does not add up",
+      "rooms": "Rooms",
+      "fraud": "Possible fraud"
+    }
   },
   "payLater": {
     "option": "Pay at check-out",

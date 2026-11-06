@@ -13,6 +13,7 @@ use App\Http\Middleware\EnsureSwitchOn;
 use App\Http\Middleware\EnsureTwoFactorSetUp;
 use App\Http\Middleware\Idempotent;
 use App\Http\Middleware\OneAtATime;
+use App\Http\Middleware\RecordProblems;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetTenantContext;
 use Carbon\Exceptions\InvalidFormatException;
@@ -20,6 +21,10 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use App\Services\Watchdog\WatchEvents;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -34,6 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // The React app signs in with Sanctum's cookie session.
         $middleware->statefulApi();
         $middleware->append(SecurityHeaders::class);
+        $middleware->append(RecordProblems::class); // for the Super Admin watchdog
 
         // Set the hotel before route model binding, so {role} etc. only find
         // the signed-in user's own hotel's records (after authentication).
@@ -60,6 +66,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+        // Server errors are noted for the watchdog (with the message, so it can say where the problem is).
+        $exceptions->report(function (Throwable $e) {
+            if (! $e instanceof HttpExceptionInterface && ! $e instanceof ValidationException && ! $e instanceof AuthenticationException) {
+                app(WatchEvents::class)->record('exception', request(), 500, class_basename($e).': '.$e->getMessage().' @ '.str_replace(base_path().'/', '', $e->getFile()).':'.$e->getLine());
+            }
+        });
         // A badly typed date anywhere is the person's input, not a server error.
         $exceptions->render(fn (InvalidFormatException $e, Request $request) => $request->is('api/*')
             ? response()->json(['message' => 'One of the dates is not valid.', 'code' => 'invalid_date'], 422)

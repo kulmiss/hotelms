@@ -30,6 +30,34 @@ function useInvalidate<V, R>(fn: (v: V) => Promise<R>, keys: unknown[][], meta?:
   return useMutation({ meta, mutationFn: fn, onSuccess: () => keys.forEach((queryKey) => void qc.invalidateQueries({ queryKey })) })
 }
 
+// Watchdog (security, bugs, data leaks)
+export type WatchFinding = {
+  id: number
+  check: string
+  severity: 'critical' | 'warning' | 'info'
+  title: string
+  details: [string, string][]
+  advice: string | null
+  link: string | null
+  hotel: { id: number; name: string } | null
+  times: number
+  first_seen_at: string | null
+  last_seen_at: string | null
+  resolved_at: string | null
+  resolved_by: string | null
+  muted_until: string | null
+}
+export const useWatchdog = (show: 'open' | 'fixed', enabled = true) =>
+  useQuery({
+    queryKey: ['admin', 'watchdog', show],
+    queryFn: () => api<{ data: WatchFinding[]; counts: { critical: number; warning: number; info: number }; last_run: string | null }>(`/admin/watchdog?show=${show}`),
+    refetchInterval: 60_000,
+    enabled,
+  })
+export const useWatchdogRun = () => useInvalidate<void, unknown>(() => post('/admin/watchdog/run'), [['admin', 'watchdog']], { toast: 'watchdog.checked' })
+export const useWatchdogResolve = () => useInvalidate((id: number) => post(`/admin/watchdog/${id}/resolve`), [['admin', 'watchdog']], { toast: 'watchdog.resolved' })
+export const useWatchdogMute = () => useInvalidate((v: { id: number; days: number }) => post(`/admin/watchdog/${v.id}/mute`, { days: v.days }), [['admin', 'watchdog']], { toast: 'watchdog.muted' })
+
 // Hotel side ("Help")
 export const useMySupport = () => useQuery({ queryKey: ['support'], queryFn: () => api<{ data: SupportSummary[] }>('/support') })
 export const useMySupportRequest = (id: number | null) =>

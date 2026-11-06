@@ -11,12 +11,17 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { StatTile } from '@/components/ui/StatTile'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { useAdminDashboard } from '@/lib/admin'
+import { useMe } from '@/lib/auth'
+import { useWatchdog } from '@/lib/platform'
 import { date, money, dateTime } from '@/lib/format'
 
 export function AdminDashboardPage() {
   const { t } = useTranslation()
   const dash = useAdminDashboard()
   const smart = useSmart('admin')
+  const me = useMe()
+  const watch = useWatchdog('open', !!me.data?.platform?.permissions.includes('watchdog.view'))
+  const serious = watch.data?.counts.critical ?? 0
   const d = dash.data
   const unpaid = d ? (d.hotels.by_status.grace ?? 0) + (d.hotels.by_status.suspended ?? 0) : undefined
   const income = d ? Object.entries(d.income_this_month) : []
@@ -37,6 +42,11 @@ export function AdminDashboardPage() {
         }
       />
 
+      {serious > 0 && (
+        <Link to="/admin/watchdog" className="rounded-lg bg-danger-bg px-4 py-3 text-sm font-medium text-danger-text ring-1 ring-danger-text/20 hover:brightness-95">
+          {t('watchdog.alert', { count: serious })}
+        </Link>
+      )}
       <SmartHints hints={smart.data?.data} />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

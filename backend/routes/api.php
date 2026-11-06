@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\Admin\SupportController as AdminSupportController;
 use App\Http\Controllers\Api\Admin\SwitchController;
 use App\Http\Controllers\Api\Admin\SystemController;
 use App\Http\Controllers\Api\Admin\TeamController;
+use App\Http\Controllers\Api\Admin\WatchdogController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Automation\ApprovalController;
 use App\Http\Controllers\Api\Automation\AutomationSettingsController;
@@ -407,6 +408,12 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
         // Super Admin (HotelMS team).
         Route::prefix('admin')->middleware('platform:hotels.view')->group(function () {
             Route::get('/dashboard', AdminDashboardController::class);
+            Route::middleware('platform:watchdog.view')->group(function () {
+                Route::get('/watchdog', [WatchdogController::class, 'index']);
+                Route::post('/watchdog/run', [WatchdogController::class, 'run'])->middleware('throttle:6,1');
+                Route::post('/watchdog/{finding}/resolve', [WatchdogController::class, 'resolve']);
+                Route::post('/watchdog/{finding}/mute', [WatchdogController::class, 'mute']);
+            });
             Route::get('/reports/platform', [PlatformReportController::class, 'platform']);
             Route::get('/hotels/{hotel}/switches', [SwitchController::class, 'forHotel'])->withTrashed();
             Route::middleware('platform:switches.manage')->group(function () {
