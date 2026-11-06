@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\Api\Reports\ReportController;
 use App\Models\Hotel;
 use App\Models\User;
 use App\Services\DemoHotel;
@@ -62,7 +63,7 @@ class DemoEveryPageTest extends TestCase
             ."&check_in={$to}&check_out=".now()->addDay()->toDateString().'&stay_type=nightly';
 
         if (str_contains($uri, '{key}')) {
-            return array_map(fn ($k) => str_replace('{key}', $k, $uri).$q, array_keys(\App\Http\Controllers\Api\Reports\ReportController::REPORTS));
+            return array_map(fn ($k) => str_replace('{key}', $k, $uri).$q, array_keys(ReportController::REPORTS));
         }
         if (str_contains($uri, '{place}')) {
             return array_map(fn ($p) => str_replace('{place}', $p, $uri).$q."&id={$this->ids['reservations']}&phone=0911223344",
