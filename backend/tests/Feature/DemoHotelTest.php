@@ -3,19 +3,21 @@
 namespace Tests\Feature;
 
 use App\Models\Branch;
+use App\Models\Guest;
 use App\Models\Hotel;
 use App\Models\Invoice;
 use App\Models\PlatformSetting;
 use App\Models\Reservation;
 use App\Models\Room;
+use App\Models\RoomType;
 use App\Models\User;
+use App\Services\DemoHotel;
 use App\Services\Reports\Metrics;
 use App\Support\Money;
-use Illuminate\Support\Facades\DB;
-use App\Services\DemoHotel;
 use App\Support\Tenancy\TenantContext;
 use Database\Seeders\PlatformSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class DemoHotelTest extends TestCase
@@ -123,8 +125,8 @@ class DemoHotelTest extends TestCase
         // New bookings continue the numbers (no clash with the history).
         $admin = User::where('email', DemoHotel::email('hotel_admin'))->firstOrFail();
         $branch = app(TenantContext::class)->runAs($hotel, fn () => Branch::orderBy('id')->first());
-        $type = app(TenantContext::class)->runAs($hotel, fn () => \App\Models\RoomType::where('branch_id', $branch->id)->where('name', 'Suite')->first());
-        $guest = app(TenantContext::class)->runAs($hotel, fn () => \App\Models\Guest::first());
+        $type = app(TenantContext::class)->runAs($hotel, fn () => RoomType::where('branch_id', $branch->id)->where('name', 'Suite')->first());
+        $guest = app(TenantContext::class)->runAs($hotel, fn () => Guest::first());
         $in = now('Africa/Addis_Ababa')->addDays(70)->toDateString();
         $this->actingAs($admin)->postJson('/api/v1/reservations', [
             'branch_id' => $branch->id, 'stay_type' => 'nightly', 'check_in' => $in, 'check_out' => now('Africa/Addis_Ababa')->addDays(71)->toDateString(),

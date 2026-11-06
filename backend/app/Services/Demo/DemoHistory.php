@@ -2,7 +2,6 @@
 
 namespace App\Services\Demo;
 
-use App\Models\Branch;
 use App\Models\ChargeType;
 use App\Models\Guest;
 use App\Models\Hotel;
