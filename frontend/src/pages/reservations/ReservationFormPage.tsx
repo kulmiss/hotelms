@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { MinusIcon, PlusIcon, XMarkIcon } from '@heroicons/react/20/solid'
+import { CheckIcon, MinusIcon, PlusIcon, XMarkIcon } from '@heroicons/react/20/solid'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
+import { Tabs } from '@/components/ui/Tabs'
 import { ApiError } from '@/lib/api'
 import { useMe } from '@/lib/auth'
 import { cn } from '@/lib/cn'
@@ -67,6 +68,7 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
   const [policyId, setPolicyId] = useState<number | null>(existing?.cancellation_policy_id ?? null)
   const [source, setSource] = useState(existing?.source ?? 'phone')
   const [notes, setNotes] = useState(existing?.notes ?? '')
+  const [pickBy, setPickBy] = useState<'types' | 'rooms'>('types') // choose room types, or the actual rooms
   const preset = useGuest(Number(params.get('guest') ?? 0))
   const chosenGuest = guest ?? (preset.data && !preset.data.data.is_blacklisted ? preset.data.data : null)
 
@@ -191,8 +193,41 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
 
           {/* 2. Rooms */}
           <Card className="flex flex-col gap-4 p-0">
-            <h2 className="px-5 pt-5 text-sm font-semibold">{t('reservations.form.rooms')}</h2>
-            <ul className="flex flex-col divide-y divide-border">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-5 pt-5">
+              <h2 className="text-sm font-semibold">{t('reservations.form.rooms')}</h2>
+              <div className="w-64">
+                <Tabs label={t('reservations.form.rooms')} active={pickBy} onChange={(k) => setPickBy(k as 'types' | 'rooms')} items={[{ key: 'types', label: t('pickBy.types') }, { key: 'rooms', label: t('pickBy.rooms') }]} />
+              </div>
+            </div>
+            {pickBy === 'rooms' && (
+              <div className="flex flex-col gap-2 px-5">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-2">
+                  {types
+                    .filter((type) => type.offered)
+                    .flatMap((type) => type.free_rooms.map((f) => ({ ...f, type })))
+                    .sort((a, b) => a.number.localeCompare(b.number, undefined, { numeric: true }))
+                    .map((f) => {
+                      const on = rooms.some((r) => r.room_id === f.id)
+                      return (
+                        <button
+                          key={f.id}
+                          type="button"
+                          aria-pressed={on}
+                          onClick={() => (on ? setRooms(rooms.filter((r) => r.room_id !== f.id)) : setRooms([...rooms, { room_type_id: f.type.room_type_id, room_id: f.id, adults: Math.min(2, f.type.base_capacity), children: 0 }]))}
+                          className={cn('relative flex min-h-20 flex-col items-start gap-0.5 rounded-xl p-3 text-left ring-1 transition duration-75', on ? 'bg-accent-soft ring-2 ring-accent' : 'bg-surface ring-ring hover:bg-sunken')}
+                        >
+                          <span className="text-base font-semibold">{f.number}</span>
+                          <span className="text-[11px] text-muted">{f.type.name}</span>
+                          {f.type.price && <span className="text-[11px] font-medium tabular-nums">{money(f.type.price, f.type.currency)}</span>}
+                          {on && <CheckIcon aria-hidden className="absolute top-2 right-2 size-4 text-accent-text" />}
+                        </button>
+                      )
+                    })}
+                </div>
+                {availability.data && !types.some((type) => type.offered && type.free_rooms.length > 0) && <p className="py-2 text-[13px] text-muted">{t('reservations.noRooms')}</p>}
+              </div>
+            )}
+            <ul className={cn('flex flex-col divide-y divide-border', pickBy === 'rooms' && 'hidden')}>
               {types.map((type) => {
                 const left = type.available - chosenOf(type.room_type_id)
                 return (

@@ -2514,6 +2514,12 @@
     "approvedToast": "Approved and done",
     "rejectedToast": "Rejected – nothing was changed"
   },
+  "pickBy": {
+    "types": "By room type",
+    "rooms": "By room",
+    "chosenRooms": "chosen: {{rooms}}",
+    "removeOne": "Remove one {{type}}"
+  },
   "roomCal": {
     "open": "Room calendar",
     "title": "Room {{number}}",
