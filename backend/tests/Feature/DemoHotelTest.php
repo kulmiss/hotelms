@@ -9,6 +9,9 @@ use App\Models\PlatformSetting;
 use App\Models\Reservation;
 use App\Models\Room;
 use App\Models\User;
+use App\Services\Reports\Metrics;
+use App\Support\Money;
+use Illuminate\Support\Facades\DB;
 use App\Services\DemoHotel;
 use App\Support\Tenancy\TenantContext;
 use Database\Seeders\PlatformSeeder;
@@ -80,5 +83,53 @@ class DemoHotelTest extends TestCase
         $this->artisan('demo:reset')->assertSuccessful();
 
         $this->assertSame(1, Hotel::where('is_demo', true)->count());
+    }
+
+    public function test_the_demo_is_busy_consistent_and_fast(): void
+    {
+        $started = microtime(true);
+        $hotel = app(DemoHotel::class)->reset();
+        $this->assertLessThan(60, microtime(true) - $started, 'The demo reset must stay quick.');
+
+        app(TenantContext::class)->runAs($hotel, function () use ($hotel) {
+            // About 70% full over the last 30 days (a year of history behind it).
+            $from = now('Africa/Addis_Ababa')->subDays(30)->toDateString();
+            $to = now('Africa/Addis_Ababa')->subDay()->toDateString();
+            $kpis = Metrics::for($hotel, Branch::pluck('id')->all())->kpis($from, $to);
+            $this->assertGreaterThan(45, $kpis['occupancy']);
+            $this->assertTrue(Reservation::where('check_in_at', '<', now()->subMonths(11))->exists());
+
+            // Today: guests in house in occupied rooms, people arriving, people leaving.
+            $start = now('Africa/Addis_Ababa')->startOfDay()->utc();
+            $this->assertGreaterThan(20, Reservation::where('status', 'checked_in')->count());
+            $this->assertGreaterThan(0, Reservation::whereIn('status', ['confirmed', 'pending'])->whereBetween('check_in_at', [$start, $start->copy()->addDay()])->count());
+            $this->assertGreaterThan(0, Reservation::where('status', 'checked_in')->whereBetween('check_out_at', [$start, $start->copy()->addDay()])->count());
+            $this->assertSame(
+                DB::table('reservation_rooms')->where('hotel_id', $hotel->id)->where('status', 'checked_in')->distinct()->count('room_id'),
+                Room::where('status', 'occupied')->count(),
+            );
+
+            // Every bill adds up: lines + tax = total; payments = paid.
+            foreach (Invoice::inRandomOrder()->limit(25)->get() as $invoice) {
+                $lines = (string) DB::table('invoice_items')->where('invoice_id', $invoice->id)->sum('amount');
+                $tax = (string) DB::table('invoice_item_taxes')->join('invoice_items', 'invoice_items.id', '=', 'invoice_item_taxes.invoice_item_id')
+                    ->where('invoice_items.invoice_id', $invoice->id)->where('invoice_item_taxes.is_inclusive', false)->sum('invoice_item_taxes.amount');
+                $this->assertSame(Money::round((string) $invoice->total), Money::round(bcadd($lines, $tax, 2)), "Bill {$invoice->number}");
+                $paid = (string) DB::table('payments')->where('invoice_id', $invoice->id)->sum('amount_in_base');
+                $this->assertSame(Money::round((string) $invoice->paid_total), Money::round($paid), "Bill {$invoice->number}");
+            }
+        });
+
+        // New bookings continue the numbers (no clash with the history).
+        $admin = User::where('email', DemoHotel::email('hotel_admin'))->firstOrFail();
+        $branch = app(TenantContext::class)->runAs($hotel, fn () => Branch::orderBy('id')->first());
+        $type = app(TenantContext::class)->runAs($hotel, fn () => \App\Models\RoomType::where('branch_id', $branch->id)->where('name', 'Suite')->first());
+        $guest = app(TenantContext::class)->runAs($hotel, fn () => \App\Models\Guest::first());
+        $in = now('Africa/Addis_Ababa')->addDays(70)->toDateString();
+        $this->actingAs($admin)->postJson('/api/v1/reservations', [
+            'branch_id' => $branch->id, 'stay_type' => 'nightly', 'check_in' => $in, 'check_out' => now('Africa/Addis_Ababa')->addDays(71)->toDateString(),
+            'guest_id' => $guest->id, 'rooms' => [['room_type_id' => $type->id, 'adults' => 2]],
+        ])->assertCreated();
+        $this->getJson('/api/v1/reports/performance?from='.now()->subDays(90)->toDateString().'&to='.now()->toDateString())->assertOk();
     }
 }
