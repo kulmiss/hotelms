@@ -1877,7 +1877,8 @@
         "info": "Info",
         "warn": "Warning",
         "danger": "Urgent"
-      }
+      },
+      "audience": "Show to"
     },
     "maintenance": {
       "title": "We are improving HotelMS",

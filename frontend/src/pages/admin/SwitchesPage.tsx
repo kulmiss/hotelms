@@ -244,7 +244,7 @@ function Banners({ banners, plans }: { banners: BannerRow[]; plans: { id: number
             </option>
           ))}
         </Select>
-        <Select label={t('switches.who')} value={f.plan} onChange={(e) => setF({ ...f, plan: e.target.value })}>
+        <Select label={t('switches.banners.audience')} value={f.plan} onChange={(e) => setF({ ...f, plan: e.target.value })}>
           <option value="">{t('switches.levels.everyone')}</option>
           {plans.map((p) => (
             <option key={p.id} value={p.id}>
