@@ -222,7 +222,9 @@ class SecurityTest extends TestCase
         $this->assertStringNotContainsString('nuts', (string) $raw->notes);
         $this->assertSame('EP 12345', $this->inHotel(fn () => Guest::find($id))->id_number);
 
-        $this->getJson('/api/v1/guests?q=ep12345')->assertOk()->assertJsonPath('data.0.id', $id);
+        // Found by the full number; the list shows only the end of it, the guest's page shows all of it.
+        $this->getJson('/api/v1/guests?q=ep12345')->assertOk()->assertJsonPath('data.0.id', $id)->assertJsonPath('data.0.id_number', 'EP•••2345');
+        $this->getJson("/api/v1/guests/{$id}")->assertOk()->assertJsonPath('data.id_number', 'EP 12345');
         $this->postJson('/api/v1/guests', ['first_name' => 'Abebe B', 'id_number' => 'EP12345'])->assertCreated()->assertJsonPath('possible_duplicate.id', $id);
         $log = (string) DB::table('activity_logs')->where('subject_type', 'Guest')->where('subject_id', $id)->value('properties');
         $this->assertStringContainsString('id_number', $log);

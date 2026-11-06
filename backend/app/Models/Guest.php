@@ -28,6 +28,17 @@ class Guest extends Model
 
     protected $hidden = ['id_number_hash'];
 
+    /** "ET9494086" → "ET•••4086": enough to tell guests apart without showing the whole ID. */
+    public static function maskId(?string $number): ?string
+    {
+        if ($number === null || $number === '') {
+            return $number;
+        }
+        $prefix = preg_match('/^[A-Za-z]+/', $number, $m) ? $m[0] : '';
+
+        return mb_strlen($number) <= 4 ? '••••' : $prefix.'•••'.mb_substr($number, -4);
+    }
+
     protected static function booted(): void
     {
         // Keep the search hash in step with the (encrypted) ID number.
