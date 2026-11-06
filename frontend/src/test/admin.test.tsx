@@ -210,6 +210,7 @@ describe('log in as hotel', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'Reset demo now' }))
     expect(await screen.findByRole('heading', { name: 'Demo 5' })).toBeInTheDocument()
+    expect(await screen.findByText('Demo hotel reset. Fresh sample data is ready.')).toBeInTheDocument()
     expect(screen.queryByText("Can't reach the server. Check the internet and try again.")).not.toBeInTheDocument()
     expect(screen.queryByText('This hotel no longer exists. Go back to the hotels list.')).not.toBeInTheDocument()
   })

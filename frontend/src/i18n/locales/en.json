@@ -584,7 +584,10 @@
       "receptionist": "Receptionist",
       "housekeeping": "Housekeeping",
       "accountant": "Accountant"
-    }
+    },
+    "resetDone": "Demo hotel reset. Fresh sample data is ready.",
+    "resetFailed": "The demo hotel could not be reset. Try again.",
+    "resetting": "Resetting…"
   },
   "settings": {
     "subtitle": "How your hotel works: profile, money, rules and features.",
