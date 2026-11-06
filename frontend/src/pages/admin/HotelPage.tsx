@@ -299,11 +299,10 @@ function LoginAsPanel({ hotel, users, onDone }: { hotel: Hotel; users: { id: num
 
 function ResetDemoButton({ hotelId }: { hotelId: number }) {
   const { t } = useTranslation()
-  const reset = useResetDemo(hotelId)
   const navigate = useNavigate()
-  // The demo is rebuilt as a new hotel (new number), so open the new one.
+  const reset = useResetDemo(hotelId, (id) => navigate(`/admin/hotels/${id}`, { replace: true }))
   return (
-    <Button variant="secondary" disabled={reset.isPending} onClick={() => reset.mutate(undefined, { onSuccess: (r) => navigate(`/admin/hotels/${r.data.id}`, { replace: true }) })}>
+    <Button variant="secondary" disabled={reset.isPending} onClick={() => reset.mutate()}>
       {reset.isPending ? t('common.saving') : t('demo.resetNow')}
     </Button>
   )

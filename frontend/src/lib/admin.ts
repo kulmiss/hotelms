@@ -209,7 +209,22 @@ export function useLoginAsHotel(hotelId: number) {
   })
 }
 
-export const useResetDemo = (hotelId: number) => useAdminMutation(() => post<{ data: { id: number } }>(`/admin/hotels/${hotelId}/demo/reset`))
+/**
+ * The demo is rebuilt as a new hotel (new number). Open the new one first, then refresh the lists:
+ * refreshing first would reload the old (deleted) hotel and show "no longer exists".
+ */
+export function useResetDemo(hotelId: number, onDone: (newId: number) => void) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => post<{ data: { id: number } }>(`/admin/hotels/${hotelId}/demo/reset`),
+    onSuccess: (r) => {
+      qc.removeQueries({ queryKey: ['admin', 'hotel', hotelId] })
+      onDone(r.data.id)
+      void qc.invalidateQueries({ queryKey: ['admin', 'hotels'] })
+      void qc.invalidateQueries({ queryKey: ['admin', 'dashboard'] })
+    },
+  })
+}
 
 export type PlatformReport = {
   income: { month: string; totals: Record<string, string> | []; by_plan: { plan: string; currency: string; total: string; payments: number }[] }[]
