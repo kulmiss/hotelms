@@ -19,6 +19,7 @@ const NewHotelPage = lazy(() => pages.newHotel().then((m) => ({ default: m.NewHo
 const HotelPage = lazy(() => pages.hotel().then((m) => ({ default: m.HotelPage })))
 const PlansPage = lazy(() => pages.plans().then((m) => ({ default: m.PlansPage })))
 const PlatformSettingsPage = lazy(() => pages.platformSettings().then((m) => ({ default: m.PlatformSettingsPage })))
+const SwitchesPage = lazy(() => pages.switches().then((m) => ({ default: m.SwitchesPage })))
 const PlatformReportsPage = lazy(() => pages.platformReports().then((m) => ({ default: m.PlatformReportsPage })))
 const ForgotPasswordPage = lazy(() => import('@/pages/PasswordResetPages').then((m) => ({ default: m.ForgotPasswordPage })))
 const ResetPasswordPage = lazy(() => import('@/pages/PasswordResetPages').then((m) => ({ default: m.ResetPasswordPage })))
@@ -219,6 +220,7 @@ export const routes = [
               { path: 'plans', element: page(<PlansPage />) },
               { path: 'settings', element: page(<PlatformSettingsPage />) },
               { path: 'reports', element: page(<PlatformReportsPage />) },
+              { path: 'switches', element: page(<SwitchesPage />) },
             ],
           },
           { path: 'profile', element: page(<ProfilePage />) },

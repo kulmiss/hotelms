@@ -119,7 +119,7 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
           <Card className="flex flex-col gap-4">
             <h2 className="text-sm font-semibold">{t('reservations.form.stay')}</h2>
             <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t('reservations.form.stayType')}>
-              {(['nightly', 'day_use', 'hourly'] as const).map((s) => (
+              {(['nightly', 'day_use', 'hourly'] as const).filter((s) => !lookups.data?.stay_types || lookups.data.stay_types.includes(s)).map((s) => (
                 <button
                   key={s}
                   type="button"

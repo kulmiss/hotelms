@@ -39,7 +39,9 @@ export function RequireAuth() {
 
   // A new Hotel Admin goes through the setup walkthrough (its first step is the new password).
   // After "Save and exit" the dashboard shows a "Finish setup" card instead.
-  const setup = me.data.role?.is_hotel_admin && !me.data.impersonation ? me.data.hotel?.setup : null
+  // (The walkthrough itself is a Super Admin switch.)
+  const walkthrough = me.data.switches?.setup_walkthrough !== false
+  const setup = me.data.role?.is_hotel_admin && !me.data.impersonation && walkthrough ? me.data.hotel?.setup : null
   const onSetup = location.pathname === '/setup'
   if (setup && !setup.completed && (!setup.started || me.data.user.must_change_password) && !onSetup) {
     return <Navigate to="/setup" replace />

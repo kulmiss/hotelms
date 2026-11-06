@@ -1,6 +1,7 @@
 import type { ComponentType, SVGProps } from 'react'
 import {
   AdjustmentsHorizontalIcon,
+  AdjustmentsVerticalIcon,
   BanknotesIcon,
   BuildingOffice2Icon,
   CalendarDaysIcon,
@@ -22,6 +23,7 @@ import {
 } from '@heroicons/react/24/outline'
 import {
   AdjustmentsHorizontalIcon as AdjustmentsHorizontalSolid,
+  AdjustmentsVerticalIcon as AdjustmentsVerticalSolid,
   BanknotesIcon as BanknotesSolid,
   BuildingOffice2Icon as BuildingOffice2Solid,
   CalendarDaysIcon as CalendarDaysSolid,
@@ -99,5 +101,6 @@ export const adminNav: NavItem[] = [
   { key: 'hotels', path: '/admin/hotels', icon: BuildingOffice2Icon, activeIcon: BuildingOffice2Solid, group: 'customers', phase: 1 },
   { key: 'platformReports', path: '/admin/reports', icon: ChartBarIcon, activeIcon: ChartBarSolid, group: 'customers', phase: 1 },
   { key: 'plans', path: '/admin/plans', icon: TagIcon, activeIcon: TagSolid, group: 'billing', phase: 1 },
+  { key: 'switches', path: '/admin/switches', icon: AdjustmentsVerticalIcon, activeIcon: AdjustmentsVerticalSolid, group: 'system', phase: 8, permission: 'switches.manage' },
   { key: 'platformSettings', path: '/admin/settings', icon: AdjustmentsHorizontalIcon, activeIcon: AdjustmentsHorizontalSolid, group: 'system', phase: 1 },
 ]

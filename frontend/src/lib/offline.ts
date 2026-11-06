@@ -41,9 +41,13 @@ export function startOfflineCopy(client: QueryClient): () => void {
   const save = () => {
     window.clearTimeout(timer)
     timer = window.setTimeout(() => {
-      const me = client.getQueryData<{ user?: { id: number } } | null>(['me'])
+      const me = client.getQueryData<{ user?: { id: number }; switches?: Record<string, boolean> } | null>(['me'])
       const id = me?.user?.id
       if (!id) return
+      if (me?.switches?.offline === false) {
+        wipeOfflineCopy() // offline mode switched off for this hotel
+        return
+      }
       const saved: Saved[] = client
         .getQueryCache()
         .getAll()
