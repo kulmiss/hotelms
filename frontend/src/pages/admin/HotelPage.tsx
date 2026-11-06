@@ -30,8 +30,12 @@ import { ApiError } from '@/lib/api'
 import { useMe } from '@/lib/auth'
 import { date, money } from '@/lib/format'
 import { useHotelSwitches } from '@/lib/switches'
+import { LiveData, NotesAndAccess, PlanUsage, StaffAndDevices } from './HotelTabs'
+import { Tabs } from '@/components/ui/Tabs'
 
 type Panel = 'payment' | 'suspend' | 'trial' | 'loginAs' | 'close' | null
+
+type HotelTab = 'overview' | 'live' | 'staff' | 'notes'
 
 export function HotelPage() {
   const { t } = useTranslation()
@@ -39,6 +43,7 @@ export function HotelPage() {
   const hotel = useHotel(id)
   const me = useMe()
   const [panel, setPanel] = useState<Panel>(null)
+  const [tab, setTab] = useState<HotelTab>('overview')
 
   if (hotel.isPending) return <p className="text-muted">{t('common.loading')}</p>
   if (hotel.isError) return <Alert>{t('common.serverUnreachable')}</Alert>
@@ -105,6 +110,18 @@ export function HotelPage() {
       {panel === 'suspend' && <SuspendPanel hotelId={h.id} onDone={() => setPanel(null)} />}
       {panel === 'trial' && <TrialPanel hotel={h} onDone={() => setPanel(null)} />}
 
+      <Tabs
+        label={h.name}
+        active={tab}
+        onChange={(k) => setTab(k as HotelTab)}
+        items={(['overview', 'live', 'staff', 'notes'] as const).map((k) => ({ key: k, label: t(`hotelTabs.tabs.${k}`) }))}
+      />
+      {tab === 'live' && <LiveData hotelId={h.id} currency={h.default_currency} />}
+      {tab === 'staff' && <StaffAndDevices hotelId={h.id} />}
+      {tab === 'notes' && <NotesAndAccess hotelId={h.id} />}
+      {tab === 'overview' && (
+      <>
+      <PlanUsage hotelId={h.id} />
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="flex flex-col gap-3">
           <h2 className="font-semibold">{t('admin.hotel.subscription')}</h2>
@@ -198,6 +215,8 @@ export function HotelPage() {
       </Card>
 
       <HotelSwitches hotelId={h.id} canManage={me.data?.platform?.permissions.includes('switches.manage') ?? false} />
+      </>
+      )}
     </div>
   )
 }

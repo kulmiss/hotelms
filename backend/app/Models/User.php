@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\PlatformPermissions;
 use App\Models\Concerns\LogsActivity;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -106,10 +107,7 @@ class User extends Authenticatable
             return true;
         }
 
-        // Permission names contain dots, so read the whole map (not config dot-paths).
-        $roles = config('hotelms.platform_permissions', [])[$permission] ?? [];
-
-        return in_array($this->platform_role, $roles, true);
+        return in_array($this->platform_role, app(PlatformPermissions::class)->rolesFor($permission), true);
     }
 
     public function isActive(): bool

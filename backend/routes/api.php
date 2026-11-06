@@ -33,7 +33,13 @@ use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\Reports\AutomationController;
 use App\Http\Controllers\Api\Reports\InsightController;
 use App\Http\Controllers\Api\Reports\ReportController;
+use App\Http\Controllers\Api\Admin\HotelInsightController;
+use App\Http\Controllers\Api\Admin\PlatformActivityController;
+use App\Http\Controllers\Api\Admin\SupportController as AdminSupportController;
+use App\Http\Controllers\Api\Admin\SystemController;
+use App\Http\Controllers\Api\Admin\TeamController;
 use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\Api\SupportController;
 use App\Http\Controllers\Api\SecurityController;
 use App\Http\Controllers\Api\Settings\BranchSettingsController;
 use App\Http\Controllers\Api\Settings\CancellationPolicyController;
@@ -82,6 +88,11 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
     // Everything below needs a password the user chose themselves.
     Route::middleware(['password.changed', 'two.factor'])->group(function () {
         Route::get('/search', SearchController::class)->middleware('throttle:60,1');
+        // Help: questions to HotelMS. Open even when the hotel is suspended or in maintenance.
+        Route::get('/support', [SupportController::class, 'index']);
+        Route::post('/support', [SupportController::class, 'store'])->middleware('throttle:20,60');
+        Route::get('/support/{id}', [SupportController::class, 'show']);
+        Route::post('/support/{id}/messages', [SupportController::class, 'reply'])->middleware('throttle:60,60');
         // Your own security (open before two-step sign-in is set up: see EnsureTwoFactorSetUp).
         Route::middleware('not.impersonating')->group(function () {
             Route::get('/me/security', [SecurityController::class, 'show']);
@@ -372,6 +383,28 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
 
             Route::get('/hotels', [AdminHotelController::class, 'index']);
             Route::get('/hotels/{hotel}', [AdminHotelController::class, 'show'])->withTrashed(); // closed hotels too
+            Route::get('/hotels/{hotel}/overview', [HotelInsightController::class, 'overview'])->withTrashed();
+            Route::post('/hotels/{hotel}/live', [HotelInsightController::class, 'live']);
+            Route::post('/hotels/{hotel}/notes', [HotelInsightController::class, 'storeNote'])->withTrashed();
+            Route::delete('/hotels/{hotel}/notes/{id}', [HotelInsightController::class, 'destroyNote'])->withTrashed();
+
+            Route::middleware('platform:support.answer')->group(function () {
+                Route::get('/support', [AdminSupportController::class, 'index']);
+                Route::post('/support', [AdminSupportController::class, 'store']);
+                Route::get('/support/{id}', [AdminSupportController::class, 'show']);
+                Route::put('/support/{id}', [AdminSupportController::class, 'update']);
+                Route::post('/support/{id}/messages', [AdminSupportController::class, 'message']);
+            });
+            Route::middleware('platform:system.view')->group(function () {
+                Route::get('/system', SystemController::class);
+                Route::get('/activity', PlatformActivityController::class);
+            });
+            Route::middleware('platform:team.manage')->group(function () {
+                Route::get('/team', [TeamController::class, 'index']);
+                Route::post('/team', [TeamController::class, 'store']);
+                Route::put('/team/permissions', [TeamController::class, 'savePermissions']);
+                Route::put('/team/{id}', [TeamController::class, 'update']);
+            });
             Route::get('/plans', [AdminPlanController::class, 'index']);
             Route::get('/settings', [PlatformSettingsController::class, 'show']);
 

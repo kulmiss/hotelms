@@ -268,3 +268,58 @@ describe('switches', () => {
   })
 })
 
+
+describe('Super Admin areas', () => {
+  const owner = () => ({ ...superAdmin(), platform: { role: 'owner', permissions: ['hotels.view', 'support.answer', 'system.view', 'team.manage', 'switches.manage'] } })
+
+  it('answers a support request with a reply', async () => {
+    const req = { id: 4, subject: 'Printer', status: 'open', priority: 'urgent', channel: 'app', from: 'Meron', hotel: { id: 1, name: 'Sheger Hotel' }, assigned_to: null, last_message_at: '2026-11-06T08:00:00+03:00', created_at: null }
+    const detail = { ...req, contact: { name: 'Meron', email: 'm@x.test', phone: null }, hotel_context: { status: 'active', plan: 'Standard', city: 'Addis Ababa', phone: null, email: null }, team: [], messages: [{ id: 1, kind: 'message', body: 'Blank receipt', author: 'Meron', created_at: null }] }
+    const fetchMock = mockApi({
+      'GET /me': { body: owner() },
+      'GET /admin/support': { body: { data: [req], counts: { open: 1, waiting: 0, solved: 0 }, meta: { total: 1, last_page: 1, current_page: 1 } } },
+      'GET /admin/support/4': { body: { data: detail } },
+      'POST /admin/support/4/messages': { body: { data: detail } },
+    })
+    renderApp('/admin/support')
+
+    await userEvent.click(await screen.findByRole('button', { name: /Printer/ }))
+    expect(await screen.findByText('Blank receipt')).toBeInTheDocument()
+    await userEvent.type(screen.getByLabelText('Your answer'), 'Choose 80mm')
+    await userEvent.click(screen.getByRole('button', { name: 'Reply' }))
+    const call = fetchMock.mock.calls.find(([u, i]) => String(u).endsWith('/admin/support/4/messages') && i?.method === 'POST')
+    expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ body: 'Choose 80mm', kind: 'reply', solve: false })
+  })
+
+  it('shows system health checks', async () => {
+    const ok = { ok: true }
+    mockApi({
+      'GET /me': { body: owner() },
+      'GET /admin/system': {
+        body: {
+          data: {
+            checks: { database: { ...ok, ms: 3 }, cache: { ...ok, driver: 'database' }, scheduler: { ok: false, last_run: null, problem: 'The cron job has never run.' }, jobs: { ...ok, waiting: 0, failed: 0, recent_failures: [] }, backups: { ...ok, daily: null, small: null }, disk: { ...ok, free_mb: 9000 } },
+            errors: [], versions: { app: '1.0.0', php: '8.3', laravel: '13', database: 'mysql' }, checked_at: '2026-11-06T09:00:00+03:00',
+          },
+        },
+      },
+    })
+    renderApp('/admin/system')
+    expect(await screen.findByText('The cron job has never run.')).toBeInTheDocument()
+    expect(screen.getByText('Answers in 3 ms')).toBeInTheDocument()
+  })
+
+  it('lets a hotel ask for help', async () => {
+    const created = { id: 9, subject: 'Wifi', status: 'open', priority: 'normal', channel: 'app', from: 'Meron', last_message_at: null, created_at: null, messages: [{ id: 1, kind: 'message', body: 'No wifi', author: 'Meron', created_at: null }] }
+    const fetchMock = mockApi({ 'GET /me': { body: makeMe() }, 'GET /support': { body: { data: [] } }, 'POST /support': { status: 201, body: { data: created } }, 'GET /support/9': { body: { data: created } } })
+    renderApp('/help')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'New question' }))
+    await userEvent.type(screen.getByLabelText('Subject'), 'Wifi')
+    await userEvent.type(screen.getByLabelText('Your question'), 'No wifi')
+    await userEvent.click(screen.getByRole('button', { name: 'Send' }))
+    expect(await screen.findByText('No wifi')).toBeInTheDocument()
+    const call = fetchMock.mock.calls.find(([u, i]) => String(u).endsWith('/support') && i?.method === 'POST')
+    expect(JSON.parse(String(call?.[1]?.body))).toEqual({ subject: 'Wifi', body: 'No wifi', priority: 'normal' })
+  })
+})

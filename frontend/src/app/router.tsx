@@ -20,6 +20,11 @@ const HotelPage = lazy(() => pages.hotel().then((m) => ({ default: m.HotelPage }
 const PlansPage = lazy(() => pages.plans().then((m) => ({ default: m.PlansPage })))
 const PlatformSettingsPage = lazy(() => pages.platformSettings().then((m) => ({ default: m.PlatformSettingsPage })))
 const SwitchesPage = lazy(() => pages.switches().then((m) => ({ default: m.SwitchesPage })))
+const SupportInboxPage = lazy(() => pages.support().then((m) => ({ default: m.SupportInboxPage })))
+const SystemPage = lazy(() => pages.system().then((m) => ({ default: m.SystemPage })))
+const TeamPage = lazy(() => pages.team().then((m) => ({ default: m.TeamPage })))
+const PlatformActivityPage = lazy(() => pages.platformActivity().then((m) => ({ default: m.PlatformActivityPage })))
+const HelpPage = lazy(() => pages.help().then((m) => ({ default: m.HelpPage })))
 const PlatformReportsPage = lazy(() => pages.platformReports().then((m) => ({ default: m.PlatformReportsPage })))
 const ForgotPasswordPage = lazy(() => import('@/pages/PasswordResetPages').then((m) => ({ default: m.ForgotPasswordPage })))
 const ResetPasswordPage = lazy(() => import('@/pages/PasswordResetPages').then((m) => ({ default: m.ResetPasswordPage })))
@@ -221,9 +226,14 @@ export const routes = [
               { path: 'settings', element: page(<PlatformSettingsPage />) },
               { path: 'reports', element: page(<PlatformReportsPage />) },
               { path: 'switches', element: page(<SwitchesPage />) },
+              { path: 'support', element: page(<SupportInboxPage />) },
+              { path: 'system', element: page(<SystemPage />) },
+              { path: 'team', element: page(<TeamPage />) },
+              { path: 'activity', element: page(<PlatformActivityPage />) },
             ],
           },
           { path: 'profile', element: page(<ProfilePage />) },
+          { path: 'help', element: page(<HelpPage />) },
           { path: 'design-system', element: page(<DesignSystemPage />) },
           { path: '*', element: <NotFoundPage /> },
         ],

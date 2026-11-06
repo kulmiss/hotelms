@@ -70,4 +70,28 @@ class Notifier
 
         return $problems;
     }
+
+    /**
+     * An urgent message to the HotelMS team on Telegram (support requests, emergencies).
+     * Goes to team members who answer support and have linked Telegram. Never throws.
+     */
+    public function platform(string $text, string $permission = 'support.answer'): int
+    {
+        if (! $this->telegram->enabled()) {
+            return 0;
+        }
+        $sent = 0;
+        foreach (User::where('is_super_admin', true)->where('status', 'active')->get() as $user) {
+            if (! $user->hasPlatformPermission($permission) || ! ($chat = $this->telegram->chatFor($user))) {
+                continue;
+            }
+            try {
+                $sent += $this->telegram->send($chat, $text) ? 1 : 0;
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
+
+        return $sent;
+    }
 }
