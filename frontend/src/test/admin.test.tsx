@@ -230,3 +230,40 @@ describe('log in as hotel', () => {
     expect(screen.queryByRole('button', { name: 'Log in as hotel' })).not.toBeInTheDocument()
   })
 })
+
+describe('switches', () => {
+  const tech = () => ({ ...superAdmin(), platform: { role: 'owner', permissions: ['hotels.view', 'switches.manage'] } })
+  const data = {
+    registry: [
+      { key: 'feature.telegram', type: 'bool', group: 'features', default: true },
+      { key: 'limit.rooms', type: 'int', group: 'limits', default: null },
+      { key: 'emergency.maintenance', type: 'bool', group: 'emergency', default: false },
+    ],
+    plans: [{ id: 2, name: 'Standard' }],
+    switches: [{ id: 7, key: 'limit.rooms', level: 'hotel', target_id: 1, target_name: 'Sheger Hotel', value: 80, starts_at: null, ends_at: '2026-12-31T00:00:00+03:00', reason: 'Gift', scheduled: false, expired: false }],
+    banners: [],
+  }
+
+  it('shows the gifts and turns a feature off for one plan', async () => {
+    const fetchMock = mockApi({ 'GET /me': { body: tech() }, 'GET /admin/switches': { body: data }, 'POST /admin/switches': { status: 201, body: { data: {} } } })
+    renderApp('/admin/switches')
+
+    expect(await screen.findByText('Hotel: Sheger Hotel')).toBeInTheDocument()
+    expect(screen.getByText('80')).toBeInTheDocument()
+    await userEvent.click(screen.getAllByRole('button', { name: 'Change' })[1])
+    await userEvent.selectOptions(screen.getByLabelText('For'), 'plan')
+    await userEvent.selectOptions(screen.getByLabelText('Plan'), '2')
+    await userEvent.selectOptions(screen.getByLabelText('Setting'), 'off')
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    const call = fetchMock.mock.calls.find(([u, i]) => String(u).endsWith('/admin/switches') && i?.method === 'POST')
+    expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ key: 'feature.telegram', level: 'plan', target_id: 2, value: false, starts_at: null, ends_at: null })
+  })
+
+  it('shows the maintenance screen to hotel staff', async () => {
+    mockApi({ 'GET /me': { body: { ...makeMe(), emergency: { maintenance: true, read_only: false } } } })
+    renderApp('/')
+    expect(await screen.findByText('We are improving HotelMS')).toBeInTheDocument()
+  })
+})
+

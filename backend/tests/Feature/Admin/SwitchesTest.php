@@ -107,7 +107,7 @@ class SwitchesTest extends TestCase
 
         $this->set(['key' => 'emergency.maintenance', 'level' => 'everyone', 'value' => true]);
         $this->actingAs($this->admin)->getJson('/api/v1/branches')->assertStatus(503)->assertJsonPath('code', 'maintenance');
-        $this->getJson('/api/v1/me')->assertOk(); // the app can still show the message
+        $this->getJson('/api/v1/me')->assertOk()->assertJsonPath('emergency.maintenance', true)->assertJsonPath('emergency.read_only', true); // the app can still show the message
         $this->actingAs($this->owner)->getJson('/api/v1/admin/dashboard')->assertOk(); // HotelMS is never locked out
     }
 

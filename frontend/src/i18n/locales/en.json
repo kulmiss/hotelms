@@ -68,7 +68,8 @@
     "activityLog": "Activity log",
     "attendance": "Attendance",
     "platformReports": "Reports",
-    "devices": "Devices"
+    "devices": "Devices",
+    "switches": "Switches"
   },
   "topbar": {
     "search": "Search guests, rooms, bookings",
@@ -1781,5 +1782,102 @@
     "confirm": "Type it again",
     "save": "Save new password",
     "done": "Password changed. You can sign in now."
+  },
+  "switches": {
+    "subtitle": "Turn features on or off for everyone, one plan or one hotel. The most specific setting wins.",
+    "groups": {
+      "emergency": "Emergency",
+      "modules": "Modules",
+      "features": "Features",
+      "limits": "Limits"
+    },
+    "groupHints": {
+      "emergency": "Use only when something is wrong. Hotels see a notice.",
+      "modules": "Optional modules. Off here hides them even if the plan has them.",
+      "features": "Ship new features switched off, then turn them on.",
+      "limits": "Override the plan limit, e.g. a gift of extra rooms."
+    },
+    "keys": {
+      "module": {
+        "housekeeping": "Housekeeping",
+        "cashier_close": "Cashier close",
+        "shifts": "Shifts",
+        "attendance": "Attendance"
+      },
+      "feature": {
+        "hourly_stays": "Hourly stays",
+        "day_use": "Day use",
+        "multi_currency": "More than one currency",
+        "custom_reports": "Custom reports",
+        "telegram": "Telegram alerts",
+        "offline": "Works offline",
+        "setup_walkthrough": "Setup walkthrough",
+        "smart_hints": "Smart hints",
+        "automations": "Automations",
+        "beta": "Beta features"
+      },
+      "limit": {
+        "rooms": "Rooms",
+        "branches": "Branches",
+        "staff": "Staff"
+      },
+      "emergency": {
+        "maintenance": "Maintenance (hotels can't sign in)",
+        "read_only": "Read only (no changes saved)"
+      }
+    },
+    "default": "Default",
+    "change": "Change",
+    "remove": "Remove",
+    "removeConfirm": "Remove this setting? The next level decides again.",
+    "planDecides": "The plan decides",
+    "planLimit": "Plan limit",
+    "ended": "Ended",
+    "startsAt": "Starts {{when}}",
+    "endsAt": "Ends {{when}}",
+    "levels": {
+      "everyone": "Everyone",
+      "plan": "Plan",
+      "hotel": "Hotel"
+    },
+    "who": "For",
+    "plan": "Plan",
+    "hotel": "Hotel",
+    "findHotel": "Find a hotel",
+    "value": "Setting",
+    "limit": "Limit",
+    "limitHint": "Leave empty to use the plan limit.",
+    "starts": "Start (optional)",
+    "startsHint": "Empty = now.",
+    "ends": "End (optional)",
+    "endsHint": "Empty = no end. Use it for gifts.",
+    "reason": "Reason (optional)",
+    "emergencyConfirm": "This affects hotels right away. Continue?",
+    "banners": {
+      "title": "Banners",
+      "hint": "A message shown at the top of the hotel screens.",
+      "none": "No banners.",
+      "message": "Message",
+      "tone": "Colour",
+      "add": "Add banner",
+      "planOnly": "Only {{plan}} plan",
+      "someHotels": "{{count}} hotels",
+      "tones": {
+        "info": "Info",
+        "warn": "Warning",
+        "danger": "Urgent"
+      }
+    },
+    "maintenance": {
+      "title": "We are improving HotelMS",
+      "body": "The system is under short maintenance. Please try again in a few minutes.",
+      "retry": "Try again"
+    },
+    "readOnly": "Read-only mode: you can look, but changes are not saved right now.",
+    "sources": {
+      "hotel": "This hotel",
+      "plan": "Plan",
+      "everyone": "Everyone"
+    }
   }
 }

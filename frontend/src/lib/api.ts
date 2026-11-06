@@ -127,6 +127,7 @@ export type Me = {
   platform?: { role: string | null; permissions: string[] } | null
   impersonation?: { by: string; reason: string; started_at: string } | null
   switches?: Record<string, boolean>
+  emergency?: { maintenance: boolean; read_only: boolean } | null
   banners?: { id: number; message: string; tone: 'info' | 'warn' | 'danger' }[]
   security?: { two_factor: 'app' | 'email' | null; two_factor_setup_required: boolean; screen_lock_minutes: number; has_pin: boolean }
 }

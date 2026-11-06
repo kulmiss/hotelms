@@ -70,6 +70,11 @@ class MeController extends Controller
             'security' => $this->security($request, $user, $hotel),
             // Feature switches the screens need (W4); banners from HotelMS.
             'switches' => $hotel ? collect(app(Switches::class)->all($hotel))->filter(fn ($v, $k) => str_starts_with($k, 'feature.'))->map(fn ($v) => (bool) $v['value'])->mapWithKeys(fn ($v, $k) => [substr($k, 8) => $v]) : (object) [],
+            // Emergency switches: the app shows a maintenance screen or a read-only notice (support is never locked out).
+            'emergency' => $hotel ? [
+                'maintenance' => app(Switches::class)->on($hotel, 'emergency.maintenance'),
+                'read_only' => app(Switches::class)->on($hotel, 'emergency.read_only'),
+            ] : null,
             'banners' => $hotel ? Banner::active()->latest()->get()->filter(fn (Banner $b) => $b->isFor($hotel))->map(fn (Banner $b) => ['id' => $b->id, 'message' => $b->message, 'tone' => $b->tone])->values() : [],
             'branches' => $user->accessibleBranches()
                 ->map(fn (Branch $branch) => ['id' => $branch->id, 'name' => $branch->name])
