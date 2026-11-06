@@ -43,6 +43,7 @@ return [
         'system.view' => ['tech'],
         'releases.manage' => ['tech'],
         'content.manage' => ['support'],
+        'watchdog.view' => ['tech'], // security, bug and data-leak warnings
         'team.manage' => [],
     ],
 

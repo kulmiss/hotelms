@@ -86,6 +86,7 @@ A backup is taken every hour, so you can always go back (see below).
 ## Backups
 - Every night a full backup, every hour a small one (without logs) – in `BACKUP_PATH` (kept 30 days / 48 hours).
 - Set `BACKUP_COPY_PATH` to a second disk or a folder synced to another location in Ethiopia.
+- Every night the uploaded files (payment proofs and the encrypted guest ID photos, in `storage/app/private`) are copied to `BACKUP_PATH/files` (and the second copy). Files the hotels deleted are removed there too. To restore them, copy that `files` folder back into `storage/app/private`.
 - On the 1st of every month the newest backup is opened and checked; if something is wrong the HotelMS team gets an email.
 - By hand: `php artisan hotelms:backup` · check: `php artisan hotelms:backup --check`
 - **Restore** (replaces ALL data): `php artisan hotelms:backup --restore=/path/file.sql.gz`

@@ -50,3 +50,7 @@ Schedule::call(function () {
     Hotel::whereIn('status', ['trial', 'active', 'grace', 'suspended'])->get()
         ->each(fn (Hotel $hotel) => app(TenantContext::class)->runAs($hotel, fn () => app(GuestIdPhotos::class)->cleanUp($hotel)));
 })->name('guest-id-photos:cleanup')->dailyAt('03:40')->withoutOverlapping();
+
+// Super Admin watchdog: security, bugs and data leaks (quick checks every 10 minutes, data checks every hour).
+Schedule::command('watchdog:run')->everyTenMinutes()->withoutOverlapping();
+Schedule::command('watchdog:run --data')->hourlyAt(17)->withoutOverlapping();
