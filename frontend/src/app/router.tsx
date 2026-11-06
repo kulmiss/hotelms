@@ -48,6 +48,7 @@ const BillingPage = lazy(() => pages.billing().then((m) => ({ default: m.Billing
 const InvoicePage = lazy(() => pages.invoice().then((m) => ({ default: m.InvoicePage })))
 const InvoicePrintPage = lazy(() => pages.invoicePrint().then((m) => ({ default: m.InvoicePrintPage })))
 const RegistrationCardPage = lazy(() => pages.registrationCard().then((m) => ({ default: m.RegistrationCardPage })))
+const ApprovalsPage = lazy(() => pages.approvals().then((m) => ({ default: m.ApprovalsPage })))
 const FrontDeskModePage = lazy(() => pages.frontDeskMode().then((m) => ({ default: m.FrontDeskModePage })))
 const CashierPage = lazy(() => pages.cashier().then((m) => ({ default: m.CashierPage })))
 const HousekeepingPage = lazy(() => pages.housekeeping().then((m) => ({ default: m.HousekeepingPage })))
@@ -72,6 +73,7 @@ const SETTINGS_PAGES: Record<string, ReturnType<typeof section>> = {
   'payment-methods': section('PaymentMethodsSettings'),
   charges: section('ChargesSettings'),
   security: section('SecuritySettings'),
+  automations: section('AutomationsSettings', pages.automationSettings),
   'booking-rules': section('BookingRulesSettings'),
   cancellation: section('CancellationSettings'),
   modules: section('ModulesSettings'),
@@ -250,6 +252,10 @@ export const routes = [
           },
           { path: 'profile', element: page(<ProfilePage />) },
           { path: 'help', element: page(<HelpPage />) },
+          {
+            element: <RequirePermission permission="approvals.decide" />,
+            children: [{ path: 'approvals', element: page(<ApprovalsPage />) }],
+          },
           { path: 'design-system', element: page(<DesignSystemPage />) },
           { path: '*', element: <NotFoundPage /> },
         ],

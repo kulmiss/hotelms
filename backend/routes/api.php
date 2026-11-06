@@ -38,6 +38,9 @@ use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\Reports\AutomationController;
 use App\Http\Controllers\Api\Reports\InsightController;
 use App\Http\Controllers\Api\Reports\ReportController;
+use App\Http\Controllers\Api\Automation\ApprovalController;
+use App\Http\Controllers\Api\Automation\AutomationSettingsController;
+use App\Http\Controllers\Api\Automation\NotificationController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\SecurityController;
 use App\Http\Controllers\Api\Settings\BranchSettingsController;
@@ -88,6 +91,8 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
     // Everything below needs a password the user chose themselves.
     Route::middleware(['password.changed', 'two.factor'])->group(function () {
         Route::get('/search', SearchController::class)->middleware('throttle:60,1');
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::post('/notifications/read', [NotificationController::class, 'read']);
         // Help: questions to HotelMS. Open even when the hotel is suspended or in maintenance.
         Route::get('/support', [SupportController::class, 'index']);
         Route::post('/support', [SupportController::class, 'store'])->middleware('throttle:20,60');
@@ -355,6 +360,15 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
                     Route::get('/modules', [HotelSettingsController::class, 'modules']);
                     Route::put('/modules', [HotelSettingsController::class, 'updateModules']);
                 });
+                Route::middleware('permission:automations.manage')->group(function () {
+                    Route::get('/automations', [AutomationSettingsController::class, 'index']);
+                    Route::put('/automations/quiet-hours', [AutomationSettingsController::class, 'quiet']);
+                    Route::put('/automations/{key}', [AutomationSettingsController::class, 'update']);
+                    Route::post('/automation-rules', [AutomationSettingsController::class, 'storeRule']);
+                    Route::post('/automation-rules/test', [AutomationSettingsController::class, 'testRule']);
+                    Route::put('/automation-rules/{id}', [AutomationSettingsController::class, 'updateRule']);
+                    Route::delete('/automation-rules/{id}', [AutomationSettingsController::class, 'destroyRule']);
+                });
                 Route::middleware('permission:settings.attendance')->group(function () {
                     Route::get('/attendance', [HotelSettingsController::class, 'attendance']);
                     Route::put('/attendance', [HotelSettingsController::class, 'updateAttendance']);
@@ -366,6 +380,11 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
                 });
             });
             Route::get('/subscription', [HotelSettingsController::class, 'subscription'])->middleware('permission:subscription.view');
+            Route::middleware('permission:approvals.decide')->group(function () {
+                Route::get('/approvals', [ApprovalController::class, 'index']);
+                Route::post('/approvals/{id}/approve', [ApprovalController::class, 'approve'])->middleware('one.at.a.time:approval');
+                Route::post('/approvals/{id}/reject', [ApprovalController::class, 'reject']);
+            });
         });
 
         // Super Admin (HotelMS team).

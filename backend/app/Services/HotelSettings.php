@@ -37,6 +37,13 @@ class HotelSettings
         'screen_lock_minutes' => 15,
     ];
 
+    /** Quiet hours (automation.md): no Telegram to staff in this time, except urgent messages. In-app always. */
+    public const QUIET_DEFAULTS = [
+        'quiet_hours' => true,
+        'quiet_from' => '23:00',
+        'quiet_to' => '06:00',
+    ];
+
     public const ATTENDANCE_DEFAULTS = [
         'attendance_methods' => ['self', 'kiosk_pin', 'manual'],
     ];
