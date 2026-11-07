@@ -5,6 +5,7 @@ import { Alert } from '@/components/ui/Alert'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { LoadFailed } from '@/components/ui/LoadFailed'
 import { QuickCharge } from '@/components/billing/QuickCharge'
 import { useMe } from '@/lib/auth'
 import { useCurrentBranch } from '@/lib/branch'
@@ -63,6 +64,7 @@ export function ChargeRoomPage() {
             </button>
           ))}
         </div>
+        {data.isError && !data.data && <LoadFailed error={data.error} onRetry={() => data.refetch()} />}
         {data.data && rooms.length === 0 && <p className="text-[13px] text-muted">{t('quickCharge.noGuests')}</p>}
         {data.data && rooms.length > 0 && shown.length === 0 && <p className="text-[13px] text-muted">{t('quickCharge.noMatch')}</p>}
       </Card>

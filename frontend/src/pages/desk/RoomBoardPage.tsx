@@ -9,6 +9,7 @@ import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { LoadFailed } from '@/components/ui/LoadFailed'
 import { Select } from '@/components/ui/Select'
 import { Tabs } from '@/components/ui/Tabs'
 import { ApiError } from '@/lib/api'
@@ -111,6 +112,7 @@ function Board({ branchId }: { branchId: number | null }) {
     <div className="flex flex-col gap-4">
       <DayPicker day={viewDay} onChange={(d) => setViewDay(d && d !== todayDate() ? d : null)} />
       {viewDay && <Alert tone="info">{t('desk.otherDay', { date: date(viewDay) })}</Alert>}
+      {board.isError && !board.data && <LoadFailed error={board.error} onRetry={() => board.refetch()} />}
       <RoomFilterBar rooms={rooms} counts={board.data?.counts ?? {}} day={day} filter={filter} setFilter={setFilter} />
       {selected && <RoomPanel room={selected} branchId={branchId} readOnly={!!viewDay} onClose={() => setOpen(null)} />}
       {floors.map((f) => (
@@ -305,8 +307,13 @@ function RoomPanel({ room, branchId, readOnly = false, onClose }: { room: BoardR
           </span>
           <span className="flex flex-wrap gap-2">
             {!readOnly && <PlusNight id={room.stay.reservation_id} checkOut={room.stay.check_out_at} stayType={room.stay.stay_type} openStay={room.stay.open_stay} />}
-            <Link to={`/reservations/${room.stay.reservation_id}`} className={buttonClass('secondary')}>
-              <ArrowRightStartOnRectangleIcon aria-hidden className="size-4" />
+            {!readOnly && can('frontdesk.check_out') && (
+              <Link to={`/reservations/${room.stay.reservation_id}?action=check-out`} className={buttonClass('secondary')}>
+                <ArrowRightStartOnRectangleIcon aria-hidden className="size-4" />
+                {t('desk.checkOut')}
+              </Link>
+            )}
+            <Link to={`/reservations/${room.stay.reservation_id}`} className={buttonClass('ghost')}>
               {t('desk.openStay')}
             </Link>
           </span>

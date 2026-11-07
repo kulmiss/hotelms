@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeftStartOnRectangleIcon, ArrowRightEndOnRectangleIcon, BanknotesIcon, Squares2X2Icon, UserPlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftStartOnRectangleIcon, ArrowRightEndOnRectangleIcon, BanknotesIcon, ShoppingBagIcon, Squares2X2Icon, UserPlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { SwipeRow } from '@/components/ui/SwipeRow'
@@ -38,6 +38,7 @@ export function FrontDeskModePage() {
     { key: 'checkOut', icon: ArrowLeftStartOnRectangleIcon, to: '#departures', count: departures.length, show: can('frontdesk.check_out') },
     { key: 'walkIn', icon: UserPlusIcon, to: '/rooms/walk-in', show: can('frontdesk.walk_in') },
     { key: 'takePayment', icon: BanknotesIcon, to: '/billing', show: can('payments.take') },
+    { key: 'chargeRoom', icon: ShoppingBagIcon, to: '/charge', show: can('charges.room') },
     { key: 'roomBoard', icon: Squares2X2Icon, to: '/rooms', show: can('frontdesk.view') },
   ].filter((x) => x.show)
 
@@ -76,7 +77,7 @@ export function FrontDeskModePage() {
       </header>
 
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 p-4 md:p-6">
-        <nav aria-label={t('frontDesk.title')} className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <nav aria-label={t('frontDesk.title')} className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {tiles.map(({ key, icon: Icon, to, count }) => {
             const body = (
               <>

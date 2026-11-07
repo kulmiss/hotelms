@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { PrinterIcon } from '@heroicons/react/24/outline'
 import { Button } from '@/components/ui/Button'
+import { LoadFailed } from '@/components/ui/LoadFailed'
 import { cn } from '@/lib/cn'
 import { useInvoice } from '@/lib/desk'
 import { date, money } from '@/lib/format'
@@ -18,6 +19,7 @@ export function InvoicePrintPage() {
   const q = useInvoice(Number(id))
   const [params] = useSearchParams()
   const [chosen, setPaper] = useState<'a4' | 'receipt' | null>(null)
+  if (q.isError) return <LoadFailed error={q.error} onRetry={() => q.refetch()} back={{ to: '/billing', label: t('loadFailed.toBilling') }} />
   if (!q.data) return null
   const inv = q.data.data
   const h = inv.hotel

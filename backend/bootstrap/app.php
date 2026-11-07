@@ -20,6 +20,7 @@ use App\Http\Middleware\SetTenantContext;
 use App\Services\Watchdog\WatchEvents;
 use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -27,6 +28,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -76,6 +78,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 app(WatchEvents::class)->record('exception', request(), 500, class_basename($e).': '.$e->getMessage().' @ '.str_replace(base_path().'/', '', $e->getFile()).':'.$e->getLine());
             }
         });
+        // A record that is not there (wrong link, removed, or another hotel's): a plain message, no class names.
+        $exceptions->render(fn (NotFoundHttpException $e, Request $request) => $request->is('api/*') && $e->getPrevious() instanceof ModelNotFoundException
+            ? response()->json(['message' => 'Not found. It may have been removed, or the link is wrong.', 'code' => 'not_found'], 404)
+            : null);
         // A badly typed date anywhere is the person's input, not a server error.
         $exceptions->render(fn (InvalidFormatException $e, Request $request) => $request->is('api/*')
             ? response()->json(['message' => 'One of the dates is not valid.', 'code' => 'invalid_date'], 422)

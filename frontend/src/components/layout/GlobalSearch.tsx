@@ -7,6 +7,7 @@ import { api } from '@/lib/api'
 import { useMe } from '@/lib/auth'
 import { cn } from '@/lib/cn'
 import { searchSettings, settingsLink, useSettingsSections } from '@/lib/settingsSearch'
+import { useCan } from '@/lib/hotel'
 import { useDebounced } from '@/lib/useDebounced'
 
 type Hit = { type: 'answer' | 'booking' | 'guest' | 'room' | 'bill' | 'hotel' | 'person' | 'setting'; title: string; subtitle: string; link: string }
@@ -26,6 +27,7 @@ export function GlobalSearch() {
   const box = useRef<HTMLDivElement>(null)
   const listId = useId()
   const admin = Boolean(me.data?.user.is_super_admin && !me.data?.hotel)
+  const can = useCan()
 
   const res = useQuery({
     queryKey: ['search', term],
@@ -84,6 +86,9 @@ export function GlobalSearch() {
   }
 
   const show = open && term.length >= 2
+
+  // Nothing to find for this role (e.g. Restaurant / Bar): no search box at all.
+  if (!admin && sections.length === 0 && !can(['reservations.view', 'guests.view', 'frontdesk.view', 'invoices.view'])) return null
 
   return (
     <div ref={box} className="relative w-full max-w-xs">

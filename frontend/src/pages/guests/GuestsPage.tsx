@@ -13,6 +13,7 @@ import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { LoadFailed } from '@/components/ui/LoadFailed'
 import { Tabs } from '@/components/ui/Tabs'
 import { ApiError } from '@/lib/api'
 import { date, money } from '@/lib/format'
@@ -163,6 +164,7 @@ export function GuestPage() {
       </div>
     )
   }
+  if (q.isError) return <LoadFailed error={q.error} onRetry={() => q.refetch()} back={{ to: '/guests', label: t('loadFailed.toGuests') }} />
   if (!q.data) return null
   const g = q.data.data
 

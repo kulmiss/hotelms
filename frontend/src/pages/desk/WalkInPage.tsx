@@ -14,7 +14,7 @@ import { Select } from '@/components/ui/Select'
 import { ApiError } from '@/lib/api'
 import { useMe } from '@/lib/auth'
 import { useCurrentBranch } from '@/lib/branch'
-import { money } from '@/lib/format'
+import { date, money } from '@/lib/format'
 import { useCan } from '@/lib/hotel'
 import { cn } from '@/lib/cn'
 import { useFreeRooms, useWalkIn } from '@/lib/desk'
@@ -160,6 +160,7 @@ export function WalkInPage() {
               {stayType === 'hourly' && <Field label={t('reservations.form.hours')} type="number" inputMode="numeric" min={1} max={24} value={String(hours)} onChange={(e) => setHours(Math.max(1, Number(e.target.value) || 1))} />}
             </div>
             {stayType === 'nightly' && openStay && <Alert tone="info">{t('openStay.hint')}</Alert>}
+            {stayType === 'nightly' && nightDate < today() && <Alert tone="info">{t('desk.lastNight', { night: date(nightDate) })}</Alert>}
             <p className="text-xs text-muted">
               {t('desk.walkInStartsNow')}{' '}
               <Link to="/reservations/new" className="font-medium text-accent-text underline">
