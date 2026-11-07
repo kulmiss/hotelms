@@ -374,6 +374,7 @@ class ReservationService
         $stayType = $data['stay_type'] ?? 'nightly';
         $times = $this->quote->times($hotel, $branch, $stayType, (string) $data['check_in'], $data['check_out'] ?? null, isset($data['hours']) ? (int) $data['hours'] : null);
 
+        $priceFrom = $times['in']->copy(); // the first night paid (a walk-in after midnight: last night)
         if (! empty($data['walk_in'])) {
             $times['in'] = now()->startOfMinute(); // walk-ins start now
         } elseif (empty($data['allow_past']) && $times['in']->lt(now()->subMinutes(30)) && (! $existing || ! $existing->check_in_at->eq($times['in']))) {
@@ -427,7 +428,7 @@ class ReservationService
                 }
                 $usedRooms[] = $room->id;
             }
-            $price = $this->quote->price($hotel, $type, $stayType, $times['in'], $times['out'], $guestTypeId);
+            $price = $this->quote->price($hotel, $type, $stayType, $stayType === 'nightly' ? $priceFrom : $times['in'], $times['out'], $guestTypeId);
             $rooms[] = ['type' => $type, 'room' => $room, 'adults' => $adults, 'children' => $children, 'total' => $price['total'], 'lines' => $price['lines']];
         }
 

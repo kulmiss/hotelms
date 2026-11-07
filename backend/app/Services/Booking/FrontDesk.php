@@ -286,7 +286,7 @@ class FrontDesk
      * taken off the bill and the hotel's early check-out fee is added (per room; reception may waive it).
      * The first night is always charged. Null when the guest is not leaving early.
      *
-     * @return array{from: string, nights: int, refund: string, fee: string, rooms: list<array{rr: ReservationRoom, fee: string}>}|null
+     * @return array{from: string, nights: int, refund: string, fee: string, rooms: list<array{rr: ReservationRoom, fee: string, from: string}>}|null
      */
     public function earlyDeparture(Reservation $reservation, Carbon $at): ?array
     {
@@ -294,9 +294,7 @@ class FrontDesk
             return null;
         }
         $hotel = $reservation->hotel;
-        $today = HotelClock::local($at, $hotel)->startOfDay();
-        $firstNight = HotelClock::local($reservation->check_in_at, $hotel)->startOfDay()->addDay();
-        $from = $today->max($firstNight)->toDateString();
+        $today = HotelClock::local($at, $hotel)->toDateString();
         $rules = $this->settings->group(HotelSettings::BOOKING_DEFAULTS);
         $rule = ['type' => (string) $rules['early_check_out_fee_type'], 'value' => (string) $rules['early_check_out_fee_value']];
 
@@ -304,19 +302,24 @@ class FrontDesk
         $nights = 0;
         $refund = '0.00';
         $fees = '0.00';
+        $from = null;
         foreach ($reservation->rooms()->with(['rates', 'room', 'roomType'])->get() as $rr) {
-            $unused = $rr->rates->filter(fn ($rate) => $rate->label === 'Night' && $rate->date->toDateString() >= $from);
+            // The first night is always paid (it may be last night, for a walk-in after midnight).
+            $first = $rr->rates->where('label', 'Night')->min(fn ($rate) => $rate->date->toDateString());
+            $cut = $first ? max($today, Carbon::parse($first)->addDay()->toDateString()) : $today;
+            $from = $from === null ? $cut : min($from, $cut);
+            $unused = $rr->rates->filter(fn ($rate) => $rate->label === 'Night' && $rate->date->toDateString() >= $cut);
             if ($unused->isEmpty()) {
                 continue;
             }
             $fee = Money::isPositive($rule['value']) ? $this->fee($rule, (string) $unused->first()->amount) : '0.00';
-            $rooms[] = ['rr' => $rr, 'fee' => $fee];
+            $rooms[] = ['rr' => $rr, 'fee' => $fee, 'from' => $cut];
             $nights = max($nights, $unused->count());
             $refund = Money::add($refund, Money::sum($unused->pluck('amount')->map(fn ($v) => (string) $v)));
             $fees = Money::add($fees, $fee);
         }
 
-        return $rooms === [] ? null : ['from' => $from, 'nights' => $nights, 'refund' => $refund, 'fee' => $fees, 'rooms' => $rooms];
+        return $rooms === [] ? null : ['from' => (string) $from, 'nights' => $nights, 'refund' => $refund, 'fee' => $fees, 'rooms' => $rooms];
     }
 
     /**
@@ -347,12 +350,12 @@ class FrontDesk
         return ['from' => $early['from'], 'nights' => $early['nights'], 'fee' => $fee, 'balance' => $balance, 'balance_without_fee' => Money::sub($balance, $fee)];
     }
 
-    /** @param  array{from: string, rooms: list<array{rr: ReservationRoom, fee: string}>}  $early */
+    /** @param  array{from: string, rooms: list<array{rr: ReservationRoom, fee: string, from: string}>}  $early */
     private function shortenStay(Reservation $reservation, Invoice $invoice, array $early, bool $waive, Carbon $now, User $user): void
     {
-        foreach ($early['rooms'] as ['rr' => $rr, 'fee' => $fee]) {
-            $rr->rates()->where('label', 'Night')->where('date', '>=', $early['from'])->delete();
-            $invoice->items()->where('reservation_room_id', $rr->id)->where('type', 'room')->where('service_date', '>=', $early['from'])->get()->each->delete();
+        foreach ($early['rooms'] as ['rr' => $rr, 'fee' => $fee, 'from' => $from]) {
+            $rr->rates()->where('label', 'Night')->where('date', '>=', $from)->delete();
+            $invoice->items()->where('reservation_room_id', $rr->id)->where('type', 'room')->where('service_date', '>=', $from)->get()->each->delete();
             if (Money::isPositive($fee)) {
                 $this->invoices->line($invoice, [
                     'type' => 'early_check_out',
