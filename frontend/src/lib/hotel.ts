@@ -55,12 +55,12 @@ export const usePermissionCatalog = () =>
 export const useStaff = () => useQuery({ queryKey: ['hotel', 'staff'], queryFn: () => api<{ data: StaffMember[] }>('/staff') })
 export const useStaffMember = (id: number) =>
   useQuery({ queryKey: ['hotel', 'staff', id], queryFn: () => api<{ data: StaffMember }>(`/staff/${id}`), enabled: id > 0 })
-export const useActivityLog = (search: string, page: number) =>
+export const useActivityLog = (search: string, page: number, range: { from?: string; to?: string } = {}) =>
   useQuery({
-    queryKey: ['hotel', 'activity', search, page],
+    queryKey: ['hotel', 'activity', search, page, range],
     queryFn: () =>
       api<{ data: ActivityEntry[]; current_page: number; last_page: number }>(
-        `/activity-log?page=${page}${search ? `&search=${encodeURIComponent(search)}` : ''}`,
+        `/activity-log?page=${page}${search ? `&search=${encodeURIComponent(search)}` : ''}${range.from ? `&from=${range.from}` : ''}${range.to ? `&to=${range.to}` : ''}`,
       ),
     placeholderData: keepPreviousData,
   })

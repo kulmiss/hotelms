@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\Front;
 
 use App\Http\Controllers\Controller;
 use App\Http\Presenters\ReservationPresenter;
+use App\Models\Branch;
 use App\Models\Guest;
+use App\Models\Hotel;
 use App\Models\Invoice;
 use App\Models\Reservation;
 use App\Models\ReservationRoom;
@@ -35,6 +37,10 @@ class FrontDeskController extends Controller
         $user = $request->user();
         $hotel = $user->hotel;
         $branch = $this->branch($request);
+        $day = $request->validate(['date' => ['nullable', 'date_format:Y-m-d', 'after:-3 years', 'before:+3 years']])['date'] ?? null;
+        if ($day && $day !== HotelClock::now($hotel)->toDateString()) {
+            return $this->boardOn($branch, $day, $hotel);
+        }
         $todayEnd = HotelClock::now($hotel)->endOfDay()->utc();
 
         $stays = ReservationRoom::with(['reservation.guest:id,first_name,last_name'])->whereNotNull('room_id')
@@ -74,6 +80,38 @@ class FrontDeskController extends Controller
         $counts = $rooms->countBy('status');
 
         return response()->json(['data' => $rooms->values(), 'counts' => $counts, 'refreshed_at' => HotelClock::iso(now(), $hotel)]);
+    }
+
+    /**
+     * The rooms on another day (owner, 2026-11-07): who stays that night (booked, staying or already left),
+     * free rooms, and rooms out of order. Read only; today's board is the live one.
+     */
+    private function boardOn(Branch $branch, string $day, Hotel $hotel): JsonResponse
+    {
+        $night = HotelClock::parse($day, $hotel)->addDay()->subSecond(); // the night of that day (last second of the day)
+        $stays = ReservationRoom::with(['reservation.guest:id,first_name,last_name'])->whereNotNull('room_id')
+            ->whereHas('reservation', fn ($q) => $q->where('branch_id', $branch->id))
+            ->whereIn('status', ['pending', 'confirmed', 'checked_in', 'checked_out'])
+            ->where('check_in_at', '<=', $night)->where('check_out_at', '>', $night)
+            ->get()->keyBy('room_id');
+        $rooms = Room::with('roomType:id,name')->where('branch_id', $branch->id)->orderBy('floor')->orderByRaw('LENGTH(number)')->orderBy('number')->get()
+            ->map(function (Room $room) use ($stays, $hotel) {
+                $s = $stays->get($room->id);
+                $status = $s ? 'occupied' : (in_array($room->status, ['maintenance', 'out_of_order'], true) ? $room->status : 'available');
+
+                return [
+                    'id' => $room->id, 'number' => $room->number, 'floor' => $room->floor, 'status' => $status,
+                    'room_type_id' => $room->room_type_id, 'room_type' => $room->roomType?->name, 'notes' => $room->notes,
+                    'stay' => $s ? [
+                        'reservation_id' => $s->reservation_id, 'code' => $s->reservation?->code, 'guest' => $s->reservation?->guest?->full_name,
+                        'check_in_at' => HotelClock::iso($s->check_in_at, $hotel), 'check_out_at' => HotelClock::iso($s->check_out_at, $hotel),
+                        'balance' => '0.00', 'overdue' => false, 'status' => $s->status, 'stay_type' => $s->reservation?->stay_type,
+                    ] : null,
+                    'arriving' => null, 'next_booking' => null,
+                ];
+            });
+
+        return response()->json(['data' => $rooms->values(), 'counts' => $rooms->countBy('status'), 'date' => $day, 'refreshed_at' => HotelClock::iso(now(), $hotel)]);
     }
 
     /** Arrivals today (late ones flagged), departures today (overdue flagged), guests in house. */

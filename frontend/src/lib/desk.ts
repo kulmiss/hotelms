@@ -43,8 +43,14 @@ function useDeskInvalidate() {
 /** Live screens poll (no WebSocket server on shared hosting). */
 const LIVE = 30_000
 
-export const useBoard = (branchId: number | null) =>
-  useQuery({ queryKey: ['desk', 'board', branchId], queryFn: () => api<{ data: BoardRoom[]; counts: Record<string, number>; refreshed_at: string }>(`/front-desk/board${branchQs(branchId)}`), refetchInterval: LIVE, placeholderData: keepPreviousData })
+/** The live board (today), or the rooms on another day (`date`, read only, not polled). */
+export const useBoard = (branchId: number | null, date: string | null = null) =>
+  useQuery({
+    queryKey: ['desk', 'board', branchId, date],
+    queryFn: () => api<{ data: BoardRoom[]; counts: Record<string, number>; refreshed_at: string; date?: string }>(`/front-desk/board${branchQs(branchId)}${date ? `${branchId ? '&' : '?'}date=${date}` : ''}`),
+    refetchInterval: date ? false : LIVE,
+    placeholderData: keepPreviousData,
+  })
 
 export const useToday = (branchId: number | null) =>
   useQuery({ queryKey: ['desk', 'today', branchId], queryFn: () => api<{ arrivals: TodayRow[]; departures: TodayRow[]; in_house: TodayRow[] }>(`/front-desk/today${branchQs(branchId)}`), refetchInterval: LIVE, placeholderData: keepPreviousData })
@@ -150,7 +156,7 @@ export type PaymentRow = { id: number; type: string; amount: string; currency: s
 const qs = (p: Record<string, string | number | boolean | null | undefined>) =>
   new URLSearchParams(Object.entries(p).filter(([, v]) => v !== undefined && v !== null && v !== '' && v !== false).map(([k, v]) => [k, String(v)])).toString()
 
-export const useInvoices = (f: { q?: string; status?: string; unpaid?: boolean; page?: number }) =>
+export const useInvoices = (f: { q?: string; status?: string; unpaid?: boolean; page?: number; from?: string; to?: string }) =>
   useQuery({ queryKey: ['invoices', 'list', f], queryFn: () => api<Page<InvoiceSummary>>(`/invoices?${qs(f)}`), placeholderData: keepPreviousData })
 export const useInvoice = (id: number) => useQuery({ queryKey: ['invoices', 'one', id], queryFn: () => api<{ data: InvoiceDetail }>(`/invoices/${id}`), enabled: id > 0 })
 export const useChargeTypes = () => useQuery({ queryKey: ['invoices', 'charge-types'], queryFn: () => api<{ data: { id: number; name: string; default_price: string | null; currency: string }[] }>('/charge-types'), staleTime: 60_000 })

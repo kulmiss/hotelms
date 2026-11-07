@@ -8,6 +8,8 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Tabs } from '@/components/ui/Tabs'
 import { cn } from '@/lib/cn'
 import { INVOICE_TONES, useInvoices, usePayments } from '@/lib/desk'
+import { DateRangeFilter } from '@/components/ui/DateRangeFilter'
+import type { DateRange } from '@/lib/dateRange'
 import { date, money } from '@/lib/format'
 import { localDate, localTime } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
@@ -55,12 +57,14 @@ function InvoiceList() {
   const [q, setQ] = useState('')
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>('all')
   const [page, setPage] = useState(1)
+  const [range, setRange] = useState<DateRange>({})
   const search = useDebounced(q, 250)
   const f = FILTERS.find((x) => x.key === filter) ?? FILTERS[0]
-  const list = useInvoices({ q: search, status: 'status' in f ? f.status : undefined, unpaid: 'unpaid' in f ? f.unpaid : undefined, page })
+  const list = useInvoices({ q: search, status: 'status' in f ? f.status : undefined, unpaid: 'unpaid' in f ? f.unpaid : undefined, page, ...range })
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
       <div className="relative w-full max-w-xs">
         <MagnifyingGlassIcon aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-icon" />
         <input
@@ -73,6 +77,14 @@ function InvoiceList() {
             setPage(1)
           }}
           className="min-h-touch w-full rounded-lg bg-surface pr-3 pl-9 text-[13px] shadow-sm ring-1 ring-ring outline-none focus:ring-2 focus:ring-accent"
+        />
+      </div>
+        <DateRangeFilter
+          value={range}
+          onChange={(r) => {
+            setRange(r)
+            setPage(1)
+          }}
         />
       </div>
       <div className="flex flex-wrap gap-1.5">
@@ -140,9 +152,17 @@ function InvoiceList() {
 function PaymentList() {
   const { t } = useTranslation()
   const [page, setPage] = useState(1)
-  const list = usePayments({ page })
+  const [range, setRange] = useState<DateRange>({})
+  const list = usePayments({ page, ...range })
   return (
     <div className="flex flex-col gap-4">
+      <DateRangeFilter
+        value={range}
+        onChange={(r) => {
+          setRange(r)
+          setPage(1)
+        }}
+      />
       <Card className="overflow-x-auto p-0">
         <table className="w-full min-w-[760px] text-left text-[13px]">
           <thead className="bg-sunken">

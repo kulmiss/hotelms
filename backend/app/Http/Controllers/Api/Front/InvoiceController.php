@@ -24,12 +24,16 @@ class InvoiceController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $request->validate(['from' => ['nullable', 'date'], 'to' => ['nullable', 'date']]);
         $hotel = $request->user()->hotel;
         $q = trim((string) $request->input('q'));
         $page = Invoice::with(['guest:id,first_name,last_name,phone', 'reservation:id,code', 'branch:id,name'])
             ->whereIn('branch_id', $request->user()->accessibleBranches()->pluck('id'))
             ->when($request->input('status'), fn ($w, $s) => $w->whereIn('status', explode(',', $s)))
             ->when($request->boolean('unpaid'), fn ($w) => $w->where('status', '!=', 'void')->where('balance', '>', 0))
+            // Bill date (hotel days): ?from=2026-11-01&to=2026-11-07
+            ->when($request->input('from'), fn ($w, $d) => $w->where('issued_at', '>=', HotelClock::parse($d, $hotel)))
+            ->when($request->input('to'), fn ($w, $d) => $w->where('issued_at', '<', HotelClock::parse($d, $hotel)->addDay()))
             ->when($q !== '', fn ($w) => $w->where(fn ($x) => $x->where('number', 'like', "%{$q}%")
                 ->orWhereHas('reservation', fn ($r) => $r->where('code', 'like', "%{$q}%"))
                 ->orWhereHas('guest', fn ($g) => $g->search($q))))
