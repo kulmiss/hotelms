@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Api\Admin\DocsController;
 use App\Http\Controllers\Api\Admin\HotelController as AdminHotelController;
 use App\Http\Controllers\Api\Admin\HotelInsightController;
 use App\Http\Controllers\Api\Admin\HotelUserController;
@@ -417,6 +418,11 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
                 Route::post('/watchdog/{finding}/mute', [WatchdogController::class, 'mute']);
             });
             Route::get('/reports/platform', [PlatformReportController::class, 'platform']);
+            // Developer documentation (the docs/ folder), for the Owner and the tech team.
+            Route::middleware('platform:docs.view')->group(function () {
+                Route::get('/docs', [DocsController::class, 'index']);
+                Route::get('/docs/{name}', [DocsController::class, 'show'])->where('name', '[a-z0-9-]+');
+            });
             Route::get('/hotels/{hotel}/switches', [SwitchController::class, 'forHotel'])->withTrashed();
             Route::middleware('platform:switches.manage')->group(function () {
                 Route::get('/switches', [SwitchController::class, 'index']);

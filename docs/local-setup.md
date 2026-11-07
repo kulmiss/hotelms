@@ -20,6 +20,8 @@ docker compose up             # other times
 | redis | localhost:6379 | optional |
 | mailpit | http://localhost:8025 | every email the app sends lands here |
 
+The `docs/` folder is mounted into the backend container (read-only), so Super Admin → Developer docs shows your latest edits.
+
 Sign in as the Super Admin with `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD` from `backend/.env`
 (you are asked to choose your own password the first time).
 

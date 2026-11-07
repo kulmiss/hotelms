@@ -30,7 +30,7 @@ services:
 
   backend:
     build: ./backend
-    volumes: ['./backend:/var/www/backend']
+    volumes: ['./backend:/var/www/backend', './docs:/var/www/docs:ro'] # docs: Super Admin → Developer docs
     ports: ['8000:8000']
     environment:
       # Answer several requests at the same time (a page asks for 5–10 things at once).

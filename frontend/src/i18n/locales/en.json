@@ -76,6 +76,7 @@
     "system": "System health",
     "team": "Team",
     "watchdog": "Watchdog",
+    "docs": "Developer docs",
     "platformActivity": "Activity log",
     "approvals": "Approvals",
     "releases": "Releases",
@@ -2231,6 +2232,7 @@
       "releases_manage": "Release notes (What's new)",
       "content_manage": "Texts on invoices and emails",
       "watchdog_view": "Watchdog (security, bugs, data leaks)",
+      "docs_view": "Developer documentation",
       "team_manage": "Manage the HotelMS team"
     }
   },
@@ -2624,6 +2626,16 @@
     "view": "Proof",
     "add": "Add proof",
     "saved": "Proof added."
+  },
+  "docs": {
+    "title": "Developer docs",
+    "subtitle": "How HotelMS is built: the docs/ folder of the code. Updated with every change.",
+    "search": "Search the docs",
+    "searchHint": "For example: tenancy, money, cron",
+    "noHits": "Nothing found.",
+    "missing": "The docs folder is not on this server. Upload it with the app (deploy/package.sh does this).",
+    "notFound": "This document does not exist.",
+    "updated": "Last changed {{date}}"
   },
   "watchdog": {
     "title": "Watchdog",

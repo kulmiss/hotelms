@@ -10,6 +10,9 @@ Same code for **shared hosting (cPanel)** and a **VPS**. No Redis, no always-on 
 - Data law: guest data must stay on servers **in Ethiopia** (Proclamation 1321/2024) – choose an Ethiopian host.
 
 ## 1. Build the package (on your laptop)
+
+The package also holds the `docs/` folder (outside `public/`, so not on the web): Super Admin → Developer docs reads it.
+Another place: set `DOCS_PATH` in `.env`.
 ```sh
 ./deploy/package.sh        # makes build/hotelms.zip
 ```
