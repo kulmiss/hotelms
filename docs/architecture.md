@@ -32,7 +32,7 @@ The same code must run on **cPanel shared hosting** and on a **VPS**:
 
 | Who | `users` row | Sees |
 |---|---|---|
-| **Hotel staff** (Hotel Admin, Branch Manager, Receptionist, Housekeeping, Accountant, custom roles) | `hotel_id` set, `role_id` set, branches in `branch_user` | Their hotel only, their branches only, what their role allows |
+| **Hotel staff** (Hotel Admin, Branch Manager, Receptionist, Housekeeping, Accountant, Restaurant / Bar, custom roles) | `hotel_id` set, `role_id` set, branches in `branch_user` | Their hotel only, their branches only, what their role allows |
 | **Super Admin team** (HotelMS company: Owner, Support, Sales, Finance, Tech) | `is_super_admin = true`, `hotel_id = null`, `platform_role` | `/admin/...` screens: all hotels, billing, switches, support, watchdog |
 
 A Super Admin can **"log in as hotel"** (impersonation) for support, with a required reason. It is logged

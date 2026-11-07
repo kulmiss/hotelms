@@ -12,6 +12,7 @@ $BM = 'branch_manager';
 $RC = 'receptionist';
 $HK = 'housekeeping';
 $AC = 'accountant';
+$RB = 'restaurant'; // Restaurant / Bar: only charges rooms (owner, 2026-11-07)
 
 return [
 
@@ -21,6 +22,7 @@ return [
         $RC => ['name' => 'Receptionist', 'max_discount' => '5.00'],
         $HK => ['name' => 'Housekeeping', 'max_discount' => '0.00'],
         $AC => ['name' => 'Accountant', 'max_discount' => '0.00'],
+        $RB => ['name' => 'Restaurant / Bar', 'max_discount' => '0.00'],
     ],
 
     'groups' => [
@@ -56,6 +58,7 @@ return [
         'billing' => [
             'invoices.view' => [$BM, $RC, $AC],
             'invoices.add_charge' => [$BM, $RC, $AC],
+            'charges.room' => [$BM, $RC, $RB], // quick buttons: charge a guest's room (breakfast, laundry…)
             'invoices.discount' => [$BM, $RC],
             'invoices.split' => [$BM, $RC, $AC],
             'invoices.void' => [$BM],
@@ -81,8 +84,8 @@ return [
             'staff.manage' => [$BM],
             'roles.manage' => [],
             'shifts.manage' => [$BM],
-            'shifts.view_own' => [$BM, $RC, $HK, $AC],
-            'attendance.clock' => [$BM, $RC, $HK, $AC],
+            'shifts.view_own' => [$BM, $RC, $HK, $AC, $RB],
+            'attendance.clock' => [$BM, $RC, $HK, $AC, $RB],
             'attendance.manual' => [$BM],
             'attendance.report' => [$BM],
         ],

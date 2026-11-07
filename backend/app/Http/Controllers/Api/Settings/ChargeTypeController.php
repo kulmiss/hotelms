@@ -20,6 +20,8 @@ class ChargeTypeController extends ResourceController
             'default_price' => ['nullable', 'decimal:0,2', 'min:0', 'max:99999999'],
             'currency' => ['required', 'string', 'size:3'],
             'is_active' => ['boolean'],
+            'is_quick' => ['boolean'], // a one-tap button on the room board and "Charge a room"
+            'sort_order' => ['nullable', 'integer', 'between:0,999'],
         ];
     }
 }

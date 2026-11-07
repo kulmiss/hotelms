@@ -148,7 +148,7 @@ function CodeStep({ method, email, onDone, onBack }: { method: 'app' | 'email'; 
   )
 }
 
-const DEMO_ROLES = ['hotel_admin', 'branch_manager', 'receptionist', 'housekeeping', 'accountant'] as const
+const DEMO_ROLES = ['hotel_admin', 'branch_manager', 'receptionist', 'housekeeping', 'accountant', 'restaurant'] as const
 
 /** "Try the demo": one tap to explore the demo hotel as a chosen role. */
 function TryDemo({ onDone }: { onDone: () => void }) {

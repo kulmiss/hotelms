@@ -264,6 +264,64 @@ class FrontDeskTest extends TestCase
         $this->assertFalse((bool) $this->getJson("/api/v1/reservations/$id")->json('data.open_stay'));
     }
 
+    public function test_quick_buttons_charge_a_room_in_one_tap_and_can_be_undone(): void
+    {
+        [$breakfast, $taxi] = $this->inHotel(fn () => [
+            ChargeType::create(['name' => 'Breakfast', 'default_price' => '250', 'currency' => 'ETB', 'is_active' => true, 'is_quick' => true, 'sort_order' => 1])->id,
+            ChargeType::create(['name' => 'Taxi', 'default_price' => null, 'currency' => 'ETB', 'is_active' => true, 'is_quick' => true, 'sort_order' => 2])->id,
+        ]);
+        $this->at('2026-11-12 16:00');
+        $id = $this->openStay(); // room 101, paid 2300
+        $room = $this->rooms['101'];
+
+        $list = $this->getJson('/api/v1/front-desk/quick-charges?branch_id='.$this->branch->id)->assertOk();
+        $this->assertSame([['101', 'Abebe K']], collect($list->json('rooms'))->map(fn ($r) => [$r['number'], $r['guest']])->all());
+        $this->assertSame(['Breakfast', 'Taxi'], collect($list->json('buttons'))->pluck('name')->all()); // only quick buttons (not Laundry), in order
+
+        $one = $this->postJson("/api/v1/front-desk/rooms/$room/charges", ['charge_type_id' => $breakfast])->assertCreated()->assertJsonPath('data.amount', '250.00')->json('data.id');
+        $this->postJson("/api/v1/front-desk/rooms/$room/charges", ['charge_type_id' => $breakfast])->assertCreated(); // tap again: two breakfasts
+        $this->postJson("/api/v1/front-desk/rooms/$room/charges", ['charge_type_id' => $taxi])->assertJsonValidationErrors('unit_price'); // no price: type it
+        $this->postJson("/api/v1/front-desk/rooms/$room/charges", ['charge_type_id' => $taxi, 'unit_price' => '300'])->assertCreated();
+        $this->postJson("/api/v1/front-desk/rooms/$room/charges", ['description' => 'Spa', 'unit_price' => '500'])->assertCreated()->assertJsonPath('data.description', 'Spa');
+        $this->assertSame('3300.00', $this->invoice($id)['subtotal']); // 2000 + 250 + 250 + 300 + 500
+        $this->assertSame('1495.00', $this->invoice($id)['balance']); // 3300 + 15% − 2300
+
+        $this->actingAs($this->admin)->deleteJson("/api/v1/front-desk/charges/$one")->assertNotFound(); // only the person who added it
+        $this->actingAs($this->receptionist)->deleteJson("/api/v1/front-desk/charges/$one")->assertOk();
+        $this->deleteJson("/api/v1/front-desk/charges/$one")->assertNotFound();
+        $this->assertSame('3050.00', $this->invoice($id)['subtotal']);
+        $late = $this->postJson("/api/v1/front-desk/rooms/$room/charges", ['charge_type_id' => $breakfast])->json('data.id');
+        $this->at('2026-11-12 16:11'); // too late to undo: remove it on the bill instead
+        $this->deleteJson("/api/v1/front-desk/charges/$late")->assertNotFound();
+
+        $this->postJson('/api/v1/front-desk/rooms/'.$this->rooms['102'].'/charges', ['charge_type_id' => $breakfast])->assertJsonValidationErrors('room'); // nobody in 102
+    }
+
+    public function test_restaurant_and_bar_staff_can_only_charge_rooms(): void
+    {
+        $this->at('2026-11-12 16:00');
+        $this->openStay();
+        $bar = User::factory()->withRole($this->hotel, 'restaurant')->create();
+        $bar->branches()->attach($this->branch->id);
+        $type = $this->inHotel(fn () => ChargeType::create(['name' => 'Coffee', 'default_price' => '60', 'currency' => 'ETB', 'is_active' => true, 'is_quick' => true])->id);
+
+        $this->actingAs($bar)->getJson('/api/v1/front-desk/quick-charges')->assertOk()->assertJsonCount(1, 'rooms');
+        $this->postJson('/api/v1/front-desk/rooms/'.$this->rooms['101'].'/charges', ['charge_type_id' => $type])->assertCreated();
+        foreach (['/api/v1/front-desk/board', '/api/v1/reservations', '/api/v1/invoices', '/api/v1/guests'] as $url) {
+            $this->getJson($url)->assertForbidden();
+        }
+
+        // Another hotel's room cannot be charged.
+        $other = Hotel::factory()->create(['plan_id' => $this->hotel->plan_id]);
+        $otherRoom = app(TenantContext::class)->runAs($other, function () use ($other) {
+            $branch = Branch::factory()->for($other)->create();
+            $type = RoomType::create(['branch_id' => $branch->id, 'name' => 'X', 'base_capacity' => 1, 'max_capacity' => 1, 'nightly_price' => '100', 'currency' => 'ETB']);
+
+            return Room::create(['branch_id' => $branch->id, 'room_type_id' => $type->id, 'number' => '9', 'status' => 'available'])->id;
+        });
+        $this->postJson("/api/v1/front-desk/rooms/$otherRoom/charges", ['charge_type_id' => $type])->assertNotFound();
+    }
+
     public function test_paying_more_than_owed_needs_a_yes(): void
     {
         $id = $this->booked();

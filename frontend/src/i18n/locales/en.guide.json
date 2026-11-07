@@ -260,6 +260,19 @@
         "The proof helps when someone asks about the payment."
       ]
     },
+    "quickCharge": {
+      "title": "Charge a room fast (breakfast, laundry, taxi…)",
+      "steps": [
+        "Tap Charge a room in the menu. (Or on the Room board, tap the room.)",
+        "Type or tap the room number. Check the guest name.",
+        "Tap what the guest had, for example Breakfast. It is added to the guest's bill at once.",
+        "Two breakfasts? Tap it two times. You see ×2.",
+        "Taxi or other price that changes: tap it, type the amount, tap Add.",
+        "Not in the list? Tap Other, type the name and the amount.",
+        "Wrong tap? Tap Undo right away (for 10 minutes).",
+        "Managers choose the buttons and prices in Settings → Charges (tick Quick button)."
+      ]
+    },
     "extraCharge": {
       "title": "Add an extra charge (laundry, food…)",
       "steps": [

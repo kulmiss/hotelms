@@ -146,8 +146,10 @@ class DemoHistory
             $this->methods[$m->type] ??= $m->id;
         }
         $this->weekendRule = RateRule::where('rule_type', 'weekend')->value('id');
-        $this->breakfast = ChargeType::firstOrCreate(['name' => 'Breakfast'], ['default_price' => '350.00', 'currency' => 'ETB'])->id;
-        ChargeType::firstOrCreate(['name' => 'Laundry'], ['default_price' => '200.00', 'currency' => 'ETB']);
+        $this->breakfast = ChargeType::firstOrCreate(['name' => 'Breakfast'], ['default_price' => '350.00', 'currency' => 'ETB', 'is_quick' => true, 'sort_order' => 1])->id;
+        ChargeType::firstOrCreate(['name' => 'Laundry'], ['default_price' => '200.00', 'currency' => 'ETB', 'is_quick' => true, 'sort_order' => 3]);
+        ChargeType::firstOrCreate(['name' => 'Coffee / tea'], ['default_price' => '60.00', 'currency' => 'ETB', 'is_quick' => true, 'sort_order' => 2]);
+        ChargeType::firstOrCreate(['name' => 'Taxi'], ['default_price' => null, 'currency' => 'ETB', 'is_quick' => true, 'sort_order' => 4]); // the amount is typed each time
         $settings = app(HotelSettings::class);
         $this->deposit = $settings->get('deposit_type') === 'percent' ? (string) $settings->get('deposit_value') : '30';
     }

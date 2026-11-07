@@ -7,13 +7,13 @@ use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['hotel_id', 'name', 'default_price', 'currency', 'is_active'])]
+#[Fillable(['hotel_id', 'name', 'default_price', 'currency', 'is_active', 'is_quick', 'sort_order'])]
 class ChargeType extends Model
 {
     use BelongsToHotel, LogsActivity;
 
     protected function casts(): array
     {
-        return ['default_price' => 'decimal:2', 'is_active' => 'boolean'];
+        return ['default_price' => 'decimal:2', 'is_active' => 'boolean', 'is_quick' => 'boolean', 'sort_order' => 'integer'];
     }
 }

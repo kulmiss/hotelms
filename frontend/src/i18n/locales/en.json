@@ -40,6 +40,7 @@
     "main": "Main",
     "dashboard": "Dashboard",
     "roomBoard": "Room board",
+    "chargeRoom": "Charge a room",
     "reservations": "Reservations",
     "guests": "Guests",
     "billing": "Billing",
@@ -541,6 +542,7 @@
     "guests.export": "Export guest data",
     "invoices.view": "Invoices list and details",
     "invoices.add_charge": "Add extra charges",
+    "charges.room": "Charge a room with quick buttons (breakfast, laundry…)",
     "invoices.discount": "Give discounts (up to the role's max)",
     "invoices.split": "Split bill per room",
     "invoices.void": "Cancel a bill",
@@ -620,7 +622,8 @@
       "branch_manager": "Branch Manager",
       "receptionist": "Receptionist",
       "housekeeping": "Housekeeping",
-      "accountant": "Accountant"
+      "accountant": "Accountant",
+      "restaurant": "Restaurant / Bar"
     },
     "resetDone": "Demo hotel reset. Fresh sample data is ready.",
     "resetFailed": "The demo hotel could not be reset. Try again.",
@@ -704,7 +707,11 @@
       "nameHint": "e.g. Laundry, Minibar, Airport pickup",
       "price": "Usual price",
       "priceHint": "Leave empty to type the price each time.",
-      "askEachTime": "Typed each time"
+      "askEachTime": "Typed each time",
+      "quick": "Quick button",
+      "quickHint": "Show it as a one-tap button on the Room board and in Charge a room.",
+      "order": "Button order",
+      "orderHint": "Smaller numbers come first."
     },
     "cancellation": {
       "help": "What a guest pays when they cancel or don't show up. The default is used for new bookings.",
@@ -2695,6 +2702,24 @@
   },
   "payments": {
     "overpayCancelled": "Not saved. Check the amount."
+  },
+  "quickCharge": {
+    "title": "Charge a room",
+    "intro": "Type or tap the room number, then tap what the guest had. It goes on the guest's bill.",
+    "roomNumber": "Room number or guest name",
+    "noGuests": "No guests are staying now.",
+    "noMatch": "No room with a guest matches.",
+    "noButtons": "No quick buttons yet. A manager adds them in Settings → Charges (tick Quick button).",
+    "setUp": "Set up quick buttons",
+    "onRoom": "Add a charge",
+    "add": "Add {{name}}, {{price}}",
+    "typeAmount": "Type amount",
+    "other": "Other",
+    "what": "What",
+    "whatHint": "e.g. Spa, Minibar",
+    "addToRoom": "Add to room {{room}}",
+    "added": "Added: {{name}} {{amount}} to room {{room}}",
+    "undo": "Undo"
   },
   "openStay": {
     "option": "Not sure how long (no end date)",
