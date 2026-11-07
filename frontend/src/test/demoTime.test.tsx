@@ -10,7 +10,7 @@ describe('"Try the demo" time limit', () => {
   it('counts down and signs the visitor out at zero, then says why', async () => {
     const me = makeMe({}, ['dashboard.view', 'frontdesk.view'])
     const demoMe = { ...me, hotel: { ...me.hotel!, is_demo: true, demo_ends_at: new Date(Date.now() + 1500).toISOString() } }
-    mockApi({ 'GET /me': { body: demoMe }, 'GET /branding': { body: { data: { demo_public: true } } } })
+    mockApi({ 'GET /me': { body: demoMe } })
     renderApp('/')
 
     expect(await screen.findByText(/Time left: 0:0[12]/)).toBeInTheDocument()
