@@ -506,15 +506,8 @@ export function MyWorkReport() {
 
 export function AccountingReport({ f }: { f: ReportFilters }) {
   const { t } = useTranslation()
-  const q = useInsight<{ lines: { date: string; account: string; reference: string; description: string; debit: string; credit: string }[]; currency: string }>('accounting', { from: f.from, to: f.to, branch_id: f.branch_id })
+  const q = useInsight<{ accounts: { account: string; debit: string; credit: string }[]; currency: string }>('accounting', { from: f.from, to: f.to, branch_id: f.branch_id })
   const d = q.data?.data
-  const sums = new Map<string, { debit: number; credit: number }>()
-  d?.lines.forEach((l) => {
-    const s = sums.get(l.account) ?? { debit: 0, credit: 0 }
-    s.debit += Number(l.debit)
-    s.credit += Number(l.credit)
-    sums.set(l.account, s)
-  })
   const params = qs({ from: f.from, to: f.to, branch_id: f.branch_id })
   return (
     <div className="flex flex-col gap-4">
@@ -537,11 +530,11 @@ export function AccountingReport({ f }: { f: ReportFilters }) {
             </tr>
           </thead>
           <tbody>
-            {[...sums.entries()].map(([a, s]) => (
-              <tr key={a} className="border-t border-border">
-                <td className="px-4 py-1.5 font-medium">{a}</td>
-                <td className="px-4 py-1.5 text-right tabular-nums">{money(s.debit.toFixed(2), d?.currency)}</td>
-                <td className="px-4 py-1.5 text-right tabular-nums">{money(s.credit.toFixed(2), d?.currency)}</td>
+            {d?.accounts.map((s) => (
+              <tr key={s.account} className="border-t border-border">
+                <td className="px-4 py-1.5 font-medium">{s.account}</td>
+                <td className="px-4 py-1.5 text-right tabular-nums">{money(s.debit, d.currency)}</td>
+                <td className="px-4 py-1.5 text-right tabular-nums">{money(s.credit, d.currency)}</td>
               </tr>
             ))}
           </tbody>

@@ -45,9 +45,10 @@ class DemoHotel
         return Hotel::where('is_demo', true)->first();
     }
 
-    public function reset(): Hotel
+    /** @param  int  $rooms  60 for the demo; more (e.g. 160) to test speed with a big hotel */
+    public function reset(int $rooms = 60): Hotel
     {
-        return DB::transaction(function () {
+        return DB::transaction(function () use ($rooms) {
             // Remove the old demo completely (users first: emails are unique).
             // (Without model events: there is nothing to log about a demo being wiped.)
             Model::withoutEvents(fn () => Hotel::withTrashed()->where('is_demo', true)->get()->each(function (Hotel $old) {
@@ -94,7 +95,7 @@ class DemoHotel
                 $user->branches()->attach($key === 'hotel_admin' ? $branches->pluck('id') : [$branches[0]->id]);
             }
 
-            $this->tenant->runAs($hotel, fn () => $this->rooms($branches->all()));
+            $this->tenant->runAs($hotel, fn () => $this->rooms($branches->all(), $rooms));
             // A busy year of bookings, written in bulk so the reset takes seconds.
             $staff = User::where('hotel_id', $hotel->id)->whereIn('email', [self::email('hotel_admin'), self::email('receptionist'), self::email('branch_manager')])->get()->all();
             $this->tenant->runAs($hotel, fn () => app(DemoHistory::class)->build($hotel, $branches->all(), $staff));
@@ -109,14 +110,17 @@ class DemoHotel
      *
      * @param  list<Branch>  $branches
      */
-    private function rooms(array $branches): void
+    private function rooms(array $branches, int $rooms = 60): void
     {
         $types = [
             ['Standard', 'Double bed, shower, Wi-Fi', 2, 2, '2500.00', '1500.00', '400.00', ['Wi-Fi', 'TV', 'Shower']],
             ['Deluxe', 'King bed, balcony, breakfast', 2, 3, '3800.00', '2200.00', null, ['Wi-Fi', 'TV', 'Balcony', 'Breakfast']],
             ['Suite', 'Living room, bathtub, city view', 2, 4, '6500.00', null, null, ['Wi-Fi', 'TV', 'Bathtub', 'Mini bar', 'Breakfast']],
         ];
-        $layout = [[4, ['Standard' => 6, 'Deluxe' => 3, 'Suite' => 1]], [2, ['Standard' => 7, 'Deluxe' => 3]]];
+        // Floors of 10 rooms: two thirds in Bole, the rest in Piassa (60 rooms = 4 + 2 floors).
+        $floors = max(2, (int) ceil($rooms / 10));
+        $bole = (int) ceil($floors * 2 / 3);
+        $layout = [[$bole, ['Standard' => 6, 'Deluxe' => 3, 'Suite' => 1]], [max(1, $floors - $bole), ['Standard' => 7, 'Deluxe' => 3]]];
 
         foreach ($branches as $i => $branch) {
             [$floors, $mix] = $layout[$i] ?? $layout[1];

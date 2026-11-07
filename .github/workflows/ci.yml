@@ -65,6 +65,8 @@ jobs:
           vendor/bin/pint --test
       - name: Tests
         run: php artisan test
+      - name: Speed test (big hotel, 160 rooms, a year of bookings)
+        run: php artisan test tests/Performance
       - name: Save composer.lock if it was missing
         if: github.event_name == 'pull_request'
         run: |

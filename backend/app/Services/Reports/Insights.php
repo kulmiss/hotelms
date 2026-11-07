@@ -112,14 +112,17 @@ class Insights
             ->selectRaw('DATE(DATE_ADD(check_in_at, INTERVAL '.(int) HotelClock::now($this->hotel)->utcOffset().' MINUTE)) as d, COUNT(*) as n')->groupByRaw('d')->pluck('n', 'd');
 
         // "Usually by now": 52 weeks earlier, counting only what had been booked at the same lead time.
+        // One question for the whole period a year ago, then counted per day here.
+        $lyNights = (clone $this->onBooks())->whereIn('rr.status', ['checked_in', 'checked_out', 'confirmed', 'pending', 'cancelled', 'no_show'])
+            ->whereBetween('r.date', [Carbon::parse($today)->subWeeks(52)->toDateString(), Carbon::parse($last)->subWeeks(52)->toDateString()])
+            ->get(['r.date as d', 'res.created_at as made', 'res.cancelled_at as gone'])->groupBy(fn ($row) => substr((string) $row->d, 0, 10));
         $usual = [];
         foreach (Metrics::days($today, $last) as $d) {
             $ly = Carbon::parse($d)->subWeeks(52);
             $lead = Carbon::parse($today)->diffInDays(Carbon::parse($d));
-            $usual[$d] = (clone $this->onBooks())->whereIn('rr.status', ['checked_in', 'checked_out', 'confirmed', 'pending', 'cancelled', 'no_show'])
-                ->where('r.date', $ly->toDateString())
-                ->where('res.created_at', '<', $this->utc($ly->copy()->subDays($lead)->toDateString())->addDay())
-                ->where(fn ($q) => $q->whereNull('res.cancelled_at')->orWhere('res.cancelled_at', '>', $this->utc($ly->copy()->subDays($lead)->toDateString())->addDay()))
+            $by = $this->utc($ly->copy()->subDays($lead)->toDateString())->addDay(); // the same lead time, a year ago
+            $usual[$d] = ($lyNights[$ly->toDateString()] ?? collect())
+                ->filter(fn ($row) => Carbon::parse($row->made, 'UTC')->lt($by) && ($row->gone === null || Carbon::parse($row->gone, 'UTC')->gt($by)))
                 ->count();
         }
         $seasons = RateRule::where('is_active', true)->where('rule_type', 'season')->where('end_date', '>=', $today)->where('start_date', '<=', $last)->get(['name', 'start_date', 'end_date']);
@@ -351,6 +354,63 @@ class Insights
      *
      * @return list<array{date: string, account: string, reference: string, description: string, debit: string, credit: string}>
      */
+    /**
+     * The journal's total per account, added up by the database (the screen; a year has ~100,000 lines).
+     * Same rules as journal(): equal debits and credits.
+     *
+     * @return list<array{account: string, debit: string, credit: string}>
+     */
+    public function journalTotals(string $from, string $to): array
+    {
+        $accounts = self::ACCOUNTS;
+        $taxes = DB::table('invoice_item_taxes')->groupBy('invoice_item_id')
+            ->selectRaw('invoice_item_id, SUM(CASE WHEN is_inclusive = 0 THEN amount ELSE 0 END) as added, SUM(CASE WHEN is_inclusive = 1 THEN amount ELSE 0 END) as inside');
+        $rows = DB::table('invoice_items as it')->join('invoices as inv', 'inv.id', '=', 'it.invoice_id')
+            ->leftJoinSub($taxes, 'tx', 'tx.invoice_item_id', '=', 'it.id')
+            ->where('inv.hotel_id', $this->hotel->id)->whereIn('inv.branch_id', $this->branchIds)->where('inv.status', '!=', 'void')
+            ->whereBetween('it.service_date', [$from, $to])
+            ->selectRaw('it.type, (it.amount + COALESCE(tx.added, 0)) >= 0 as positive, SUM(it.amount + COALESCE(tx.added, 0)) as gross, SUM(it.amount - COALESCE(tx.inside, 0)) as net, SUM(COALESCE(tx.added, 0) + COALESCE(tx.inside, 0)) as tax')
+            ->groupBy('it.type', 'positive')->get();
+
+        $totals = [];
+        $add = function (string $account, string $debit, string $credit) use (&$totals) {
+            $totals[$account] ??= ['account' => $account, 'debit' => '0.00', 'credit' => '0.00'];
+            $totals[$account]['debit'] = Money::add($totals[$account]['debit'], $debit);
+            $totals[$account]['credit'] = Money::add($totals[$account]['credit'], $credit);
+        };
+        foreach ($rows as $r) {
+            $gross = Money::round((string) $r->gross);
+            $net = Money::round((string) $r->net);
+            $tax = Money::round((string) $r->tax);
+            if ((int) $r->positive) {
+                $add('Guest receivables', $gross, '0.00');
+                $add($accounts[$r->type] ?? 'Other revenue', '0.00', $net);
+                $add('Tax payable', '0.00', $tax);
+            } else {
+                $add('Guest receivables', '0.00', Money::sub('0', $gross));
+                $add($accounts[$r->type] ?? 'Other revenue', Money::sub('0', $net), '0.00');
+                $add('Tax payable', Money::sub('0', $tax), '0.00');
+            }
+        }
+
+        $payments = DB::table('payments as p')->join('payment_methods as m', 'm.id', '=', 'p.payment_method_id')
+            ->where('p.hotel_id', $this->hotel->id)->whereIn('p.branch_id', $this->branchIds)->whereBetween('p.paid_at', $this->between($from, $to))
+            ->selectRaw("m.name as method, m.type as method_type, p.type = 'refund' as refund, p.invoice_id IS NOT NULL as billed, SUM(p.amount_in_base) as amount")
+            ->groupBy('m.name', 'm.type', 'refund', 'billed')->get();
+        foreach ($payments as $p) {
+            $amount = Money::round((string) $p->amount);
+            $account = $p->method_type === 'cash' ? 'Cash' : 'Bank and mobile money ('.$p->method.')';
+            $other = (int) $p->billed ? 'Guest receivables' : 'Customer deposits';
+            $refund = (int) $p->refund;
+            $add($account, $refund ? '0.00' : $amount, $refund ? $amount : '0.00');
+            $add($other, $refund ? $amount : '0.00', $refund ? '0.00' : $amount);
+        }
+
+        return array_values(array_filter($totals, fn ($t) => Money::compare($t['debit'], '0') !== 0 || Money::compare($t['credit'], '0') !== 0));
+    }
+
+    private const ACCOUNTS = ['room' => 'Room revenue', 'extra' => 'Other revenue', 'early_check_in' => 'Fee revenue', 'late_check_out' => 'Fee revenue', 'early_check_out' => 'Fee revenue', 'cancellation_fee' => 'Fee revenue', 'discount' => 'Discounts given'];
+
     public function journal(string $from, string $to): array
     {
         $lines = [];
@@ -359,7 +419,7 @@ class Insights
             ->whereBetween('it.service_date', [$from, $to])->orderBy('it.service_date')->orderBy('it.id')
             ->get(['it.id', 'it.type', 'it.description', 'it.amount', 'it.service_date', 'inv.number']);
         $taxes = DB::table('invoice_item_taxes')->whereIn('invoice_item_id', $items->pluck('id'))->get()->groupBy('invoice_item_id');
-        $accounts = ['room' => 'Room revenue', 'extra' => 'Other revenue', 'early_check_in' => 'Fee revenue', 'late_check_out' => 'Fee revenue', 'cancellation_fee' => 'Fee revenue', 'discount' => 'Discounts given'];
+        $accounts = self::ACCOUNTS;
 
         foreach ($items as $it) {
             $amount = (string) $it->amount;
