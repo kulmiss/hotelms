@@ -394,6 +394,7 @@
       "mailServer": "Mail server (SMTP)",
       "mailServerHelp": "The email account the system sends from (welcome emails, new passwords, reports, warnings). Get these details from your hosting (cPanel → Email accounts) or email provider. Leave the server empty to use the server's .env file.",
       "mailOwnerOnly": "Only the Owner can see and change the mail server.",
+      "ownerOnly": "Only the Owner can change this.",
       "mailHost": "Server (host)",
       "mailPort": "Port",
       "mailEncryption": "Security",

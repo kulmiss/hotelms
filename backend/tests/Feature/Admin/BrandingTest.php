@@ -57,4 +57,15 @@ class BrandingTest extends TestCase
             ->putJson('/api/v1/admin/settings', ['platform_name' => 'X'])
             ->assertForbidden();
     }
+
+    public function test_finance_changes_trials_but_only_the_owner_changes_branding_telegram_and_two_step(): void
+    {
+        Storage::fake('public');
+        $finance = User::factory()->platformRole('finance')->create();
+        $this->actingAs($finance)->putJson('/api/v1/admin/settings', ['default_trial_days' => 20])->assertOk();
+        foreach ([['platform_name' => 'X'], ['telegram_bot_token' => '123456:'.str_repeat('a', 30)], ['two_factor_admins' => false]] as $change) {
+            $this->putJson('/api/v1/admin/settings', $change)->assertForbidden();
+        }
+        $this->post('/api/v1/admin/settings/logo', ['logo' => UploadedFile::fake()->image('logo.png', 200, 60)], ['Accept' => 'application/json'])->assertForbidden();
+    }
 }

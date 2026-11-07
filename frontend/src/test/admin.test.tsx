@@ -156,7 +156,7 @@ describe('platform settings', () => {
 
   it('saves branding from its own tab', async () => {
     const fetchMock = mockApi({
-      'GET /me': { body: superAdmin() },
+      'GET /me': { body: { ...superAdmin(), platform: { role: 'owner', permissions: [] } } },
       'GET /admin/settings': settings,
       'GET /admin/plans': plans,
       'PUT /admin/settings': settings,
@@ -173,6 +173,26 @@ describe('platform settings', () => {
     expect(await screen.findByText('Changes saved')).toBeInTheDocument()
     const call = fetchMock.mock.calls.find(([url, init]) => String(url).endsWith('/admin/settings') && init?.method === 'PUT')
     expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ brand_color: '#7c3aed', login_message: 'Welcome back' })
+  })
+
+  it('shows branding as Owner only to other team members, and saves General without owner fields', async () => {
+    const fetchMock = mockApi({
+      'GET /me': { body: { ...superAdmin(), platform: { role: 'finance', permissions: ['billing.manage'] } } },
+      'GET /admin/settings': settings,
+      'GET /admin/plans': plans,
+      'PUT /admin/settings': settings,
+    })
+    renderApp('/admin/settings')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Save' }))
+    await screen.findByText('Saved.')
+    const call = fetchMock.mock.calls.find(([url, init]) => String(url).endsWith('/admin/settings') && init?.method === 'PUT')
+    const body = JSON.parse(String(call?.[1]?.body))
+    expect(body).not.toHaveProperty('platform_name')
+    expect(body).not.toHaveProperty('two_factor_admins')
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Branding' }))
+    expect(await screen.findByText('Only the Owner can change this.')).toBeInTheDocument()
   })
 
   it('has general, billing, branding and email tabs', async () => {
