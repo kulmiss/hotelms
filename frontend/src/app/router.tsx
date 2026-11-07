@@ -6,6 +6,7 @@ import { RequireAuth } from '@/components/layout/RequireAuth'
 import { useMe } from '@/lib/auth'
 import { useCan } from '@/lib/hotel'
 import { useFrontDeskMode } from '@/lib/frontDeskMode'
+import { RouteError } from '@/components/layout/RouteError'
 import { ChangePasswordPage } from '@/pages/ChangePasswordPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
@@ -119,174 +120,180 @@ function RequireSuperAdmin() {
 }
 
 export const routes = [
-  { path: '/login', element: <LoginPage /> },
-  { path: '/forgot-password', element: page(<ForgotPasswordPage />) },
-  { path: '/reset-password', element: page(<ResetPasswordPage />) },
   {
-    element: <RequireAuth />,
+    // A screen that breaks shows a friendly message (and reloads once after an update), never a blank page.
+    errorElement: <RouteError />,
     children: [
-      { path: '/change-password', element: <ChangePasswordPage /> },
-      { path: '/two-step', element: page(<TwoStepPage />) },
-      { path: '/setup', element: page(<SetupPage />) },
+      { path: '/login', element: <LoginPage /> },
+      { path: '/forgot-password', element: page(<ForgotPasswordPage />) },
+      { path: '/reset-password', element: page(<ResetPasswordPage />) },
       {
-        element: <RequirePermission permission="attendance.clock" />,
-        children: [{ path: '/kiosk', element: page(<KioskPage />) }],
-      },
-      {
-        element: <RequirePermission permission="invoices.print" />,
-        children: [{ path: '/billing/:id/print', element: page(<InvoicePrintPage />) }],
-      },
-      {
-        element: <RequirePermission permission="reservations.view" />,
-        children: [{ path: '/reservations/:id/registration-card', element: page(<RegistrationCardPage />) }],
-      },
-      {
-        element: <RequirePermission permission="frontdesk.view" />,
-        children: [{ path: '/front-desk', element: page(<FrontDeskModePage />) }],
-      },
-      {
-        element: <RequirePermission permission="subscription.view" />,
-        children: [{ path: '/subscription-invoices/:id', element: page(<SubscriptionInvoicePage />) }],
-      },
-      {
-        path: '/',
-        element: <AppShell />,
+        element: <RequireAuth />,
         children: [
-          { index: true, element: <HomeRedirect /> },
-          ...mainNav
-            .filter((item) => !item.built)
-            .map((item) => ({ path: item.path.slice(1), element: <PlaceholderPage item={item} /> })),
-          { path: 'reports', element: page(<ReportsPage />) },
+          { path: '/change-password', element: <ChangePasswordPage /> },
+          { path: '/two-step', element: page(<TwoStepPage />) },
+          { path: '/setup', element: page(<SetupPage />) },
           {
-            element: <RequirePermission permission={['cashier.own_shift', 'cashier.view_all']} />,
-            children: [{ path: 'cashier', element: page(<CashierPage />) }],
+            element: <RequirePermission permission="attendance.clock" />,
+            children: [{ path: '/kiosk', element: page(<KioskPage />) }],
           },
           {
-            element: <RequirePermission permission="housekeeping.view" />,
-            children: [{ path: 'housekeeping', element: page(<HousekeepingPage />) }],
+            element: <RequirePermission permission="invoices.print" />,
+            children: [{ path: '/billing/:id/print', element: page(<InvoicePrintPage />) }],
           },
           {
-            element: <RequirePermission permission="shifts.view_own" />,
-            children: [{ path: 'shifts', element: page(<ShiftsPage />) }],
-          },
-          {
-            element: <RequirePermission permission={['attendance.clock', 'attendance.report']} />,
-            children: [{ path: 'attendance', element: page(<AttendancePage />) }],
+            element: <RequirePermission permission="reservations.view" />,
+            children: [{ path: '/reservations/:id/registration-card', element: page(<RegistrationCardPage />) }],
           },
           {
             element: <RequirePermission permission="frontdesk.view" />,
-            children: [{ path: 'rooms', element: page(<RoomBoardPage />) }],
+            children: [{ path: '/front-desk', element: page(<FrontDeskModePage />) }],
           },
           {
-            element: <RequirePermission permission="charges.room" />,
-            children: [{ path: 'charge', element: page(<ChargeRoomPage />) }],
+            element: <RequirePermission permission="subscription.view" />,
+            children: [{ path: '/subscription-invoices/:id', element: page(<SubscriptionInvoicePage />) }],
           },
           {
-            element: <RequirePermission permission="frontdesk.walk_in" />,
-            children: [{ path: 'rooms/walk-in', element: page(<WalkInPage />) }],
-          },
-          {
-            element: <RequirePermission permission="reservations.view" />,
-            children: [{ path: 'rooms/:id/calendar', element: page(<RoomCalendarPage />) }],
-          },
-          {
-            element: <RequirePermission permission="invoices.view" />,
+            path: '/',
+            element: <AppShell />,
             children: [
-              { path: 'billing', element: page(<BillingPage />) },
-              { path: 'billing/:id', element: page(<InvoicePage />) },
+              { index: true, element: <HomeRedirect /> },
+              ...mainNav
+                .filter((item) => !item.built)
+                .map((item) => ({ path: item.path.slice(1), element: <PlaceholderPage item={item} /> })),
+              { path: 'reports', element: page(<ReportsPage />) },
+              {
+                element: <RequirePermission permission={['cashier.own_shift', 'cashier.view_all']} />,
+                children: [{ path: 'cashier', element: page(<CashierPage />) }],
+              },
+              {
+                element: <RequirePermission permission="housekeeping.view" />,
+                children: [{ path: 'housekeeping', element: page(<HousekeepingPage />) }],
+              },
+              {
+                element: <RequirePermission permission="shifts.view_own" />,
+                children: [{ path: 'shifts', element: page(<ShiftsPage />) }],
+              },
+              {
+                element: <RequirePermission permission={['attendance.clock', 'attendance.report']} />,
+                children: [{ path: 'attendance', element: page(<AttendancePage />) }],
+              },
+              {
+                element: <RequirePermission permission="frontdesk.view" />,
+                children: [{ path: 'rooms', element: page(<RoomBoardPage />) }],
+              },
+              {
+                element: <RequirePermission permission="charges.room" />,
+                children: [{ path: 'charge', element: page(<ChargeRoomPage />) }],
+              },
+              {
+                element: <RequirePermission permission="frontdesk.walk_in" />,
+                children: [{ path: 'rooms/walk-in', element: page(<WalkInPage />) }],
+              },
+              {
+                element: <RequirePermission permission="reservations.view" />,
+                children: [{ path: 'rooms/:id/calendar', element: page(<RoomCalendarPage />) }],
+              },
+              {
+                element: <RequirePermission permission="invoices.view" />,
+                children: [
+                  { path: 'billing', element: page(<BillingPage />) },
+                  { path: 'billing/:id', element: page(<InvoicePage />) },
+                ],
+              },
+              {
+                element: <RequirePermission permission="guests.view" />,
+                children: [
+                  { path: 'guests', element: page(<GuestsPage />) },
+                  { path: 'guests/:id', element: page(<GuestPage />) },
+                ],
+              },
+              {
+                element: <RequirePermission permission="guests.create_edit" />,
+                children: [{ path: 'guests/new', element: page(<GuestPage />) }],
+              },
+              {
+                element: <RequirePermission permission="reservations.view" />,
+                children: [
+                  { path: 'reservations', element: page(<ReservationsPage />) },
+                  { path: 'reservations/:id', element: page(<ReservationPage />) },
+                ],
+              },
+              {
+                element: <RequirePermission permission="reservations.create" />,
+                children: [{ path: 'reservations/new', element: page(<ReservationFormPage />) }],
+              },
+              {
+                element: <RequirePermission permission="reservations.edit" />,
+                children: [{ path: 'reservations/:id/edit', element: page(<ReservationFormPage />) }],
+              },
+              {
+                element: <RequirePermission permission="staff.view" />,
+                children: [
+                  { path: 'staff', element: page(<StaffPage />) },
+                  { path: 'staff/new', element: page(<StaffFormPage />) },
+                  { path: 'staff/:id', element: page(<StaffFormPage />) },
+                ],
+              },
+              {
+                element: <RequirePermission permission="staff.manage" />,
+                children: [{ path: 'devices', element: page(<DevicesPage />) }],
+              },
+              {
+                element: <RequirePermission permission="roles.manage" />,
+                children: [
+                  { path: 'roles', element: page(<RolesPage />) },
+                  { path: 'roles/new', element: page(<RoleFormPage />) },
+                  { path: 'roles/:id', element: page(<RoleFormPage />) },
+                ],
+              },
+              {
+                path: 'settings',
+                element: page(<SettingsLayout />),
+                children: Object.entries(SETTINGS_PAGES).map(([key, Page]) => ({
+                  path: key,
+                  element: page(<Page />),
+                })),
+              },
+              {
+                element: <RequirePermission permission="activity_log.view" />,
+                children: [{ path: 'activity-log', element: page(<ActivityLogPage />) }],
+              },
+              {
+                path: 'admin',
+                element: <RequireSuperAdmin />,
+                children: [
+                  { index: true, element: page(<AdminDashboardPage />) },
+                  { path: 'hotels', element: page(<HotelsPage />) },
+                  { path: 'hotels/new', element: page(<NewHotelPage />) },
+                  { path: 'hotels/:id', element: page(<HotelPage />) },
+                  { path: 'plans', element: page(<PlansPage />) },
+                  { path: 'settings', element: page(<PlatformSettingsPage />) },
+                  { path: 'reports', element: page(<PlatformReportsPage />) },
+                  { path: 'switches', element: page(<SwitchesPage />) },
+                  { path: 'support', element: page(<SupportInboxPage />) },
+                  { path: 'system', element: page(<SystemPage />) },
+                  { path: 'team', element: page(<TeamPage />) },
+                  { path: 'activity', element: page(<PlatformActivityPage />) },
+                  { path: 'releases', element: page(<ReleasesPage />) },
+                  { path: 'watchdog', element: page(<WatchdogPage />) },
+                  { path: 'docs', element: page(<DocsPage />) },
+                  { path: 'docs/:name', element: page(<DocsPage />) },
+                  { path: 'content', element: page(<ContentPage />) },
+                ],
+              },
+              { path: 'profile', element: page(<ProfilePage />) },
+              { path: 'help', element: page(<HelpPage />) },
+              { path: 'whats-new', element: page(<WhatsNewPage />) },
+              {
+                element: <RequirePermission permission="approvals.decide" />,
+                children: [{ path: 'approvals', element: page(<ApprovalsPage />) }],
+              },
+              // Developer page: only while developing, never on a hotel's live site.
+              ...(import.meta.env.DEV ? [{ path: 'design-system', element: page(<DesignSystemPage />) }] : []),
+              { path: '*', element: <NotFoundPage /> },
             ],
           },
-          {
-            element: <RequirePermission permission="guests.view" />,
-            children: [
-              { path: 'guests', element: page(<GuestsPage />) },
-              { path: 'guests/:id', element: page(<GuestPage />) },
-            ],
-          },
-          {
-            element: <RequirePermission permission="guests.create_edit" />,
-            children: [{ path: 'guests/new', element: page(<GuestPage />) }],
-          },
-          {
-            element: <RequirePermission permission="reservations.view" />,
-            children: [
-              { path: 'reservations', element: page(<ReservationsPage />) },
-              { path: 'reservations/:id', element: page(<ReservationPage />) },
-            ],
-          },
-          {
-            element: <RequirePermission permission="reservations.create" />,
-            children: [{ path: 'reservations/new', element: page(<ReservationFormPage />) }],
-          },
-          {
-            element: <RequirePermission permission="reservations.edit" />,
-            children: [{ path: 'reservations/:id/edit', element: page(<ReservationFormPage />) }],
-          },
-          {
-            element: <RequirePermission permission="staff.view" />,
-            children: [
-              { path: 'staff', element: page(<StaffPage />) },
-              { path: 'staff/new', element: page(<StaffFormPage />) },
-              { path: 'staff/:id', element: page(<StaffFormPage />) },
-            ],
-          },
-          {
-            element: <RequirePermission permission="staff.manage" />,
-            children: [{ path: 'devices', element: page(<DevicesPage />) }],
-          },
-          {
-            element: <RequirePermission permission="roles.manage" />,
-            children: [
-              { path: 'roles', element: page(<RolesPage />) },
-              { path: 'roles/new', element: page(<RoleFormPage />) },
-              { path: 'roles/:id', element: page(<RoleFormPage />) },
-            ],
-          },
-          {
-            path: 'settings',
-            element: page(<SettingsLayout />),
-            children: Object.entries(SETTINGS_PAGES).map(([key, Page]) => ({
-              path: key,
-              element: page(<Page />),
-            })),
-          },
-          {
-            element: <RequirePermission permission="activity_log.view" />,
-            children: [{ path: 'activity-log', element: page(<ActivityLogPage />) }],
-          },
-          {
-            path: 'admin',
-            element: <RequireSuperAdmin />,
-            children: [
-              { index: true, element: page(<AdminDashboardPage />) },
-              { path: 'hotels', element: page(<HotelsPage />) },
-              { path: 'hotels/new', element: page(<NewHotelPage />) },
-              { path: 'hotels/:id', element: page(<HotelPage />) },
-              { path: 'plans', element: page(<PlansPage />) },
-              { path: 'settings', element: page(<PlatformSettingsPage />) },
-              { path: 'reports', element: page(<PlatformReportsPage />) },
-              { path: 'switches', element: page(<SwitchesPage />) },
-              { path: 'support', element: page(<SupportInboxPage />) },
-              { path: 'system', element: page(<SystemPage />) },
-              { path: 'team', element: page(<TeamPage />) },
-              { path: 'activity', element: page(<PlatformActivityPage />) },
-              { path: 'releases', element: page(<ReleasesPage />) },
-              { path: 'watchdog', element: page(<WatchdogPage />) },
-              { path: 'docs', element: page(<DocsPage />) },
-              { path: 'docs/:name', element: page(<DocsPage />) },
-              { path: 'content', element: page(<ContentPage />) },
-            ],
-          },
-          { path: 'profile', element: page(<ProfilePage />) },
-          { path: 'help', element: page(<HelpPage />) },
-          { path: 'whats-new', element: page(<WhatsNewPage />) },
-          {
-            element: <RequirePermission permission="approvals.decide" />,
-            children: [{ path: 'approvals', element: page(<ApprovalsPage />) }],
-          },
-          // Developer page: only while developing, never on a hotel's live site.
-          ...(import.meta.env.DEV ? [{ path: 'design-system', element: page(<DesignSystemPage />) }] : []),
-          { path: '*', element: <NotFoundPage /> },
         ],
       },
     ],

@@ -179,6 +179,14 @@
     "title": "Page not found",
     "back": "Back to dashboard"
   },
+  "routeError": {
+    "title": "Something went wrong on this screen",
+    "text": "Nothing was lost. Reload the page, or go back to the start. If it happens again, tell HotelMS support what you tapped.",
+    "updateTitle": "A new version is ready",
+    "updateText": "The app was updated while this page was open. Reload to continue.",
+    "reload": "Reload",
+    "home": "Go to the start"
+  },
   "loadFailed": {
     "notFound": "Not found. It may have been removed, it may belong to a branch you do not work in, or the link is wrong.",
     "forbidden": "Your role cannot open this. Ask your manager if you need it.",

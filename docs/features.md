@@ -45,6 +45,12 @@ Each section says the rule, the code and the tests. Backend paths are under `bac
 | Payment proof photo/PDF (optional), private files | `Front/PaymentProofController`, `components/payments/PaymentProof.tsx` | `FrontDeskTest` |
 | Cashier shift: opening cash, expected vs counted, reason for a difference, manager approval (W10) | `Modules/Cashier` | `ModulesTest` |
 
+## Robustness (launch recheck)
+
+- A list in a link's filters (`?q[]=x`) answers 422 "One of the filters in the link is not valid" (`Middleware/ScalarQuery`), never a server error.
+- `FuzzSweepTest` sends broken data (lists, 5,000-letter text, nested objects, negative numbers) to every API route that changes something, as the demo hotel's admin and as Super Admin: never a 500.
+- A screen that breaks shows "Something went wrong on this screen" with Reload (`components/layout/RouteError.tsx`, the router's `errorElement`); after an update, old screen files are gone, so the app reloads once by itself (also for `vite:preloadError`).
+
 ## Staff, roles and settings (review notes)
 
 - A Branch Manager editing someone who also works in another branch keeps that other branch (`StaffController::update`).

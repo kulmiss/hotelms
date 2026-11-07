@@ -13,6 +13,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { useMe } from '@/lib/auth'
 import { cn } from '@/lib/cn'
+import { addMoney } from '@/lib/decimal'
 import { date, money } from '@/lib/format'
 import { addDays, today } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
@@ -392,12 +393,12 @@ function Outstanding({ f }: { f: ReportFilters }) {
   const { t } = useTranslation()
   const q = useReport<{ rows: { id: number; number: string; guest: string; phone: string | null; reservation: string | null; issued_at: string; age_days: number; balance: string; currency: string; status: string }[] }>('outstanding', f)
   const rows = q.data?.data.rows ?? []
-  const total = rows.reduce((s, r) => s + Number(r.balance), 0)
+  const total = addMoney(...rows.map((r) => r.balance)) // exact sum, no float maths (CLAUDE.md)
   return (
     <Card className="overflow-x-auto p-0">
       <div className="flex items-baseline justify-between px-4 pt-4">
         <h3 className="text-sm font-semibold">{t('reports.unpaidBills', { count: rows.length })}</h3>
-        <span className="font-semibold tabular-nums text-danger-text">{money(total.toFixed(2), q.data?.data.currency)}</span>
+        <span className="font-semibold tabular-nums text-danger-text">{money(total, q.data?.data.currency)}</span>
       </div>
       <table className="mt-2 w-full min-w-[640px] text-left text-[13px]">
         <tbody>
