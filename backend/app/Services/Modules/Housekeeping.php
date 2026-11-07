@@ -56,6 +56,19 @@ class Housekeeping
         }
     }
 
+    /**
+     * Every dirty room has a cleaning task, also rooms made dirty in bulk (imports, the demo, older data):
+     * otherwise the room waits on the board but never shows in anyone's list.
+     *
+     * @param  list<int>  $branchIds
+     */
+    public function ensureTasks(array $branchIds): void
+    {
+        Room::whereIn('branch_id', $branchIds)->where('status', 'dirty')
+            ->whereDoesntHave('housekeepingTasks', fn ($q) => $q->where('type', 'cleaning')->where('status', '!=', 'done'))
+            ->limit(200)->get()->each(fn (Room $room) => $this->taskForDirtyRoom($room));
+    }
+
     public function closeCleaningTasks(Room $room): void
     {
         HousekeepingTask::where('room_id', $room->id)->where('type', 'cleaning')->where('status', '!=', 'done')

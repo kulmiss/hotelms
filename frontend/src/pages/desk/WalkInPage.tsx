@@ -13,6 +13,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { ApiError } from '@/lib/api'
 import { useMe } from '@/lib/auth'
+import { useCurrentBranch } from '@/lib/branch'
 import { money } from '@/lib/format'
 import { useCan } from '@/lib/hotel'
 import { cn } from '@/lib/cn'
@@ -28,8 +29,8 @@ export function WalkInPage() {
   const me = useMe()
   const lookups = useLookups()
   const can = useCan()
-  const branches = me.data?.branches ?? []
-  const [branchId, setBranchId] = useState(branches[0]?.id ?? 0)
+  const { branches, current, select: setBranchId } = useCurrentBranch(me.data) // the same branch as the top bar
+  const branchId = current?.id ?? 0
   const [stayType, setStayType] = useState<StayType>('nightly')
   const [checkOut, setCheckOut] = useState(addDays(today(), 1))
   const [hours, setHours] = useState(3)
@@ -112,6 +113,7 @@ export function WalkInPage() {
                   onClick={() => {
                     setStayType(s)
                     setPicked([])
+                    walkIn.reset() // an old error is about the old choice
                   }}
                   className={cn('min-h-touch rounded-lg px-4 text-sm font-medium ring-1 transition duration-75', stayType === s ? 'bg-accent text-on-accent ring-accent' : 'bg-surface text-muted ring-ring hover:bg-sunken')}
                 >
@@ -127,6 +129,7 @@ export function WalkInPage() {
                   onChange={(e) => {
                     setBranchId(Number(e.target.value))
                     setPicked([])
+                    walkIn.reset() // an old error is about the old choice
                   }}
                 >
                   {branches.map((b) => (

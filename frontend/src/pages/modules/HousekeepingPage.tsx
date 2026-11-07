@@ -46,17 +46,17 @@ export function HousekeepingPage() {
       <div className="max-w-md">
         <Tabs label={t('nav.housekeeping')} active={tab} onChange={(k) => setParams({ tab: k })} items={tabs.map((k) => ({ key: k, label: t(`housekeeping.tabs.${k}`) }))} />
       </div>
-      {tab === 'tasks' && <MyTasks />}
-      {tab === 'board' && <HkBoard />}
-      {tab === 'assign' && <AssignTasks />}
+      {tab === 'tasks' && <MyTasks branchId={current?.id ?? null} />}
+      {tab === 'board' && <HkBoard branchId={current?.id ?? null} />}
+      {tab === 'assign' && <AssignTasks branchId={current?.id ?? null} />}
     </div>
   )
 }
 
-function MyTasks() {
+function MyTasks({ branchId }: { branchId: number | null }) {
   const { t } = useTranslation()
   const can = useCan()
-  const tasks = useTasks(!can('housekeeping.assign'))
+  const tasks = useTasks(!can('housekeeping.assign'), branchId)
   const start = useStartTask()
   const done = useDoneTask()
   const list = tasks.data?.data ?? []
@@ -101,9 +101,9 @@ function MyTasks() {
   )
 }
 
-function HkBoard() {
+function HkBoard({ branchId }: { branchId: number | null }) {
   const { t } = useTranslation()
-  const board = useHkBoard()
+  const board = useHkBoard(branchId)
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-2">
       {board.data?.data.map((r) => (
@@ -124,10 +124,10 @@ function HkBoard() {
   )
 }
 
-function AssignTasks() {
+function AssignTasks({ branchId }: { branchId: number | null }) {
   const { t } = useTranslation()
-  const board = useHkBoard()
-  const tasks = useTasks(false)
+  const board = useHkBoard(branchId)
+  const tasks = useTasks(false, branchId)
   const staff = useHkStaff(true)
   const save = useSaveTask()
   const [f, setF] = useState({ room_id: 0, type: 'cleaning', priority: 'normal', assigned_to: 0, notes: '' })

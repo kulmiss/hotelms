@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/Select'
 import { Tabs } from '@/components/ui/Tabs'
 import { ApiError } from '@/lib/api'
 import { useMe } from '@/lib/auth'
+import { chooseBranch, useCurrentBranch } from '@/lib/branch'
 import { cn } from '@/lib/cn'
 import { date, money } from '@/lib/format'
 import { ROOM_DOTS, ROOM_TONES, useBoard, useRoomStatus, useToday, type BoardRoom, type TodayRow } from '@/lib/desk'
@@ -25,11 +26,12 @@ export function RoomBoardPage() {
   const { t } = useTranslation()
   const can = useCan()
   const me = useMe()
-  const branches = me.data?.branches ?? []
   const [params, setParams] = useSearchParams()
+  // A link may name the branch (?branch=); otherwise the one chosen in the top bar. Both stay the same.
+  useState(() => Number(params.get('branch')) && chooseBranch(Number(params.get('branch'))))
+  const { branches, current: chosen, select } = useCurrentBranch(me.data)
   const tab = (TABS as readonly string[]).includes(params.get('tab') ?? '') ? (params.get('tab') as Tab) : 'board'
-  const [branchId, setBranchId] = useState<number | null>(() => Number(params.get('branch')) || null)
-  const current = branchId ?? branches[0]?.id ?? null
+  const current = chosen?.id ?? null
   const today = useToday(current)
 
   const count = (k: Tab) => (k === 'board' ? undefined : today.data?.[k].length)
@@ -59,7 +61,7 @@ export function RoomBoardPage() {
         </div>
         {branches.length > 1 && (
           <div className="w-48">
-            <Select label={t('settings.rooms.branch')} value={String(current ?? '')} onChange={(e) => setBranchId(Number(e.target.value))}>
+            <Select label={t('settings.rooms.branch')} value={String(current ?? '')} onChange={(e) => select(Number(e.target.value))}>
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.name}

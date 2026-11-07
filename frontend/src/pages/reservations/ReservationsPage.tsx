@@ -11,6 +11,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { Tabs } from '@/components/ui/Tabs'
 import { useMe } from '@/lib/auth'
+import { useCurrentBranch } from '@/lib/branch'
 import { cn } from '@/lib/cn'
 import { date, money } from '@/lib/format'
 import { addDays, daysBetween, localDate, localTime, STATUS_TONES, today, useCalendar, useReservations, sleepingOn, type CalendarData, type ReservationStatus } from '@/lib/front'
@@ -215,8 +216,8 @@ type CalendarBooking = CalendarData['bookings'][number]
 function ReservationCalendar() {
   const { t } = useTranslation()
   const me = useMe()
-  const branches = me.data?.branches ?? []
-  const [branchId, setBranchId] = useState<number | null>(null)
+  const { branches, current: workingIn, select: setBranchId } = useCurrentBranch(me.data) // the same branch as the top bar
+  const branchId = workingIn?.id ?? null
   const [from, setFrom] = useState(() => today())
   const [day, setDay] = useState<string | null>(null) // the day opened as "room by room"
   const [tip, setTip] = useState<{ b: CalendarBooking; x: number; y: number } | null>(null) // hover card on a booking

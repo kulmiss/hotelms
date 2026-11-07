@@ -1510,6 +1510,7 @@
   },
   "reports": {
     "subtitle": "How the hotel is doing. Tap a bar to see the bookings behind it.",
+    "subtitleMine": "Your own work: today, this week and this month.",
     "noAccess": "Your role has no reports.",
     "library": "Reports",
     "names": {

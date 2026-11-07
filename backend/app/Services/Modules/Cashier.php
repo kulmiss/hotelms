@@ -42,10 +42,11 @@ class Cashier
         }
         $session = $this->current($user);
         if (! $session) {
-            throw ValidationException::withMessages(['payment_method_id' => 'Open your cashier shift before taking cash.']);
+            throw ValidationException::withMessages(['payment_method_id' => 'Open your cashier shift (Cashier shift page) before taking cash, or choose another payment method.']);
         }
         if ($session->branch_id !== $branchId) {
-            throw ValidationException::withMessages(['payment_method_id' => 'Your open cashier shift is in another branch.']);
+            $where = $session->branch?->name ?? 'another branch';
+            throw ValidationException::withMessages(['payment_method_id' => "Your open cashier shift is in {$where}. Close it first (Cashier shift page), or choose another payment method."]);
         }
 
         return $session->id;

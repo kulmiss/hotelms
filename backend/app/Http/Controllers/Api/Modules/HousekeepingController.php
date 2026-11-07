@@ -21,6 +21,7 @@ class HousekeepingController extends Controller
     public function board(Request $request): JsonResponse
     {
         $branchIds = $this->branchIds($request);
+        $this->housekeeping->ensureTasks($branchIds);
         $tasks = HousekeepingTask::with('assignee:id,name')->whereIn('branch_id', $branchIds)->where('status', '!=', 'done')->get()->groupBy('room_id');
         $rooms = Room::with('roomType:id,name')->whereIn('branch_id', $branchIds)->whereIn('status', ['dirty', 'cleaning', 'available', 'maintenance'])
             ->orderBy('floor')->orderByRaw('LENGTH(number)')->orderBy('number')->get()
@@ -36,6 +37,7 @@ class HousekeepingController extends Controller
     {
         $user = $request->user();
         $mine = $request->boolean('mine') || ! $user->hasPermission('housekeeping.assign');
+        $this->housekeeping->ensureTasks($this->branchIds($request));
         $tasks = HousekeepingTask::with(['room:id,number,floor,status', 'assignee:id,name'])->whereIn('branch_id', $this->branchIds($request))
             ->when($mine, fn ($q) => $q->where(fn ($w) => $w->where('assigned_to', $user->id)->orWhereNull('assigned_to')))
             ->when($request->input('status'), fn ($q, $s) => $q->whereIn('status', explode(',', $s)), fn ($q) => $q->where('status', '!=', 'done'))

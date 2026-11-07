@@ -53,8 +53,14 @@ export type Task = {
 }
 export type HkRoom = { id: number; number: string; floor: string | null; status: string; room_type: string | null; tasks: Task[] }
 
-export const useHkBoard = () => useQuery({ queryKey: ['housekeeping', 'board'], queryFn: () => api<{ data: HkRoom[] }>('/housekeeping/board'), refetchInterval: 30_000 })
-export const useTasks = (mine: boolean) => useQuery({ queryKey: ['housekeeping', 'tasks', mine], queryFn: () => api<{ data: Task[] }>(`/housekeeping/tasks${mine ? '?mine=1' : ''}`), refetchInterval: 30_000 })
+export const useHkBoard = (branchId: number | null) =>
+  useQuery({ queryKey: ['housekeeping', 'board', branchId], queryFn: () => api<{ data: HkRoom[] }>(`/housekeeping/board${branchId ? `?branch_id=${branchId}` : ''}`), refetchInterval: 30_000 })
+export const useTasks = (mine: boolean, branchId: number | null = null) =>
+  useQuery({
+    queryKey: ['housekeeping', 'tasks', mine, branchId],
+    queryFn: () => api<{ data: Task[] }>(`/housekeeping/tasks?${new URLSearchParams({ ...(mine ? { mine: '1' } : {}), ...(branchId ? { branch_id: String(branchId) } : {}) })}`),
+    refetchInterval: 30_000,
+  })
 export const useHkStaff = (enabled: boolean) => useQuery({ queryKey: ['housekeeping', 'staff'], queryFn: () => api<{ data: { id: number; name: string }[] }>('/housekeeping/staff'), enabled })
 
 export function useHkAction<V, R>(fn: (v: V) => Promise<R>) {
