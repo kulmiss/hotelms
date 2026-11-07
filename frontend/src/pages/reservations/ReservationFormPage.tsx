@@ -12,6 +12,7 @@ import { Select } from '@/components/ui/Select'
 import { Tabs } from '@/components/ui/Tabs'
 import { ApiError } from '@/lib/api'
 import { useMe } from '@/lib/auth'
+import { useCurrentBranch } from '@/lib/branch'
 import { cn } from '@/lib/cn'
 import { money } from '@/lib/format'
 import {
@@ -55,9 +56,10 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
   const can = useCan()
   const lookups = useLookups()
   const [payLater, setPayLater] = useState(false)
-  const branches = me.data?.branches ?? []
+  const { branches, current: workingIn } = useCurrentBranch(me.data)
 
-  const [branchId, setBranchId] = useState<number>(existing?.branch?.id ?? branches[0]?.id ?? 0)
+  // A new booking starts in the branch chosen in the top bar.
+  const [branchId, setBranchId] = useState<number>(existing?.branch?.id ?? workingIn?.id ?? 0)
   const [stayType, setStayType] = useState<StayType>(existing?.stay_type ?? 'nightly')
   const [checkIn, setCheckIn] = useState(() => (existing ? (existing.stay_type === 'nightly' ? localDate(existing.check_in_at) : existing.check_in_at.slice(0, 16)) : today()))
   const [checkOut, setCheckOut] = useState(() => (existing ? (existing.stay_type === 'nightly' ? localDate(existing.check_out_at) : existing.check_out_at.slice(0, 16)) : addDays(today(), 1)))
