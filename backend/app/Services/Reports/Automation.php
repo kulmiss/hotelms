@@ -118,7 +118,7 @@ class Automation
 
                 return ['Daily manager report', array_merge($kpiLines, [
                     "Arrived {$d['arrivals']} · left {$d['departures']} · no-shows {$d['no_shows']}",
-                    "Watch: discounts {$c} {$d['watch']['discounts']}, voids {$d['watch']['voids']}, refunds {$c} {$d['watch']['refunds']}, unpaid {$c} {$d['watch']['unpaid']}",
+                    "Watch: discounts {$c} {$d['watch']['discounts']}, cancelled bills {$d['watch']['voids']}, refunds {$c} {$d['watch']['refunds']}, unpaid {$c} {$d['watch']['unpaid']}",
                     "Tomorrow: {$d['tomorrow']['arrivals']} arrivals, {$d['tomorrow']['occupancy']}% booked",
                 ]), ['Measure', 'Value', 'Same day last week'], collect($d['kpis'])->map(fn ($v, $key) => [$key, $v, $d['last_week'][$key] ?? ''])->values()->all()];
             })(),

@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { Select } from '@/components/ui/Select'
 import { ApiError } from '@/lib/api'
+import { ChargePanel } from '@/components/billing/ChargePanel'
 import { addMoney, isNegative, isPositive } from '@/lib/decimal'
 import { money } from '@/lib/format'
 import { useCheckIn, useCheckInInfo, useCheckOut, useCheckOutInfo, useExtend, useFreeRooms, useMoveRoom } from '@/lib/desk'
@@ -158,6 +159,8 @@ export function CheckOutPanel({ r, onClose }: { r: ReservationDetail; onClose: (
   const [waive, setWaive] = useState(false)
   const [waiveEarly, setWaiveEarly] = useState(false)
   const [leaveOwing, setLeaveOwing] = useState(false)
+  const [charging, setCharging] = useState(false)
+  const bill = r.invoices?.find((i) => i.status !== 'void')
   const d = info.data?.data
   const late = d?.late_fee ?? '0.00'
   const early = d?.early ?? null
@@ -165,7 +168,16 @@ export function CheckOutPanel({ r, onClose }: { r: ReservationDetail; onClose: (
 
   return (
     <Card className="flex flex-col gap-4 ring-accent/40 animate-page-in">
-      <h2 className="text-sm font-semibold">{t('desk.checkOutTitle')}</h2>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold">{t('desk.checkOutTitle')}</h2>
+        {/* Last extras before the guest leaves (minibar, laundry…): they go on the bill and into "To pay". */}
+        {bill && can('invoices.add_charge') && !charging && (
+          <Button variant="secondary" onClick={() => setCharging(true)}>
+            {t('billing.addCharge')}
+          </Button>
+        )}
+      </div>
+      {bill && charging && <ChargePanel invoiceId={bill.id} onClose={() => setCharging(false)} />}
       {isPositive(late) && (
         <label className="flex items-center gap-3 rounded-lg bg-warn-bg/50 px-3 py-2 text-[13px]">
           <span className="flex-1">{t('desk.lateFee', { amount: money(late, r.currency) })}</span>

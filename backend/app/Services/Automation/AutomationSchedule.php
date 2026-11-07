@@ -147,7 +147,7 @@ class AutomationSchedule
                 $arrivals = Reservation::where('branch_id', $a->branch_id)->whereIn('status', ['pending', 'confirmed'])->whereBetween('check_in_at', [$start, $start->copy()->addDay()])->count();
                 $departures = Reservation::where('branch_id', $a->branch_id)->where('status', 'checked_in')->whereBetween('check_out_at', [$start, $start->copy()->addDay()])->count();
                 $unpaid = Invoice::where('branch_id', $a->branch_id)->whereIn('status', ['open', 'partially_paid'])->where('balance', '>', 0)->count();
-                $n += $this->tell('shift_start_brief', User::whereKey($a->user_id)->get(), "{$a->name} shift: {$arrivals} arrivals, {$departures} departures", "{$unpaid} bills with money owed.", '/rooms');
+                $n += $this->tell('shift_start_brief', User::whereKey($a->user_id)->get(), "{$a->name} shift: {$arrivals} arriving, {$departures} leaving", "{$unpaid} bills with money owed.", '/rooms');
             });
 
         return $n;

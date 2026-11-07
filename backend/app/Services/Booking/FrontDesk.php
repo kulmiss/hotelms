@@ -412,7 +412,7 @@ class FrontDesk
             throw ValidationException::withMessages(['room_id' => "Room {$room->number} is not free for the rest of the stay."]);
         }
         if (! $inHouse && $room->room_type_id !== $rr->room_type_id) {
-            throw ValidationException::withMessages(['room_id' => 'Before arrival, choose a room of the booked type (or change the booking).']);
+            throw ValidationException::withMessages(['room_id' => 'Before the guest arrives, choose a room of the booked type (or change the booking).']);
         }
 
         return DB::transaction(function () use ($reservation, $rr, $room, $from, $inHouse, $user) {

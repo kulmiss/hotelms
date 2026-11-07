@@ -85,8 +85,8 @@ class AutomationEvents
             $out = HotelClock::local($r->check_out_at, $hotel);
             $this->mail($guest->email, $hotel, "Booking confirmed: {$r->code}", [
                 "Dear {$guest->full_name}, your booking is confirmed.",
-                'Arrival: '.$in->format('D d M Y, H:i'),
-                'Departure: '.$out->format('D d M Y, H:i'),
+                'Arrive: '.$in->format('D d M Y, H:i'),
+                'Leave: '.$out->format('D d M Y, H:i'),
                 "Total: {$r->currency} ".Money::round((string) $r->total).", paid: {$r->currency} ".Money::round((string) $r->paid_total),
                 $hotel->phone ? "Questions? Call us on {$hotel->phone}." : 'We look forward to welcoming you.',
             ]);

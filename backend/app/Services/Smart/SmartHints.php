@@ -149,7 +149,7 @@ class SmartHints
                         ['Rooms in the hotel', $rooms],
                         ['Expected tonight', $expected.'%'],
                     ], 'Rooms with a guest staying tonight, plus confirmed and pending bookings arriving today, divided by all rooms that can be sold. Guests leaving later today are not counted.',
-                        $toCome ? 'Check the arrivals list: call late guests, and make sure their rooms are clean.' : null),
+                        $toCome ? 'Check the Arriving list: call late guests, and make sure their rooms are clean.' : null),
                 ];
             }),
         ]);
@@ -402,7 +402,7 @@ class SmartHints
 
             return [
                 'text' => "Clean {$first} first".($soon ? " ({$soon} with guests arriving today)" : '').'. About '.intdiv($minutes, 60).' h '.($minutes % 60).' min for '.$tasks->count().' rooms.',
-                'why' => "Rooms with arrivals today come first, then floor by floor. A room takes about {$avg} min here; {$people} ".($people === 1 ? 'housekeeper' : 'housekeepers').'.',
+                'why' => "Rooms with a guest arriving today come first, then floor by floor. A room takes about {$avg} min here; {$people} ".($people === 1 ? 'housekeeper' : 'housekeepers').'.',
                 'data' => ['order' => $ordered->pluck('id')],
                 'explain' => self::explain([
                     ['Rooms to clean', $tasks->count()],
@@ -410,7 +410,7 @@ class SmartHints
                     ['Average time per room (last 30 days)', "{$avg} min"],
                     ['Housekeepers', $people],
                     ['Order', $ordered->map(fn ($t) => $t->room?->number)->filter()->implode(', ')],
-                ], 'Rooms with a guest arriving today first (earliest arrival first), then floor by floor. Time = rooms × average minutes ÷ housekeepers.',
+                ], 'Rooms with a guest arriving today first (earliest first), then floor by floor. Time = rooms × average minutes ÷ housekeepers.',
                     'Start with the first rooms in the list. Mark each room done so reception sees it is ready.'),
             ];
         })]);
@@ -440,7 +440,7 @@ class SmartHints
                 'why' => 'The other days of the next week average '.round($others).'.', 'tone' => 'warn',
                 'explain' => self::explain(array_merge(
                     $days->map(fn ($d) => [$d['date']->format('D j M'), $d['moves'].' check-ins and check-outs'])->all(),
-                ), 'Booked arrivals and departures for each of the next 7 days. A day is called busy with at least 8 and 1.5 times the other days.',
+                ), 'Guests booked to arrive and leave on each of the next 7 days. A day is called busy with at least 8 and 1.5 times the other days.',
                     'Add a person to the roster for that day, or move a day off.'),
             ];
         })]);

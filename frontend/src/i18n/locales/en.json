@@ -146,10 +146,10 @@
     "degraded": "Database not reachable",
     "offline": "API not reachable",
     "version": "Version {{version}}",
-    "arrivals": "Arrivals today",
+    "arrivals": "Arriving today",
     "alreadyIn_one": "{{count}} already checked in",
     "alreadyIn_other": "{{count}} already checked in",
-    "departures": "Departures today",
+    "departures": "Leaving today",
     "alreadyOut_one": "{{count}} already left",
     "alreadyOut_other": "{{count}} already left",
     "inHouse": "Guests in house",
@@ -519,14 +519,14 @@
   "permissionNames": {
     "dashboard.view": "See the hotel dashboard",
     "dashboard.view_revenue": "See money figures on the dashboard",
-    "frontdesk.view": "Room board, arrivals, departures, in-house",
+    "frontdesk.view": "Room board, guests arriving, leaving and staying",
     "frontdesk.walk_in": "Create walk-ins",
     "frontdesk.check_in": "Check guests in",
     "frontdesk.check_out": "Check guests out",
     "frontdesk.room_move": "Move room / extend stay",
     "frontdesk.quick_check_in": "Quick check-in (name and phone now, the rest later)",
     "payments.pay_later": "Pay at check-out (no deposit or up-front payment)",
-    "fees.waive": "Waive early check-in / late check-out fee",
+    "fees.waive": "Skip (not charge) the early check-in / late check-out fee",
     "checkout.approve_balance": "Allow check-out with unpaid balance",
     "reservations.view": "See calendar, list and details",
     "reservations.create": "New reservation",
@@ -542,7 +542,7 @@
     "invoices.add_charge": "Add extra charges",
     "invoices.discount": "Give discounts (up to the role's max)",
     "invoices.split": "Split bill per room",
-    "invoices.void": "Void an invoice",
+    "invoices.void": "Cancel a bill",
     "payments.take": "Record payment or deposit",
     "payments.view": "Payments list",
     "payments.refund": "Give refunds",
@@ -569,7 +569,7 @@
     "reports.outstanding": "Outstanding balances",
     "reports.tax": "Tax report",
     "reports.guests": "Guests report",
-    "reports.audit": "Discounts, waived fees, voids, refunds",
+    "reports.audit": "Discounts, fees not charged, cancelled bills, refunds",
     "reports.cancellations": "Cancellations and no-shows",
     "reports.export": "Export to Excel / PDF",
     "settings.hotel": "Hotel profile and invoice settings",
@@ -711,11 +711,11 @@
       "name": "Name",
       "rule": "Rule",
       "noShow": "No-show",
-      "freeUntil": "Free until {{hours}} h before arrival, then {{fee}}",
+      "freeUntil": "Free until {{hours}} h before the guest arrives, then {{fee}}",
       "neverFree": "Never free: {{fee}}",
       "feeNights_one": "{{count}} night",
       "feeNights_other": "{{count}} nights",
-      "freeHours": "Free until (hours before arrival)",
+      "freeHours": "Free until (hours before the guest arrives)",
       "freeHoursHint": "Leave empty for non-refundable.",
       "penaltyType": "Fee after that",
       "penaltyValue": "Fee amount",
@@ -1265,17 +1265,17 @@
     "childrenCount_other": "{{count}} children"
   },
   "desk": {
-    "subtitle": "Live room status, today's arrivals and departures.",
+    "subtitle": "Live room status, and who arrives and leaves today.",
     "walkIn": "Walk-in",
     "tabs": {
       "board": "Room board",
-      "arrivals": "Arrivals",
-      "departures": "Departures",
+      "arrivals": "Arriving",
+      "departures": "Leaving",
       "in_house": "In house"
     },
     "empty": {
-      "arrivals": "No more arrivals today.",
-      "departures": "No more departures today.",
+      "arrivals": "No more guests arriving today.",
+      "departures": "No more guests leaving today.",
       "in_house": "No guests in house."
     },
     "floor": "Floor {{floor}}",
@@ -1331,7 +1331,7 @@
     "checkInTitle": "Check in",
     "noCleanRoom": "No clean room of this type is free. Mark one clean on the room board.",
     "earlyFee": "Early check-in fee: {{amount}}",
-    "waive": "Waive",
+    "waive": "Don't charge",
     "depositDue": "Deposit still to take: {{amount}}",
     "checkOutTitle": "Check out",
     "lateFee": "Late check-out fee: {{amount}}",
@@ -1364,14 +1364,14 @@
       "unpaid": "Unpaid",
       "outstanding": "Outstanding",
       "paid": "Paid",
-      "void": "Void"
+      "void": "Cancel bill"
     },
     "statuses": {
       "open": "Open",
       "partially_paid": "Partly paid",
       "paid": "Paid",
       "outstanding": "Outstanding",
-      "void": "Void"
+      "void": "Cancel bill"
     },
     "number": "Invoice",
     "date": "Date",
@@ -1382,7 +1382,7 @@
     "qty": "Qty",
     "amount": "Amount",
     "unitPrice": "Price each",
-    "waived": "waived",
+    "waived": "not charged",
     "charges": "Charges",
     "discounts": "Discounts",
     "taxIncluded": "incl. {{name}} {{rate}}%",
@@ -1394,17 +1394,17 @@
     "discountReason": "Reason (optional)",
     "split": "Split per room",
     "splitDone": "Split into {{count}} invoices.",
-    "void": "Void invoice",
-    "voidTitle": "Void this invoice",
-    "voidHelp": "A void invoice stays in the records. Refund any payments separately.",
-    "voided": "Void: {{reason}}",
+    "void": "Cancel bill",
+    "voidTitle": "Cancel this bill",
+    "voidHelp": "A cancelled bill stays in the records. Give back any payments as a refund.",
+    "voided": "Cancelled: {{reason}}",
     "print": "Print",
     "paper": {
       "a4": "A4 invoice",
       "receipt": "80 mm receipt"
     },
     "printTitle": "Invoice",
-    "printVoid": "VOID",
+    "printVoid": "CANCELLED",
     "billTo": "Bill to",
     "cashierSignature": "Cashier"
   },
@@ -1633,11 +1633,11 @@
     "moneyIn": "Money received",
     "shiftOf": "Cashier shift: {{name}}",
     "watch": "Watch list",
-    "waivedFees": "Waived fees",
-    "voids": "Voids",
+    "waivedFees": "Fees not charged",
+    "voids": "Cancelled bills",
     "refunds": "Refunds",
     "tomorrow": "Tomorrow · {{date}}",
-    "tomorrowLine": "{{arrivals}} arrivals · {{departures}} departures · {{occ}}% booked",
+    "tomorrowLine": "{{arrivals}} arriving · {{departures}} leaving · {{occ}}% booked",
     "next90": "Next 90 days",
     "season": "Season price",
     "usuallyByNow": "Usually by now (last year)",
@@ -1656,11 +1656,11 @@
     "cashDiff": "Cash short",
     "timeline": "Timeline",
     "timelineOf": "What {{name}} did",
-    "cleanAudit": "No discounts, waived fees, voids, refunds or cash differences.",
+    "cleanAudit": "No discounts, fees not charged, cancelled bills, refunds or cash differences.",
     "flags": {
       "discounts": "Discounts 2× above usual",
       "cash_short": "Cash short over 200",
-      "voids": "Many voids"
+      "voids": "Many cancelled bills"
     },
     "shiftWindow": "From {{from}} to {{to}}",
     "checkIns": "Check-ins",
@@ -1954,12 +1954,12 @@
         "booking_confirmation": "Booking confirmation to the guest",
         "deposit_reminder": "Collect the deposit",
         "booking_expired": "Booking expired",
-        "arrival_reminder": "Arrival reminder to the guest",
+        "arrival_reminder": "Reminder to the guest before they arrive",
         "no_show_suggestion": "Possible no-show",
         "welcome_back": "Welcome back",
         "guest_birthday": "Guest birthday",
         "blacklist_warning": "Blacklisted guest",
-        "vip_arrival": "Long stay arrives",
+        "vip_arrival": "Long-stay guest arrives",
         "cancellation_refund": "Refund after a cancellation",
         "guest_details_missing": "Guest details missing",
         "shift_start_brief": "Start of shift brief",
@@ -1968,12 +1968,12 @@
         "close_cashier_reminder": "Close the cashier shift",
         "cashier_short": "Cashier shift short",
         "exchange_rate_reminder": "Today's exchange rates",
-        "large_discount": "Large discount or waived fee",
-        "void_after_payment": "Bill voided after payment",
+        "large_discount": "Large discount or fee not charged",
+        "void_after_payment": "Bill cancelled after payment",
         "transfer_without_reference": "Transfer without reference",
         "checkout_cleaning": "Clean after check-out",
         "room_ready": "Room ready",
-        "arrival_room_not_ready": "Room not ready for arrival",
+        "arrival_room_not_ready": "Room not ready for the guest",
         "long_maintenance": "Room out of use too long",
         "hourly_cleaning": "Clean after an hourly stay",
         "stayover_not_cleaned": "Stay-over rooms not cleaned",
@@ -2138,8 +2138,8 @@
     "showLive": "Show live data",
     "occupancy": "Occupancy (%)",
     "roomsLine": "{{occupied}} of {{rooms}} rooms",
-    "arrivals": "Arrivals today",
-    "departures": "Departures today",
+    "arrivals": "Arriving today",
+    "departures": "Leaving today",
     "staffOnline": "Staff online",
     "bookingsMade": "Bookings made today",
     "paymentsToday": "Payments today",
@@ -2263,8 +2263,8 @@
     "birth": "Date of birth",
     "address": "Home address",
     "stay": "Stay",
-    "arrival": "Arrival",
-    "departure": "Departure",
+    "arrival": "Arrives",
+    "departure": "Leaves",
     "rooms": "Room(s)",
     "people": "Guests",
     "peopleLine": "{{adults}}, {{children}}",
@@ -2273,7 +2273,7 @@
     "paid": "Paid so far",
     "purpose": "Purpose of visit",
     "terms": "Terms",
-    "term1": "Check-out is at {{time}} on the day of departure. A late check-out may cost extra.",
+    "term1": "Check-out is at {{time}} on the day you leave. A late check-out may cost extra.",
     "term2": "Cancellation policy: {{policy}}.",
     "term3": "The hotel is not responsible for valuables left in the room.",
     "term4": "By signing, I confirm the details above are correct.",
@@ -2321,8 +2321,8 @@
         "what": "When an unpaid booking expires, the person who made it is told."
       },
       "arrival_reminder": {
-        "name": "Arrival reminder to the guest",
-        "what": "The day before arrival, the guest gets an email with the check-in time."
+        "name": "Reminder to the guest before they arrive",
+        "what": "The day before the guest arrives, they get an email with the check-in time."
       },
       "no_show_suggestion": {
         "name": "Possible no-show",
@@ -2341,7 +2341,7 @@
         "what": "When a blacklisted guest is booked, the manager is warned."
       },
       "vip_arrival": {
-        "name": "Long stay arrives",
+        "name": "Long-stay guest arrives",
         "what": "When a guest staying many nights checks in, the manager is told."
       },
       "cancellation_refund": {
@@ -2354,7 +2354,7 @@
       },
       "shift_start_brief": {
         "name": "Start of shift brief",
-        "what": "At the start of a shift, the person on duty gets the arrivals, departures and unpaid bills."
+        "what": "At the start of a shift, the person on duty gets who arrives, who leaves and the unpaid bills."
       },
       "checkout_balance_reminder": {
         "name": "Money owed before check-out",
@@ -2377,12 +2377,12 @@
         "what": "If today's exchange rates are not entered by this time, the accountant is reminded."
       },
       "large_discount": {
-        "name": "Large discount or waived fee",
-        "what": "When a discount or waived fee is above this amount, the manager is told."
+        "name": "Large discount or fee not charged",
+        "what": "When a discount or a fee not charged is above this amount, the manager is told."
       },
       "void_after_payment": {
-        "name": "Bill voided after payment",
-        "what": "When a paid bill is voided, the Hotel Admin is told at once."
+        "name": "Bill cancelled after payment",
+        "what": "When a paid bill is cancelled, the Hotel Admin is told at once."
       },
       "transfer_without_reference": {
         "name": "Transfer without reference",
@@ -2397,7 +2397,7 @@
         "what": "When a room is cleaned and a guest arriving today waits for it, reception is told."
       },
       "arrival_room_not_ready": {
-        "name": "Room not ready for arrival",
+        "name": "Room not ready for the guest",
         "what": "When a guest arrives soon and their room is not ready, housekeeping and reception are told."
       },
       "long_maintenance": {
@@ -2691,14 +2691,14 @@
     "dueOn": "due {{date}}",
     "emailed": "emailed",
     "send": "Email again",
-    "void": "Void",
-    "voidConfirm": "Void invoice {{number}}?",
+    "void": "Cancel bill",
+    "voidConfirm": "Cancel bill {{number}}?",
     "issuedToast": "Invoice made and emailed",
     "sentToast": "Invoice emailed",
     "status": {
       "unpaid": "Unpaid",
       "paid": "Paid",
-      "void": "Void"
+      "void": "Cancel bill"
     },
     "due": "Due",
     "description": "Description",
