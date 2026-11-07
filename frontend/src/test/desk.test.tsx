@@ -251,6 +251,17 @@ describe('guest ID photo', () => {
 })
 
 describe('payment proof', () => {
+  it('opens a payment proof in a new tab, still signed in', async () => {
+    const paid = { id: 3, type: 'deposit', amount: '1380.00', currency: 'ETB', amount_in_base: '1380.00', method: 'Bank transfer', reference: null, refund_reason: null, paid_at: '2026-11-10T09:00:00+03:00', by: 'Meron', proof: { id: 5, mime: 'image/jpeg' } }
+    mockApi({ 'GET /me': { body: me() }, 'GET /reservations/9': { body: { data: { ...reservation, payments: [paid] } } } })
+    renderApp('/reservations/9')
+
+    const link = await screen.findByRole('link', { name: 'Proof' })
+    expect(link).toHaveAttribute('href', '/api/v1/payment-proofs/5')
+    // "noreferrer" would hide where the click came from, and the server would then not see the sign-in.
+    expect(link.getAttribute('rel')).not.toContain('noreferrer')
+  })
+
   it('adds an optional photo to a payment', async () => {
     const fetchMock = mockApi({
       'GET /me': { body: me() },

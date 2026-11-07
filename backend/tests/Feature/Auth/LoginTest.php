@@ -79,6 +79,13 @@ class LoginTest extends TestCase
         $this->getJson('/api/v1/me')->assertUnauthorized();
     }
 
+    public function test_a_link_opened_in_a_new_tab_without_sign_in_gets_401_not_a_server_error(): void
+    {
+        // A browser tab (no "Accept: application/json"), e.g. a payment proof opened without the app's cookie.
+        $this->get('/api/v1/payment-proofs/1')->assertUnauthorized()->assertJsonPath('message', 'Unauthenticated.');
+        $this->get('/api/v1/guests/1/id-photo')->assertUnauthorized();
+    }
+
     public function test_me_requires_sign_in(): void
     {
         $this->getJson('/api/v1/me')->assertUnauthorized();
