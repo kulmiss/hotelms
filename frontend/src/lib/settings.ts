@@ -40,6 +40,9 @@ export function useSettingsObjectSave<T>(endpoint: string) {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['settings', endpoint] })
       void qc.invalidateQueries({ queryKey: ME_KEY })
+      // Screens read some rules from the booking lookups (ID photo, pay at check-out, fees…): show the change at once.
+      void qc.invalidateQueries({ queryKey: ['reservations', 'lookups'] })
+      void qc.invalidateQueries({ queryKey: ['desk'] })
     },
   })
 }
