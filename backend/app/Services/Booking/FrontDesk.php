@@ -30,6 +30,9 @@ class FrontDesk
     /** Minutes after the check-out time before a late check-out fee is suggested. */
     public const LATE_GRACE_MINUTES = 30;
 
+    /** Hourly and day-use guests: minutes after the end time before extra hours are charged. */
+    public const OVERSTAY_GRACE_MINUTES = 15;
+
     public function __construct(
         private ReservationService $reservations,
         private InvoiceService $invoices,
@@ -228,6 +231,15 @@ class FrontDesk
             // Leaving before the booked date: only the nights stayed are charged, plus the hotel's fee.
             if (empty($data['backfill']) && ($early = $this->earlyDeparture($reservation, $now))) {
                 $this->shortenStay($reservation, $invoice, $early, $waiveEarly, $now, $user);
+                $invoice = $this->invoices->recalc($invoice);
+            }
+
+            // Hourly and day-use guests who stay longer pay the extra hours (owner, 2026-11-07), once.
+            $over = empty($data['backfill']) ? $this->overstay($reservation, $now) : [];
+            if ($over && ! $invoice->items()->where('type', 'late_check_out')->exists()) {
+                foreach ($over as $line) {
+                    $this->invoices->line($invoice, $line + ['type' => 'late_check_out', 'is_waived' => $waive, 'service_date' => HotelClock::now($user->hotel)->toDateString()], $user);
+                }
                 $invoice = $this->invoices->recalc($invoice);
             }
 
@@ -533,6 +545,30 @@ class FrontDesk
         $rules = $this->settings->group(HotelSettings::BOOKING_DEFAULTS);
 
         return Money::isPositive((string) $rules['late_check_out_fee_value']) ? ['type' => $rules['late_check_out_fee_type'], 'value' => (string) $rules['late_check_out_fee_value']] : null;
+    }
+
+    /**
+     * Hourly and day-use stays past their end time (after 15 minutes): each started hour at the room's
+     * hourly price; a room type without one uses the hotel's late check-out fee on the stay's price.
+     *
+     * @return list<array{description: string, unit_price: string, quantity: string, reservation_room_id: int}>
+     */
+    public function overstay(Reservation $reservation, Carbon $at): array
+    {
+        if ($reservation->stay_type === 'nightly' || $reservation->status !== 'checked_in' || $at->lte($reservation->check_out_at->copy()->addMinutes(self::OVERSTAY_GRACE_MINUTES))) {
+            return [];
+        }
+        $hours = (int) ceil($reservation->check_out_at->diffInMinutes($at) / 60);
+        $rules = $this->settings->group(HotelSettings::BOOKING_DEFAULTS);
+        $lines = [];
+        foreach ($reservation->rooms()->with(['room', 'roomType', 'rates'])->get() as $rr) {
+            $hourly = $rr->roomType?->hourly_price;
+            $lines[] = $hourly !== null
+                ? ['description' => "Extra {$hours} h · Room ".$rr->room?->number, 'unit_price' => (string) $hourly, 'quantity' => (string) $hours, 'reservation_room_id' => $rr->id]
+                : ['description' => 'Late check-out · Room '.$rr->room?->number, 'unit_price' => $this->fee(['type' => (string) $rules['late_check_out_fee_type'], 'value' => (string) $rules['late_check_out_fee_value']], (string) ($rr->rates->first()?->amount ?? '0')), 'quantity' => '1', 'reservation_room_id' => $rr->id];
+        }
+
+        return array_values(array_filter($lines, fn ($l) => Money::isPositive(Money::mul($l['unit_price'], $l['quantity']))));
     }
 
     /** @param  array{type: string, value: string}  $rule */

@@ -145,7 +145,14 @@ class FrontDeskController extends Controller
             ->whereHas('items', fn ($q) => $q->where('type', 'late_check_out'))->exists();
         $late = $alreadyCharged ? null : $this->desk->lateFee($reservation, now());
         $lateAmount = '0.00';
-        if ($late) {
+        // Hourly and day-use stays past their end time: the extra hours.
+        foreach ($alreadyCharged ? [] : $this->desk->overstay($reservation, now()) as $line) {
+            $fee = Money::mul($line['unit_price'], $line['quantity']);
+            $taxes = collect(app(TaxCalculator::class)->forLine('late_check_out', $fee))->where('is_inclusive', false)->pluck('amount')->all();
+            $lateAmount = Money::add($lateAmount, Money::add($fee, Money::sum($taxes)));
+            $late = ['type' => 'hours'];
+        }
+        if ($late && $late['type'] !== 'hours') {
             foreach ($reservation->rooms()->with('rates')->get() as $rr) {
                 $night = (string) ($rr->rates->last()?->amount ?? '0');
                 $fee = $late['type'] === 'fixed' ? Money::round($late['value']) : Money::percentOf($night, $late['value']);
