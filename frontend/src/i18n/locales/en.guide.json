@@ -80,7 +80,7 @@
       "title": "Room board (all rooms)",
       "steps": [
         "Open Room board in the menu. You see every room as a box.",
-        "The color shows the room: green = free, blue = guest inside, orange = dirty, grey = repair.",
+        "The color shows the room: green = free, teal = guest inside, orange = dirty, blue = being cleaned, grey = repair. The buttons at the top show each color with its name.",
         "Tap a color button at the top (for example Dirty) to see only those rooms. Tap again to see all.",
         "Use Arriving, Leaving, Overdue or Free tonight to see only those rooms.",
         "A red \"Owes\" tag means the guest still has money to pay.",
