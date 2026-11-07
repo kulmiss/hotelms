@@ -155,6 +155,17 @@ export const useChargeTypes = () => useQuery({ queryKey: ['invoices', 'charge-ty
 export const usePayments = (f: { type?: string; from?: string; to?: string; page?: number }) =>
   useQuery({ queryKey: ['invoices', 'payments', f], queryFn: () => api<Page<PaymentRow>>(`/payments?${qs(f)}`), placeholderData: keepPreviousData })
 
+/** Quick charges (breakfast, laundry, taxi…): rooms with a guest now and the hotel's quick buttons. */
+export type QuickButton = { id: number; name: string; price: string | null; currency: string }
+export type ChargeRoom = { room_id: number; number: string; floor: string | null; room_type: string | null; reservation_id: number; code: string; guest: string }
+export type QuickChargeAdded = { id: number; room: string; description: string; quantity: string; amount: string; currency: string; reservation_id: number }
+export const useQuickCharges = (branchId: number | null) =>
+  useQuery({ queryKey: ['desk', 'quick-charges', branchId], queryFn: () => api<{ rooms: ChargeRoom[]; buttons: QuickButton[] }>(`/front-desk/quick-charges${branchId ? `?branch_id=${branchId}` : ''}`), staleTime: 30_000 })
+export const useChargeRoom = () =>
+  useDeskAction((v: { roomId: number; charge_type_id?: number; description?: string; unit_price?: string }) =>
+    post<{ data: QuickChargeAdded }>(`/front-desk/rooms/${v.roomId}/charges`, { charge_type_id: v.charge_type_id, description: v.description, unit_price: v.unit_price }))
+export const useUndoCharge = () => useDeskAction((itemId: number) => del(`/front-desk/charges/${itemId}`))
+
 export const useAddCharge = (id: number) =>
   useDeskAction((v: { type: 'extra' | 'discount'; charge_type_id?: number | null; description?: string; quantity?: string; unit_price?: string; discount_percent?: string }) => post<{ data: InvoiceDetail }>(`/invoices/${id}/items`, v))
 export const useRemoveItem = (id: number) => useDeskAction((itemId: number) => del(`/invoices/${id}/items/${itemId}`))

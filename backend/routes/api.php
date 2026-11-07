@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\Front\FrontDeskController;
 use App\Http\Controllers\Api\Front\GuestController;
 use App\Http\Controllers\Api\Front\InvoiceController;
 use App\Http\Controllers\Api\Front\PaymentProofController;
+use App\Http\Controllers\Api\Front\QuickChargeController;
 use App\Http\Controllers\Api\Front\ReservationController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\Hotel\ActivityLogController;
@@ -187,6 +188,12 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
             Route::post('/reservations/{id}/no-show', [ReservationController::class, 'noShow'])->middleware(['permission:reservations.no_show', 'one.at.a.time:reservation']);
 
             // Front desk.
+            // Quick charges: breakfast, laundry, taxi… on a guest's room (reception, Restaurant / Bar).
+            Route::middleware('permission:charges.room')->group(function () {
+                Route::get('/front-desk/quick-charges', [QuickChargeController::class, 'index']);
+                Route::post('/front-desk/rooms/{room}/charges', [QuickChargeController::class, 'store'])->middleware('throttle:120,1');
+                Route::delete('/front-desk/charges/{item}', [QuickChargeController::class, 'destroy']);
+            });
             Route::middleware('permission:frontdesk.view')->group(function () {
                 Route::get('/front-desk/board', [FrontDeskController::class, 'board']);
                 Route::get('/front-desk/today', [FrontDeskController::class, 'today']);

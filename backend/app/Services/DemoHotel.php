@@ -31,6 +31,7 @@ class DemoHotel
         'receptionist' => ['Hana Tesfaye', 'reception'],
         'housekeeping' => ['Mulu Girma', 'housekeeping'],
         'accountant' => ['Yonas Alemu', 'accountant'],
+        'restaurant' => ['Kidist Mamo', 'restaurant'],
     ];
 
     public function __construct(private DefaultRoles $roles, private TenantContext $tenant, private HotelDefaults $defaults) {}

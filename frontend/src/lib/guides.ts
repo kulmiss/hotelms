@@ -53,6 +53,7 @@ export const GUIDE: GuideSection[] = [
     topics: [
       { key: 'takePayment', pic: true, perm: 'payments.take' },
       { key: 'paymentProof', pic: true, perm: 'payments.take' },
+      { key: 'quickCharge', perm: 'charges.room' },
       { key: 'extraCharge', pic: true, perm: 'invoices.add_charge' },
       { key: 'discount', perm: 'invoices.discount' },
       { key: 'printBill', perm: 'invoices.print' },

@@ -44,6 +44,7 @@ const ReservationPage = lazy(() => pages.reservation().then((m) => ({ default: m
 const ReservationFormPage = lazy(() => pages.reservationForm().then((m) => ({ default: m.ReservationFormPage })))
 const RoomBoardPage = lazy(() => pages.roomBoard().then((m) => ({ default: m.RoomBoardPage })))
 const WalkInPage = lazy(() => pages.walkIn().then((m) => ({ default: m.WalkInPage })))
+const ChargeRoomPage = lazy(() => pages.chargeRoom().then((m) => ({ default: m.ChargeRoomPage })))
 const RoomCalendarPage = lazy(() => pages.roomCalendar().then((m) => ({ default: m.RoomCalendarPage })))
 const BillingPage = lazy(() => pages.billing().then((m) => ({ default: m.BillingPage })))
 const InvoicePage = lazy(() => pages.invoice().then((m) => ({ default: m.InvoicePage })))
@@ -100,6 +101,8 @@ function HomeRedirect() {
   if (me.data?.user.is_super_admin) return <Navigate to="/admin" replace />
   // A receptionist who turned on front desk mode starts there.
   if (frontDesk && can('frontdesk.view')) return <Navigate to="/front-desk" replace />
+  // Restaurant / Bar staff only charge rooms: they start on "Charge a room".
+  if (!can('dashboard.view') && !can('frontdesk.view') && can('charges.room')) return <Navigate to="/charge" replace />
   return page(<DashboardPage />)
 }
 
@@ -173,6 +176,10 @@ export const routes = [
           {
             element: <RequirePermission permission="frontdesk.view" />,
             children: [{ path: 'rooms', element: page(<RoomBoardPage />) }],
+          },
+          {
+            element: <RequirePermission permission="charges.room" />,
+            children: [{ path: 'charge', element: page(<ChargeRoomPage />) }],
           },
           {
             element: <RequirePermission permission="frontdesk.walk_in" />,

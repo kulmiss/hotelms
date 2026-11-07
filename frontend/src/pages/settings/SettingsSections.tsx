@@ -258,16 +258,19 @@ export function ChargesSettings() {
       title={t('settings.sections.charges')}
       description={t('settings.charges.help')}
       addLabel={t('settings.charges.add')}
-      defaults={{ name: '', default_price: '', currency: 'ETB', is_active: true }}
+      defaults={{ name: '', default_price: '', currency: 'ETB', is_active: true, is_quick: false, sort_order: 0 }}
       columns={[
         { label: t('settings.charges.name'), render: (r) => <span className="font-medium">{String(r.name)}</span> },
         { label: t('settings.charges.price'), render: (r) => (r.default_price ? money(String(r.default_price), String(r.currency)) : t('settings.charges.askEachTime')) },
+        { label: t('settings.charges.quick'), render: (r) => yesNo(r.is_quick, t) },
         { label: t('common.active'), render: (r) => yesNo(r.is_active, t) },
       ]}
       fields={[
         { name: 'name', label: t('settings.charges.name'), hint: t('settings.charges.nameHint') },
         { name: 'default_price', label: t('settings.charges.price'), type: 'decimal', nullable: true, hint: t('settings.charges.priceHint') },
         { name: 'currency', label: t('admin.newHotel.currency') },
+        { name: 'is_quick', label: t('settings.charges.quick'), type: 'checkbox', hint: t('settings.charges.quickHint') },
+        { name: 'sort_order', label: t('settings.charges.order'), type: 'number', hint: t('settings.charges.orderHint') },
         { name: 'is_active', label: t('common.active'), type: 'checkbox' },
       ]}
     />

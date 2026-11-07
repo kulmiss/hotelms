@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { ArrowRightEndOnRectangleIcon, ArrowRightStartOnRectangleIcon, CalendarDaysIcon, PlusIcon, UserPlusIcon } from '@heroicons/react/24/outline'
 import { Alert } from '@/components/ui/Alert'
+import { QuickCharge } from '@/components/billing/QuickCharge'
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -14,7 +15,7 @@ import { useMe } from '@/lib/auth'
 import { chooseBranch, useCurrentBranch } from '@/lib/branch'
 import { cn } from '@/lib/cn'
 import { date, money } from '@/lib/format'
-import { ROOM_DOTS, ROOM_TONES, useBoard, useExtendAny, useRoomStatus, useToday, type BoardRoom, type TodayRow } from '@/lib/desk'
+import { ROOM_DOTS, ROOM_TONES, useBoard, useExtendAny, useQuickCharges, useRoomStatus, useToday, type BoardRoom, type TodayRow } from '@/lib/desk'
 import { addDays, localDate, localTime, STATUS_TONES, today as todayDate } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { isPositive } from '@/lib/decimal'
@@ -306,6 +307,7 @@ function RoomPanel({ room, branchId, onClose }: { room: BoardRoom; branchId: num
           </span>
         </div>
       )}
+      {room.stay && can('charges.room') && <RoomCharges roomId={room.id} roomNumber={room.number} branchId={branchId} />}
       {!room.stay && room.arriving && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-accent-soft px-3 py-2 text-[13px]">
           <span>{t('desk.arrivingToday', { guest: room.arriving.guest })}</span>
@@ -441,5 +443,17 @@ function PlusNight({ id, checkOut, stayType, openStay, label }: { id: number; ch
       </Button>
       {error && <span role="alert" className="max-w-56 text-right text-xs text-danger-text">{error}</span>}
     </span>
+  )
+}
+
+/** Quick charges on the room panel: Breakfast, Laundry, Taxi… in one tap (owner, 2026-11-07). */
+function RoomCharges({ roomId, roomNumber, branchId }: { roomId: number; roomNumber: string; branchId: number | null }) {
+  const { t } = useTranslation()
+  const quick = useQuickCharges(branchId)
+  return (
+    <div className="flex flex-col gap-2 border-t border-border pt-3">
+      <h3 className="text-[13px] font-semibold">{t('quickCharge.onRoom')}</h3>
+      <QuickCharge key={roomId} roomId={roomId} roomNumber={roomNumber} buttons={quick.data?.buttons ?? []} />
+    </div>
   )
 }

@@ -26,7 +26,8 @@ class RolesTest extends TestCase
     {
         $roles = app(DefaultRoles::class)->ensureFor($this->hotel);
 
-        $this->assertSame(['hotel_admin', 'branch_manager', 'receptionist', 'housekeeping', 'accountant'], array_keys($roles));
+        $this->assertSame(['hotel_admin', 'branch_manager', 'receptionist', 'housekeeping', 'accountant', 'restaurant'], array_keys($roles));
+        $this->assertSame(['attendance.clock', 'charges.room', 'shifts.view_own'], collect($roles['restaurant']->permissionKeys())->sort()->values()->all()); // Restaurant / Bar: only charges rooms
         $this->assertSame(Permissions::all(), $roles['hotel_admin']->permissionKeys());
         $this->assertTrue($roles['hotel_admin']->is_locked);
         $this->assertSame('20.00', $roles['branch_manager']->max_discount_percent);
