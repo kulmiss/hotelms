@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -70,9 +71,17 @@ class AuthController extends Controller
         $data = $request->validate(['code' => ['required', 'string', 'max:20']]);
         $user = $this->pendingUser($request);
 
+        // Per person too (not only per session and address): codes cannot be guessed from many places.
+        $key = '2fa-fails|'.$user->id;
+        if (RateLimiter::tooManyAttempts($key, 10)) {
+            $request->session()->forget(self::PENDING);
+            throw ValidationException::withMessages(['code' => 'Too many wrong codes. Wait 15 minutes, then sign in again.']);
+        }
         if (! $this->twoFactor->verify($user, $data['code'])) {
+            RateLimiter::hit($key, 15 * 60);
             throw ValidationException::withMessages(['code' => 'That code is not right, or it expired.']);
         }
+        RateLimiter::clear($key);
         $pending = $request->session()->pull(self::PENDING);
         if (str_contains($data['code'], '-')) {
             app(ActivityLogger::class)->log('security.recovery_code_used', "{$user->name} signed in with a recovery code", $user);

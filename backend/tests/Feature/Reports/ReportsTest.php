@@ -7,6 +7,7 @@ use App\Models\Guest;
 use App\Models\Hotel;
 use App\Models\PaymentMethod;
 use App\Models\Plan;
+use App\Models\Role;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\User;
@@ -123,6 +124,20 @@ class ReportsTest extends TestCase
     {
         $this->getJson('/api/v1/reports/drilldown?metric=room_nights&date=2026-11-13')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.room', '101');
         $this->getJson('/api/v1/reports/drilldown?metric=payments&date=2026-11-14')->assertJsonPath('data.0.amount', '3565.00');
+    }
+
+    public function test_drilldown_follows_the_report_permission_of_each_number(): void
+    {
+        $role = $this->inHotel(function () {
+            $role = Role::create(['name' => 'Occupancy only', 'max_discount_percent' => '0']);
+            $role->syncPermissions(['reports.occupancy']);
+
+            return $role;
+        });
+        $user = User::factory()->create(['hotel_id' => $this->hotel->id, 'role_id' => $role->id]);
+        $user->branches()->attach($this->branch->id);
+        $this->actingAs($user)->getJson('/api/v1/reports/drilldown?metric=room_nights&date=2026-11-13')->assertOk();
+        $this->getJson('/api/v1/reports/drilldown?metric=payments&date=2026-11-14')->assertForbidden(); // money needs the payments report
     }
 
     public function test_export_to_csv_and_excel(): void

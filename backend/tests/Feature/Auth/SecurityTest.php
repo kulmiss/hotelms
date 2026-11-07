@@ -20,6 +20,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -99,6 +100,18 @@ class SecurityTest extends TestCase
         // The same code cannot be used again.
         $this->login('hana@sheger.test')->assertJsonPath('two_factor', 'app');
         $this->postJson('/api/v1/auth/two-factor', ['code' => $code])->assertUnprocessable();
+    }
+
+    public function test_too_many_wrong_codes_for_one_person_stop_the_second_step_for_a_while(): void
+    {
+        $secret = $this->useApp($this->staff);
+        for ($i = 0; $i < 10; $i++) {
+            RateLimiter::hit('2fa-fails|'.$this->staff->id, 15 * 60); // wrong codes from other places
+        }
+        $this->login('hana@sheger.test')->assertJsonPath('two_factor', 'app');
+        $this->postJson('/api/v1/auth/two-factor', ['code' => Totp::code($secret, intdiv(time(), 30))])
+            ->assertJsonValidationErrors(['code' => 'Too many wrong codes']);
+        $this->getJson('/api/v1/me')->assertUnauthorized();
     }
 
     public function test_sign_in_with_an_email_code_and_a_recovery_code(): void

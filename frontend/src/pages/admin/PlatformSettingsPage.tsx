@@ -263,7 +263,7 @@ function LogoCard({ current }: { current: string | null }) {
         <input
           ref={input}
           type="file"
-          accept="image/png,image/jpeg,image/webp,image/svg+xml"
+          accept="image/png,image/jpeg,image/webp"
           className="sr-only"
           aria-label={t('admin.settings.uploadLogo')}
           onChange={(e) => e.target.files?.[0] && uploadLogo.mutate(e.target.files[0])}

@@ -58,6 +58,8 @@ server {
 
     location ~ ^/(api|sanctum|up)(/|$) { try_files $uri /index.php?$query_string; }
     location /assets/ { expires 1y; add_header Cache-Control "public, immutable"; }
+    # Uploaded logos: pictures only, never run as a page.
+    location /storage/ { add_header Content-Security-Policy "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox" always; add_header X-Content-Type-Options nosniff always; }
     location / { try_files $uri $uri/ /app.html; }
     location ~ \.php$ {
         include snippets/fastcgi-php.conf;

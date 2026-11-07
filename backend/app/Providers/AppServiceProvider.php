@@ -52,9 +52,11 @@ class AppServiceProvider extends ServiceProvider
         }
 
         // Slow down password guessing: 5 tries a minute per email and device.
-        RateLimiter::for('login', fn (Request $request) => Limit::perMinute(5)->by(
-            strtolower((string) $request->input('email')).'|'.$request->ip()
-        ));
+        // Per email + address, and per address alone (trying many emails from one place).
+        RateLimiter::for('login', fn (Request $request) => [
+            Limit::perMinute(5)->by(strtolower((string) $request->input('email')).'|'.$request->ip()),
+            Limit::perMinute(30)->by('login-ip|'.$request->ip()),
+        ]);
         // Codes and PINs are short, so guess attempts are tightly limited (per session and per address).
         RateLimiter::for('two-factor', fn (Request $request) => [
             Limit::perMinute(5)->by('2fa|'.($request->hasSession() ? $request->session()->getId() : '').'|'.$request->ip()),
