@@ -55,6 +55,14 @@ describe('data tables', () => {
     expect(screen.queryByRole('columnheader', { name: 'Amount' })).not.toBeInTheDocument() // remembered
   })
 
+  it('closes the Columns menu on a click elsewhere', async () => {
+    render(<Small />)
+    await userEvent.click(screen.getByText('Columns'))
+    expect(screen.getByRole('checkbox', { name: 'Amount' })).toBeVisible()
+    await userEvent.click(document.body)
+    expect(screen.getByText('Columns').closest('details')).not.toHaveAttribute('open')
+  })
+
   it('downloads the list for people allowed to', async () => {
     const created: Blob[] = []
     vi.stubGlobal('URL', { ...URL, createObjectURL: (b: Blob) => (created.push(b), 'blob:x'), revokeObjectURL: () => undefined })

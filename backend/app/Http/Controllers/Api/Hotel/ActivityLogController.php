@@ -24,10 +24,10 @@ class ActivityLogController extends Controller
             ->when($request->input('user_id'), fn ($q, $u) => $q->where('user_id', $u))
             ->when($request->input('from') && $hotel, fn ($q) => $q->where('created_at', '>=', HotelClock::parse($request->input('from'), $hotel)))
             ->when($request->input('to') && $hotel, fn ($q) => $q->where('created_at', '<', HotelClock::parse($request->input('to'), $hotel)->addDay()));
-        ListQuery::sort($query, $request, ['when' => 'id', 'who' => 'user_id', 'action' => 'action'], 'when');
+        ListQuery::sort($query, $request, ['when' => 'id', 'who' => 'user_id', 'action' => 'event'], 'when');
         if (ListQuery::wantsFile($request)) {
             return ListQuery::file($request, $query, 'Activity', ['When', 'Who', 'Action', 'What'], fn (ActivityLog $a) => [
-                $hotel ? HotelClock::local($a->created_at, $hotel)->format('Y-m-d H:i') : (string) $a->created_at, $a->user?->name, $a->action, $a->description,
+                $hotel ? HotelClock::local($a->created_at, $hotel)->format('Y-m-d H:i') : (string) $a->created_at, $a->user?->name, $a->event, $a->description,
             ], 'activity_log.view');
         }
         $page = $query->paginate(ListQuery::perPage($request, 50));

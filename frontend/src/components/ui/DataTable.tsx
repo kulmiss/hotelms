@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ArrowDownTrayIcon, ChevronDownIcon, ChevronUpDownIcon, ChevronUpIcon, ViewColumnsIcon } from '@heroicons/react/20/solid'
 import { Button, buttonClass } from '@/components/ui/Button'
@@ -79,6 +79,21 @@ export function DataTable<T>({
   const [localPage, setLocalPage] = useState(1)
   const [localPer, setLocalPer] = useState(25)
   const server = !!onSort
+  // The Columns menu closes on a click elsewhere or Esc.
+  const menu = useRef<HTMLDetailsElement>(null)
+  useEffect(() => {
+    const close = (e: Event) => {
+      const el = menu.current
+      if (!el?.open) return
+      if (e instanceof KeyboardEvent ? e.key === 'Escape' : !el.contains(e.target as Node)) el.open = false
+    }
+    document.addEventListener('mousedown', close)
+    document.addEventListener('keydown', close)
+    return () => {
+      document.removeEventListener('mousedown', close)
+      document.removeEventListener('keydown', close)
+    }
+  }, [])
   const shown = columns.filter((c) => !hidden.includes(c.key))
   const activeSort = server ? sort : localSort
 
@@ -139,7 +154,7 @@ export function DataTable<T>({
         </Button>
       )}
       {columns.some((c) => c.hideable !== false) && (
-        <details className="relative">
+        <details ref={menu} className="relative">
           <summary className={cn(buttonClass('secondary'), 'list-none [&::-webkit-details-marker]:hidden')}>
             <ViewColumnsIcon aria-hidden className="size-4" />
             {t('table.columns')}

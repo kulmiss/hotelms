@@ -115,6 +115,47 @@ class DemoEveryPageTest extends TestCase
         }
     }
 
+    public function test_every_list_sorts_both_ways_and_downloads_with_the_busy_demo(): void
+    {
+        $this->actingAs(User::where('email', DemoHotel::email('hotel_admin'))->firstOrFail());
+        $lists = [
+            '/reservations' => ['check_in', 'check_out', 'code', 'status', 'newest', 'total', 'guest'],
+            '/guests' => ['newest', 'name', 'first_name', 'phone', 'nationality', 'stays'],
+            '/invoices' => ['issued', 'number', 'status', 'total', 'balance', 'guest'],
+            '/payments' => ['paid', 'amount', 'type'],
+            '/cashier/sessions' => ['opened', 'closed', 'status', 'person'],
+            '/activity-log' => ['when', 'who', 'action'],
+        ];
+        $failures = [];
+        foreach ($lists as $url => $sorts) {
+            foreach ($sorts as $sort) {
+                foreach (['asc', 'desc'] as $dir) {
+                    $res = $this->getJson("/api/v1{$url}?sort={$sort}&dir={$dir}&per_page=100");
+                    if ($res->status() !== 200) {
+                        $failures[] = "{$url} {$sort} {$dir} → {$res->status()}: ".mb_substr((string) $res->json('message'), 0, 200);
+                    }
+                    app(TenantContext::class)->set(null);
+                }
+            }
+            foreach (['csv', 'xlsx'] as $format) {
+                $res = $this->get("/api/v1{$url}?format={$format}");
+                if ($res->status() !== 200) {
+                    $failures[] = "{$url} {$format} → {$res->status()}";
+                }
+                app(TenantContext::class)->set(null);
+            }
+        }
+        // The room board on other days.
+        foreach ([-30, -1, 1, 30] as $days) {
+            $res = $this->getJson("/api/v1/front-desk/board?branch_id={$this->ids['branch']}&date=".now()->addDays($days)->toDateString());
+            if ($res->status() !== 200) {
+                $failures[] = "board {$days} → {$res->status()}";
+            }
+            app(TenantContext::class)->set(null);
+        }
+        $this->assertSame([], $failures, implode("\n", $failures));
+    }
+
     public function test_the_main_screens_load_for_the_people_who_use_them(): void
     {
         $expect = [
