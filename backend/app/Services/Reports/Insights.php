@@ -359,7 +359,7 @@ class Insights
             ->whereBetween('it.service_date', [$from, $to])->orderBy('it.service_date')->orderBy('it.id')
             ->get(['it.id', 'it.type', 'it.description', 'it.amount', 'it.service_date', 'inv.number']);
         $taxes = DB::table('invoice_item_taxes')->whereIn('invoice_item_id', $items->pluck('id'))->get()->groupBy('invoice_item_id');
-        $accounts = ['room' => 'Room revenue', 'extra' => 'Other revenue', 'early_check_in' => 'Fee revenue', 'late_check_out' => 'Fee revenue', 'early_check_out' => 'Fee revenue', 'cancellation_fee' => 'Fee revenue', 'discount' => 'Discounts given'];
+        $accounts = ['room' => 'Room revenue', 'extra' => 'Other revenue', 'early_check_in' => 'Fee revenue', 'late_check_out' => 'Fee revenue', 'cancellation_fee' => 'Fee revenue', 'discount' => 'Discounts given'];
 
         foreach ($items as $it) {
             $amount = (string) $it->amount;
