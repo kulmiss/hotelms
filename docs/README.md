@@ -1,6 +1,7 @@
 # HotelMS – developer documentation
 
 Everything a developer needs to understand, run, change and ship HotelMS.
+Also readable **inside the app**: Super Admin → **Developer docs** (the Owner and the tech team; platform permission `docs.view`).
 Read in this order the first time:
 
 | # | Document | What you learn |

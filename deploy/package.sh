@@ -16,6 +16,9 @@ rm -rf "$OUT" && mkdir -p "$OUT"
 rsync -a --exclude node_modules --exclude vendor --exclude .env --exclude 'storage/logs/*' --exclude 'storage/app/backups' --exclude tests backend/ "$OUT/"
 ( cd "$OUT" && composer install --no-dev --optimize-autoloader --no-interaction )
 
+echo "   Developer docs (Super Admin → Developer docs; not public)"
+cp -R docs "$OUT/docs"
+
 echo "3/4 Web app into public/ (as app.html, so / opens the app and /api stays Laravel)"
 cp -R frontend/dist/assets "$OUT/public/assets"
 cp frontend/dist/index.html "$OUT/public/app.html"

@@ -79,6 +79,7 @@ Code: `Reports/Metrics`, `Reports/Insights`, `Reports/CustomReportEngine`, `Repo
 Command center, hotels (create with plan/trial, suspend, close, reopen, notes, live data with a reason, log in as hotel),
 plans and per-room pricing, subscription payments and invoices, switches and banners, support inbox, releases ("What's new"),
 content, team and permissions, platform settings (branding, Telegram, SMTP – Owner only), system health, activity log,
+**developer docs** (this folder, rendered by `Admin/DocsController` – Markdown to safe HTML, raw HTML stripped; `pages/admin/DocsPage.tsx`; Owner + `docs.view`),
 **watchdog** (security, bugs, data leaks: bell for all, Telegram + email for serious ones). Code: `Http/Controllers/Api/Admin/*`,
 `pages/admin/*`. Tests: `tests/Feature/Admin/*`.
 

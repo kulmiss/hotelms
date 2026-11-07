@@ -30,6 +30,9 @@ return [
     | everything. These are the defaults; the Owner changes them on the Team screen
     | (saved as the platform setting "platform_permissions").
     */
+    // Developer documentation shown in Super Admin → Developer docs (default: docs/ next to the app, or ../docs).
+    'docs_path' => env('DOCS_PATH'),
+
     'platform_roles' => ['owner', 'support', 'sales', 'finance', 'tech'],
 
     'platform_permissions' => [
@@ -44,6 +47,7 @@ return [
         'releases.manage' => ['tech'],
         'content.manage' => ['support'],
         'watchdog.view' => ['tech'], // security, bug and data-leak warnings
+        'docs.view' => ['tech'], // the developer documentation (docs/ folder)
         'team.manage' => [],
     ],
 

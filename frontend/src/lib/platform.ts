@@ -47,6 +47,13 @@ export type WatchFinding = {
   resolved_by: string | null
   muted_until: string | null
 }
+/* ---------- Developer docs (the docs/ folder; Owner + tech team) ---------- */
+export type DocListItem = { name: string; title: string; hits?: number; snippet?: string }
+export const useDocs = (q: string) =>
+  useQuery({ queryKey: ['admin', 'docs', q], queryFn: () => api<{ data: DocListItem[]; available: boolean }>(`/admin/docs${q ? `?q=${encodeURIComponent(q)}` : ''}`), placeholderData: keepPreviousData })
+export const useDoc = (name: string) =>
+  useQuery({ queryKey: ['admin', 'docs', 'one', name], queryFn: () => api<{ data: { name: string; title: string; html: string; updated_at: string } }>(`/admin/docs/${name}`), staleTime: 60_000 })
+
 export const useWatchdog = (show: 'open' | 'fixed', enabled = true) =>
   useQuery({
     queryKey: ['admin', 'watchdog', show],

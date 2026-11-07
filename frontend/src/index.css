@@ -190,6 +190,27 @@
   .panel {
     @apply rounded-xl bg-surface shadow-[0_1px_2px_rgb(0_0_0/0.04)] ring-1 ring-ring;
   }
+
+  /* Developer docs (Markdown made into HTML by the server). */
+  .doc {
+    @apply text-[13px] leading-relaxed text-text;
+    & h1 { @apply mb-3 text-xl font-semibold; }
+    & h2 { @apply mt-6 mb-2 border-b border-border pb-1 text-base font-semibold; }
+    & h3 { @apply mt-4 mb-1 text-sm font-semibold; }
+    & p, & ul, & ol, & table, & pre, & blockquote { @apply my-2; }
+    & ul { @apply list-disc pl-5; }
+    & ol { @apply list-decimal pl-5; }
+    & li { @apply my-0.5; }
+    & a { @apply font-medium text-accent-text underline underline-offset-2; }
+    & code { @apply rounded bg-sunken px-1 py-0.5 font-mono text-[12px]; }
+    & pre { @apply overflow-x-auto rounded-lg bg-sunken p-3; }
+    & pre code { @apply bg-transparent p-0; }
+    & table { @apply block w-full overflow-x-auto border-collapse text-[12.5px]; }
+    & th, & td { @apply border border-border px-2 py-1 text-left align-top; }
+    & th { @apply bg-sunken font-semibold; }
+    & blockquote { @apply border-l-4 border-accent/50 pl-3 text-muted; }
+    & hr { @apply my-4 border-border; }
+  }
 }
 
 /* Swipeable tab rows: scroll sideways without a visible bar. */
