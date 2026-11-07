@@ -69,8 +69,8 @@ class BigHotelSpeedTest extends TestCase
         }
 
         usort($rows, fn ($a, $b) => $b['ms'] <=> $a['ms']);
-        $lines = array_map(fn ($r) => sprintf('%6.0f ms %4d q  %3d  %s', $r['ms'], $r['q'], $r['status'], $r['url']), $rows);
-        $report = $built."\nSlowest:\n".implode("\n", array_slice($lines, 0, 40))."\nMost database questions:\n"
+        $lines = array_map(fn ($r) => sprintf("%6.0f ms %4d q  %3d  %s\n          slowest question %s", $r['ms'], $r['q'], $r['status'], $r['url'], $r['top']), $rows);
+        $report = $built."\nSlowest:\n".implode("\n", array_slice($lines, 0, 25))."\nMost database questions:\n"
             .implode("\n", array_map(fn ($r) => sprintf('%4d q %6.0f ms  %s', $r['q'], $r['ms'], $r['url']), array_slice(collect($rows)->sortByDesc('q')->values()->all(), 0, 15)));
         fwrite(STDERR, "\n".$report."\n");
         @file_put_contents(storage_path('logs/speed-report.txt'), $report);
@@ -81,14 +81,18 @@ class BigHotelSpeedTest extends TestCase
         $this->assertSame([], array_values(array_map(fn ($r) => sprintf('%.0f ms %d q %s', $r['ms'], $r['q'], $r['url']), $slow)), 'Too slow');
     }
 
-    /** @return array{url: string, ms: float, q: int, status: int} */
+    /** @return array{url: string, ms: float, q: int, status: int, top: string} */
     private function measure(string $url, int $days): array
     {
         $this->getJson($url); // warm up (first use of a class or cache)
         app(TenantContext::class)->set(null);
         $q = 0;
-        DB::listen(function () use (&$q) {
+        $top = ['ms' => 0.0, 'sql' => ''];
+        DB::listen(function ($e) use (&$q, &$top) {
             $q++;
+            if ($e->time > $top['ms']) {
+                $top = ['ms' => (float) $e->time, 'sql' => $e->sql];
+            }
         });
         $t = microtime(true);
         $res = $this->getJson($url);
@@ -96,7 +100,8 @@ class BigHotelSpeedTest extends TestCase
         DB::getEventDispatcher()?->forget('Illuminate\Database\Events\QueryExecuted');
         app(TenantContext::class)->set(null);
 
-        return ['url' => ($days ? "[{$days}d] " : '').preg_replace('/\?.*$/', '', $url), 'ms' => $ms, 'q' => $q, 'status' => $res->getStatusCode()];
+        return ['url' => ($days ? "[{$days}d] " : '').preg_replace('/\?.*$/', '', $url), 'ms' => $ms, 'q' => $q, 'status' => $res->getStatusCode(),
+            'top' => sprintf('%.0f ms: %s', $top['ms'], mb_substr(preg_replace('/\s+/', ' ', $top['sql']), 0, 220))];
     }
 
     /** @return list<Route> */

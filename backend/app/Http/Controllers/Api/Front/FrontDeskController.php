@@ -85,16 +85,23 @@ class FrontDeskController extends Controller
         $end = HotelClock::now($hotel)->endOfDay()->utc();
         $base = fn () => Reservation::with(['guest:id,first_name,last_name,phone', 'branch:id,name', 'rooms.roomType:id,name', 'rooms.room:id,number'])->where('branch_id', $branch->id);
 
+        $arrivals = $base()->whereIn('status', ['pending', 'confirmed'])->where('check_in_at', '<=', $end)->where('check_out_at', '>', $start)->orderBy('check_in_at')->get();
+        $inHouse = $base()->where('status', 'checked_in')->orderBy('check_out_at')->get();
+        $departures = $inHouse->filter(fn (Reservation $r) => $r->check_out_at->lte($end))->values();
+        // Every balance in one question (not one per booking).
+        $balances = Invoice::whereIn('reservation_id', $arrivals->pluck('id')->merge($inHouse->pluck('id')))->where('status', '!=', 'void')
+            ->get(['reservation_id', 'balance'])->groupBy('reservation_id')
+            ->map(fn ($bills) => Money::sum($bills->pluck('balance')->map(fn ($v) => (string) $v)));
         $present = fn ($r) => ReservationPresenter::summary($r, $hotel) + [
             'late' => $r->isActive() && $r->status !== 'checked_in' && now()->gt($r->check_in_at),
             'overdue' => $r->status === 'checked_in' && now()->gt($r->check_out_at),
-            'balance' => FrontDesk::balance($r),
+            'balance' => $balances[$r->id] ?? '0.00',
         ];
 
         return response()->json([
-            'arrivals' => $base()->whereIn('status', ['pending', 'confirmed'])->where('check_in_at', '<=', $end)->where('check_out_at', '>', $start)->orderBy('check_in_at')->get()->map($present),
-            'departures' => $base()->where('status', 'checked_in')->where('check_out_at', '<=', $end)->orderBy('check_out_at')->get()->map($present),
-            'in_house' => $base()->where('status', 'checked_in')->orderBy('check_out_at')->get()->map($present),
+            'arrivals' => $arrivals->map($present),
+            'departures' => $departures->map($present),
+            'in_house' => $inHouse->map($present),
         ]);
     }
 

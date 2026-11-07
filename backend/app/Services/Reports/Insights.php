@@ -112,14 +112,17 @@ class Insights
             ->selectRaw('DATE(DATE_ADD(check_in_at, INTERVAL '.(int) HotelClock::now($this->hotel)->utcOffset().' MINUTE)) as d, COUNT(*) as n')->groupByRaw('d')->pluck('n', 'd');
 
         // "Usually by now": 52 weeks earlier, counting only what had been booked at the same lead time.
+        // One question for the whole period a year ago, then counted per day here.
+        $lyNights = (clone $this->onBooks())->whereIn('rr.status', ['checked_in', 'checked_out', 'confirmed', 'pending', 'cancelled', 'no_show'])
+            ->whereBetween('r.date', [Carbon::parse($today)->subWeeks(52)->toDateString(), Carbon::parse($last)->subWeeks(52)->toDateString()])
+            ->get(['r.date as d', 'res.created_at as made', 'res.cancelled_at as gone'])->groupBy(fn ($row) => substr((string) $row->d, 0, 10));
         $usual = [];
         foreach (Metrics::days($today, $last) as $d) {
             $ly = Carbon::parse($d)->subWeeks(52);
             $lead = Carbon::parse($today)->diffInDays(Carbon::parse($d));
-            $usual[$d] = (clone $this->onBooks())->whereIn('rr.status', ['checked_in', 'checked_out', 'confirmed', 'pending', 'cancelled', 'no_show'])
-                ->where('r.date', $ly->toDateString())
-                ->where('res.created_at', '<', $this->utc($ly->copy()->subDays($lead)->toDateString())->addDay())
-                ->where(fn ($q) => $q->whereNull('res.cancelled_at')->orWhere('res.cancelled_at', '>', $this->utc($ly->copy()->subDays($lead)->toDateString())->addDay()))
+            $by = $this->utc($ly->copy()->subDays($lead)->toDateString())->addDay(); // the same lead time, a year ago
+            $usual[$d] = ($lyNights[$ly->toDateString()] ?? collect())
+                ->filter(fn ($row) => Carbon::parse($row->made, 'UTC')->lt($by) && ($row->gone === null || Carbon::parse($row->gone, 'UTC')->gt($by)))
                 ->count();
         }
         $seasons = RateRule::where('is_active', true)->where('rule_type', 'season')->where('end_date', '>=', $today)->where('start_date', '<=', $last)->get(['name', 'start_date', 'end_date']);
