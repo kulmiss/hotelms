@@ -205,6 +205,7 @@ class ReservationController extends Controller
             'reference' => ['nullable', 'string', 'max:100'],
             'proof_id' => ['nullable', 'integer'],
             'refund_reason' => ['nullable', 'required_if:type,refund', 'string', 'max:200'],
+            'confirm_overpay' => ['nullable', 'boolean'], // yes, more than the balance
         ]);
         $permission = $data['type'] === 'refund' ? 'payments.refund' : 'payments.take';
         abort_unless($request->user()->hasPermission($permission), 403, 'You may not do this.');

@@ -24,6 +24,11 @@ class HotelSettings
         'early_check_in_fee_value' => '50',
         'late_check_out_fee_type' => 'percent',
         'late_check_out_fee_value' => '50',
+        // A guest who leaves before the booked date pays the nights stayed plus this fee (owner, 2026-11-07).
+        'early_check_out_fee_type' => 'percent', // fixed, percent (of one night)
+        'early_check_out_fee_value' => '50',
+        // A walk-in arriving before this time belongs to the night before (00:14 on the 7th = the night of the 6th).
+        'night_cutoff' => '06:00',
         'hourly_min_hours' => 2,
         'hourly_cleaning_minutes' => 30,
     ];

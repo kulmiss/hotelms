@@ -57,6 +57,16 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     },
   })
   const body: unknown = await res.json().catch(() => null)
+  // More than the guest owes (often a typing mistake): ask, then send again with "yes" (owner, 2026-11-07).
+  const overpay = res.status === 422 ? (body as { errors?: Record<string, string[]> } | null)?.errors?.confirm_overpay?.[0] : undefined
+  if (overpay && typeof init.body === 'string' && typeof window !== 'undefined') {
+    if (window.confirm(overpay)) {
+      const data = JSON.parse(init.body) as Record<string, unknown>
+      const payment = data.payment && typeof data.payment === 'object' ? { ...(data.payment as object), confirm_overpay: true } : undefined
+      return api<T>(path, { ...init, body: JSON.stringify({ ...data, confirm_overpay: true, ...(payment ? { payment } : {}) }) })
+    }
+    throw new ApiError(422, i18n.t('payments.overpayCancelled'), { message: i18n.t('payments.overpayCancelled'), errors: { amount: [i18n.t('payments.overpayCancelled')] } })
+  }
   if (!res.ok) {
     const message =
       body && typeof body === 'object' && 'message' in body ? String(body.message) : res.statusText

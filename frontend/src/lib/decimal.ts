@@ -24,3 +24,4 @@ export const compareMoney = (a: string | number | null | undefined, b: string | 
   return d < 0n ? -1 : d > 0n ? 1 : 0
 }
 export const isPositive = (v: string | number | null | undefined) => cents(v) > 0n
+export const isNegative = (v: string | number | null | undefined) => cents(v) < 0n

@@ -14,7 +14,7 @@ class InvoiceItem extends Model
 {
     use BelongsToHotel, LogsActivity;
 
-    public const TYPES = ['room', 'extra', 'early_check_in', 'late_check_out', 'cancellation_fee', 'discount'];
+    public const TYPES = ['room', 'extra', 'early_check_in', 'late_check_out', 'early_check_out', 'cancellation_fee', 'discount'];
 
     protected function casts(): array
     {

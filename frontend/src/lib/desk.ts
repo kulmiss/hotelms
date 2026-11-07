@@ -19,7 +19,13 @@ export type CheckInInfo = {
   /** The hotel requires a photo of the guest's ID and there is none yet. */
   id_photo_needed?: boolean
 }
-export type CheckOutInfo = { reservation: ReservationDetail; late_fee: string | null; balance: string }
+export type CheckOutInfo = {
+  reservation: ReservationDetail
+  late_fee: string | null
+  balance: string
+  /** Leaving before the booked date: the balance after the unused nights come off (with the fee, and without it). */
+  early: { from: string; nights: number; fee: string; balance: string; balance_without_fee: string } | null
+}
 export type FreeRoom = { id: number; number: string; floor: string | null; room_type_id: number; room_type: string | null; nightly_price: string | null; day_use_price: string | null; hourly_price: string | null; max_capacity: number | null; currency: string | null }
 export type PaymentFields = { payment_method_id: number; amount: string; currency?: string; reference?: string; proof_id?: number }
 
@@ -57,7 +63,7 @@ export const useFreeRooms = (branchId: number | null, enabled = true, stay?: Fre
   const qs = params.toString()
   return useQuery({
     queryKey: ['desk', 'free', branchId, stay ?? null],
-    queryFn: () => api<{ data: FreeRoom[]; walk_in_payment: 'full' | 'deposit'; now: string }>(`/front-desk/walk-in/rooms${qs ? `?${qs}` : ''}`),
+    queryFn: () => api<{ data: FreeRoom[]; walk_in_payment: 'full' | 'deposit'; now: string; night_date?: string }>(`/front-desk/walk-in/rooms${qs ? `?${qs}` : ''}`),
     enabled,
     placeholderData: keepPreviousData,
   })
@@ -91,7 +97,7 @@ export function useMoneyAction<V, R>(fn: (v: V, headers: Record<string, string>)
 export const useCheckIn = (id: number) =>
   useMoneyAction((v: { rooms: { id: number; room_id: number | null }[]; waive_early_fee: boolean; payment?: PaymentFields | null }, h) => post<{ data: ReservationDetail }>(`/reservations/${id}/check-in`, v, h))
 export const useCheckOut = (id: number) =>
-  useMoneyAction((v: { waive_late_fee: boolean; approve_balance: boolean; payment?: PaymentFields | null }, h) => post<{ data: ReservationDetail }>(`/reservations/${id}/check-out`, v, h))
+  useMoneyAction((v: { waive_late_fee: boolean; waive_early_fee?: boolean; approve_balance: boolean; payment?: PaymentFields | null }, h) => post<{ data: ReservationDetail }>(`/reservations/${id}/check-out`, v, h))
 export const useMoveRoom = (id: number) => useDeskAction((v: { stay: number; room_id: number }) => post<{ data: ReservationDetail }>(`/reservations/${id}/rooms/${v.stay}/move`, { room_id: v.room_id }))
 export const useExtend = (id: number) => useDeskAction((v: { check_out?: string; hours?: number }) => post<{ data: ReservationDetail }>(`/reservations/${id}/extend`, v))
 export const useApproveBalance = (id: number) => useDeskAction(() => post<{ data: ReservationDetail }>(`/reservations/${id}/approve-balance`))

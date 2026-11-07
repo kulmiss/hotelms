@@ -3,12 +3,14 @@
 namespace App\Services\Booking;
 
 use App\Events\GuestCheckedOut;
+use App\Models\Hotel;
 use App\Models\Invoice;
 use App\Models\Reservation;
 use App\Models\ReservationRoom;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use App\Services\Billing\InvoiceService;
 use App\Services\GuestIdPhotos;
 use App\Services\HotelSettings;
@@ -154,6 +156,9 @@ class FrontDesk
         $data['walk_in'] = true;
         $data['source'] = 'walk_in';
         $data['check_in'] = HotelClock::now($user->hotel)->format('Y-m-d\TH:i');
+        if (($data['stay_type'] ?? 'nightly') === 'nightly') {
+            $data['check_in'] = $this->nightDate($user->hotel); // after midnight, before the cut-off: last night
+        }
         foreach ($data['rooms'] ?? [] as $i => $r) {
             if (empty($r['room_id'])) {
                 throw ValidationException::withMessages(["rooms.$i.room_id" => 'Choose the room.']);
@@ -189,7 +194,19 @@ class FrontDesk
     }
 
     /**
-     * Check out (W6). $data: waive_late_fee, payment {...}, approve_balance.
+     * The date of the night a walk-in arriving now pays for: before the hotel's cut-off (default 06:00)
+     * it is still last night, so a guest arriving at 00:14 on the 7th leaves on the 7th.
+     */
+    public function nightDate(Hotel $hotel): string
+    {
+        $now = HotelClock::now($hotel);
+        $cutoff = (string) ($this->settings->group(HotelSettings::BOOKING_DEFAULTS)['night_cutoff'] ?: '00:00');
+
+        return ($now->format('H:i') < $cutoff ? $now->copy()->subDay() : $now)->toDateString();
+    }
+
+    /**
+     * Check out (W6). $data: waive_late_fee, waive_early_fee, payment {...}, approve_balance.
      *
      * @param  array<string, mixed>  $data
      */
@@ -199,13 +216,20 @@ class FrontDesk
             throw ValidationException::withMessages(['status' => 'Only checked-in guests can be checked out.']);
         }
         $waive = (bool) ($data['waive_late_fee'] ?? false);
-        if ($waive && ! $user->hasPermission('fees.waive')) {
-            throw ValidationException::withMessages(['waive_late_fee' => 'You may not waive fees.']);
+        $waiveEarly = (bool) ($data['waive_early_fee'] ?? false);
+        if (($waive || $waiveEarly) && ! $user->hasPermission('fees.waive')) {
+            throw ValidationException::withMessages([$waive ? 'waive_late_fee' : 'waive_early_fee' => 'You may not waive fees.']);
         }
         $now = now();
 
-        return DB::transaction(function () use ($reservation, $data, $user, $now, $waive) {
+        return DB::transaction(function () use ($reservation, $data, $user, $now, $waive, $waiveEarly) {
             $invoice = $this->invoices->openFor($reservation, $user);
+
+            // Leaving before the booked date: only the nights stayed are charged, plus the hotel's fee.
+            if (empty($data['backfill']) && ($early = $this->earlyDeparture($reservation, $now))) {
+                $this->shortenStay($reservation, $invoice, $early, $waiveEarly, $now, $user);
+                $invoice = $this->invoices->recalc($invoice);
+            }
 
             // Late check-out fee, once.
             $late = empty($data['backfill']) ? $this->lateFee($reservation, $now) : null;
@@ -255,6 +279,103 @@ class FrontDesk
 
             return $reservation->fresh();
         });
+    }
+
+    /**
+     * A guest leaving before the booked check-out date (owner, 2026-11-07): the nights not used are
+     * taken off the bill and the hotel's early check-out fee is added (per room; reception may waive it).
+     * The first night is always charged. Null when the guest is not leaving early.
+     *
+     * @return array{from: string, nights: int, refund: string, fee: string, rooms: list<array{rr: ReservationRoom, fee: string}>}|null
+     */
+    public function earlyDeparture(Reservation $reservation, Carbon $at): ?array
+    {
+        if ($reservation->stay_type !== 'nightly' || $reservation->status !== 'checked_in') {
+            return null;
+        }
+        $hotel = $reservation->hotel;
+        $today = HotelClock::local($at, $hotel)->startOfDay();
+        $firstNight = HotelClock::local($reservation->check_in_at, $hotel)->startOfDay()->addDay();
+        $from = $today->max($firstNight)->toDateString();
+        $rules = $this->settings->group(HotelSettings::BOOKING_DEFAULTS);
+        $rule = ['type' => (string) $rules['early_check_out_fee_type'], 'value' => (string) $rules['early_check_out_fee_value']];
+
+        $rooms = [];
+        $nights = 0;
+        $refund = '0.00';
+        $fees = '0.00';
+        foreach ($reservation->rooms()->with(['rates', 'room', 'roomType'])->get() as $rr) {
+            $unused = $rr->rates->filter(fn ($rate) => $rate->label === 'Night' && $rate->date->toDateString() >= $from);
+            if ($unused->isEmpty()) {
+                continue;
+            }
+            $fee = Money::isPositive($rule['value']) ? $this->fee($rule, (string) $unused->first()->amount) : '0.00';
+            $rooms[] = ['rr' => $rr, 'fee' => $fee];
+            $nights = max($nights, $unused->count());
+            $refund = Money::add($refund, Money::sum($unused->pluck('amount')->map(fn ($v) => (string) $v)));
+            $fees = Money::add($fees, $fee);
+        }
+
+        return $rooms === [] ? null : ['from' => $from, 'nights' => $nights, 'refund' => $refund, 'fee' => $fees, 'rooms' => $rooms];
+    }
+
+    /**
+     * What leaving early now would do to the bill (for the check-out screen): the balance after the
+     * unused nights are taken off, with the fee and without it. Worked out for real, then undone.
+     *
+     * @return array{from: string, nights: int, fee: string, balance: string, balance_without_fee: string}|null
+     */
+    public function earlyDeparturePreview(Reservation $reservation, User $user): ?array
+    {
+        $early = $this->earlyDeparture($reservation, now());
+        if (! $early) {
+            return null;
+        }
+        DB::beginTransaction();
+        try {
+            $invoice = $this->invoices->openFor($reservation, $user);
+            $this->shortenStay($reservation, $invoice, $early, false, now(), $user);
+            $this->invoices->recalc($invoice);
+            $balance = static::balance($reservation);
+            $fee = Money::sum($invoice->items()->with('taxes')->where('type', 'early_check_out')->get()
+                ->map(fn ($i) => Money::add((string) $i->amount, Money::sum($i->taxes->where('is_inclusive', false)->pluck('amount')->map(fn ($v) => (string) $v)))));
+        } finally {
+            DB::rollBack();
+            $reservation->refresh();
+        }
+
+        return ['from' => $early['from'], 'nights' => $early['nights'], 'fee' => $fee, 'balance' => $balance, 'balance_without_fee' => Money::sub($balance, $fee)];
+    }
+
+    /** @param  array{from: string, rooms: list<array{rr: ReservationRoom, fee: string}>}  $early */
+    private function shortenStay(Reservation $reservation, Invoice $invoice, array $early, bool $waive, Carbon $now, User $user): void
+    {
+        foreach ($early['rooms'] as ['rr' => $rr, 'fee' => $fee]) {
+            $rr->rates()->where('label', 'Night')->where('date', '>=', $early['from'])->delete();
+            $invoice->items()->where('reservation_room_id', $rr->id)->where('type', 'room')->where('service_date', '>=', $early['from'])->get()->each->delete();
+            if (Money::isPositive($fee)) {
+                $this->invoices->line($invoice, [
+                    'type' => 'early_check_out',
+                    'description' => 'Early check-out · Room '.$rr->room?->number,
+                    'unit_price' => $fee,
+                    'is_waived' => $waive,
+                    'reservation_room_id' => $rr->id,
+                    'service_date' => HotelClock::now($user->hotel)->toDateString(),
+                ], $user);
+            }
+            $rr->update(['check_out_at' => $now, 'total_amount' => Money::sum($rr->rates()->pluck('amount')->map(fn ($v) => (string) $v))]);
+        }
+        $reservation->update(['check_out_at' => $now]);
+        $this->reservations->refreshTotals($reservation);
+        // The booking's discount (a percent) follows the shorter stay.
+        $reservation->refresh();
+        $booking = $invoice->items()->where('type', 'discount')->whereNull('reservation_room_id')->where('discount_percent', $reservation->discount_percent)->orderBy('id')->first();
+        if ($booking && Money::isPositive((string) $reservation->discount_percent)) {
+            $line = ['description' => $booking->description, 'discount_percent' => (string) $booking->discount_percent, 'service_date' => $booking->service_date?->toDateString()];
+            $booking->delete(); // a new line, so its taxes are worked out again
+            $this->invoices->line($invoice, $line + ['type' => 'discount', 'unit_price' => Money::sub('0', (string) $reservation->discount_amount)], $user);
+        }
+        app(ActivityLogger::class)->log('front.early_check_out', "{$reservation->code}: left early, nights from {$early['from']} taken off the bill", $reservation);
     }
 
     /** Room move (W5): old room → dirty, new room → occupied; nights from today follow the new room type. */

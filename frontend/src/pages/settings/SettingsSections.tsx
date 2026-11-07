@@ -450,7 +450,7 @@ function BookingRulesForm({ initial }: { initial: BookingRules }) {
 
       <h3 className="pt-2 text-sm font-semibold">{t('settings.rules.fees')}</h3>
       <div className="grid gap-4 sm:grid-cols-2">
-        {(['early_check_in', 'late_check_out'] as const).map((k) => (
+        {(['early_check_in', 'late_check_out', 'early_check_out'] as const).map((k) => (
           <div key={k} className="grid grid-cols-2 gap-3">
             <Select label={t(`settings.rules.${k}`)} value={val(`${k}_fee_type`)} onChange={(e) => set(`${k}_fee_type`, e.target.value)}>
               <option value="percent">{t('settings.rules.percentNight')}</option>
@@ -459,6 +459,11 @@ function BookingRulesForm({ initial }: { initial: BookingRules }) {
             <Field label={t('settings.rules.amount')} inputMode="decimal" value={val(`${k}_fee_value`)} onChange={(e) => set(`${k}_fee_value`, e.target.value)} error={error?.field(`${k}_fee_value`)} />
           </div>
         ))}
+      </div>
+
+      <p className="-mt-2 text-xs text-muted">{t('settings.rules.earlyFeeHint')}</p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label={t('settings.rules.nightCutoff')} type="time" value={val('night_cutoff') || '06:00'} hint={t('settings.rules.nightCutoffHint')} onChange={(e) => set('night_cutoff', e.target.value)} error={error?.field('night_cutoff')} />
       </div>
 
       <h3 className="pt-2 text-sm font-semibold">{t('settings.rules.hourly')}</h3>

@@ -124,7 +124,7 @@ class InvoiceService
             if (Money::compare($percent, $max) > 0) {
                 throw ValidationException::withMessages(['discount_percent' => "Your role allows discounts up to {$max}%."]);
             }
-            $base = Money::sum($invoice->items()->whereIn('type', ['room', 'extra', 'early_check_in', 'late_check_out'])->pluck('amount')->map(fn ($v) => (string) $v));
+            $base = Money::sum($invoice->items()->whereIn('type', ['room', 'extra', 'early_check_in', 'late_check_out', 'early_check_out'])->pluck('amount')->map(fn ($v) => (string) $v));
             // All discounts on one bill together stay within the role's limit (no stacking 5% + 5% + ...).
             $given = Money::sub('0', Money::sum($invoice->items()->where('type', 'discount')->pluck('amount')->map(fn ($v) => (string) $v)));
             $new = Money::percentOf($base, $percent);

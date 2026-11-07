@@ -763,9 +763,13 @@
       "keepForever": "Never (keep it)",
       "payLater": "Some guests may pay everything at check-out",
       "payLaterHint": "People with the \"Pay at check-out\" permission can skip the deposit and the up-front payment for a guest. The guest still pays before leaving.",
-      "fees": "Early check-in and late check-out",
+      "fees": "Early check-in, late and early check-out",
       "early_check_in": "Early check-in fee",
       "late_check_out": "Late check-out fee",
+      "early_check_out": "Early check-out fee (leaving before the booked date)",
+      "earlyFeeHint": "The guest pays the nights stayed plus this fee.",
+      "nightCutoff": "Night starts at",
+      "nightCutoffHint": "A walk-in arriving after midnight but before this time pays for the night before (e.g. 06:00: arriving at 00:30 on the 7th = the night of the 6th, leaving on the 7th).",
       "percentNight": "Percent of one night",
       "hourly": "Hourly stays",
       "minHours": "Minimum hours",
@@ -1310,6 +1314,10 @@
     "depositDue": "Deposit still to take: {{amount}}",
     "checkOutTitle": "Check out",
     "lateFee": "Late check-out fee: {{amount}}",
+    "earlyLeave_one": "Leaving early: {{count}} night not used comes off the bill.",
+    "earlyLeave_other": "Leaving early: {{count}} nights not used come off the bill.",
+    "earlyFee": "Early check-out fee: {{amount}}",
+    "giveBack": "Give back to the guest: {{amount}} (record it as a refund after check-out).",
     "toPay": "To pay: {{amount}}",
     "allPaid": "Everything is paid.",
     "leaveOwing": "Approve: the guest leaves with this balance unpaid (outstanding)",
@@ -2630,6 +2638,9 @@
       "rooms": "Rooms",
       "fraud": "Possible fraud"
     }
+  },
+  "payments": {
+    "overpayCancelled": "Not saved. Check the amount."
   },
   "payLater": {
     "option": "Pay at check-out",

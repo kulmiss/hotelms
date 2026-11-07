@@ -38,6 +38,9 @@ class HotelSettingsController extends Controller
             'early_check_in_fee_value' => ['required', 'decimal:0,2', 'min:0', 'max:99999999'],
             'late_check_out_fee_type' => ['required', Rule::in(['fixed', 'percent'])],
             'late_check_out_fee_value' => ['required', 'decimal:0,2', 'min:0', 'max:99999999'],
+            'early_check_out_fee_type' => ['sometimes', Rule::in(['fixed', 'percent'])],
+            'early_check_out_fee_value' => ['sometimes', 'decimal:0,2', 'min:0', 'max:99999999'],
+            'night_cutoff' => ['sometimes', 'date_format:H:i', 'before_or_equal:12:00'],
             'hourly_min_hours' => ['required', 'integer', 'between:1,12'],
             'hourly_cleaning_minutes' => ['required', 'integer', 'between:0,240'],
         ]);
