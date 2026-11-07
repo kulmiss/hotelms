@@ -344,6 +344,12 @@ class ReservationsTest extends TestCase
 
         $this->postJson('/api/v1/reservations', $this->booking())->assertCreated();
         $this->getJson("/api/v1/guests/{$this->guest->id}")->assertJsonPath('stays.0.code', 'BL-26-00001');
+
+        // A receptionist of another branch sees the guest, but not the Bole booking.
+        $piassa = Branch::factory()->for($this->hotel)->create(['name' => 'Piassa', 'code' => 'PS']);
+        $clerk = User::factory()->withRole($this->hotel, 'receptionist')->create();
+        $clerk->branches()->sync([$piassa->id]);
+        $this->actingAs($clerk)->getJson("/api/v1/guests/{$this->guest->id}")->assertOk()->assertJsonCount(0, 'stays');
     }
 
     public function test_calendar_lists_rooms_and_bookings(): void

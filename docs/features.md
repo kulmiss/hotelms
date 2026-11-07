@@ -49,6 +49,7 @@ Each section says the rule, the code and the tests. Backend paths are under `bac
 
 Duplicate warning (smart `guest_check`), blacklist, ID numbers encrypted and masked in lists, optional encrypted ID photo
 (`GuestIdPhotos`, kept as long as the hotel chose), "Details missing" after quick check-in with a reminder automation.
+Guests are shared by the whole hotel, but a guest's **stay history** shows only the branches the person works in.
 Code: `Front/GuestController`, `Models/Guest`. Tests: `ReservationsTest`, `FrontDeskTest`.
 
 ## Rooms and housekeeping
