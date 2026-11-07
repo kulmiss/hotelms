@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
 
 Schedule::command('hotels:update-statuses')->hourly()->withoutOverlapping();
 Schedule::command('reservations:expire')->everyMinute()->withoutOverlapping();
+Schedule::command('stays:roll-open')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('reports:automation')->everyMinute()->withoutOverlapping();
 Schedule::command('subscriptions:invoices')->dailyAt('07:10')->withoutOverlapping();
 Schedule::command('automations:run')->everyFiveMinutes()->withoutOverlapping();

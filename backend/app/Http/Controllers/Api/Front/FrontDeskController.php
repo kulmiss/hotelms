@@ -61,6 +61,7 @@ class FrontDeskController extends Controller
                     'reservation_id' => $s->reservation_id, 'code' => $s->reservation?->code, 'guest' => $s->reservation?->guest?->full_name,
                     'check_in_at' => HotelClock::iso($s->check_in_at, $hotel), 'check_out_at' => HotelClock::iso($s->check_out_at, $hotel),
                     'balance' => (string) ($balances[$s->reservation_id] ?? '0.00'), 'overdue' => $s->status === 'checked_in' && now()->gt($s->check_out_at),
+                    'open_stay' => (bool) $s->reservation?->open_stay, 'stay_type' => $s->reservation?->stay_type,
                 ] : null;
 
                 return [
@@ -87,7 +88,8 @@ class FrontDeskController extends Controller
 
         $arrivals = $base()->whereIn('status', ['pending', 'confirmed'])->where('check_in_at', '<=', $end)->where('check_out_at', '>', $start)->orderBy('check_in_at')->get();
         $inHouse = $base()->where('status', 'checked_in')->orderBy('check_out_at')->get();
-        $departures = $inHouse->filter(fn (Reservation $r) => $r->check_out_at->lte($end))->values();
+        // Open stays (Q16) are listed too: reception asks them each day "still staying?".
+        $departures = $inHouse->filter(fn (Reservation $r) => $r->check_out_at->lte($end) || $r->open_stay)->values();
         // Every balance in one question (not one per booking).
         $balances = Invoice::whereIn('reservation_id', $arrivals->pluck('id')->merge($inHouse->pluck('id')))->where('status', '!=', 'void')
             ->get(['reservation_id', 'balance'])->groupBy('reservation_id')
@@ -193,6 +195,8 @@ class FrontDeskController extends Controller
             'stay_type' => ['required', Rule::in(Reservation::STAY_TYPES)],
             'check_out' => ['nullable', 'date', 'before:+3 years'],
             'hours' => ['nullable', 'integer', 'min:1', 'max:24'],
+            // "Not sure yet": one night now, one more at each check-out time while the guest stays (Q16).
+            'open_stay' => ['nullable', 'boolean'],
             'guest_id' => ['required_without:quick_guest', 'nullable', 'integer'],
             // Quick check-in: only a name and phone now, the rest later (the guest shows "Details missing").
             'pay_later' => ['nullable', 'boolean'],

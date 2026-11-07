@@ -96,7 +96,7 @@ Rules (money, dates, status changes) belong in services so tests, automations an
 | When | Job |
 |---|---|
 | every minute | `reservations:expire` (unpaid pending bookings), `reports:automation` (scheduled reports + Telegram polling), `queue:work --stop-when-empty`, heartbeat |
-| every 5 min | `automations:run` |
+| every 5 min | `automations:run`, `stays:roll-open` (one more night for guests with no end date) |
 | every 10 min | `watchdog:run` (quick checks) |
 | every 15 min | `reports:automation --alerts` (smart alerts) |
 | hourly | `hotels:update-statuses`, backup `--small` (:40), `watchdog:run --data` (:17) |
@@ -112,7 +112,7 @@ Rules (money, dates, status changes) belong in services so tests, automations an
 | `hotelms:reset-two-factor {email}` | Turn off two-step sign-in for someone who lost their phone |
 | `hotelms:purge-closed-hotels` | Delete hotels closed more than 90 days ago, with their files |
 | `watchdog:run {--data}` | Run the watchdog checks now |
-| `reports:automation {--alerts}`, `automations:run`, `reservations:expire`, `hotels:update-statuses`, `subscriptions:invoices` | The scheduled jobs, by hand |
+| `reports:automation {--alerts}`, `automations:run`, `reservations:expire`, `stays:roll-open`, `hotels:update-statuses`, `subscriptions:invoices` | The scheduled jobs, by hand |
 
 ## Conventions
 

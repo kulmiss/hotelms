@@ -40,6 +40,8 @@ export type ReservationSummary = {
   code: string
   status: ReservationStatus
   stay_type: StayType
+  /** Walk-in who did not know how long they stay: a night is added each day (Q16). */
+  open_stay?: boolean
   source: string
   branch: { id: number; name: string } | null
   guest: { id: number; name: string; phone: string | null } | null

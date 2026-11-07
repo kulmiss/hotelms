@@ -23,6 +23,8 @@ return [
     'vip_arrival' => ['group' => 'bookings', 'default' => true, 'to' => ['checkout.approve_balance'], 'options' => ['nights' => 7]],
     'cancellation_refund' => ['group' => 'bookings', 'default' => true, 'to' => ['approvals.decide']],
     'guest_details_missing' => ['group' => 'bookings', 'default' => true, 'to' => ['frontdesk.check_in'], 'options' => ['hours' => 2]],
+    'open_stay_room_booked' => ['group' => 'bookings', 'default' => true, 'to' => ['frontdesk.room_move']],
+    'open_stay_check' => ['group' => 'bookings', 'default' => true, 'to' => ['frontdesk.check_out'], 'options' => ['nights' => 14]],
 
     // Front desk and money
     'shift_start_brief' => ['group' => 'money', 'default' => true, 'to' => ['assigned'], 'module' => 'shifts'],

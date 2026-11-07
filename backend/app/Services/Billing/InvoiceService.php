@@ -26,7 +26,7 @@ class InvoiceService
     public function __construct(private TaxCalculator $taxes, private HotelSettings $settings) {}
 
     /** The reservation's open bill (created at check-in with the room charges). */
-    public function openFor(Reservation $reservation, User $user): Invoice
+    public function openFor(Reservation $reservation, ?User $user): Invoice
     {
         if ($existing = $reservation->invoices()->where('status', '!=', 'void')->orderBy('id')->first()) {
             return $existing;

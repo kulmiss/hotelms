@@ -33,6 +33,9 @@ class FrontDesk
     /** Hourly and day-use guests: minutes after the end time before extra hours are charged. */
     public const OVERSTAY_GRACE_MINUTES = 15;
 
+    /** The longest stay (extend, open stays). */
+    public const MAX_NIGHTS = 90;
+
     public function __construct(
         private ReservationService $reservations,
         private InvoiceService $invoices,
@@ -162,13 +165,20 @@ class FrontDesk
         if (($data['stay_type'] ?? 'nightly') === 'nightly') {
             $data['check_in'] = $this->nightDate($user->hotel); // after midnight, before the cut-off: last night
         }
+        $open = ! empty($data['open_stay']);
+        if ($open) {
+            if (($data['stay_type'] ?? 'nightly') !== 'nightly') {
+                throw ValidationException::withMessages(['open_stay' => '"Not sure yet" is only for stays by the night.']);
+            }
+            $data['check_out'] = Carbon::parse($data['check_in'])->addDay()->toDateString(); // the first night; more are added each day
+        }
         foreach ($data['rooms'] ?? [] as $i => $r) {
             if (empty($r['room_id'])) {
                 throw ValidationException::withMessages(["rooms.$i.room_id" => 'Choose the room.']);
             }
         }
 
-        return DB::transaction(function () use ($data, $user, $rules) {
+        return DB::transaction(function () use ($data, $user, $rules, $open) {
             $preview = $this->reservations->preview($data, $user);
             $payLater = ! empty($data['pay_later']);
             if ($payLater) {
@@ -181,6 +191,9 @@ class FrontDesk
             }
 
             $reservation = $this->reservations->create($data, $user);
+            if ($open) {
+                $reservation->update(['open_stay' => true]);
+            }
             if (Money::isPositive($paid)) {
                 $this->reservations->recordPayment($reservation, $data['payment'] + ['type' => $rules['walk_in_payment'] === 'deposit' ? 'deposit' : 'payment'], $user);
                 $reservation->refresh();
@@ -324,7 +337,8 @@ class FrontDesk
             if ($unused->isEmpty()) {
                 continue;
             }
-            $fee = Money::isPositive($rule['value']) ? $this->fee($rule, (string) $unused->first()->amount) : '0.00';
+            // An open stay never promised a date: no early check-out fee (Q16).
+            $fee = ! $reservation->open_stay && Money::isPositive($rule['value']) ? $this->fee($rule, (string) $unused->first()->amount) : '0.00';
             $rooms[] = ['rr' => $rr, 'fee' => $fee, 'from' => $cut];
             $nights = max($nights, $unused->count());
             $refund = Money::add($refund, Money::sum($unused->pluck('amount')->map(fn ($v) => (string) $v)));
@@ -453,12 +467,12 @@ class FrontDesk
      *
      * @param  array<string, mixed>  $data
      */
-    public function extend(Reservation $reservation, array $data, User $user): Reservation
+    public function extend(Reservation $reservation, array $data, ?User $user): Reservation
     {
         if ($reservation->status !== 'checked_in') {
             throw ValidationException::withMessages(['status' => 'Change the booking instead (it has not started).']);
         }
-        $hotel = $user->hotel;
+        $hotel = $reservation->hotel;
         $branch = $reservation->branch;
         $rules = $this->settings->group(HotelSettings::BOOKING_DEFAULTS);
 
@@ -469,8 +483,8 @@ class FrontDesk
                 throw ValidationException::withMessages(['check_out' => 'Choose a later check-out date.']);
             }
             $inDay = HotelClock::local($reservation->check_in_at, $hotel)->startOfDay();
-            if ($inDay->diffInDays($newOut) > 90) {
-                throw ValidationException::withMessages(['check_out' => 'A stay can be at most 90 nights. Start a new booking for longer stays.']);
+            if ($inDay->diffInDays($newOut) > self::MAX_NIGHTS) {
+                throw ValidationException::withMessages(['check_out' => 'A stay can be at most '.self::MAX_NIGHTS.' nights. Start a new booking for longer stays.']);
             }
             $out = $newOut->copy()->setTimeFromTimeString((string) ($branch->check_out_time ?: '12:00'))->utc();
             $until = $out->copy();
@@ -507,6 +521,44 @@ class FrontDesk
         });
     }
 
+    /**
+     * Open stays (Q16): while the guest is still in at the check-out time (after the late grace), one more
+     * night is added, like "Stay longer". When the room is booked for that night (or the stay reached
+     * the longest stay) nothing is added and the guest shows as overdue: reception moves them or checks them out.
+     *
+     * @return list<array{reservation: Reservation, ok: bool, problem: ?string}>
+     */
+    public function rollOpenStay(Reservation $reservation): array
+    {
+        $done = [];
+        for ($i = 0; $i < 3 && $reservation->status === 'checked_in' && $reservation->open_stay
+            && now()->gt($reservation->check_out_at->copy()->addMinutes(self::LATE_GRACE_MINUTES)); $i++) {
+            $night = HotelClock::local($reservation->check_out_at, $reservation->hotel)->toDateString();
+            try {
+                $reservation = $this->extend($reservation, ['check_out' => Carbon::parse($night)->addDay()->toDateString()], null);
+                app(ActivityLogger::class)->log('front.open_stay_night', "{$reservation->code}: open stay, night of {$night} added automatically", $reservation);
+                $done[] = ['reservation' => $reservation, 'ok' => true, 'problem' => null];
+            } catch (ValidationException $e) {
+                $done[] = ['reservation' => $reservation, 'ok' => false, 'problem' => (string) collect($e->errors())->flatten()->first()];
+                break;
+            }
+        }
+
+        return $done;
+    }
+
+    /** Is every room of this stay free for one more night after its check-out? (warning for open stays) */
+    public function freeOneMoreNight(Reservation $reservation): bool
+    {
+        foreach ($reservation->rooms()->with('room')->get() as $rr) {
+            if ($rr->room && ! $this->availability->roomIsFree($rr->room, $rr->blocked_until, $rr->blocked_until->copy()->addDay(), $reservation->id)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /** Room status by hand (W7). Occupied comes only from check-in. */
     public function setRoomStatus(Room $room, string $status, User $user): Room
     {
@@ -536,10 +588,24 @@ class FrontDesk
         return Money::isPositive((string) $rules['early_check_in_fee_value']) ? ['type' => $rules['early_check_in_fee_type'], 'value' => (string) $rules['early_check_in_fee_value']] : null;
     }
 
+    /**
+     * When the guest should have left: the booked check-out time; for an open stay, today's check-out time
+     * (its next night is added automatically, so leaving later today is a late check-out, not a new night).
+     */
+    public function dueOut(Reservation $reservation, Carbon $at): Carbon
+    {
+        if (! $reservation->open_stay) {
+            return $reservation->check_out_at;
+        }
+        $today = HotelClock::local($at, $reservation->hotel)->setTimeFromTimeString((string) ($reservation->branch?->check_out_time ?: '12:00'))->utc();
+
+        return $today->gt($reservation->check_in_at) && $today->lt($reservation->check_out_at) ? $today : $reservation->check_out_at;
+    }
+
     /** @return array{type: string, value: string}|null */
     public function lateFee(Reservation $reservation, Carbon $at): ?array
     {
-        if ($reservation->stay_type !== 'nightly' || $at->lte($reservation->check_out_at->copy()->addMinutes(self::LATE_GRACE_MINUTES))) {
+        if ($reservation->stay_type !== 'nightly' || $at->lte($this->dueOut($reservation, $at)->copy()->addMinutes(self::LATE_GRACE_MINUTES))) {
             return null;
         }
         $rules = $this->settings->group(HotelSettings::BOOKING_DEFAULTS);

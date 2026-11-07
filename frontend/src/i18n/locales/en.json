@@ -1318,8 +1318,18 @@
       "toggle": "Quick check-in",
       "name": "Guest name",
       "help": "Only name and phone now. The guest is marked \"Details missing\" and you are reminded to add the ID later.",
-      "needNamePhone": "Type the guest's name and phone."
+      "needNamePhone": "Type the guest's name and phone.",
+      "found": "{{name}} came before",
+      "foundStays_one": "1 stay. Use this guest so the history stays in one place.",
+      "foundStays_other": "{{count}} stays. Use this guest so the history stays in one place.",
+      "foundBlacklisted": "This guest is on the blacklist. Ask the manager.",
+      "useGuest": "Use this guest"
     },
+    "stillStaying": "Ask each guest: still staying? Tap \"Staying\" to add one night, or \"Leaving\" to check out.",
+    "staying": "Staying",
+    "leaving": "Leaving",
+    "plusNight": "+1 night",
+    "plusNightHelp": "One more night in the same room, until {{date}}",
     "bookedFrom": "Booked from {{date}}",
     "overdueHelp": "Check-out time has passed and the guest has not checked out yet.",
     "lateHelp": "Check-in time has passed and the guest has not arrived yet.",
@@ -1963,6 +1973,8 @@
         "vip_arrival": "Long-stay guest arrives",
         "cancellation_refund": "Refund after a cancellation",
         "guest_details_missing": "Guest details missing",
+        "open_stay_room_booked": "No end date: room booked next",
+        "open_stay_check": "No end date: long stay check",
         "shift_start_brief": "Start of shift brief",
         "checkout_balance_reminder": "Money owed before check-out",
         "outstanding_follow_up": "Follow up money owed",
@@ -2354,6 +2366,14 @@
         "name": "Guest details missing",
         "what": "Hours after a quick check-in, the person who checked the guest in is reminded to add the ID and nationality."
       },
+      "open_stay_room_booked": {
+        "name": "No end date: room booked next",
+        "what": "A day before another guest has the room of a guest with no end date, reception is told to ask the guest or move them."
+      },
+      "open_stay_check": {
+        "name": "No end date: long stay check",
+        "what": "Every few nights (you choose), reception is asked to check with a guest who has no end date and take a payment."
+      },
       "shift_start_brief": {
         "name": "Start of shift brief",
         "what": "At the start of a shift, the person on duty gets who arrives, who leaves and the unpaid bills."
@@ -2675,6 +2695,12 @@
   },
   "payments": {
     "overpayCancelled": "Not saved. Check the amount."
+  },
+  "openStay": {
+    "option": "Not sure how long (no end date)",
+    "hint": "The guest pays for the first night now. The app adds one night to the bill each day at check-out time, until the guest leaves. No early leave fee.",
+    "badge": "No end date",
+    "help": "A night is added to the bill each day at check-out time. Check out when the guest leaves."
   },
   "payLater": {
     "option": "Pay at check-out",
