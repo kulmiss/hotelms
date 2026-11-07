@@ -136,15 +136,16 @@ class SmartHints
                 $start = HotelClock::now($hotel)->startOfDay()->utc();
                 $base = fn () => DB::table('reservation_rooms as rr')->join('reservations as r', 'r.id', '=', 'rr.reservation_id')
                     ->where('r.hotel_id', $hotel->id)->whereIn('r.branch_id', $branchIds);
-                $inHouse = $base()->where('rr.status', 'checked_in')->where('rr.check_out_at', '>', now())->count();
+                // Staying tonight = leaving tomorrow or later (a guest leaving at 12:00 today is not here tonight).
+                $inHouse = $base()->where('rr.status', 'checked_in')->where('rr.check_out_at', '>=', $start->copy()->addDay())->count();
                 $toCome = $base()->whereIn('rr.status', ['pending', 'confirmed'])->whereBetween('rr.check_in_at', [$start, $start->copy()->addDay()])->count();
                 $expected = min(100, (int) round(($inHouse + $toCome) / $rooms * 100));
 
                 return [
                     'text' => "Tonight looks about {$expected}% full".($toCome ? " – {$toCome} more ".($toCome === 1 ? 'arrival' : 'arrivals').' to come.' : '.'),
-                    'why' => "{$inHouse} rooms in house now plus {$toCome} arriving today, of {$rooms} rooms.", 'link' => '/rooms?tab=arrivals',
+                    'why' => "{$inHouse} rooms staying tonight plus {$toCome} arriving today, of {$rooms} rooms.", 'link' => '/rooms?tab=arrivals',
                     'explain' => self::explain([
-                        ['Rooms with a guest now', $inHouse],
+                        ['Rooms with a guest staying tonight', $inHouse],
                         ['Rooms still to arrive today', $toCome],
                         ['Rooms in the hotel', $rooms],
                         ['Expected tonight', $expected.'%'],

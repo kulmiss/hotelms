@@ -175,10 +175,10 @@ class StaffTest extends TestCase
         ])->assertCreated();
 
         $log = $this->getJson('/api/v1/activity-log')->assertOk()->json('data');
-        $this->assertContains('User created: Abebe', array_column($log, 'description'));
+        $this->assertContains('Staff member added: Abebe', array_column($log, 'description'));
         $this->assertStringNotContainsString('"password"', json_encode($log));
 
         $otherAdmin = User::factory()->withRole(Hotel::factory()->create(), 'hotel_admin')->create();
-        $this->actingAs($otherAdmin)->getJson('/api/v1/activity-log')->assertJsonMissing(['description' => 'User created: Abebe']);
+        $this->actingAs($otherAdmin)->getJson('/api/v1/activity-log')->assertJsonMissing(['description' => 'Staff member added: Abebe']);
     }
 }

@@ -13,7 +13,7 @@ trait LogsActivity
     public static function bootLogsActivity(): void
     {
         static::created(function ($model) {
-            app(ActivityLogger::class)->log('created', class_basename($model).' created: '.$model->activityName(), $model, [
+            app(ActivityLogger::class)->log('created', self::activityLabel($model).' added: '.$model->activityName(), $model, [
                 'new' => $model->activityAttributes($model->getAttributes()),
             ]);
         });
@@ -24,15 +24,33 @@ trait LogsActivity
                 return;
             }
             $old = array_intersect_key($model->getOriginal(), $changes);
-            app(ActivityLogger::class)->log('updated', class_basename($model).' updated: '.$model->activityName(), $model, [
+            app(ActivityLogger::class)->log('updated', self::activityLabel($model).' changed: '.$model->activityName(), $model, [
                 'old' => $model->activityAttributes($old),
                 'new' => $changes,
             ]);
         });
 
         static::deleted(function ($model) {
-            app(ActivityLogger::class)->log('deleted', class_basename($model).' deleted: '.$model->activityName(), $model);
+            app(ActivityLogger::class)->log('deleted', self::activityLabel($model).' removed: '.$model->activityName(), $model);
         });
+    }
+
+    /** Plain words for the activity log and "My shift" (staff read these; never class names like "InvoiceItem"). */
+    private const ACTIVITY_LABELS = [
+        'AlertEvent' => 'Alert', 'AlertRule' => 'Alert rule', 'Attendance' => 'Attendance', 'Branch' => 'Branch', 'CancellationPolicy' => 'Cancellation policy',
+        'CashierSession' => 'Cashier shift', 'ChargeType' => 'Charge', 'CustomReport' => 'Own report', 'ExchangeRate' => 'Exchange rate', 'Guest' => 'Guest',
+        'GuestType' => 'Guest type', 'Hotel' => 'Hotel', 'HotelCurrency' => 'Currency', 'HotelModule' => 'Module', 'HotelSetting' => 'Setting',
+        'HousekeepingTask' => 'Cleaning task', 'Import' => 'Import', 'Invoice' => 'Bill', 'InvoiceItem' => 'Bill line', 'Payment' => 'Payment',
+        'PaymentMethod' => 'Payment method', 'Plan' => 'Plan', 'RateRule' => 'Price rule', 'ReportSchedule' => 'Scheduled report', 'ReportTarget' => 'Target',
+        'Reservation' => 'Booking', 'ReservationRoom' => 'Booked room', 'Role' => 'Role', 'Room' => 'Room', 'RoomType' => 'Room type',
+        'SavedView' => 'Saved view', 'Shift' => 'Shift', 'ShiftAssignment' => 'Roster', 'Tax' => 'Tax', 'User' => 'Staff member',
+    ];
+
+    public static function activityLabel(object $model): string
+    {
+        $class = class_basename($model);
+
+        return self::ACTIVITY_LABELS[$class] ?? trim((string) preg_replace('/(?<!^)[A-Z]/', ' $0', $class));
     }
 
     public function activityName(): string

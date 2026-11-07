@@ -84,14 +84,14 @@ describe('team', () => {
       'GET /me': { body: makeMe() },
       'GET /activity-log': {
         body: {
-          data: [{ id: 1, event: 'updated', description: 'User updated: Abebe', subject_type: 'User', properties: { old: { phone: null }, new: { phone: '+251911' } }, created_at: '2026-11-05T10:00:00Z', user: { id: 1, name: 'Meron' } }],
+          data: [{ id: 1, event: 'updated', description: 'Staff member changed: Abebe', subject_type: 'User', properties: { old: { phone: null }, new: { phone: '+251911' } }, created_at: '2026-11-05T10:00:00Z', user: { id: 1, name: 'Meron' } }],
           current_page: 1,
           last_page: 1,
         },
       },
     })
     renderApp('/activity-log')
-    expect(await screen.findByText('User updated: Abebe')).toBeInTheDocument()
+    expect(await screen.findByText('Staff member changed: Abebe')).toBeInTheDocument()
     expect(screen.getByText('Meron')).toBeInTheDocument()
     expect(screen.getByText(/→ \+251911/)).toBeInTheDocument()
   })

@@ -174,6 +174,18 @@ class AutomationsTest extends TestCase
         $this->assertSame('2026-11-20', $rule->start_date->toDateString());
     }
 
+    public function test_a_price_suggestion_for_yesterday_cannot_be_approved_just_after_midnight(): void
+    {
+        $approval = $this->inHotel(fn () => Approval::create([
+            'branch_id' => $this->branch->id, 'kind' => 'price_up', 'title' => '+10% on Tue', 'status' => 'pending', 'fingerprint' => 'price:y',
+            'payload' => ['date' => '2026-11-10', 'percent' => 10, 'occupancy' => 90, 'usual' => 60],
+        ]));
+        // 00:30 on 11 Nov in Addis Ababa = still 10 Nov on the server's clock (UTC): the hotel's day counts.
+        $this->travelTo(Carbon::parse('2026-11-11 00:30', 'Africa/Addis_Ababa'));
+        $this->actingAs($this->admin)->postJson("/api/v1/approvals/{$approval->id}/approve")->assertJsonValidationErrors('approval');
+        $this->assertSame(0, $this->inHotel(fn () => RateRule::count()));
+    }
+
     public function test_reminders_from_the_clock_are_sent_once(): void
     {
         $id = $this->book(['check_in' => '2026-11-11', 'check_out' => '2026-11-12']); // pending, expires within the deposit time

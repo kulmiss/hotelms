@@ -68,7 +68,7 @@ Tests: `ModulesTest`.
   device list, new-device alerts, approved devices only (W7). `Security/*`, `AuthController`. Tests: `Auth/SecurityTest`.
 - Rate limits on sign-in, codes and PINs (`AppServiceProvider`, `AuthController`).
 - PINs: a PIN set by someone else (manager, `attendance_pin_set_by`) works on the attendance kiosk but never for PIN switch (taking over a shared device). "PIN already used" answers are limited to 3 per person per day, so other people's PINs cannot be found by trying (`Attendance::setPin`, `ownPin`). Housekeeping tasks go only to active people with `housekeeping.own_tasks`; roster only active staff, within a year.
-- Activity log for every important action (`ActivityLogger`, `LogsActivity`).
+- Activity log for every important action (`ActivityLogger`, `LogsActivity`), in plain words ("Bill line removed: …", "Booking changed: …"; labels in `LogsActivity::ACTIVITY_LABELS`, never class names).
 
 ## Reports and insights
 
@@ -81,7 +81,7 @@ Code: `Reports/Metrics`, `Reports/Insights`, `Reports/CustomReportEngine`, `Repo
 ## Automation and smart features
 
 - 38+ ready-made automations (`config/automations.php`, `Automation/AutomationEvents` for events, `AutomationSchedule` for timed ones),
-  rule builder (`RuleEngine`), quiet hours, approvals. Every automation is also a Super Admin switch. Tests: `Automation/AutomationsTest`.
+  rule builder (`RuleEngine`), quiet hours, approvals (two managers approving at once: only the first acts; price suggestions expire by the hotel's date). Smart "tonight" counts only guests leaving tomorrow or later. Every automation is also a Super Admin switch. Tests: `Automation/AutomationsTest`.
 - Smart hints with "Why?" (`Smart/SmartHints`, `config/smart.php`, `components/ui/SmartHints.tsx`). Tests: `Smart/SmartHintsTest`.
 - Notifications: bell (`app_notifications`), email (SMTP from Super Admin → Settings → Emails, or `.env`), Telegram bot
   (link with a code from My profile; polled every minute). `Notify/*`.

@@ -9,6 +9,7 @@ use App\Models\Reservation;
 use App\Models\RoomType;
 use App\Services\ActivityLogger;
 use App\Services\Booking\ReservationService;
+use App\Support\HotelClock;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -28,7 +29,7 @@ class ApprovalController extends Controller
     {
         $status = $request->validate(['status' => ['nullable', Rule::in(['pending', 'approved', 'rejected', 'expired'])]])['status'] ?? 'pending';
         $branches = $request->user()->accessibleBranches()->pluck('id');
-        $this->expireOld();
+        $this->expireOld($request);
         $rows = Approval::where('status', $status)->where(fn ($q) => $q->whereNull('branch_id')->orWhereIn('branch_id', $branches))
             ->with(['branch:id,name', 'decider:id,name'])->latest('id')->limit(100)->get();
 
@@ -47,6 +48,10 @@ class ApprovalController extends Controller
         $user = $request->user();
 
         DB::transaction(function () use ($approval, $request, $user) {
+            // Two managers tapping Approve at the same moment: only the first one acts (no double refund).
+            if (Approval::whereKey($approval->id)->lockForUpdate()->value('status') !== 'pending') {
+                throw ValidationException::withMessages(['approval' => 'Someone already decided this.']);
+            }
             if ($approval->kind === 'refund') {
                 abort_unless($user->hasPermission('payments.refund'), 403, 'You may not give refunds.');
                 $data = $request->validate(['payment_method_id' => ['required', 'integer'], 'reference' => ['nullable', 'string', 'max:100']]);
@@ -76,7 +81,11 @@ class ApprovalController extends Controller
     {
         $approval = $this->find($request, $id);
         $note = $request->validate(['note' => ['nullable', 'string', 'max:200']])['note'] ?? null;
-        $approval->update(['status' => 'rejected', 'decided_by' => $request->user()->id, 'decided_at' => now(), 'note' => $note]);
+        $done = Approval::whereKey($approval->id)->where('status', 'pending')
+            ->update(['status' => 'rejected', 'decided_by' => $request->user()->id, 'decided_at' => now(), 'note' => $note]);
+        if ($done !== 1) {
+            throw ValidationException::withMessages(['approval' => 'Someone already decided this.']);
+        }
         $this->log->log('approval.rejected', "Rejected: {$approval->title}", $approval);
 
         return response()->json(['message' => 'Rejected.']);
@@ -86,7 +95,7 @@ class ApprovalController extends Controller
     {
         $approval = Approval::where('status', 'pending')->findOrFail($id);
         abort_if($approval->branch_id && ! $request->user()->accessibleBranches()->contains('id', $approval->branch_id), 404);
-        if (str_starts_with($approval->kind, 'price_') && $approval->payload['date'] < now()->toDateString()) {
+        if (str_starts_with($approval->kind, 'price_') && $approval->payload['date'] < HotelClock::now($request->user()->hotel)->toDateString()) {
             $approval->update(['status' => 'expired']);
             throw ValidationException::withMessages(['approval' => 'This date has passed.']);
         }
@@ -95,10 +104,11 @@ class ApprovalController extends Controller
     }
 
     /** Price suggestions for dates that have passed can no longer be approved. */
-    private function expireOld(): void
+    private function expireOld(Request $request): void
     {
+        $today = HotelClock::now($request->user()->hotel)->toDateString(); // the hotel's day, not the server's
         Approval::where('status', 'pending')->where('kind', 'like', 'price_%')->get()
-            ->filter(fn (Approval $a) => ($a->payload['date'] ?? '9999') < now()->toDateString())
+            ->filter(fn (Approval $a) => ($a->payload['date'] ?? '9999') < $today)
             ->each(fn (Approval $a) => $a->update(['status' => 'expired']));
     }
 }
