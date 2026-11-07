@@ -34,6 +34,11 @@ Stop it with `Ctrl + C`. Next time, `docker compose up` (without `--build`) is e
 
 Every pull request runs the backend tests (on MySQL), the code style check, and the frontend lint, type check, tests and build. A PR is only merged when all checks are green.
 
+## Developer documentation
+
+Start at [docs/README.md](docs/README.md): architecture, setup, backend, frontend, data model, API, features and step-by-step recipes.
+Staff guides (very easy English) are inside the app: Help → How to use.
+
 ## Going online
 
 See [docs/hosting.md](docs/hosting.md) – shared hosting (cPanel) or a VPS, backups and updates.

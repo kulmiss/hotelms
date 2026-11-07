@@ -335,7 +335,7 @@ describe('Super Admin areas', () => {
   it('lets a hotel ask for help', async () => {
     const created = { id: 9, subject: 'Wifi', status: 'open', priority: 'normal', channel: 'app', from: 'Meron', last_message_at: null, created_at: null, messages: [{ id: 1, kind: 'message', body: 'No wifi', author: 'Meron', created_at: null }] }
     const fetchMock = mockApi({ 'GET /me': { body: makeMe() }, 'GET /support': { body: { data: [] } }, 'POST /support': { status: 201, body: { data: created } }, 'GET /support/9': { body: { data: created } } })
-    renderApp('/help')
+    renderApp('/help?tab=ask')
 
     await userEvent.click(await screen.findByRole('button', { name: 'New question' }))
     await userEvent.type(screen.getByLabelText('Subject'), 'Wifi')
