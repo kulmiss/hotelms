@@ -164,6 +164,106 @@ class FrontDeskTest extends TestCase
         $this->assertSame('2026-11-12', $this->getJson('/api/v1/front-desk/walk-in/rooms?branch_id='.$this->branch->id)->json('night_date'));
     }
 
+    /** A walk-in who does not know how long they stay (Q16), paid for the first night. */
+    private function openStay(string $room = '101'): int
+    {
+        return $this->actingAs($this->receptionist)->postJson('/api/v1/front-desk/walk-in', [
+            'branch_id' => $this->branch->id, 'stay_type' => 'nightly', 'open_stay' => true, 'guest_id' => $this->guest->id,
+            'rooms' => [['room_type_id' => $this->standard->id, 'room_id' => $this->rooms[$room]]],
+            'payment' => ['payment_method_id' => $this->cash, 'amount' => '2300'],
+        ])->assertCreated()->assertJsonPath('data.open_stay', true)->assertJsonPath('data.status', 'checked_in')->json('data.id');
+    }
+
+    public function test_an_open_stay_adds_a_night_each_day_until_the_guest_leaves(): void
+    {
+        $this->at('2026-11-12 16:00');
+        $id = $this->openStay();
+        $this->assertSame('2026-11-13', substr((string) $this->getJson("/api/v1/reservations/$id")->json('data.check_out_at'), 0, 10));
+        $this->assertContains($id, collect($this->getJson('/api/v1/front-desk/today?branch_id='.$this->branch->id)->json('departures'))->pluck('id')->all()); // "still staying?"
+
+        $this->at('2026-11-13 12:20'); // inside the late grace: nothing yet
+        $this->artisan('stays:roll-open')->assertSuccessful();
+        $this->assertSame('2300.00', $this->invoice($id)['total']);
+
+        $this->at('2026-11-13 12:31'); // still in after the check-out time: one more night
+        $this->artisan('stays:roll-open')->assertSuccessful();
+        $this->artisan('stays:roll-open')->assertSuccessful(); // only once
+        $this->assertSame('4600.00', $this->invoice($id)['total']);
+        $this->assertSame('2026-11-14', substr((string) $this->getJson("/api/v1/reservations/$id")->json('data.check_out_at'), 0, 10));
+
+        // Leaves the next morning, before the check-out time: no early leave fee, no late fee.
+        $this->at('2026-11-14 10:00');
+        $info = $this->getJson("/api/v1/reservations/$id/check-out")->assertOk()->json('data');
+        $this->assertNull($info['early']);
+        $this->assertNull($info['late_fee']);
+        $this->postJson("/api/v1/reservations/$id/check-out", ['payment' => ['payment_method_id' => $this->cash, 'amount' => '2300']])->assertOk()->assertJsonPath('data.status', 'checked_out');
+        $this->assertSame('4600.00', $this->invoice($id)['total']);
+        $this->assertSame('dirty', $this->room('101')->status);
+
+        $this->at('2026-11-15 13:00'); // checked out: nothing more is added
+        $this->artisan('stays:roll-open')->assertSuccessful();
+        $this->assertSame('4600.00', $this->invoice($id)['total']);
+    }
+
+    public function test_an_open_stay_guest_leaving_after_the_check_out_time_pays_a_late_fee_not_a_night(): void
+    {
+        $this->at('2026-11-12 16:00');
+        $id = $this->openStay();
+        $this->at('2026-11-13 12:31');
+        $this->artisan('stays:roll-open')->assertSuccessful(); // night of the 13th added
+
+        $this->at('2026-11-13 14:00'); // leaves after lunch
+        $info = $this->getJson("/api/v1/reservations/$id/check-out")->assertOk()->json('data');
+        $this->assertSame('0.00', $info['early']['fee']); // the night not slept comes off, with no early fee
+        $this->assertSame('1150.00', $info['late_fee']); // half a night + 15%
+        $this->postJson("/api/v1/reservations/$id/check-out", ['payment' => ['payment_method_id' => $this->cash, 'amount' => '1150']])->assertOk();
+        $inv = $this->invoice($id);
+        $this->assertSame('3450.00', $inv['total']);
+        $this->assertSame(['room', 'late_check_out'], collect($inv['items'])->pluck('type')->all());
+    }
+
+    public function test_an_open_stay_warns_before_the_room_is_booked_and_never_double_books(): void
+    {
+        $this->at('2026-11-12 16:00');
+        $id = $this->openStay();
+        $this->actingAs($this->admin)->postJson('/api/v1/reservations', [ // another guest has room 101 from the 14th
+            'branch_id' => $this->branch->id, 'stay_type' => 'nightly', 'check_in' => '2026-11-14', 'check_out' => '2026-11-15', 'guest_id' => $this->guest->id,
+            'rooms' => [['room_type_id' => $this->standard->id, 'room_id' => $this->rooms['101'], 'adults' => 1]],
+        ])->assertCreated();
+        $titles = fn () => DB::table('app_notifications')->where('user_id', $this->receptionist->id)->orderBy('id')->pluck('title')->all();
+
+        $this->at('2026-11-13 12:31');
+        $this->artisan('stays:roll-open')->assertSuccessful(); // the 13th is free: added; the 14th is not: a warning
+        $this->assertSame('4600.00', $this->invoice($id)['total']);
+        $this->assertCount(1, $titles());
+        $this->assertStringContainsString('room booked after', $titles()[0]);
+
+        $this->at('2026-11-14 12:31');
+        $this->artisan('stays:roll-open')->assertSuccessful(); // no night added: the guest must move or leave
+        $this->artisan('stays:roll-open')->assertSuccessful();
+        $this->assertSame('4600.00', $this->invoice($id)['total']);
+        $this->assertCount(2, $titles());
+        $this->assertStringContainsString('no night added', $titles()[1]);
+        $this->assertTrue($this->getJson('/api/v1/front-desk/board?branch_id='.$this->branch->id)->json('data.0.stay.overdue'));
+    }
+
+    public function test_open_stay_is_only_for_nights_and_one_tap_adds_a_night_to_a_normal_stay(): void
+    {
+        $id = $this->booked();
+        $this->at('2026-11-12 16:00');
+        $this->actingAs($this->receptionist)->postJson('/api/v1/front-desk/walk-in', [
+            'branch_id' => $this->branch->id, 'stay_type' => 'hourly', 'hours' => 3, 'open_stay' => true, 'guest_id' => $this->guest->id,
+            'rooms' => [['room_type_id' => $this->deluxe->id, 'room_id' => $this->rooms['201']]],
+            'payment' => ['payment_method_id' => $this->cash, 'amount' => '1035'],
+        ])->assertJsonValidationErrors('open_stay');
+
+        // "+1 night" on the board = extend to the next day.
+        $this->checkIn($id, ['102'])->assertOk();
+        $this->postJson("/api/v1/reservations/$id/extend", ['check_out' => '2026-11-15'])->assertOk();
+        $this->assertSame('2026-11-15', substr((string) $this->getJson("/api/v1/reservations/$id")->json('data.check_out_at'), 0, 10));
+        $this->assertFalse((bool) $this->getJson("/api/v1/reservations/$id")->json('data.open_stay'));
+    }
+
     public function test_paying_more_than_owed_needs_a_yes(): void
     {
         $id = $this->booked();

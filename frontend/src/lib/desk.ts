@@ -5,7 +5,7 @@ import type { Page, ReservationDetail, ReservationSummary } from './front'
 
 /* ------------------------------------------------------------- front desk */
 
-export type StayInfo = { reservation_id: number; code: string | null; guest: string | null; check_in_at: string; check_out_at: string; balance: string; overdue: boolean }
+export type StayInfo = { reservation_id: number; code: string | null; guest: string | null; check_in_at: string; check_out_at: string; balance: string; overdue: boolean; open_stay?: boolean; stay_type?: string }
 export type BoardRoom = { id: number; number: string; floor: string | null; status: string; room_type_id: number; room_type: string | null; notes: string | null; stay: StayInfo | null; arriving: StayInfo | null; next_booking?: StayInfo | null }
 /** The hotel block printed at the top of invoices, receipts and registration cards. */
 export type PrintHotel = { name: string; legal_name: string | null; tin: string | null; vat_number: string | null; address: string | null; city: string | null; phone: string | null; email: string | null; logo_url: string | null; footer: string | null; receipt_paper?: 'a4' | 'receipt' }
@@ -99,11 +99,13 @@ export const useCheckIn = (id: number) =>
 export const useCheckOut = (id: number) =>
   useMoneyAction((v: { waive_late_fee: boolean; waive_early_fee?: boolean; approve_balance: boolean; payment?: PaymentFields | null }, h) => post<{ data: ReservationDetail }>(`/reservations/${id}/check-out`, v, h))
 export const useMoveRoom = (id: number) => useDeskAction((v: { stay: number; room_id: number }) => post<{ data: ReservationDetail }>(`/reservations/${id}/rooms/${v.stay}/move`, { room_id: v.room_id }))
+/** Extend any stay by id (the "+1 night" button on lists). */
+export const useExtendAny = () => useDeskAction((v: { id: number; check_out: string }) => post<{ data: ReservationDetail }>(`/reservations/${v.id}/extend`, { check_out: v.check_out }))
 export const useExtend = (id: number) => useDeskAction((v: { check_out?: string; hours?: number }) => post<{ data: ReservationDetail }>(`/reservations/${id}/extend`, v))
 export const useApproveBalance = (id: number) => useDeskAction(() => post<{ data: ReservationDetail }>(`/reservations/${id}/approve-balance`))
 export const useRoomStatus = () => useDeskAction((v: { id: number; status: string }) => post(`/rooms/${v.id}/status`, { status: v.status }))
 export const useWalkIn = () =>
-  useMoneyAction((v: { branch_id: number; stay_type: string; check_out?: string | null; hours?: number | null; guest_id?: number | null; quick_guest?: { name: string; phone: string }; rooms: { room_type_id: number; room_id: number; adults: number; children: number }[]; discount_percent?: string; payment?: PaymentFields; pay_later?: boolean }, h: Record<string, string>) =>
+  useMoneyAction((v: { branch_id: number; stay_type: string; check_out?: string | null; hours?: number | null; guest_id?: number | null; quick_guest?: { name: string; phone: string }; rooms: { room_type_id: number; room_id: number; adults: number; children: number }[]; discount_percent?: string; payment?: PaymentFields; pay_later?: boolean; open_stay?: boolean }, h: Record<string, string>) =>
     post<{ data: ReservationDetail }>('/front-desk/walk-in', v, h),
   )
 

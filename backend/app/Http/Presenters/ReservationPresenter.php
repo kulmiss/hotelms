@@ -21,6 +21,7 @@ class ReservationPresenter
             'code' => $r->code,
             'status' => $r->status,
             'stay_type' => $r->stay_type,
+            'open_stay' => (bool) $r->open_stay,
             'source' => $r->source,
             'branch' => $r->branch?->only(['id', 'name']),
             'guest' => $r->guest ? ['id' => $r->guest->id, 'name' => $r->guest->full_name, 'phone' => $r->guest->phone] : null,

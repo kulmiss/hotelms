@@ -18,8 +18,9 @@ import { money } from '@/lib/format'
 import { useCan } from '@/lib/hotel'
 import { cn } from '@/lib/cn'
 import { useFreeRooms, useWalkIn } from '@/lib/desk'
-import { addDays, today, useGuest, useLookups, useQuote, type BookingInput, type Guest, type StayType } from '@/lib/front'
+import { addDays, today, useGuest, useGuests, useLookups, useQuote, type BookingInput, type Guest, type StayType } from '@/lib/front'
 import { useDebounced } from '@/lib/useDebounced'
+import { samePhone } from '@/lib/phone'
 import { GuestPicker, QuoteSummary } from '@/pages/reservations/ReservationFormPage'
 
 /** Walk-in (W3): pick a clean room, the guest, take the money, check in. */
@@ -33,10 +34,12 @@ export function WalkInPage() {
   const branchId = current?.id ?? 0
   const [stayType, setStayType] = useState<StayType>('nightly')
   const [chosenOut, setChosenOut] = useState<string | null>(null)
+  // "Not sure yet" (open stay, Q16): one night now; the app adds a night each day until the guest leaves.
+  const [openStay, setOpenStay] = useState(false)
   const [nightFromServer, setNightFromServer] = useState<string | null>(null)
   // After midnight, before the hotel's cut-off, a walk-in pays for last night (and leaves today).
   const nightDate = nightFromServer ?? today()
-  const checkOut = chosenOut ?? addDays(nightDate, 1)
+  const checkOut = openStay ? addDays(nightDate, 1) : (chosenOut ?? addDays(nightDate, 1))
   const [hours, setHours] = useState(3)
   const [picked, setPicked] = useState<number[]>([])
   const [guest, setGuest] = useState<Guest | null>(null)
@@ -94,6 +97,7 @@ export function WalkInPage() {
         stay_type: stayType,
         check_out: input.check_out,
         hours: input.hours,
+        ...(stayType === 'nightly' && openStay ? { open_stay: true } : {}),
         ...(quick ? { quick_guest: { name: quickName.trim(), phone: quickPhone.trim() } } : { guest_id: guest?.id }),
         rooms: chosen.map((r) => ({ room_type_id: r.room_type_id, room_id: r.id, adults: 1, children: 0 })),
         ...(payLater ? { pay_later: true } : { payment: { payment_method_id: methodId || lookups.data?.payment_methods[0]?.id || 0, amount: pay, reference: reference || undefined, proof_id: proof?.id } }),
@@ -144,9 +148,18 @@ export function WalkInPage() {
                   ))}
                 </Select>
               )}
-              {stayType === 'nightly' && <Field label={t('reservations.form.checkOut')} type="date" min={addDays(nightDate, 1)} value={checkOut} onChange={(e) => setChosenOut(e.target.value)} />}
+              {stayType === 'nightly' && (
+                <div className="flex flex-col gap-1.5">
+                  <Field label={t('reservations.form.checkOut')} type="date" min={addDays(nightDate, 1)} value={checkOut} disabled={openStay} onChange={(e) => setChosenOut(e.target.value)} />
+                  <label className="flex min-h-touch cursor-pointer items-center gap-2 text-[13px]">
+                    <input type="checkbox" className="size-4 accent-accent" checked={openStay} onChange={(e) => setOpenStay(e.target.checked)} />
+                    {t('openStay.option')}
+                  </label>
+                </div>
+              )}
               {stayType === 'hourly' && <Field label={t('reservations.form.hours')} type="number" inputMode="numeric" min={1} max={24} value={String(hours)} onChange={(e) => setHours(Math.max(1, Number(e.target.value) || 1))} />}
             </div>
+            {stayType === 'nightly' && openStay && <Alert tone="info">{t('openStay.hint')}</Alert>}
             <p className="text-xs text-muted">
               {t('desk.walkInStartsNow')}{' '}
               <Link to="/reservations/new" className="font-medium text-accent-text underline">
@@ -232,6 +245,13 @@ export function WalkInPage() {
                   <Field label={t('desk.quick.name')} autoComplete="off" value={quickName} onChange={(e) => setQuickName(e.target.value)} error={error?.field('quick_guest.name')} />
                   <Field label={t('guests.phone')} type="tel" inputMode="tel" value={quickPhone} onChange={(e) => setQuickPhone(e.target.value)} error={error?.field('quick_guest.phone')} />
                 </div>
+                <PhoneMatch
+                  phone={quickPhone}
+                  onUse={(g) => {
+                    setQuick(false)
+                    setGuest(g)
+                  }}
+                />
                 <p className="text-xs text-muted">{t('desk.quick.help')}</p>
               </div>
             ) : (
@@ -286,6 +306,28 @@ export function WalkInPage() {
           </Button>
         </Card>
       </div>
+    </div>
+  )
+}
+
+/** Quick check-in: when the phone belongs to a guest who came before, offer to use them (no second copy). */
+function PhoneMatch({ phone, onUse }: { phone: string; onUse: (g: Guest) => void }) {
+  const { t } = useTranslation()
+  const digits = useDebounced(phone.replace(/\D+/g, ''), 300)
+  const found = useGuests(digits, 1, digits.length >= 6)
+  const match = (found.data?.data ?? []).find((g) => samePhone(g.phone, digits))
+  if (digits.length < 6 || !match) return null
+  return (
+    <div className={cn('flex flex-wrap items-center justify-between gap-3 rounded-lg px-3 py-2 ring-1', match.is_blacklisted ? 'bg-danger-bg ring-danger/40' : 'bg-accent-soft ring-accent/40')}>
+      <span className="flex flex-col text-[13px]">
+        <span className="font-medium">{t('desk.quick.found', { name: match.full_name })}</span>
+        <span className="text-xs text-muted">
+          {match.is_blacklisted ? t('desk.quick.foundBlacklisted') : t('desk.quick.foundStays', { count: match.reservations_count ?? 0 })}
+        </span>
+      </span>
+      <Button variant="secondary" onClick={() => onUse(match)}>
+        {t('desk.quick.useGuest')}
+      </Button>
     </div>
   )
 }

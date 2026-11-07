@@ -1,7 +1,10 @@
 {
   "title": "How to use",
   "intro": "Short guides for your work. You see only the things you are allowed to do. Tap a title to open it.",
-  "tabs": { "guide": "How to use", "ask": "Ask us" },
+  "tabs": {
+    "guide": "How to use",
+    "ask": "Ask us"
+  },
   "pictureAlt": "Picture: {{title}}. The orange numbers are the steps below.",
   "searchLabel": "Find a guide",
   "searchPlaceholder": "For example: check-in, payment, clean",
@@ -93,7 +96,7 @@
       "steps": [
         "In Room board, tap Arriving, Leaving or In house at the top.",
         "Arriving = guests who come today. Late = they did not come yet after check-in time.",
-        "Leaving = guests who go today. Overdue = they did not leave after check-out time.",
+        "Leaving = guests who go today. Ask each one: still staying? Tap Staying (one more night) or Leaving (check out). Overdue = they did not leave after check-out time.",
         "In house = all guests who are staying now."
       ]
     },
@@ -101,7 +104,7 @@
       "title": "Walk-in (guest without a booking)",
       "steps": [
         "Room board → Walk-in.",
-        "Choose Nights, Day use or Hourly. For nights, choose the check-out date.",
+        "Choose Nights, Day use or Hourly. For nights, choose the check-out date. Guest does not know? Tick Not sure how long.",
         "Tap a free room. You can also choose By room type.",
         "Find the guest by name or phone. If new, tap New guest and fill in the details.",
         "Check the price on the right side.",
@@ -109,11 +112,25 @@
         "Tap Take payment and check in. The room is now taken."
       ]
     },
+    "noEndDate": {
+      "title": "Guest does not know how long they stay",
+      "steps": [
+        "On the Walk-in page, choose Nights.",
+        "Tick Not sure how long (no end date).",
+        "Take the payment for the first night and check in.",
+        "Each day at check-out time, the app adds one more night to the bill. You do nothing.",
+        "The guest shows \"No end date\" on the Room board and in the Leaving list.",
+        "When the guest leaves, check out as usual. Leaving before check-out time = no extra night. Leaving later = late check-out fee.",
+        "If another guest booked the room, the app tells you a day before. Ask the guest, or move them.",
+        "Every few nights the app reminds you to ask the guest and take a payment."
+      ]
+    },
     "quickCheckIn": {
       "title": "Quick check-in (no time for details)",
       "steps": [
         "On the Walk-in page, tick Quick check-in.",
         "Type only the guest name and phone.",
+        "If the guest came before, the app shows their name. Tap Use this guest. (No second copy of the guest.)",
         "Take the payment and check in.",
         "The guest gets a \"Details missing\" mark. Add the ID details later, when you have time.",
         "The app reminds you if you forget."
@@ -157,7 +174,8 @@
         "Open the guest's booking. Tap Move / extend.",
         "To move: choose the new room and tap Move. The old room becomes dirty.",
         "To stay longer: choose the new check-out date and tap Extend. The price is added to the bill.",
-        "If the room is booked by someone else, move the guest to another room first."
+        "If the room is booked by someone else, move the guest to another room first.",
+        "Fast way for one more night: on the Room board tap the room, then +1 night."
       ]
     },
     "checkOut": {

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { ArrowRightEndOnRectangleIcon, ArrowRightStartOnRectangleIcon, CalendarDaysIcon, UserPlusIcon } from '@heroicons/react/24/outline'
+import { ArrowRightEndOnRectangleIcon, ArrowRightStartOnRectangleIcon, CalendarDaysIcon, PlusIcon, UserPlusIcon } from '@heroicons/react/24/outline'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
@@ -14,8 +14,8 @@ import { useMe } from '@/lib/auth'
 import { chooseBranch, useCurrentBranch } from '@/lib/branch'
 import { cn } from '@/lib/cn'
 import { date, money } from '@/lib/format'
-import { ROOM_DOTS, ROOM_TONES, useBoard, useRoomStatus, useToday, type BoardRoom, type TodayRow } from '@/lib/desk'
-import { localDate, localTime, STATUS_TONES, today as todayDate } from '@/lib/front'
+import { ROOM_DOTS, ROOM_TONES, useBoard, useExtendAny, useRoomStatus, useToday, type BoardRoom, type TodayRow } from '@/lib/desk'
+import { addDays, localDate, localTime, STATUS_TONES, today as todayDate } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { isPositive } from '@/lib/decimal'
 import { filterRooms, isFiltered, loadRoomFilter, matchesToday, NO_FILTER, ROOM_SORTS, ROOM_STATUSES, saveRoomFilter, TODAY_FILTERS, type RoomFilter } from '@/lib/roomFilter'
@@ -137,7 +137,7 @@ function Board({ branchId }: { branchId: number | null }) {
                     <span className="mt-auto flex flex-col text-[11px]">
                       <span className="truncate font-medium">{r.stay.guest}</span>
                       <span className={r.stay.overdue ? 'font-semibold text-danger-text' : 'text-muted'}>
-                        {localDate(r.stay.check_out_at) === day
+                        {r.stay.open_stay ? t('openStay.badge') : localDate(r.stay.check_out_at) === day
                           ? t('desk.leavesAt', { time: localTime(r.stay.check_out_at) })
                           : t('desk.until', { date: date(localDate(r.stay.check_out_at)) })}
                       </span>
@@ -293,14 +293,17 @@ function RoomPanel({ room, branchId, onClose }: { room: BoardRoom; branchId: num
           <span className="flex flex-col">
             <span className="font-medium">{room.stay.guest}</span>
             <span className="text-xs text-muted">
-              {room.stay.code} · {t('desk.until', { date: `${date(localDate(room.stay.check_out_at))} ${localTime(room.stay.check_out_at)}` })}
+              {room.stay.code} · {room.stay.open_stay ? t('openStay.badge') : t('desk.until', { date: `${date(localDate(room.stay.check_out_at))} ${localTime(room.stay.check_out_at)}` })}
               {Number(room.stay.balance) > 0 && ` · ${t('desk.owes', { amount: money(room.stay.balance) })}`}
             </span>
           </span>
-          <Link to={`/reservations/${room.stay.reservation_id}`} className={buttonClass('secondary')}>
-            <ArrowRightStartOnRectangleIcon aria-hidden className="size-4" />
-            {t('desk.openStay')}
-          </Link>
+          <span className="flex flex-wrap gap-2">
+            <PlusNight id={room.stay.reservation_id} checkOut={room.stay.check_out_at} stayType={room.stay.stay_type} openStay={room.stay.open_stay} />
+            <Link to={`/reservations/${room.stay.reservation_id}`} className={buttonClass('secondary')}>
+              <ArrowRightStartOnRectangleIcon aria-hidden className="size-4" />
+              {t('desk.openStay')}
+            </Link>
+          </span>
         </div>
       )}
       {!room.stay && room.arriving && (
@@ -342,66 +345,101 @@ function TodayList({ rows, kind, loading }: { rows: TodayRow[]; kind: Exclude<Ta
   const { t } = useTranslation()
   const can = useCan()
   return (
-    <Card className="overflow-x-auto p-0">
-      <table className="w-full min-w-[760px] text-left text-[13px]">
-        <thead className="bg-sunken">
-          <tr>
-            <th className="px-4 py-2.5 font-semibold">{t('reservations.guest')}</th>
-            <th className="px-4 py-2.5 font-semibold">{t('reservations.rooms')}</th>
-            <th className="px-4 py-2.5 font-semibold">{kind === 'arrivals' ? t('reservations.form.checkIn') : t('reservations.form.checkOut')}</th>
-            <th className="px-4 py-2.5 font-semibold">{t('reservations.status')}</th>
-            <th className="px-4 py-2.5 text-right font-semibold">{t('reservations.balance')}</th>
-            <th className="px-4 py-2.5" />
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.id} className={cn('border-t border-border', (r.late || r.overdue) && 'bg-warn-bg/40')}>
-              <td className="px-4 py-1.5">
-                <Link to={`/reservations/${r.id}`} className="flex min-h-touch flex-col justify-center">
-                  <span className="font-medium">{r.guest?.name}</span>
-                  <span className="text-xs text-muted">
-                    {r.code} · {r.guest?.phone}
-                  </span>
-                </Link>
-              </td>
-              <td className="px-4 py-1.5 text-muted">{r.rooms.map((x) => x.room_number ?? x.room_type).join(', ')}</td>
-              <td className="px-4 py-1.5">
-                {/* In house: the day too (guests leave on different days); today's lists: the time is enough. */}
-                {kind === 'in_house' && localDate(r.check_out_at) !== todayDate() && `${date(localDate(r.check_out_at))} `}
-                {localTime(kind === 'arrivals' ? r.check_in_at : r.check_out_at)}
-                {r.late && (
-                  <span title={t('desk.lateHelp')}>
-                    <Badge tone="warn">{t('desk.late')}</Badge>
-                  </span>
-                )}
-                {r.overdue && (
-                  <span title={t('desk.overdueHelp')}>
-                    <Badge tone="danger">{t('desk.overdue')}</Badge>
-                  </span>
-                )}
-              </td>
-              <td className="px-4 py-1.5">
-                <Badge tone={STATUS_TONES[r.status]}>{t(`reservations.statuses.${r.status}`)}</Badge>
-              </td>
-              <td className="px-4 py-1.5 text-right tabular-nums">{money(r.balance, r.currency)}</td>
-              <td className="px-4 py-1.5 text-right">
-                {kind === 'arrivals' && can('frontdesk.check_in') && (
-                  <Link to={`/reservations/${r.id}?action=check-in`} className={buttonClass('primary')}>
-                    {t('desk.checkIn')}
-                  </Link>
-                )}
-                {kind !== 'arrivals' && can('frontdesk.check_out') && (
-                  <Link to={`/reservations/${r.id}?action=check-out`} className={buttonClass(kind === 'departures' ? 'primary' : 'secondary')}>
-                    {t('desk.checkOut')}
-                  </Link>
-                )}
-              </td>
+    <div className="flex flex-col gap-2">
+      {kind === 'departures' && rows.length > 0 && <p className="text-[13px] text-muted">{t('desk.stillStaying')}</p>}
+      <Card className="overflow-x-auto p-0">
+        <table className="w-full min-w-[760px] text-left text-[13px]">
+          <thead className="bg-sunken">
+            <tr>
+              <th className="px-4 py-2.5 font-semibold">{t('reservations.guest')}</th>
+              <th className="px-4 py-2.5 font-semibold">{t('reservations.rooms')}</th>
+              <th className="px-4 py-2.5 font-semibold">{kind === 'arrivals' ? t('reservations.form.checkIn') : t('reservations.form.checkOut')}</th>
+              <th className="px-4 py-2.5 font-semibold">{t('reservations.status')}</th>
+              <th className="px-4 py-2.5 text-right font-semibold">{t('reservations.balance')}</th>
+              <th className="px-4 py-2.5" />
             </tr>
-          ))}
-        </tbody>
-      </table>
-      {!loading && rows.length === 0 && <p className="p-6 text-center text-muted">{t(`desk.empty.${kind}`)}</p>}
-    </Card>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.id} className={cn('border-t border-border', (r.late || r.overdue) && 'bg-warn-bg/40')}>
+                <td className="px-4 py-1.5">
+                  <Link to={`/reservations/${r.id}`} className="flex min-h-touch flex-col justify-center">
+                    <span className="font-medium">{r.guest?.name}</span>
+                    <span className="text-xs text-muted">
+                      {r.code} · {r.guest?.phone}
+                    </span>
+                  </Link>
+                </td>
+                <td className="px-4 py-1.5 text-muted">{r.rooms.map((x) => x.room_number ?? x.room_type).join(', ')}</td>
+                <td className="px-4 py-1.5">
+                  {/* In house: the day too (guests leave on different days); today's lists: the time is enough. */}
+                  {kind !== 'arrivals' && r.open_stay ? (
+                    <Badge tone="info">{t('openStay.badge')}</Badge>
+                  ) : (
+                    <>
+                      {kind === 'in_house' && localDate(r.check_out_at) !== todayDate() && `${date(localDate(r.check_out_at))} `}
+                      {localTime(kind === 'arrivals' ? r.check_in_at : r.check_out_at)}
+                    </>
+                  )}
+                  {r.late && (
+                    <span title={t('desk.lateHelp')}>
+                      <Badge tone="warn">{t('desk.late')}</Badge>
+                    </span>
+                  )}
+                  {r.overdue && (
+                    <span title={t('desk.overdueHelp')}>
+                      <Badge tone="danger">{t('desk.overdue')}</Badge>
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-1.5">
+                  <Badge tone={STATUS_TONES[r.status]}>{t(`reservations.statuses.${r.status}`)}</Badge>
+                </td>
+                <td className="px-4 py-1.5 text-right tabular-nums">{money(r.balance, r.currency)}</td>
+                <td className="px-4 py-1.5 text-right">
+                  {kind === 'arrivals' && can('frontdesk.check_in') && (
+                    <Link to={`/reservations/${r.id}?action=check-in`} className={buttonClass('primary')}>
+                      {t('desk.checkIn')}
+                    </Link>
+                  )}
+                  <span className="inline-flex flex-wrap justify-end gap-2">
+                    {kind === 'departures' && <PlusNight id={r.id} checkOut={r.check_out_at} stayType={r.stay_type} openStay={r.open_stay} label={t('desk.staying')} />}
+                    {kind !== 'arrivals' && can('frontdesk.check_out') && (
+                      <Link to={`/reservations/${r.id}?action=check-out`} className={buttonClass(kind === 'departures' ? 'primary' : 'secondary')}>
+                        {kind === 'departures' ? t('desk.leaving') : t('desk.checkOut')}
+                      </Link>
+                    )}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {!loading && rows.length === 0 && <p className="p-6 text-center text-muted">{t(`desk.empty.${kind}`)}</p>}
+      </Card>
+    </div>
+  )
+}
+
+/**
+ * One tap: one more night in the same room. From the last booked night or from today, whichever is later
+ * (an overdue guest pays the night they already stayed too). Not for open stays (they get a night each day).
+ */
+function PlusNight({ id, checkOut, stayType, openStay, label }: { id: number; checkOut: string; stayType?: string; openStay?: boolean; label?: string }) {
+  const { t } = useTranslation()
+  const can = useCan()
+  const extend = useExtendAny()
+  if (openStay || (stayType && stayType !== 'nightly') || !can('frontdesk.room_move')) return null
+  const from = localDate(checkOut) > todayDate() ? localDate(checkOut) : todayDate()
+  const to = addDays(from, 1)
+  const error = extend.error instanceof ApiError ? (extend.error.field('check_out') ?? extend.error.message) : null
+  return (
+    <span className="inline-flex flex-col items-end gap-1">
+      <Button variant="secondary" disabled={extend.isPending} title={t('desk.plusNightHelp', { date: date(to) })} onClick={() => extend.mutate({ id, check_out: to })}>
+        <PlusIcon aria-hidden className="size-4" />
+        {label ?? t('desk.plusNight')}
+      </Button>
+      {error && <span role="alert" className="max-w-56 text-right text-xs text-danger-text">{error}</span>}
+    </span>
   )
 }

@@ -55,6 +55,8 @@ in the claude.ai Project.
 
 ## Guests, bookings and money
 
+`reservations.open_stay` (boolean): a walk-in with no end date; the stay always ends at the next check-out time and `stays:roll-open` moves it on by one night each day (workflows.md Q16).
+
 | Table | Important columns | Notes |
 |---|---|---|
 | `guests` **H** | names, phone, email, nationality, id_type, id_number (encrypted), id_number_hash (search), is_blacklisted | Shared by all branches. List shows masked ID numbers |

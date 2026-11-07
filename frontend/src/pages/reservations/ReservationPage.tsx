@@ -123,6 +123,11 @@ export function ReservationPage() {
               <span className="text-xs text-muted">
                 {t('reservations.checkInOut', { in: localTime(r.check_in_at), out: localTime(r.check_out_at) })}
               </span>
+              {r.open_stay && r.status === 'checked_in' && (
+                <span title={t('openStay.help')} className="w-fit">
+                  <Badge tone="info">{t('openStay.badge')}</Badge>
+                </span>
+              )}
             </Info>
             <Info label={t('reservations.guests')}>
               <span>{t('reservations.people', { adults: t('reservations.adultsCount', { count: r.adults }), children: t('reservations.childrenCount', { count: r.children }) })}</span>
