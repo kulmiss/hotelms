@@ -108,4 +108,35 @@ class FuzzSweepTest extends TestCase
 
         $this->assertSame([], $errors, implode("\n", $errors));
     }
+
+    public function test_broken_filters_in_links_never_cause_a_server_error(): void
+    {
+        $this->seed(PlatformSeeder::class);
+        $hotel = app(DemoHotel::class)->reset();
+        $admin = User::where('hotel_id', $hotel->id)->whereHas('role', fn ($q) => $q->withoutGlobalScope('hotel')->where('key', 'hotel_admin'))->firstOrFail();
+        $owner = User::factory()->superAdmin()->create();
+        $queries = [
+            '?from=abc&to=xyz&date=2026-13-45&month=13-2026&q=%25%27%22&page=-5&per_page=-1&sort=nope&dir=sideways&branch_id=abc&status=nope&format=pdf',
+            '?from=1900-01-01&to=2999-12-31&days=9999&hours=-3&check_in=2026-02-30&check_out=yesterday&stay_type=x&metric=x&period=x&session=abc',
+            '?q='.str_repeat('x', 3000).'&per_page=100000&page=999999',
+        ];
+        $routes = collect(Router::getRoutes()->getRoutes())
+            ->filter(fn (Route $r) => str_starts_with($r->uri(), 'api/v1/') && in_array('GET', $r->methods(), true))
+            ->reject(fn (Route $r) => preg_match('#^api/v1/(telegram/webhook|health)#', $r->uri()));
+
+        $errors = [];
+        foreach ($routes as $route) {
+            $uri = '/'.preg_replace('#\{[a-zA-Z]+\}#', '1', $route->uri());
+            $user = str_starts_with($route->uri(), 'api/v1/admin/') ? $owner : $admin;
+            foreach ($queries as $query) {
+                $res = $this->actingAs($user)->getJson($uri.$query);
+                if ($res->getStatusCode() >= 500) {
+                    $errors[] = "GET {$uri}{$query}: ".mb_substr((string) ($res->json('message') ?? ''), 0, 160);
+                }
+                app(TenantContext::class)->set(null);
+            }
+        }
+
+        $this->assertSame([], $errors, implode("\n", $errors));
+    }
 }
