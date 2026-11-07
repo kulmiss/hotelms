@@ -328,6 +328,29 @@ class FrontDeskTest extends TestCase
         $this->postJson("/api/v1/front-desk/rooms/$otherRoom/charges", ['charge_type_id' => $type])->assertNotFound();
     }
 
+    public function test_the_bill_shows_a_paying_company_and_never_the_guest_id(): void
+    {
+        $this->inHotel(fn () => $this->guest->update(['id_number' => 'ET1234567', 'phone' => '+251911223344']));
+        $id = $this->booked();
+        $this->at('2026-11-12 15:00');
+        $this->checkIn($id, ['101'])->assertOk();
+        $invoiceId = $this->getJson("/api/v1/reservations/$id")->json('data.invoices.0.id');
+
+        $bill = $this->getJson("/api/v1/invoices/$invoiceId")->assertOk()->json('data');
+        $this->assertArrayNotHasKey('id_number', $bill['guest']); // the ID stays on the guest's page and the registration card
+        $this->assertSame(['company' => null, 'tin' => null], $bill['buyer']);
+
+        $this->actingAs($this->receptionist)->putJson("/api/v1/invoices/$invoiceId/buyer", ['company' => 'Abay Trading PLC', 'tin' => '0098765432'])->assertOk()
+            ->assertJsonPath('data.buyer', ['company' => 'Abay Trading PLC', 'tin' => '0098765432']);
+        $this->putJson("/api/v1/invoices/$invoiceId/buyer", ['company' => 'Abay', 'tin' => 'ABC-1'])->assertJsonValidationErrors('tin');
+        $this->putJson("/api/v1/invoices/$invoiceId/buyer", ['tin' => '0098765432'])->assertJsonValidationErrors('company');
+        $this->putJson("/api/v1/invoices/$invoiceId/buyer", ['company' => null, 'tin' => null])->assertOk()->assertJsonPath('data.buyer.company', null); // removed
+
+        $cleaner = User::factory()->withRole($this->hotel, 'housekeeping')->create();
+        $cleaner->branches()->attach($this->branch->id);
+        $this->actingAs($cleaner)->putJson("/api/v1/invoices/$invoiceId/buyer", ['company' => 'X'])->assertForbidden();
+    }
+
     public function test_paying_more_than_owed_needs_a_yes(): void
     {
         $id = $this->booked();

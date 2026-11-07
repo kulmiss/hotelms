@@ -1425,6 +1425,15 @@
     },
     "printTitle": "Invoice",
     "printVoid": "CANCELLED",
+    "buyer": {
+      "title": "Company that pays",
+      "none": "None. Add it when a company pays the bill (it prints on the invoice).",
+      "add": "Add company and TIN",
+      "change": "Change",
+      "company": "Company name",
+      "tin": "Buyer TIN",
+      "tinHint": "Numbers only, usually 10."
+    },
     "billTo": "Bill to",
     "cashierSignature": "Cashier"
   },

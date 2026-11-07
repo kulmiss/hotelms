@@ -38,6 +38,7 @@ Each section says the rule, the code and the tests. Backend paths are under `bac
 | **Paying more than owed** needs a yes (Q14) | `ReservationService::assertNotOverpaying`; `lib/api.ts` asks | `FrontDeskTest::test_paying_more_than_owed…` |
 | Refund ≤ what was paid; reason required | `recordPayment` | |
 | Split a bill per room; cancel ("void") a bill with a reason (stays in the records) | `InvoiceService::split`, `void` | `FrontDeskTest` |
+| Printed invoice: hotel TIN/VAT, the guest's **name only** (phone and ID stay on the registration card; the bill API does not send the ID number), and an optional **company that pays + buyer TIN** (`invoices.buyer_company`, `buyer_tin`; `PUT /invoices/{id}/buyer`, permission `invoices.print`) | `Front/InvoiceController::buyer`, `InvoicePresenter`, `pages/billing/InvoicePrintPage.tsx` | `FrontDeskTest::test_the_bill_shows_a_paying_company…`, `test/desk.test.tsx` |
 | Payment proof photo/PDF (optional), private files | `Front/PaymentProofController`, `components/payments/PaymentProof.tsx` | `FrontDeskTest` |
 | Cashier shift: opening cash, expected vs counted, reason for a difference, manager approval (W10) | `Modules/Cashier` | `ModulesTest` |
 
