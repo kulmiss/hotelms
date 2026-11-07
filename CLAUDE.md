@@ -6,6 +6,7 @@ Multi-tenant hotel SaaS for Ethiopia. Plans and decisions live in the claude.ai 
 - Work on a branch, open a PR, owner merges. Never push to `main`.
 - Keep owner-facing messages short and simple (owner is not a developer).
 - Free options only unless the owner approves a cost.
+- **Docs stay current (owner):** every PR that changes behaviour also updates the developer docs in `docs/` (start at `docs/README.md`) and, when staff see the change, the staff guide (Help → How to use: `frontend/src/lib/guides.ts` + `frontend/src/i18n/locales/en.guide.json`, very easy English). New business rules also go to the Project's `workflows.md`.
 
 ## Stack
 - `backend/`: Laravel 13, PHP 8.3, MySQL 8.4, Redis (optional), Sanctum. API under `/api/v1`, JSON only.
