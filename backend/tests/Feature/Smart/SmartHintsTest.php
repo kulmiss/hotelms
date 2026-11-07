@@ -5,6 +5,7 @@ namespace Tests\Feature\Smart;
 use App\Models\Branch;
 use App\Models\Guest;
 use App\Models\Hotel;
+use App\Models\PaymentMethod;
 use App\Models\Plan;
 use App\Models\Room;
 use App\Models\RoomType;
@@ -72,6 +73,26 @@ class SmartHintsTest extends TestCase
         $this->assertContains(['Rooms in the hotel', (string) $this->inHotel($this->hotel, fn () => Room::count())], $tonight['explain']['facts']);
         $this->assertNotEmpty($tonight['explain']['how']);
         $this->getJson('/api/v1/smart/rooms_settings')->assertOk()->assertJsonPath('data.0.text', 'You can add 1 more room on your plan.');
+    }
+
+    public function test_tonight_does_not_count_guests_leaving_today(): void
+    {
+        $this->actingAs($this->admin);
+        $guest = $this->inHotel($this->hotel, fn () => Guest::first());
+        $cash = $this->inHotel($this->hotel, fn () => PaymentMethod::where('type', 'cash')->value('id'));
+        $walkIn = fn (string $room, string $out) => $this->postJson('/api/v1/front-desk/walk-in', [
+            'branch_id' => $this->branch->id, 'stay_type' => 'nightly', 'check_out' => $out, 'guest_id' => $guest->id,
+            'rooms' => [['room_type_id' => $this->standard->id, 'room_id' => $this->inHotel($this->hotel, fn () => Room::where('number', $room)->value('id'))]],
+            'payment' => ['payment_method_id' => $cash, 'amount' => '99999', 'confirm_overpay' => true],
+        ])->assertCreated();
+
+        $this->travelTo(Carbon::parse('2026-11-09 15:00', 'Africa/Addis_Ababa'));
+        $walkIn('101', '2026-11-10'); // leaves today at 12:00
+        $this->travelTo(Carbon::parse('2026-11-10 09:00', 'Africa/Addis_Ababa'));
+        $walkIn('102', '2026-11-11'); // stays tonight
+
+        $tonight = collect($this->getJson('/api/v1/smart/dashboard')->json('data'))->firstWhere('key', 'tonight');
+        $this->assertContains(['Rooms with a guest staying tonight', '1'], $tonight['explain']['facts']);
     }
 
     public function test_hotelms_can_switch_a_hint_off_and_roles_are_checked(): void

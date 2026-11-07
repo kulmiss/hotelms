@@ -64,9 +64,12 @@ class ShiftController extends Controller
 
     public function assign(Request $request): JsonResponse
     {
-        $data = $request->validate(['user_id' => ['required', 'integer'], 'shift_id' => ['required', 'integer'], 'date' => ['required', 'date']]);
+        $data = $request->validate(
+            ['user_id' => ['required', 'integer'], 'shift_id' => ['required', 'integer'], 'date' => ['required', 'date', 'after:-1 year', 'before:+1 year']],
+            ['date.after' => 'Choose a date in the last year.', 'date.before' => 'Choose a date in the next year.'],
+        );
         $shift = $this->find($request, (string) $data['shift_id']);
-        if (! User::where('hotel_id', $request->user()->hotel_id)->whereKey($data['user_id'])->exists()) {
+        if (! User::where('hotel_id', $request->user()->hotel_id)->where('status', 'active')->whereKey($data['user_id'])->exists()) {
             throw ValidationException::withMessages(['user_id' => 'Choose a staff member.']);
         }
         $a = ShiftAssignment::updateOrCreate(

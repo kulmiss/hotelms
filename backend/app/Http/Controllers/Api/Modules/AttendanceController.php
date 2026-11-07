@@ -68,7 +68,7 @@ class AttendanceController extends Controller
         $me = $request->user();
         $staff = User::where('hotel_id', $me->hotel_id)->findOrFail($userId);
         abort_unless($staff->id === $me->id || $me->hasPermission('staff.manage'), 403, 'You may not do this.');
-        $this->attendance->setPin($staff, $data['pin']);
+        $this->attendance->setPin($staff, $data['pin'], $me);
 
         return response()->json(['message' => 'PIN saved.']);
     }

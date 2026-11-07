@@ -319,7 +319,10 @@ export function RateRulesSettings() {
   const { t } = useTranslation()
   const guestTypes = useSettingsList<{ id: number; name: string }>('/settings/guest-types')
   const roomTypes = useSettingsList<RoomType>('/settings/room-types')
-  const branches = useMe().data?.branches ?? []
+  const me = useMe().data
+  const branches = me?.branches ?? []
+  // "All room types" changes every branch's prices: only for the Hotel Admin (others pick their own branch's types).
+  const allTypesOption = me?.role?.is_hotel_admin ? [{ value: '', label: t('settings.rates.allTypes') }] : []
   // With more than one branch, each branch has its own "Standard": say which one.
   const typeName = (x: RoomType) => (branches.length > 1 ? `${x.name} · ${branches.find((b) => b.id === x.branch_id)?.name ?? ''}` : x.name)
   const typeLabel = (id: unknown) => {
@@ -347,7 +350,7 @@ export function RateRulesSettings() {
         title={t('settings.sections.rate-rules')}
         description={t('settings.rates.help')}
         addLabel={t('settings.rates.add')}
-        defaults={{ name: '', rule_type: 'weekend', room_type_id: '', days_of_week: [5, 6], start_date: '', end_date: '', guest_type_id: '', adjustment: 'percent', value: '', priority: 10, is_active: true }}
+        defaults={{ name: '', rule_type: 'weekend', room_type_id: me?.role?.is_hotel_admin ? '' : String(roomTypes.data?.data[0]?.id ?? ''), days_of_week: [5, 6], start_date: '', end_date: '', guest_type_id: '', adjustment: 'percent', value: '', priority: 10, is_active: true }}
         columns={[
           { label: t('settings.rates.name'), render: (r) => <span className="font-medium">{String(r.name)}</span> },
           { label: t('settings.rates.when'), render: when },
@@ -374,7 +377,7 @@ export function RateRulesSettings() {
             label: t('settings.rates.roomType'),
             type: 'select',
             nullable: true,
-            options: [{ value: '', label: t('settings.rates.allTypes') }, ...(roomTypes.data?.data ?? []).map((x) => ({ value: String(x.id), label: typeName(x) }))],
+            options: [...allTypesOption, ...(roomTypes.data?.data ?? []).map((x) => ({ value: String(x.id), label: typeName(x) }))],
           },
           { name: 'adjustment', label: t('settings.rates.adjustment'), type: 'select', options: adjustments },
           { name: 'value', label: t('settings.rates.value'), type: 'decimal', hint: t('settings.rates.valueHint') },

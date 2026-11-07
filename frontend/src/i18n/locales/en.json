@@ -179,6 +179,14 @@
     "title": "Page not found",
     "back": "Back to dashboard"
   },
+  "routeError": {
+    "title": "Something went wrong on this screen",
+    "text": "Nothing was lost. Reload the page, or go back to the start. If it happens again, tell HotelMS support what you tapped.",
+    "updateTitle": "A new version is ready",
+    "updateText": "The app was updated while this page was open. Reload to continue.",
+    "reload": "Reload",
+    "home": "Go to the start"
+  },
   "loadFailed": {
     "notFound": "Not found. It may have been removed, it may belong to a branch you do not work in, or the link is wrong.",
     "forbidden": "Your role cannot open this. Ask your manager if you need it.",
@@ -394,6 +402,7 @@
       "mailServer": "Mail server (SMTP)",
       "mailServerHelp": "The email account the system sends from (welcome emails, new passwords, reports, warnings). Get these details from your hosting (cPanel → Email accounts) or email provider. Leave the server empty to use the server's .env file.",
       "mailOwnerOnly": "Only the Owner can see and change the mail server.",
+      "ownerOnly": "Only the Owner can change this.",
       "mailHost": "Server (host)",
       "mailPort": "Port",
       "mailEncryption": "Security",
@@ -1215,7 +1224,8 @@
     "cancel": "Cancel booking",
     "cancelTitle": "Cancel this booking",
     "cancelFree": "Cancelling now is free under the booking's policy.",
-    "cancelFee": "Cancelling now costs {{fee}} ({{policy}}).",
+    "cancelFee": "Cancelling now costs {{fee}} ({{policy}}). The hotel keeps this from what the guest paid; nothing more is asked.",
+    "toGiveBack": "To give back to the guest",
     "refundDue": "Refund due to the guest: {{amount}} (a manager records the refund).",
     "reason": "Reason",
     "noShowReason": "Guest did not arrive",
@@ -1248,6 +1258,8 @@
     "policyLine_never": "{{name}}: not refundable.",
     "createdBy": "Booked by {{name}} on {{date}}",
     "form": {
+      "notEditable": "Only bookings that are waiting or confirmed can be changed. For a guest who is in, use Extend or Move on the booking.",
+      "backToBooking": "Back to the booking",
       "stay": "Stay",
       "stayType": "Type of stay",
       "checkIn": "Check-in",

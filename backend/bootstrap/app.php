@@ -15,6 +15,7 @@ use App\Http\Middleware\EnsureTwoFactorSetUp;
 use App\Http\Middleware\Idempotent;
 use App\Http\Middleware\OneAtATime;
 use App\Http\Middleware\RecordProblems;
+use App\Http\Middleware\ScalarQuery;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetTenantContext;
 use App\Services\Watchdog\WatchEvents;
@@ -46,6 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SecurityHeaders::class);
         $middleware->append(RecordProblems::class); // for the Super Admin watchdog
         $middleware->appendToGroup('api', DemoTimeLimit::class); // "Try the demo" visits end after X minutes
+        $middleware->prependToGroup('api', ScalarQuery::class); // ?q[]=x in a link: "not valid", never a server error
 
         // Set the hotel before route model binding, so {role} etc. only find
         // the signed-in user's own hotel's records (after authentication).

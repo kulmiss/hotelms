@@ -97,7 +97,11 @@ class StaffController extends Controller
             $this->guardKeepsAnAdmin($user);
         }
         $role = $this->allowedRole($actor, $roleId, $user);
-        $branchIds = $this->allowedBranches($actor, $data['branch_ids'] ?? [], $role);
+        // Branches the actor does not work in stay as they are (a Bole manager editing someone who also works in Piassa).
+        $own = $actor->accessibleBranches()->pluck('id')->map(fn ($v) => (int) $v)->all();
+        $keep = array_values(array_diff($user->branches()->pluck('branches.id')->map(fn ($v) => (int) $v)->all(), $own));
+        $asked = array_values(array_diff(array_map('intval', $data['branch_ids'] ?? []), $keep));
+        $branchIds = array_values(array_unique([...$this->allowedBranches($actor, $asked, $role, $keep !== []), ...$keep]));
 
         DB::transaction(function () use ($user, $data, $role, $branchIds) {
             $user->update([
@@ -253,7 +257,7 @@ class StaffController extends Controller
      * @param  list<int>  $branchIds
      * @return list<int>
      */
-    private function allowedBranches(User $actor, array $branchIds, Role $role): array
+    private function allowedBranches(User $actor, array $branchIds, Role $role, bool $hasOtherBranches = false): array
     {
         $own = $actor->accessibleBranches()->pluck('id')->all();
         $branchIds = array_values(array_unique(array_map('intval', $branchIds)));
@@ -262,7 +266,7 @@ class StaffController extends Controller
             throw ValidationException::withMessages(['branch_ids' => 'You can only choose branches you work in.']);
         }
 
-        if ($branchIds === [] && ! $role->isHotelAdmin()) {
+        if ($branchIds === [] && ! $role->isHotelAdmin() && ! $hasOtherBranches) {
             throw ValidationException::withMessages(['branch_ids' => 'Choose at least one branch.']);
         }
 

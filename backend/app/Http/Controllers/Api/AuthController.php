@@ -117,6 +117,10 @@ class AuthController extends Controller
         if ($user->id === $current->id) {
             return response()->json(['message' => 'Unlocked.']);
         }
+        // A PIN a manager set (for the attendance kiosk) never lets anyone take over the device as that person.
+        if (! Attendance::ownPin($user)) {
+            throw ValidationException::withMessages(['pin' => 'This PIN was set by a manager. Set your own PIN in My profile to use it here.']);
+        }
         $token = $this->devices->token($request);
         $this->devices->check($user, $token, $request);
         app(ActivityLogger::class)->log('security.pin_switch', "{$user->name} took over the device from {$current->name}", $user);

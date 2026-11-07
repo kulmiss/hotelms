@@ -16,6 +16,9 @@ use Throwable;
 
 class PlatformSettingsController extends Controller
 {
+    /** Settings only the Owner may change (besides the mail server). */
+    private const OWNER_ONLY = ['platform_name', 'brand_color', 'login_message', 'email_from_name', 'email_footer', 'telegram_bot_token', 'telegram_bot_username', 'two_factor_admins'];
+
     public function show(): JsonResponse
     {
         return response()->json(['data' => $this->present()]);
@@ -49,6 +52,10 @@ class PlatformSettingsController extends Controller
         // The mail server decides where every system email comes from: the Owner only.
         if (array_intersect_key($data, array_flip(MailSettings::KEYS)) && $request->user()->platform_role !== 'owner') {
             abort(403, 'Only the Owner can change the mail server.');
+        }
+        // Branding, the Telegram bot (it receives hotels' messages) and two-step sign-in for admins: the Owner only too.
+        if (array_intersect_key($data, array_flip(self::OWNER_ONLY)) && $request->user()->platform_role !== 'owner') {
+            abort(403, 'Only the Owner can change branding, Telegram and two-step sign-in.');
         }
         // The password is shown masked; sending the masked value back keeps the saved one. Saved encrypted.
         if (array_key_exists('mail_password', $data)) {
@@ -103,6 +110,7 @@ class PlatformSettingsController extends Controller
     /** Upload or remove the logo shown in the sidebar, sign-in page and emails. */
     public function logo(Request $request): JsonResponse
     {
+        abort_unless($request->user()->platform_role === 'owner', 403, 'Only the Owner can change branding, Telegram and two-step sign-in.');
         $request->validate(['logo' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp', 'max:1024']]);
 
         $old = PlatformSetting::read('brand_logo_path');

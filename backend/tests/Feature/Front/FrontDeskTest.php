@@ -343,7 +343,9 @@ class FrontDeskTest extends TestCase
         $this->actingAs($this->receptionist)->putJson("/api/v1/invoices/$invoiceId/buyer", ['company' => 'Abay Trading PLC', 'tin' => '0098765432'])->assertOk()
             ->assertJsonPath('data.buyer', ['company' => 'Abay Trading PLC', 'tin' => '0098765432']);
         $this->putJson("/api/v1/invoices/$invoiceId/buyer", ['company' => 'Abay', 'tin' => 'ABC-1'])->assertJsonValidationErrors('tin');
-        $this->putJson("/api/v1/invoices/$invoiceId/buyer", ['tin' => '0098765432'])->assertJsonValidationErrors('company');
+        $this->putJson("/api/v1/invoices/$invoiceId/buyer", ['tin' => '0098765432'])->assertJsonPath('errors.company.0', 'Type the name of the company for this TIN.');
+        $this->postJson("/api/v1/invoices/$invoiceId/items", ['type' => 'extra', 'description' => 'Old', 'unit_price' => '10', 'service_date' => '2020-01-01'])
+            ->assertJsonPath('errors.service_date.0', 'Choose a date in the last year.');
         $this->putJson("/api/v1/invoices/$invoiceId/buyer", ['company' => null, 'tin' => null])->assertOk()->assertJsonPath('data.buyer.company', null); // removed
 
         $cleaner = User::factory()->withRole($this->hotel, 'housekeeping')->create();

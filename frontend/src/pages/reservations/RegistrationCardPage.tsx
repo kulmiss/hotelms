@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { PrinterIcon } from '@heroicons/react/24/outline'
 import { PrintHotelBlock } from '@/components/print/PrintHeader'
 import { Button } from '@/components/ui/Button'
+import { LoadFailed } from '@/components/ui/LoadFailed'
 import { api } from '@/lib/api'
 import type { PrintHotel } from '@/lib/desk'
 import { date, money } from '@/lib/format'
@@ -21,7 +22,8 @@ export function RegistrationCardPage() {
   const { t } = useTranslation()
   const { id } = useParams()
   const q = useQuery({ queryKey: ['reservations', 'card', Number(id)], queryFn: () => api<{ data: Card }>(`/reservations/${id}/registration-card`) })
-  if (!q.data) return q.isError ? <p className="p-6 text-[13px] text-danger-text">{t('common.serverUnreachable')}</p> : null
+  if (q.isError) return <LoadFailed error={q.error} onRetry={() => q.refetch()} back={{ to: '/reservations', label: t('loadFailed.toReservations') }} />
+  if (!q.data) return null
   const { reservation: r, guest: g, hotel: h, printed_by } = q.data.data
   const row = (label: string, value: string | null | undefined) => (
     <div className="flex flex-col border-b border-black/20 py-1.5">

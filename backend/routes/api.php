@@ -273,7 +273,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
                     Route::post('/attendance/clock', [AttendanceController::class, 'clock']);
                     Route::post('/attendance/kiosk', [AttendanceController::class, 'kiosk']);
                 });
-                Route::post('/attendance/pin/{user}', [AttendanceController::class, 'setPin']); // self or staff.manage, checked inside
+                Route::post('/attendance/pin/{user}', [AttendanceController::class, 'setPin'])->middleware('throttle:pin'); // self or staff.manage, checked inside
                 Route::post('/attendance/manual', [AttendanceController::class, 'manual'])->middleware('permission:attendance.manual');
                 Route::get('/attendance/report', [AttendanceController::class, 'report'])->middleware('permission:attendance.report');
             });

@@ -13,7 +13,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { LoadFailed } from '@/components/ui/LoadFailed'
 import { Select } from '@/components/ui/Select'
 import { ApiError } from '@/lib/api'
-import { compareMoney, isPositive, subMoney } from '@/lib/decimal'
+import { compareMoney, isNegative, isPositive, subMoney } from '@/lib/decimal'
 import { date, money } from '@/lib/format'
 import { localDate, localTime, STATUS_TONES, today, useCancellationTerms, useCancelReservation, useLookups, usePayLater, useRecordPayment, useReservation, type PaymentInput, type ReservationDetail } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
@@ -200,7 +200,11 @@ export function ReservationPage() {
           <Line label={t('reservations.total')} value={money(r.total, r.currency)} />
           <Line label={t('reservations.paid')} value={money(r.paid_total, r.currency)} />
           {r.cancellation_fee !== null && <Line label={t('reservations.cancellationFee')} value={money(r.cancellation_fee, r.currency)} />}
-          <Line label={t('reservations.balance')} value={money(r.balance, r.currency)} strong />
+          {isNegative(r.balance) ? (
+            <Line label={t('reservations.toGiveBack')} value={money(subMoney('0', r.balance), r.currency)} strong />
+          ) : (
+            <Line label={t('reservations.balance')} value={money(r.balance, r.currency)} strong />
+          )}
           {r.status === 'pending' && compareMoney(r.deposit_required, r.paid_total) > 0 && (
             <Alert tone="info">{t('reservations.depositMissing', { amount: money(subMoney(r.deposit_required, r.paid_total), r.currency) })}</Alert>
           )}

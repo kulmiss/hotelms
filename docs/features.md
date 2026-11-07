@@ -14,7 +14,7 @@ Each section says the rule, the code and the tests. Backend paths are under `bac
 | Deposit (Q1): fixed / % / first night; `pending` until paid; pending bookings expire (Q2) | `ReservationService`, `reservations:expire` | `ReservationsTest` |
 | Pay at check-out: staff with `payments.pay_later`, when the hotel allows it | `ReservationService::payLater` | `ReservationsTest` |
 | Changing a booking keeps the deposit; price worked out again (Q3) | `ReservationService::update` | |
-| Cancel / no-show with the booking's policy snapshot (Q4, Q5); no-show only after check-in time | `ReservationService::cancel`, `cancellationTerms` | `ReservationsTest` |
+| Cancel / no-show with the booking's policy snapshot (Q4, Q5); no-show only after check-in time. A cancelled / no-show booking's `balance` = what goes back (negative) or 0: the fee is kept from what was paid, an unpaid fee is not a debt (decision 8); the screen shows **To give back to the guest** | `ReservationService::cancel`, `cancellationTerms`, `ReservationPresenter::balance` | `ReservationsTest`, `test/bookingsReview.test.tsx` |
 | Walk-in: full or deposit up front (Q6); **quick check-in** (name + phone, "Details missing"); a phone that matches an old guest offers **Use this guest** (no second copy) | `Booking/FrontDesk::walkIn`, `Front/FrontDeskController::walkIn`; `WalkInPage` `PhoneMatch`, `lib/phone.ts` | `FrontDeskTest`, `test/openStay.test.tsx` |
 | **No end date / open stay** (Q16): a nightly walk-in pays the first night; `reservations.open_stay`; every 5 min `stays:roll-open` adds one night when the guest is still in 30 min after the check-out time (like Extend, so a booked room is never double-booked); no early check-out fee; leaving after today's check-out time = late fee (`FrontDesk::dueOut`), not a night. Listed in Leaving every day. Messages (automations): `open_stay_room_booked` (a day before the room is booked, and when no night could be added), `open_stay_check` (every N nights, default 14) | `FrontDesk::walkIn`, `rollOpenStay`, `freeOneMoreNight`, `dueOut`; `Console/Commands/RollOpenStays` | `FrontDeskTest::test_an_open_stay…` |
 | **After-midnight walk-in** (Q13): before the hotel's `night_cutoff` (default 06:00) the walk-in pays for last night | `FrontDesk::nightDate`; `ReservationService` prices from the night date | `FrontDeskTest::test_a_walk_in_after_midnight…` |
@@ -45,10 +45,24 @@ Each section says the rule, the code and the tests. Backend paths are under `bac
 | Payment proof photo/PDF (optional), private files | `Front/PaymentProofController`, `components/payments/PaymentProof.tsx` | `FrontDeskTest` |
 | Cashier shift: opening cash, expected vs counted, reason for a difference, manager approval (W10) | `Modules/Cashier` | `ModulesTest` |
 
+## Robustness (launch recheck)
+
+- A list in a link's filters (`?q[]=x`) answers 422 "One of the filters in the link is not valid" (`Middleware/ScalarQuery`), never a server error.
+- `FuzzSweepTest` sends broken data (lists, 5,000-letter text, nested objects, negative numbers) to every API route that changes something, as the demo hotel's admin and as Super Admin: never a 500.
+- A screen that breaks shows "Something went wrong on this screen" with Reload (`components/layout/RouteError.tsx`, the router's `errorElement`); after an update, old screen files are gone, so the app reloads once by itself (also for `vite:preloadError`).
+
+## Staff, roles and settings (review notes)
+
+- A Branch Manager editing someone who also works in another branch keeps that other branch (`StaffController::update`).
+- Price rules: a Branch Manager only sees and changes rules of their own branch's room types; "All room types" is for the Hotel Admin (`RateRuleController`). Settings lists can give plain-word messages (`ResourceController::messages`).
+- Support ("log in as hotel") is not sent to "Set a new password" for a person with a temporary password (server and app).
+- The design-system page exists only in development builds.
+
 ## Guests
 
 Duplicate warning (smart `guest_check`), blacklist, ID numbers encrypted and masked in lists, optional encrypted ID photo
 (`GuestIdPhotos`, kept as long as the hotel chose), "Details missing" after quick check-in with a reminder automation.
+Guests are shared by the whole hotel, but a guest's **stay history** shows only the branches the person works in.
 Code: `Front/GuestController`, `Models/Guest`. Tests: `ReservationsTest`, `FrontDeskTest`.
 
 ## Rooms and housekeeping
@@ -66,7 +80,8 @@ Tests: `ModulesTest`.
 - Two-step sign-in (app or email), recovery codes, required for admins (switch); screen lock + PIN switch on shared devices;
   device list, new-device alerts, approved devices only (W7). `Security/*`, `AuthController`. Tests: `Auth/SecurityTest`.
 - Rate limits on sign-in, codes and PINs (`AppServiceProvider`, `AuthController`).
-- Activity log for every important action (`ActivityLogger`, `LogsActivity`).
+- PINs: a PIN set by someone else (manager, `attendance_pin_set_by`) works on the attendance kiosk but never for PIN switch (taking over a shared device). "PIN already used" answers are limited to 3 per person per day, so other people's PINs cannot be found by trying (`Attendance::setPin`, `ownPin`). Housekeeping tasks go only to active people with `housekeeping.own_tasks`; roster only active staff, within a year.
+- Activity log for every important action (`ActivityLogger`, `LogsActivity`), in plain words ("Bill line removed: …", "Booking changed: …"; labels in `LogsActivity::ACTIVITY_LABELS`, never class names).
 
 ## Reports and insights
 
@@ -79,7 +94,7 @@ Code: `Reports/Metrics`, `Reports/Insights`, `Reports/CustomReportEngine`, `Repo
 ## Automation and smart features
 
 - 38+ ready-made automations (`config/automations.php`, `Automation/AutomationEvents` for events, `AutomationSchedule` for timed ones),
-  rule builder (`RuleEngine`), quiet hours, approvals. Every automation is also a Super Admin switch. Tests: `Automation/AutomationsTest`.
+  rule builder (`RuleEngine`), quiet hours, approvals (two managers approving at once: only the first acts; price suggestions expire by the hotel's date). Smart "tonight" counts only guests leaving tomorrow or later. Every automation is also a Super Admin switch. Tests: `Automation/AutomationsTest`.
 - Smart hints with "Why?" (`Smart/SmartHints`, `config/smart.php`, `components/ui/SmartHints.tsx`). Tests: `Smart/SmartHintsTest`.
 - Notifications: bell (`app_notifications`), email (SMTP from Super Admin → Settings → Emails, or `.env`), Telegram bot
   (link with a code from My profile; polled every minute). `Notify/*`.
@@ -88,7 +103,7 @@ Code: `Reports/Metrics`, `Reports/Insights`, `Reports/CustomReportEngine`, `Repo
 
 Command center, hotels (create with plan/trial, suspend, close, reopen, notes, live data with a reason, log in as hotel),
 plans and per-room pricing, subscription payments and invoices, switches and banners, support inbox, releases ("What's new"),
-content, team and permissions, platform settings (branding, Telegram, SMTP – Owner only), system health, activity log,
+content, team and permissions, platform settings (branding incl. logo and e-mail sender, Telegram bot, SMTP and two-step sign-in for admins – Owner only, checked by the server `PlatformSettingsController::OWNER_ONLY`; other team members see "Only the Owner can change this"; Finance keeps trials, grace days, demo and support contacts), system health, activity log,
 **developer docs** (this folder, rendered by `Admin/DocsController` – Markdown to safe HTML, raw HTML stripped, `images/*.svg` put inline as pictures; `pages/admin/DocsPage.tsx`; Owner + `docs.view`),
 **watchdog** (security, bugs, data leaks: bell for all, Telegram + email for serious ones). Code: `Http/Controllers/Api/Admin/*`,
 `pages/admin/*`. Tests: `tests/Feature/Admin/*`.

@@ -6,6 +6,7 @@ import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { LoadFailed } from '@/components/ui/LoadFailed'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { useMe } from '@/lib/auth'
 import { cn } from '@/lib/cn'
@@ -64,6 +65,7 @@ export function RoomCalendarPage() {
         {cal.data && <span className="text-[13px] text-muted">{t('roomCal.booked', { count: booked, days })}</span>}
       </div>
 
+      {cal.isError && !cal.data && <LoadFailed error={cal.error} onRetry={() => cal.refetch()} />}
       {cal.data && !room && <Alert tone="info">{t('roomCal.otherBranch')}</Alert>}
       <Card className={cn('overflow-x-auto p-0', cal.data && !room && 'hidden')}>
         <div className="grid min-w-[640px] grid-cols-7 text-[11px] font-semibold text-muted">

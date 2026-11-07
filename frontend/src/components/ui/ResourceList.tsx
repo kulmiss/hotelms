@@ -87,6 +87,8 @@ export function ResourceList({
         rows={list.data?.data ?? []}
         rowKey={(row) => String(row.id)}
         loading={list.isPending}
+        error={list.error}
+        onRetry={() => list.refetch()}
         empty={t('common.nothingYet')}
         csvName={title}
         canExport

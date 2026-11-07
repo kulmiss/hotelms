@@ -116,7 +116,7 @@ describe('reservations', () => {
     })
     renderApp('/reservations/9')
     await userEvent.click(await screen.findByRole('button', { name: 'Cancel booking' }))
-    expect(await screen.findByText('Cancelling now costs ETB 2,000.00 (Standard).')).toBeInTheDocument()
+    expect(await screen.findByText(/Cancelling now costs ETB 2,000.00 \(Standard\)\./)).toBeInTheDocument()
     await userEvent.type(screen.getByLabelText('Reason'), 'Plans changed')
     const buttons = screen.getAllByRole('button', { name: 'Cancel booking' })
     await userEvent.click(buttons[buttons.length - 1])

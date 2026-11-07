@@ -57,7 +57,8 @@ class GuestController extends Controller
     {
         $guest = Guest::with('guestType:id,name')->findOrFail($id);
         $hotel = $request->user()->hotel;
-        $stays = ReservationPresenter::withBills(Reservation::where('guest_id', $guest->id))->with('branch:id,name')->latest('check_in_at')->limit(50)->get()
+        // Stays in the branches this person works in only (a one-branch receptionist does not see the other branch's bookings).
+        $stays = ReservationPresenter::withBills(Reservation::where('guest_id', $guest->id)->whereIn('branch_id', $request->user()->accessibleBranches()->pluck('id')))->with('branch:id,name')->latest('check_in_at')->limit(50)->get()
             ->map(fn (Reservation $r) => [
                 'id' => $r->id, 'code' => $r->code, 'branch' => $r->branch?->name, 'status' => $r->status, 'stay_type' => $r->stay_type,
                 'check_in_at' => HotelClock::iso($r->check_in_at, $hotel), 'check_out_at' => HotelClock::iso($r->check_out_at, $hotel),

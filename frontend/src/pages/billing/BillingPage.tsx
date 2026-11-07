@@ -111,6 +111,8 @@ function InvoiceList() {
         rows={list.data?.data ?? []}
         rowKey={(i) => i.id}
         loading={list.isLoading}
+        error={list.error}
+        onRetry={() => list.refetch()}
         sort={sort}
         onSort={(x) => {
           setSort(x)
@@ -173,6 +175,8 @@ function PaymentList() {
         rows={list.data?.data ?? []}
         rowKey={(p) => p.id}
         loading={list.isLoading}
+        error={list.error}
+        onRetry={() => list.refetch()}
         sort={sort}
         onSort={(x) => {
           setSort(x)

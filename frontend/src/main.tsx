@@ -16,3 +16,14 @@ createRoot(document.getElementById('root')!).render(
 )
 
 registerServiceWorker()
+
+// After an update the old screen files are gone: reload once to get the new ones (not in a loop).
+window.addEventListener('vite:preloadError', (event) => {
+  if (!sessionStorage.getItem('hms-reloaded-for-update')) {
+    event.preventDefault()
+    sessionStorage.setItem('hms-reloaded-for-update', '1')
+    window.location.reload()
+  }
+})
+// Running fine for a while: a later update may reload again.
+window.setTimeout(() => sessionStorage.removeItem('hms-reloaded-for-update'), 15_000)

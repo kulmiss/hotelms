@@ -66,6 +66,8 @@ export function ActivityLogPage() {
         rows={log.data?.data ?? []}
         rowKey={(e) => e.id}
         loading={log.isLoading}
+        error={log.error}
+        onRetry={() => log.refetch()}
         sort={sort}
         onSort={(x) => {
           setSort(x)

@@ -30,6 +30,15 @@ use Illuminate\Validation\ValidationException;
 /** Reservations (workflows.md W1, W2) and the reservation calendar. */
 class ReservationController extends Controller
 {
+    /** Plain words for the date checks (not "must be a date before +2 years"). */
+    private const DATE_MESSAGES = [
+        'check_in.date' => 'Choose a check-in date.',
+        'check_in.after' => 'Choose a check-in date.',
+        'check_in.before' => 'Bookings can be made at most 2 years ahead.',
+        'check_out.date' => 'Choose a check-out date.',
+        'check_out.before' => 'Bookings can be made at most 2 years ahead.',
+    ];
+
     public function __construct(private ReservationService $service, private Availability $availability, private StayQuote $quote) {}
 
     public function index(Request $request): JsonResponse|Response
@@ -121,7 +130,7 @@ class ReservationController extends Controller
     /** Free room types (with price) and room numbers for a stay. */
     public function availability(Request $request): JsonResponse
     {
-        $data = $request->validate($this->stayRules());
+        $data = $request->validate($this->stayRules(), self::DATE_MESSAGES);
         $user = $request->user();
         $hotel = $user->hotel;
         $branch = $user->accessibleBranches()->firstWhere('id', (int) $data['branch_id']);
@@ -155,14 +164,14 @@ class ReservationController extends Controller
     /** Full price of a booking before saving it. */
     public function quote(Request $request): JsonResponse
     {
-        $data = $request->validate(['guest_id' => ['nullable', 'integer'], 'guest_type_id' => ['nullable', 'integer'], 'walk_in' => ['boolean']] + $this->bookingRules());
+        $data = $request->validate(['guest_id' => ['nullable', 'integer'], 'guest_type_id' => ['nullable', 'integer'], 'walk_in' => ['boolean']] + $this->bookingRules(), self::DATE_MESSAGES);
 
         return response()->json(['data' => $this->service->preview($data, $request->user(), $request->integer('reservation_id') ? $this->find($request, (string) $request->integer('reservation_id')) : null)]);
     }
 
     public function store(Request $request): JsonResponse
     {
-        $data = $request->validate($this->bookingRules() + ['source' => ['nullable', Rule::in(Reservation::SOURCES)], 'notes' => ['nullable', 'string', 'max:1000'], 'pay_later' => ['nullable', 'boolean']]);
+        $data = $request->validate($this->bookingRules() + ['source' => ['nullable', Rule::in(Reservation::SOURCES)], 'notes' => ['nullable', 'string', 'max:1000'], 'pay_later' => ['nullable', 'boolean']], self::DATE_MESSAGES);
         $reservation = $this->service->create($data, $request->user());
 
         return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)], 201);
@@ -171,7 +180,7 @@ class ReservationController extends Controller
     public function update(Request $request, string $id): JsonResponse
     {
         $reservation = $this->find($request, $id);
-        $data = $request->validate($this->bookingRules(false) + ['source' => ['nullable', Rule::in(Reservation::SOURCES)], 'notes' => ['nullable', 'string', 'max:1000']]);
+        $data = $request->validate($this->bookingRules(false) + ['source' => ['nullable', Rule::in(Reservation::SOURCES)], 'notes' => ['nullable', 'string', 'max:1000']], self::DATE_MESSAGES);
         $reservation = $this->service->update($reservation, $data, $request->user());
 
         return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)]);
@@ -204,7 +213,8 @@ class ReservationController extends Controller
     public function noShow(Request $request, string $id): JsonResponse
     {
         $reservation = $this->find($request, $id);
-        $reservation = $this->service->cancel($reservation, (string) $request->input('reason', 'No-show'), $request->user(), true);
+        $data = $request->validate(['reason' => ['nullable', 'string', 'max:200']]);
+        $reservation = $this->service->cancel($reservation, $data['reason'] ?? 'No-show', $request->user(), true);
 
         return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)]);
     }

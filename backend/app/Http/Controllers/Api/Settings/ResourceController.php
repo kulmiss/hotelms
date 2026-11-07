@@ -21,6 +21,12 @@ abstract class ResourceController extends Controller
     /** @return array<string, mixed> validation rules */
     abstract protected function rules(Request $request, ?Model $record): array;
 
+    /** @return array<string, string> plain-word validation messages (optional) */
+    protected function messages(): array
+    {
+        return [];
+    }
+
     protected function query(): Builder
     {
         return ($this->model())::query()->orderBy('id');
@@ -39,7 +45,7 @@ abstract class ResourceController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $data = $request->validate($this->rules($request, null));
+        $data = $request->validate($this->rules($request, null), $this->messages());
         $record = ($this->model())::create($data);
         $this->saved($record, $data);
 
@@ -49,7 +55,7 @@ abstract class ResourceController extends Controller
     public function update(Request $request, string $id): JsonResponse
     {
         $record = $this->find($id);
-        $data = $request->validate($this->rules($request, $record));
+        $data = $request->validate($this->rules($request, $record), $this->messages());
         $record->update($data);
         $this->saved($record, $data);
 

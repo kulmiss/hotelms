@@ -92,6 +92,8 @@ export function GuestsPage() {
         rows={guests.data?.data ?? []}
         rowKey={(g) => g.id}
         loading={guests.isLoading}
+        error={guests.error}
+        onRetry={() => guests.refetch()}
         sort={sort}
         onSort={(x) => {
           setSort(x)

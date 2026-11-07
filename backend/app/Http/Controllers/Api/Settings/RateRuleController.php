@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Settings;
 
+use App\Models\Branch;
 use App\Models\GuestType;
 use App\Models\RateRule;
 use App\Models\RoomType;
@@ -21,9 +22,35 @@ class RateRuleController extends ResourceController
         return RateRule::class;
     }
 
+    /** Room types of the branches this person works in. */
+    private function myTypes(): array
+    {
+        return RoomType::whereIn('branch_id', request()->user()->accessibleBranches()->pluck('id'))->pluck('id')->all();
+    }
+
+    /** A rule for every room type touches all branches: only for people who work in all of them (e.g. the Hotel Admin). */
+    private function allBranches(): bool
+    {
+        $user = request()->user();
+
+        return $user->isHotelAdmin() || $user->accessibleBranches()->count() >= Branch::count();
+    }
+
+    protected function messages(): array
+    {
+        return ['room_type_id.required' => 'Choose a room type of your branch.', 'room_type_id.in' => 'Choose a room type of your branch.'];
+    }
+
     protected function query(): Builder
     {
-        return RateRule::query()->orderByDesc('priority')->orderBy('name');
+        return RateRule::query()
+            ->where(fn ($q) => $q->whereIn('room_type_id', $this->myTypes())->when($this->allBranches(), fn ($w) => $w->orWhereNull('room_type_id')))
+            ->orderByDesc('priority')->orderBy('name');
+    }
+
+    protected function find(string $id): Model
+    {
+        return $this->query()->findOrFail($id); // other branches' rules → 404
     }
 
     protected function rules(Request $request, ?Model $record): array
@@ -31,7 +58,7 @@ class RateRuleController extends ResourceController
         return [
             'name' => ['required', 'string', 'max:60'],
             'rule_type' => ['required', Rule::in(['weekend', 'season', 'guest_type'])],
-            'room_type_id' => ['nullable', 'integer', Rule::in(RoomType::pluck('id')->all())],
+            'room_type_id' => [$this->allBranches() ? 'nullable' : 'required', 'integer', Rule::in($this->myTypes())],
             'start_date' => ['nullable', 'date', Rule::requiredIf($request->input('rule_type') === 'season')],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date', Rule::requiredIf($request->input('rule_type') === 'season')],
             'days_of_week' => ['nullable', 'array', Rule::requiredIf($request->input('rule_type') === 'weekend')],
@@ -54,7 +81,7 @@ class RateRuleController extends ResourceController
             'to' => ['required', 'date', 'after:from', 'before_or_equal:'.Carbon::parse($request->input('from'))->addDays(31)->toDateString()],
             'guest_type_id' => ['nullable', 'integer'],
         ]);
-        $type = RoomType::findOrFail($data['room_type_id']);
+        $type = RoomType::whereIn('branch_id', $request->user()->accessibleBranches()->pluck('id'))->findOrFail($data['room_type_id']);
 
         return response()->json(['data' => $prices->stay($type, Carbon::parse($data['from']), Carbon::parse($data['to']), $data['guest_type_id'] ?? null)]);
     }

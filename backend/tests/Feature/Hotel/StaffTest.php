@@ -98,6 +98,23 @@ class StaffTest extends TestCase
         ])->assertUnprocessable()->assertJsonValidationErrors('branch_ids');
     }
 
+    public function test_a_branch_manager_editing_someone_keeps_their_other_branches(): void
+    {
+        $manager = $this->manager($this->bole);
+        $both = User::factory()->withRole($this->hotel, 'receptionist')->create(['name' => 'Two branches']);
+        $both->branches()->attach([$this->bole->id, $this->piassa->id]);
+
+        // The Bole manager only sees Bole in the form; saving must not take Piassa away.
+        $this->actingAs($manager)->putJson("/api/v1/staff/{$both->id}", [
+            'name' => 'Two branches renamed', 'email' => $both->email, 'role_id' => $this->roles['receptionist']->id, 'branch_ids' => [$this->bole->id],
+        ])->assertOk();
+        $this->assertEqualsCanonicalizing([$this->bole->id, $this->piassa->id], $both->fresh()->branches()->pluck('branches.id')->all());
+
+        // Sending Piassa back is fine too; removing Bole (theirs) works, Piassa stays.
+        $this->putJson("/api/v1/staff/{$both->id}", ['name' => 'X', 'email' => $both->email, 'role_id' => $this->roles['receptionist']->id, 'branch_ids' => [$this->piassa->id]])->assertOk();
+        $this->assertSame([$this->piassa->id], $both->fresh()->branches()->pluck('branches.id')->all());
+    }
+
     public function test_branch_manager_cannot_give_roles_above_their_own(): void
     {
         $this->actingAs($this->manager($this->bole))->postJson('/api/v1/staff', [
@@ -175,10 +192,10 @@ class StaffTest extends TestCase
         ])->assertCreated();
 
         $log = $this->getJson('/api/v1/activity-log')->assertOk()->json('data');
-        $this->assertContains('User created: Abebe', array_column($log, 'description'));
+        $this->assertContains('Staff member added: Abebe', array_column($log, 'description'));
         $this->assertStringNotContainsString('"password"', json_encode($log));
 
         $otherAdmin = User::factory()->withRole(Hotel::factory()->create(), 'hotel_admin')->create();
-        $this->actingAs($otherAdmin)->getJson('/api/v1/activity-log')->assertJsonMissing(['description' => 'User created: Abebe']);
+        $this->actingAs($otherAdmin)->getJson('/api/v1/activity-log')->assertJsonMissing(['description' => 'Staff member added: Abebe']);
     }
 }

@@ -77,7 +77,7 @@ class InvoiceController extends Controller
             'discount_percent' => ['nullable', 'required_if:type,discount', 'decimal:0,2', 'gt:0', 'max:100'],
             'reservation_room_id' => ['nullable', 'integer'],
             'service_date' => ['nullable', 'date', 'after:-1 year', 'before:+1 year'],
-        ]);
+        ], ['service_date.after' => 'Choose a date in the last year.', 'service_date.before' => 'Choose a date in the next year.']);
         if (! empty($data['reservation_room_id']) && ! ReservationRoom::where('reservation_id', $invoice->reservation_id)->whereKey($data['reservation_room_id'])->exists()) {
             throw ValidationException::withMessages(['reservation_room_id' => 'Choose a room of this booking.']);
         }
@@ -133,7 +133,7 @@ class InvoiceController extends Controller
         $data = $request->validate([
             'company' => ['nullable', 'required_with:tin', 'string', 'max:150'],
             'tin' => ['nullable', 'string', 'regex:/^[0-9]{6,15}$/'],
-        ], ['tin.regex' => 'The TIN has only numbers (usually 10).']);
+        ], ['tin.regex' => 'The TIN has only numbers (usually 10).', 'company.required_with' => 'Type the name of the company for this TIN.']);
         $invoice->update(['buyer_company' => $data['company'] ?: null, 'buyer_tin' => $data['tin'] ?: null]);
 
         return response()->json(['data' => InvoicePresenter::detail($invoice->fresh(), $request->user()->hotel)]);

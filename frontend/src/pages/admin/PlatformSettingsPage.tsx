@@ -99,6 +99,21 @@ function SettingsForm({
   )
 }
 
+/** Branding, e-mails, Telegram and two-step sign-in for admins: the Owner only (the server checks this too). */
+function useIsOwner() {
+  return useMe().data?.platform?.role === 'owner'
+}
+
+function OwnerOnly({ title }: { title: string }) {
+  const { t } = useTranslation()
+  return (
+    <Card className="flex flex-col gap-1">
+      <h2 className="text-sm font-semibold">{title}</h2>
+      <p className="text-[13px] text-muted">{t('admin.settings.ownerOnly')}</p>
+    </Card>
+  )
+}
+
 function GeneralTab({ initial }: { initial: PlatformSettings }) {
   const { t } = useTranslation()
   const [name, setName] = useState(initial.platform_name)
@@ -107,15 +122,16 @@ function GeneralTab({ initial }: { initial: PlatformSettings }) {
   const [demo, setDemo] = useState(initial.demo_public)
   const [demoMinutes, setDemoMinutes] = useState(String(initial.demo_minutes ?? 30))
   const [twoStep, setTwoStep] = useState(initial.two_factor_admins ?? true)
+  const owner = useIsOwner()
   return (
     <SettingsForm
       title={t('admin.settings.tabs.general')}
       description={t('admin.settings.generalHelp')}
-      onSave={() => ({ platform_name: name, support_email: email || null, support_phone: phone || null, demo_public: demo, demo_minutes: Number(demoMinutes) || 30, two_factor_admins: twoStep })}
+      onSave={() => ({ support_email: email || null, support_phone: phone || null, demo_public: demo, demo_minutes: Number(demoMinutes) || 30, ...(owner ? { platform_name: name, two_factor_admins: twoStep } : {}) })}
     >
       {(error) => (
         <>
-          <Field label={t('admin.settings.platformName')} value={name} onChange={(e) => setName(e.target.value)} error={error?.field('platform_name')} />
+          <Field label={t('admin.settings.platformName')} value={name} disabled={!owner} onChange={(e) => setName(e.target.value)} error={error?.field('platform_name')} />
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t('admin.settings.supportEmail')} type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={error?.field('support_email')} />
             <Field label={t('admin.settings.supportPhone')} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} error={error?.field('support_phone')} />
@@ -133,7 +149,7 @@ function GeneralTab({ initial }: { initial: PlatformSettings }) {
             </div>
           )}
           <label className="flex min-h-touch items-start gap-3 text-[13px]">
-            <input type="checkbox" className="mt-0.5 size-4 rounded accent-accent" checked={twoStep} onChange={(e) => setTwoStep(e.target.checked)} />
+            <input type="checkbox" className="mt-0.5 size-4 rounded accent-accent" checked={twoStep} disabled={!owner} onChange={(e) => setTwoStep(e.target.checked)} />
             <span className="flex flex-col">
               <span className="font-medium">{t('admin.settings.twoFactorAdmins')}</span>
               <span className="text-muted">{t('admin.settings.twoFactorAdminsHint')}</span>
@@ -185,6 +201,8 @@ function BrandingTab({ initial }: { initial: PlatformSettings }) {
   const [color, setColor] = useState(initial.brand_color)
   const [message, setMessage] = useState(initial.login_message ?? '')
   const validColor = /^#[0-9a-fA-F]{6}$/.test(color)
+  const owner = useIsOwner()
+  if (!owner) return <OwnerOnly title={t('admin.settings.brandTitle')} />
 
   return (
     <div className="flex flex-col gap-6">
@@ -292,6 +310,8 @@ function EmailsTab({ initial }: { initial: PlatformSettings }) {
   const { t } = useTranslation()
   const [from, setFrom] = useState(initial.email_from_name)
   const [footer, setFooter] = useState(initial.email_footer ?? '')
+  const owner = useIsOwner()
+  if (!owner) return <OwnerOnly title={t('admin.settings.tabs.emails')} />
   return (
     <SettingsForm
       title={t('admin.settings.tabs.emails')}
@@ -312,6 +332,8 @@ function TelegramTab({ initial }: { initial: PlatformSettings }) {
   const { t } = useTranslation()
   const [token, setToken] = useState(initial.telegram_bot_token ?? '')
   const [username, setUsername] = useState(initial.telegram_bot_username ?? '')
+  const owner = useIsOwner()
+  if (!owner) return <OwnerOnly title={t('admin.settings.tabs.telegram')} />
   return (
     <SettingsForm
       title={t('admin.settings.tabs.telegram')}
