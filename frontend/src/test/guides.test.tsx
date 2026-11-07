@@ -34,7 +34,7 @@ describe('staff guides', () => {
     expect(cleaner).not.toContain('walkIn')
     expect(keys(['housekeeping.view'])).not.toContain('cleaning') // the hotel has housekeeping off
     expect(keys(['frontdesk.walk_in'])).toContain('walkIn')
-    expect(keys([])).toEqual(['signIn', 'lockScreen', 'search', 'bell', 'profile', 'branch'])
+    expect(keys([])).toEqual(['signIn', 'lockScreen', 'search', 'lists', 'bell', 'profile', 'branch'])
   })
 
   it('opens the guides on the Help page and finds one', async () => {

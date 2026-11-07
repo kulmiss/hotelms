@@ -60,7 +60,12 @@ describe('data tables', () => {
     vi.stubGlobal('URL', { ...URL, createObjectURL: (b: Blob) => (created.push(b), 'blob:x'), revokeObjectURL: () => undefined })
     const { unmount } = render(<Small />)
     await userEvent.click(screen.getByRole('button', { name: 'Excel' }))
-    expect(await created[0].text()).toContain('Name,Amount\r\nBekele,300')
+    const text = await new Promise<string>((done) => {
+      const reader = new FileReader()
+      reader.onload = () => done(String(reader.result))
+      reader.readAsText(created[0])
+    })
+    expect(text).toContain('Name,Amount\r\nBekele,300')
     unmount()
     render(<Small canExport={false} />)
     expect(screen.queryByRole('button', { name: 'Excel' })).not.toBeInTheDocument()
