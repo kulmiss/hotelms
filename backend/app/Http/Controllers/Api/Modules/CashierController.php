@@ -8,8 +8,10 @@ use App\Models\CashierSessionBalance;
 use App\Models\Payment;
 use App\Services\Modules\Cashier;
 use App\Support\HotelClock;
+use App\Support\ListQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
 
 /** Cashier shift close (screen-list.md section 7). */
@@ -54,21 +56,30 @@ class CashierController extends Controller
     }
 
     /** Shifts list (mine, or everyone's with cashier.view_all) — also the cashier report. */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): JsonResponse|Response
     {
         $user = $request->user();
         $request->validate(['from' => ['nullable', 'date'], 'to' => ['nullable', 'date']]);
         $all = $user->hasPermission('cashier.view_all');
         $hotel = $user->hotel;
-        $page = CashierSession::with(['user:id,name', 'approver:id,name', 'branch:id,name', 'balances'])
+        $query = CashierSession::with(['user:id,name', 'approver:id,name', 'branch:id,name', 'balances'])
             ->whereIn('branch_id', $user->accessibleBranches()->pluck('id'))
             ->when(! $all, fn ($q) => $q->where('user_id', $user->id))
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->when($request->input('user_id') && $all, fn ($q) => $q->where('user_id', $request->integer('user_id')))
             ->when($request->boolean('short'), fn ($q) => $q->whereHas('balances', fn ($b) => $b->where('difference', '<', 0)))
             ->when($request->input('from'), fn ($q, $d) => $q->where('opened_at', '>=', HotelClock::parse($d, $hotel)))
-            ->when($request->input('to'), fn ($q, $d) => $q->where('opened_at', '<', HotelClock::parse($d, $hotel)->addDay()))
-            ->latest('opened_at')->paginate(max(1, min(100, (int) $request->input('per_page', 25))));
+            ->when($request->input('to'), fn ($q, $d) => $q->where('opened_at', '<', HotelClock::parse($d, $hotel)->addDay()));
+        ListQuery::sort($query, $request, ['opened' => 'opened_at', 'closed' => 'closed_at', 'status' => 'status', 'person' => 'user_id'], 'opened');
+        if (ListQuery::wantsFile($request)) {
+            $money = fn (CashierSession $s, string $field) => $s->balances->map(fn ($b) => $b->currency.' '.$b->{$field})->implode(', ');
+
+            return ListQuery::file($request, $query, 'Cashier shifts', ['Person', 'Branch', 'Opened', 'Closed', 'Status', 'Expected', 'Counted', 'Difference', 'Approved by', 'Note'], fn (CashierSession $s) => [
+                $s->user?->name, $s->branch?->name, HotelClock::local($s->opened_at, $hotel)->format('Y-m-d H:i'), $s->closed_at ? HotelClock::local($s->closed_at, $hotel)->format('Y-m-d H:i') : '',
+                $s->status, $money($s, 'expected_amount'), $money($s, 'counted_amount'), $money($s, 'difference'), $s->approver?->name, $s->notes,
+            ]);
+        }
+        $page = $query->paginate(ListQuery::perPage($request));
         $page->getCollection()->transform(fn (CashierSession $s) => $this->summary($s, $request));
 
         return response()->json($page);

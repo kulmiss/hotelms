@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { DataTable, type SortState } from '@/components/ui/DataTable'
 import { DateRangeFilter } from '@/components/ui/DateRangeFilter'
 import type { DateRange } from '@/lib/dateRange'
 import { IdPhoto } from '@/components/guests/IdPhoto'
@@ -15,7 +16,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Tabs } from '@/components/ui/Tabs'
 import { ApiError } from '@/lib/api'
 import { date, money } from '@/lib/format'
-import { localDate, STATUS_TONES, useBlacklist, useGuest, useGuests, useLookups } from '@/lib/front'
+import { listFileUrl, localDate, STATUS_TONES, useBlacklist, useGuest, useGuests, useLookups, type Guest } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { useDebounced } from '@/lib/useDebounced'
 import { GuestForm } from './GuestForm'
@@ -29,7 +30,9 @@ export function GuestsPage() {
   const [params, setParams] = useSearchParams()
   const missing = params.get('show') === 'missing'
   const [stayed, setStayed] = useState<DateRange>({})
-  const guests = useGuests(search, page, true, missing, stayed)
+  const [perPage, setPerPage] = useState(25)
+  const [sort, setSort] = useState<SortState>({ by: 'newest', dir: 'desc' })
+  const guests = useGuests(search, page, true, missing, stayed, { sort: sort.by, dir: sort.dir, per_page: perPage })
 
   return (
     <div className="flex flex-col gap-6">
@@ -83,45 +86,44 @@ export function GuestsPage() {
           }}
         />
       </div>
-      <Card className="overflow-x-auto p-0">
-        <table className="w-full min-w-[720px] text-left text-[13px]">
-          <thead className="bg-sunken">
-            <tr>
-              <th className="px-4 py-2.5 font-semibold">{t('guests.name')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('guests.phone')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('guests.idNumber')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('guests.guestType')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('guests.stays')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {guests.data?.data.map((g) => (
-              <tr key={g.id} className="border-t border-border transition duration-75 hover:bg-sunken">
-                <td className="px-4 py-1.5">
-                  <Link to={`/guests/${g.id}`} className="flex min-h-touch items-center gap-2 font-medium">
-                    {g.full_name}
-                    {g.is_blacklisted && <Badge tone="danger">{t('guests.blacklisted')}</Badge>}
-                    {g.details_missing && <Badge tone="warn">{t('guests.detailsMissing')}</Badge>}
-                  </Link>
-                </td>
-                <td className="px-4 py-1.5 text-muted">{g.phone ?? '—'}</td>
-                <td className="px-4 py-1.5 text-muted">{g.id_number ? `${t(`guests.idTypes.${g.id_type ?? 'national_id'}`)} · ${g.id_number}` : '—'}</td>
-                <td className="px-4 py-1.5 text-muted">{g.guest_type?.name ?? '—'}</td>
-                <td className="px-4 py-1.5 text-muted">{g.reservations_count ?? 0}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {guests.data?.data.length === 0 && (
-          <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+      <DataTable<Guest>
+        id="guests"
+        rows={guests.data?.data ?? []}
+        rowKey={(g) => g.id}
+        loading={guests.isLoading}
+        sort={sort}
+        onSort={(x) => {
+          setSort(x)
+          setPage(1)
+        }}
+        paging={{ page, last: guests.data?.last_page ?? 1, total: guests.data?.total, perPage, onPage: setPage, onPerPage: (n) => (setPerPage(n), setPage(1)) }}
+        exportUrl={can('guests.export') ? listFileUrl('/guests', { q: search, missing: missing ? 1 : undefined, stayed_from: stayed.from, stayed_to: stayed.to, sort: sort.by, dir: sort.dir }) : null}
+        empty={
+          <div className="flex flex-col items-center gap-3 py-6">
             <span className="flex size-12 items-center justify-center rounded-full bg-sunken">
               <UsersIcon aria-hidden className="size-6 text-icon" />
             </span>
-            <p className="text-muted">{search ? t('guests.noMatch') : t('guests.empty')}</p>
+            <p>{search ? t('guests.noMatch') : t('guests.empty')}</p>
           </div>
-        )}
-      </Card>
-      {guests.data && guests.data.last_page > 1 && <Pager page={page} last={guests.data.last_page} onChange={setPage} />}
+        }
+        columns={[
+          {
+            key: 'name', label: t('guests.name'), sort: 'name', hideable: false,
+            render: (g) => (
+              <Link to={`/guests/${g.id}`} className="flex min-h-touch items-center gap-2 font-medium">
+                {g.full_name}
+                {g.is_blacklisted && <Badge tone="danger">{t('guests.blacklisted')}</Badge>}
+                {g.details_missing && <Badge tone="warn">{t('guests.detailsMissing')}</Badge>}
+              </Link>
+            ),
+          },
+          { key: 'phone', label: t('guests.phone'), sort: 'phone', render: (g) => <span className="text-muted">{g.phone ?? '—'}</span> },
+          { key: 'id', label: t('guests.idNumber'), render: (g) => <span className="text-muted">{g.id_number ? `${t(`guests.idTypes.${g.id_type ?? 'national_id'}`)} · ${g.id_number}` : '—'}</span> },
+          { key: 'nationality', label: t('guests.nationality'), sort: 'nationality', defaultHidden: true, render: (g) => g.nationality ?? '—' },
+          { key: 'type', label: t('guests.guestType'), render: (g) => <span className="text-muted">{g.guest_type?.name ?? '—'}</span> },
+          { key: 'stays', label: t('guests.stays'), sort: 'stays', align: 'right', render: (g) => g.reservations_count ?? 0 },
+        ]}
+      />
     </div>
   )
 }

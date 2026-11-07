@@ -10,6 +10,7 @@ use App\Models\GuestType;
 use App\Models\Reservation;
 use App\Services\GuestIdPhotos;
 use App\Support\HotelClock;
+use App\Support\ListQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -18,7 +19,7 @@ use Illuminate\Validation\Rule;
 /** Guests are shared by all branches of the hotel (database-schema.md rule 1). */
 class GuestController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): JsonResponse|Response
     {
         $request->validate(['stayed_from' => ['nullable', 'date'], 'stayed_to' => ['nullable', 'date']]);
         $hotel = $request->user()->hotel;
@@ -32,9 +33,13 @@ class GuestController extends Controller
                 ->when($from, fn ($w) => $w->where('check_out_at', '>', $from))))
             ->when($request->boolean('blacklisted'), fn ($q) => $q->where('is_blacklisted', true))
             ->when($request->boolean('missing'), fn ($q) => $q->detailsMissing())
-            ->withCount('reservations')
-            ->orderByDesc('id')
-            ->paginate(max(1, min(100, (int) $request->input('per_page', 25))))
+            ->withCount('reservations');
+        ListQuery::sort($guests, $request, ['newest' => 'id', 'name' => 'last_name', 'first_name' => 'first_name', 'phone' => 'phone', 'nationality' => 'nationality', 'stays' => 'reservations_count'], 'newest');
+        if (ListQuery::wantsFile($request)) { // Hotel Admin only (guests.export); the ID number stays masked
+            return ListQuery::file($request, $guests, 'Guests', ['First name', 'Last name', 'Phone', 'Email', 'Nationality', 'ID (end)', 'Guest type', 'Stays', 'Blacklisted'],
+                fn (Guest $g) => [$g->first_name, $g->last_name, $g->phone, $g->email, $g->nationality, Guest::maskId($g->id_number), $g->guestType?->name, $g->reservations_count, $g->is_blacklisted ? 'yes' : ''], 'guests.export');
+        }
+        $guests = $guests->paginate(ListQuery::perPage($request))
             // The list shows only the end of the ID number; the full number is on the guest's own page.
             // (Plain arrays, so the masked number is not encrypted again just to be shown.)
             ->through(fn (Guest $g) => ['id_number' => Guest::maskId($g->id_number)] + $g->toArray());

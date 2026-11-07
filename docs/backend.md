@@ -115,6 +115,7 @@ Rules (money, dates, status changes) belong in services so tests, automations an
 | `reports:automation {--alerts}`, `automations:run`, `reservations:expire`, `stays:roll-open`, `hotels:update-statuses`, `subscriptions:invoices` | The scheduled jobs, by hand |
 
 ## Conventions
+- **Lists** use `App\Support\ListQuery`: `sort` + `dir` (only the keys the list allows), `per_page` (25/50/100), and `format=xlsx|csv` for the same list as a file (all rows, max 5,000; needs `reports.export`, guests need `guests.export`, the activity log `activity_log.view`). Used by reservations, guests, bills, payments, cashier shifts and the activity log. Small lists (settings, staff, hotels) sort and download in the browser (`DataTable` client mode, CSV).
 
 - **Messages** to users: short, plain English, say what to do ("Open your cashier shift (Cashier shift page) before taking cash…").
 - **Validation errors** use the field name the screen shows (`ValidationException::withMessages(['amount' => …])`).

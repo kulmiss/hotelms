@@ -383,6 +383,37 @@ class FrontDeskTest extends TestCase
         $this->getJson('/api/v1/front-desk/board?branch_id='.$this->branch->id.'&date=12-11-2026')->assertJsonValidationErrors('date');
     }
 
+    public function test_lists_sort_page_and_download_for_people_allowed_to_export(): void
+    {
+        $first = $this->booked();
+        $second = $this->booked();
+        $this->at('2026-11-12 15:00');
+        $this->checkIn($first, ['101'])->assertOk();
+        $codes = fn ($r) => collect($r->json('data'))->pluck('code')->all();
+
+        $asc = $codes($this->actingAs($this->admin)->getJson('/api/v1/reservations?sort=code&dir=asc')->assertOk());
+        $desc = $codes($this->getJson('/api/v1/reservations?sort=code&dir=desc'));
+        $this->assertSame(array_reverse($asc), $desc);
+        $this->getJson('/api/v1/reservations?sort=code;drop table reservations&dir=sideways')->assertOk(); // unknown sort: the default order
+        $this->assertSame(50, $this->getJson('/api/v1/reservations?per_page=50')->json('per_page'));
+        $this->assertSame(25, $this->getJson('/api/v1/reservations?per_page=7')->json('per_page')); // only 25 / 50 / 100
+
+        // Excel / CSV with the same filters (all rows), only with the export permission.
+        $file = $this->get('/api/v1/reservations?format=xlsx&status=checked_in')->assertOk();
+        $this->assertStringContainsString('spreadsheetml', $file->headers->get('Content-Type'));
+        $csv = $this->get('/api/v1/invoices?format=csv')->assertOk()->getContent();
+        $this->assertStringContainsString('Bill,Date,Guest', $csv);
+        $this->inHotel(fn () => $this->guest->update(['id_number' => 'ET1234567']));
+        $guests = $this->get('/api/v1/guests?format=csv')->assertOk()->getContent();
+        $this->assertStringContainsString('Abebe', $guests);
+        $this->assertStringNotContainsString('ET1234567', $guests); // the ID number stays masked
+        $this->assertStringContainsString('Booking,Guest', $this->get('/api/v1/reservations?format=csv')->getContent());
+
+        $this->actingAs($this->receptionist)->get('/api/v1/reservations?format=xlsx')->assertForbidden(); // no reports.export
+        $this->get('/api/v1/guests?format=csv')->assertForbidden(); // guests.export is the Hotel Admin's
+        $this->getJson('/api/v1/reservations?sort=guest&dir=asc')->assertOk(); // sorting is for everyone who sees the list
+    }
+
     public function test_paying_more_than_owed_needs_a_yes(): void
     {
         $id = $this->booked();

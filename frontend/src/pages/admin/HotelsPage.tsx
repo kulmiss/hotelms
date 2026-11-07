@@ -5,10 +5,10 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { PlusIcon } from '@heroicons/react/20/solid'
 import { Badge } from '@/components/ui/Badge'
 import { buttonClass } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import { DataTable } from '@/components/ui/DataTable'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatusBadge } from '@/components/ui/StatusBadge'
-import { useHotels } from '@/lib/admin'
+import { useHotels, type Hotel } from '@/lib/admin'
 import { cn } from '@/lib/cn'
 import { date } from '@/lib/format'
 
@@ -67,46 +67,38 @@ export function HotelsPage() {
         </div>
       </div>
 
-      <Card className="overflow-x-auto p-0">
-        <table className="w-full min-w-[640px] text-left text-sm">
-          <thead className="bg-sunken text-text">
-            <tr>
-              <th className="px-4 py-3 font-semibold">{t('admin.hotels.hotel')}</th>
-              <th className="px-4 py-3 font-semibold">{t('admin.hotels.plan')}</th>
-              <th className="px-4 py-3 font-semibold">{t('admin.hotels.status')}</th>
-              <th className="px-4 py-3 font-semibold">{t('admin.hotels.paidUntil')}</th>
-              <th className="px-4 py-3 font-semibold">{t('admin.hotels.branches')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {hotels.data?.data.map((h) => (
-              <tr key={h.id} className="border-t border-border transition duration-75 hover:bg-sunken">
-                <td className="px-4 py-2">
-                  <Link to={`/admin/hotels/${h.id}`} className="flex min-h-touch flex-col justify-center font-semibold text-text">
-                    <span className="flex items-center gap-2">
-                      {h.name}
-                      {h.is_demo && <Badge tone="info">{t('demo.badge')}</Badge>}
-                    </span>
-                    <span className="text-xs font-normal text-muted">{h.city ?? ''}</span>
-                  </Link>
-                </td>
-                <td className="px-4 py-2">{h.plan?.name ?? '—'}</td>
-                <td className="px-4 py-2">
-                  <StatusBadge status={h.status} />
-                </td>
-                <td className="px-4 py-2">
-                  {h.status === 'trial' ? t('admin.hotels.trialUntil', { date: date(h.trial_ends_at) }) : date(h.subscription_ends_at)}
-                </td>
-                <td className="px-4 py-2">{h.branches_count ?? '—'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {hotels.data && hotels.data.data.length === 0 && (
-          <p className="p-6 text-center text-muted">{t('admin.hotels.empty')}</p>
-        )}
-        {hotels.isPending && <p className="p-6 text-center text-muted">{t('common.loading')}</p>}
-      </Card>
+      <DataTable<Hotel>
+        id="admin-hotels"
+        rows={hotels.data?.data ?? []}
+        rowKey={(h) => h.id}
+        loading={hotels.isPending}
+        csvName="hotels"
+        canExport
+        minWidth="640px"
+        empty={t('admin.hotels.empty')}
+        columns={[
+          {
+            key: 'hotel', label: t('admin.hotels.hotel'), hideable: false, sortValue: (h) => h.name, csv: (h) => h.name,
+            render: (h) => (
+              <Link to={`/admin/hotels/${h.id}`} className="flex min-h-touch flex-col justify-center font-semibold text-text">
+                <span className="flex items-center gap-2">
+                  {h.name}
+                  {h.is_demo && <Badge tone="info">{t('demo.badge')}</Badge>}
+                </span>
+                <span className="text-xs font-normal text-muted">{h.city ?? ''}</span>
+              </Link>
+            ),
+          },
+          { key: 'city', label: t('table.city'), defaultHidden: true, sortValue: (h) => h.city ?? '', render: (h) => h.city ?? '—' },
+          { key: 'plan', label: t('admin.hotels.plan'), sortValue: (h) => h.plan?.name ?? '', render: (h) => h.plan?.name ?? '—' },
+          { key: 'status', label: t('admin.hotels.status'), sortValue: (h) => h.status, render: (h) => <StatusBadge status={h.status} /> },
+          {
+            key: 'paid', label: t('admin.hotels.paidUntil'), sortValue: (h) => (h.status === 'trial' ? h.trial_ends_at : h.subscription_ends_at) ?? '',
+            render: (h) => (h.status === 'trial' ? t('admin.hotels.trialUntil', { date: date(h.trial_ends_at) }) : date(h.subscription_ends_at)),
+          },
+          { key: 'branches', label: t('admin.hotels.branches'), align: 'right', sortValue: (h) => h.branches_count ?? 0, render: (h) => h.branches_count ?? '—' },
+        ]}
+      />
     </div>
   )
 }

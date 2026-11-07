@@ -47,6 +47,16 @@
         "You can also ask simple questions, like \"free rooms\" or \"who is in room 105\"."
       ]
     },
+    "lists": {
+      "title": "Lists: sort, columns and Excel",
+      "steps": [
+        "Tap a column title to sort the list. Tap again to turn the order around.",
+        "Columns: tick or untick to show or hide a column. The app remembers it.",
+        "Rows (at the bottom): show 25, 50 or 100 rows on one page.",
+        "Excel: download the list with the same filters. You see this button only if you may export.",
+        "On a phone, each row is a small card."
+      ]
+    },
     "bell": {
       "title": "Messages (the bell)",
       "steps": [

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Presenters\InvoicePresenter;
 use App\Http\Presenters\ReservationPresenter;
 use App\Models\CancellationPolicy;
+use App\Models\Guest;
 use App\Models\HotelCurrency;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
@@ -18,8 +19,10 @@ use App\Services\Booking\StayQuote;
 use App\Services\GuestIdPhotos;
 use App\Services\Switches;
 use App\Support\HotelClock;
+use App\Support\ListQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -29,23 +32,35 @@ class ReservationController extends Controller
 {
     public function __construct(private ReservationService $service, private Availability $availability, private StayQuote $quote) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): JsonResponse|Response
     {
         $request->validate(['from' => ['nullable', 'date'], 'to' => ['nullable', 'date'], 'q' => ['nullable', 'string', 'max:100'], 'branch_id' => ['nullable', 'integer'], 'status' => ['nullable', 'string', 'max:100']]);
         $hotel = $request->user()->hotel;
         $branches = $request->user()->accessibleBranches()->pluck('id');
         $q = trim((string) $request->input('q'));
 
-        $page = ReservationPresenter::withBills(Reservation::query())->with(['guest:id,first_name,last_name,phone', 'branch:id,name', 'rooms.roomType:id,name', 'rooms.room:id,number'])
+        $query = ReservationPresenter::withBills(Reservation::query())->with(['guest:id,first_name,last_name,phone', 'branch:id,name', 'rooms.roomType:id,name', 'rooms.room:id,number'])
             ->whereIn('branch_id', $branches)
             ->when($request->input('branch_id'), fn ($w, $b) => $w->where('branch_id', $b))
             ->when($request->input('status'), fn ($w, $s) => $w->whereIn('status', explode(',', $s)))
             ->when($request->boolean('expiring'), fn ($w) => $w->where('status', 'pending')->where('expires_at', '<=', now()->addHours(6)))
             ->when($request->input('from'), fn ($w, $d) => $w->where('check_out_at', '>', HotelClock::parse($d, $hotel)))
             ->when($request->input('to'), fn ($w, $d) => $w->where('check_in_at', '<', HotelClock::parse($d, $hotel)->addDay()))
-            ->when($q !== '', fn ($w) => $w->where(fn ($x) => $x->where('code', 'like', "%{$q}%")->orWhereHas('guest', fn ($g) => $g->search($q))))
-            ->orderBy($request->input('sort') === 'newest' ? 'created_at' : 'check_in_at', $request->input('sort') === 'newest' ? 'desc' : 'asc')
-            ->paginate(max(1, min(100, (int) $request->input('per_page', 25))));
+            ->when($q !== '', fn ($w) => $w->where(fn ($x) => $x->where('code', 'like', "%{$q}%")->orWhereHas('guest', fn ($g) => $g->search($q))));
+        $newest = $request->input('sort') === 'newest'; // older screens ask for "newest"
+        ListQuery::sort($query, $request, [
+            'check_in' => 'check_in_at', 'check_out' => 'check_out_at', 'code' => 'code', 'status' => 'status', 'newest' => 'created_at', 'created' => 'created_at', 'total' => 'total',
+            'guest' => fn ($q, $dir) => $q->orderBy(Guest::select('last_name')->whereColumn('guests.id', 'reservations.guest_id')->limit(1), $dir),
+        ], $newest ? 'newest' : 'check_in', $newest ? 'desc' : 'asc');
+        if (ListQuery::wantsFile($request)) {
+            return ListQuery::file($request, $query, 'Bookings', ['Booking', 'Guest', 'Phone', 'Branch', 'Status', 'Check-in', 'Check-out', 'Rooms', 'Total', 'Paid', 'Currency'], function (Reservation $r) use ($hotel) {
+                [$total, $paid] = ReservationPresenter::money($r);
+
+                return [$r->code, $r->guest?->full_name, $r->guest?->phone, $r->branch?->name, $r->status, HotelClock::local($r->check_in_at, $hotel)->format('Y-m-d H:i'),
+                    HotelClock::local($r->check_out_at, $hotel)->format('Y-m-d H:i'), $r->rooms->map(fn ($rr) => $rr->room?->number ?? $rr->roomType?->name)->implode(', '), $total, $paid, $r->currency];
+            });
+        }
+        $page = $query->paginate(ListQuery::perPage($request));
 
         $page->getCollection()->transform(fn (Reservation $r) => ReservationPresenter::summary($r, $hotel));
 

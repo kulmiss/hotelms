@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Front;
 use App\Http\Controllers\Controller;
 use App\Http\Presenters\InvoicePresenter;
 use App\Models\ChargeType;
+use App\Models\Guest;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Payment;
@@ -12,8 +13,10 @@ use App\Models\ReservationRoom;
 use App\Services\Billing\InvoiceService;
 use App\Services\Booking\ReservationService;
 use App\Support\HotelClock;
+use App\Support\ListQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -22,12 +25,12 @@ class InvoiceController extends Controller
 {
     public function __construct(private InvoiceService $invoices) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): JsonResponse|Response
     {
         $request->validate(['from' => ['nullable', 'date'], 'to' => ['nullable', 'date']]);
         $hotel = $request->user()->hotel;
         $q = trim((string) $request->input('q'));
-        $page = Invoice::with(['guest:id,first_name,last_name,phone', 'reservation:id,code', 'branch:id,name'])
+        $query = Invoice::with(['guest:id,first_name,last_name,phone', 'reservation:id,code', 'branch:id,name'])
             ->whereIn('branch_id', $request->user()->accessibleBranches()->pluck('id'))
             ->when($request->input('status'), fn ($w, $s) => $w->whereIn('status', explode(',', $s)))
             ->when($request->boolean('unpaid'), fn ($w) => $w->where('status', '!=', 'void')->where('balance', '>', 0))
@@ -36,9 +39,17 @@ class InvoiceController extends Controller
             ->when($request->input('to'), fn ($w, $d) => $w->where('issued_at', '<', HotelClock::parse($d, $hotel)->addDay()))
             ->when($q !== '', fn ($w) => $w->where(fn ($x) => $x->where('number', 'like', "%{$q}%")
                 ->orWhereHas('reservation', fn ($r) => $r->where('code', 'like', "%{$q}%"))
-                ->orWhereHas('guest', fn ($g) => $g->search($q))))
-            ->latest('issued_at')
-            ->paginate(max(1, min(100, (int) $request->input('per_page', 25))));
+                ->orWhereHas('guest', fn ($g) => $g->search($q))));
+        ListQuery::sort($query, $request, [
+            'issued' => 'issued_at', 'number' => 'number', 'status' => 'status', 'total' => 'total', 'balance' => 'balance',
+            'guest' => fn ($w, $dir) => $w->orderBy(Guest::select('last_name')->whereColumn('guests.id', 'invoices.guest_id')->limit(1), $dir),
+        ], 'issued');
+        if (ListQuery::wantsFile($request)) {
+            return ListQuery::file($request, $query, 'Bills', ['Bill', 'Date', 'Guest', 'Booking', 'Branch', 'Status', 'Total', 'Paid', 'Balance', 'Currency'], fn (Invoice $i) => [
+                $i->number, HotelClock::local($i->issued_at, $hotel)->format('Y-m-d'), $i->guest?->full_name, $i->reservation?->code, $i->branch?->name, $i->status, $i->total, $i->paid_total, $i->balance, $i->currency,
+            ]);
+        }
+        $page = $query->paginate(ListQuery::perPage($request));
         $page->getCollection()->transform(fn (Invoice $i) => InvoicePresenter::summary($i, $hotel));
 
         return response()->json($page);
@@ -143,17 +154,23 @@ class InvoiceController extends Controller
         return response()->json(['data' => array_map(fn (Invoice $i) => InvoicePresenter::summary($i, $request->user()->hotel), $result)]);
     }
 
-    public function payments(Request $request): JsonResponse
+    public function payments(Request $request): JsonResponse|Response
     {
         $request->validate(['from' => ['nullable', 'date'], 'to' => ['nullable', 'date']]);
         $hotel = $request->user()->hotel;
-        $page = Payment::with(['method:id,name', 'receiver:id,name', 'reservation:id,code,guest_id', 'reservation.guest:id,first_name,last_name', 'invoice:id,number'])
+        $query = Payment::with(['method:id,name', 'receiver:id,name', 'reservation:id,code,guest_id', 'reservation.guest:id,first_name,last_name', 'invoice:id,number'])
             ->whereIn('branch_id', $request->user()->accessibleBranches()->pluck('id'))
             ->when($request->input('type'), fn ($w, $t) => $w->where('type', $t))
             ->when($request->input('from'), fn ($w, $d) => $w->where('paid_at', '>=', HotelClock::parse($d, $hotel)))
-            ->when($request->input('to'), fn ($w, $d) => $w->where('paid_at', '<', HotelClock::parse($d, $hotel)->addDay()))
-            ->latest('paid_at')
-            ->paginate(max(1, min(100, (int) $request->input('per_page', 25))));
+            ->when($request->input('to'), fn ($w, $d) => $w->where('paid_at', '<', HotelClock::parse($d, $hotel)->addDay()));
+        ListQuery::sort($query, $request, ['paid' => 'paid_at', 'amount' => 'amount_in_base', 'type' => 'type'], 'paid');
+        if (ListQuery::wantsFile($request)) {
+            return ListQuery::file($request, $query, 'Payments', ['Date', 'Type', 'Amount', 'Currency', 'In main currency', 'Method', 'Reference', 'Booking', 'Guest', 'Bill', 'Taken by'], fn (Payment $p) => [
+                HotelClock::local($p->paid_at, $hotel)->format('Y-m-d H:i'), $p->type, $p->amount, $p->currency, $p->amount_in_base, $p->method?->name, $p->reference,
+                $p->reservation?->code, $p->reservation?->guest?->full_name, $p->invoice?->number, $p->receiver?->name,
+            ]);
+        }
+        $page = $query->paginate(ListQuery::perPage($request));
         $page->getCollection()->transform(fn (Payment $p) => [
             'id' => $p->id, 'type' => $p->type, 'amount' => $p->amount, 'currency' => $p->currency, 'amount_in_base' => $p->amount_in_base,
             'method' => $p->method?->name, 'reference' => $p->reference, 'by' => $p->receiver?->name, 'paid_at' => HotelClock::iso($p->paid_at, $hotel),

@@ -26,7 +26,8 @@ export type FieldDef = {
   showIf?: (values: Record<string, Value>) => boolean
 }
 
-export type ColumnDef = { label: string; render: (row: Row) => ReactNode }
+/** `value`: what to sort and download by (default: the shown text when it is plain text). */
+export type ColumnDef = { label: string; render: (row: Row) => ReactNode; value?: (row: Row) => string | number | null | undefined }
 
 /**
  * A Filament-style "resource" for simple settings lists: a table with
@@ -80,58 +81,52 @@ export function ResourceList({
       {deleteError && <Alert>{deleteError}</Alert>}
       {editing && <RecordForm key={editing.id ?? 'new'} endpoint={endpoint} fields={fields} record={editing} onDone={() => setEditing(null)} />}
 
-      <Card className="overflow-x-auto p-0">
-        <table className="w-full min-w-[520px] text-left text-[13px]">
-          <thead className="bg-sunken text-text">
-            <tr>
-              {columns.map((c) => (
-                <th key={c.label} className="px-4 py-2.5 font-semibold">
-                  {c.label}
-                </th>
-              ))}
-              <th className="w-24 px-4 py-2.5">
-                <span className="sr-only">{t('common.actions')}</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {list.data?.data.map((row) => (
-              <tr key={row.id} className="border-t border-border transition duration-75 hover:bg-sunken">
-                {columns.map((c) => (
-                  <td key={c.label} className="px-4 py-2">
-                    {c.render(row)}
-                  </td>
-                ))}
-                <td className="px-2 py-1">
-                  <div className="flex justify-end">
-                    <button
-                      type="button"
-                      aria-label={t('common.edit')}
-                      onClick={() => setEditing(row)}
-                      className="flex size-touch items-center justify-center rounded-lg text-icon hover:bg-sunken hover:text-text"
-                    >
-                      <PencilSquareIcon aria-hidden className="size-4" />
-                    </button>
-                    {canDelete(row) && (
-                      <button
-                        type="button"
-                        aria-label={t('common.delete')}
-                        disabled={remove.isPending}
-                        onClick={() => row.id && remove.mutate(row.id)}
-                        className="flex size-touch items-center justify-center rounded-lg text-icon hover:bg-danger-bg hover:text-danger-text"
-                      >
-                        <TrashIcon aria-hidden className="size-4" />
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {list.isPending && <p className="p-6 text-center text-muted">{t('common.loading')}</p>}
-        {list.data?.data.length === 0 && <p className="p-6 text-center text-muted">{t('common.nothingYet')}</p>}
-      </Card>
+      <DataTable<Row>
+        id={`settings${endpoint}`}
+        rows={list.data?.data ?? []}
+        rowKey={(row) => String(row.id)}
+        loading={list.isPending}
+        empty={t('common.nothingYet')}
+        csvName={title}
+        canExport
+        minWidth="520px"
+        columns={[
+          ...columns.map((c, i) => {
+            // Sort and download by the column's text (or its own value).
+            const value = c.value ?? ((row: Row) => {
+              const v = c.render(row)
+              return typeof v === 'string' || typeof v === 'number' ? v : undefined
+            })
+            return { key: `c${i}`, label: c.label, render: c.render, sortValue: value, csv: value, hideable: i > 0 } satisfies Column<Row>
+          }),
+          {
+            key: 'actions', label: '', hideable: false, align: 'right' as const,
+            render: (row: Row) => (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  aria-label={t('common.edit')}
+                  onClick={() => setEditing(row)}
+                  className="flex size-touch items-center justify-center rounded-lg text-icon hover:bg-sunken hover:text-text"
+                >
+                  <PencilSquareIcon aria-hidden className="size-4" />
+                </button>
+                {canDelete(row) && (
+                  <button
+                    type="button"
+                    aria-label={t('common.delete')}
+                    disabled={remove.isPending}
+                    onClick={() => row.id && remove.mutate(row.id)}
+                    className="flex size-touch items-center justify-center rounded-lg text-icon hover:bg-danger-bg hover:text-danger-text"
+                  >
+                    <TrashIcon aria-hidden className="size-4" />
+                  </button>
+                )}
+              </div>
+            ),
+          },
+        ]}
+      />
     </div>
   )
 }

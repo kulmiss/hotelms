@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRef } from 'react'
-import { api, newIdempotencyKey, post, put } from './api'
+import { api, apiUrl, newIdempotencyKey, post, put } from './api'
 
 /* ------------------------------------------------------------- types */
 
@@ -46,6 +46,8 @@ export type ReservationSummary = {
   /** Rooms only, as booked; `total` is the bills' total once there is a bill (extras included). */
   booking_total?: string
   branch: { id: number; name: string } | null
+  /** When the booking was made. */
+  booked_at?: string
   guest: { id: number; name: string; phone: string | null } | null
   check_in_at: string
   check_out_at: string
@@ -161,10 +163,10 @@ function useInvalidate() {
 }
 
 /** `stayed`: only guests who stayed on a day between from and to (hotel days). */
-export const useGuests = (q: string, page = 1, enabled = true, missing = false, stayed: { from?: string; to?: string } = {}) =>
+export const useGuests = (q: string, page = 1, enabled = true, missing = false, stayed: { from?: string; to?: string } = {}, opts: { sort?: string; dir?: string; per_page?: number } = {}) =>
   useQuery({
-    queryKey: ['guests', q, page, missing, stayed],
-    queryFn: () => api<Page<Guest>>(`/guests?${qs({ q, page, missing: missing ? 1 : undefined, stayed_from: stayed.from, stayed_to: stayed.to })}`),
+    queryKey: ['guests', q, page, missing, stayed, opts],
+    queryFn: () => api<Page<Guest>>(`/guests?${qs({ q, page, missing: missing ? 1 : undefined, stayed_from: stayed.from, stayed_to: stayed.to, ...opts })}`),
     placeholderData: keepPreviousData,
     enabled,
   })
@@ -187,7 +189,10 @@ export function useBlacklist(id: number) {
   return useMutation({ mutationFn: (v: { is_blacklisted: boolean; reason?: string }) => post(`/guests/${id}/blacklist`, v), onSuccess: invalidate })
 }
 
-export type ReservationFilters = { q?: string; status?: string; branch_id?: number | null; from?: string; to?: string; expiring?: boolean; sort?: string; page?: number }
+export type ReservationFilters = { q?: string; status?: string; branch_id?: number | null; from?: string; to?: string; expiring?: boolean; sort?: string; dir?: 'asc' | 'desc'; page?: number; per_page?: number }
+
+/** A list as an Excel file, with the same filters and order (all rows, not one page). */
+export const listFileUrl = (path: string, params: Record<string, string | number | boolean | null | undefined>) => apiUrl(`${path}?${qs({ ...params, page: undefined, per_page: undefined, format: 'xlsx' })}`)
 
 export const useReservations = (f: ReservationFilters) =>
   useQuery({ queryKey: ['reservations', 'list', f], queryFn: () => api<Page<ReservationSummary>>(`/reservations?${qs(f)}`), placeholderData: keepPreviousData })

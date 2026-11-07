@@ -26,7 +26,7 @@ export type CashierSession = {
 }
 
 export const useCurrentShift = () => useQuery({ queryKey: ['cashier', 'current'], queryFn: () => api<{ data: CashierSession | null }>('/cashier/current'), refetchInterval: 30_000 })
-export const useShifts = (f: { status?: string; short?: boolean; page?: number; from?: string; to?: string }) =>
+export const useShifts = (f: { status?: string; short?: boolean; page?: number; from?: string; to?: string; per_page?: number; sort?: string; dir?: string }) =>
   useQuery({ queryKey: ['cashier', 'list', f], queryFn: () => api<Page<CashierSession>>(`/cashier/sessions?${new URLSearchParams(Object.entries(f).filter(([, v]) => v).map(([k, v]) => [k, String(v)]))}`), placeholderData: keepPreviousData })
 
 export function useCashierAction<V, R>(fn: (v: V) => Promise<R>) {

@@ -14,10 +14,10 @@ import { useMe } from '@/lib/auth'
 import { useCurrentBranch } from '@/lib/branch'
 import { cn } from '@/lib/cn'
 import { date, money } from '@/lib/format'
-import { addDays, daysBetween, localDate, localTime, STATUS_TONES, today, useCalendar, useReservations, sleepingOn, type CalendarData, type ReservationStatus } from '@/lib/front'
+import { addDays, daysBetween, listFileUrl, localDate, localTime, STATUS_TONES, today, useCalendar, useReservations, sleepingOn, type CalendarData, type ReservationStatus, type ReservationSummary } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { useDebounced } from '@/lib/useDebounced'
-import { Pager } from '@/pages/guests/GuestsPage'
+import { DataTable, type SortState } from '@/components/ui/DataTable'
 
 const FILTERS: { key: string; status?: string; expiring?: boolean }[] = [
   { key: 'upcoming', status: 'pending,confirmed' },
@@ -72,9 +72,13 @@ function ReservationList() {
   const [branchId, setBranchId] = useState<number | null>(null)
   const [q, setQ] = useState('')
   const [page, setPage] = useState(1)
+  const [perPage, setPerPage] = useState(25)
+  const [sort, setSort] = useState<SortState>({ by: 'check_in', dir: 'asc' })
+  const can = useCan()
   const search = useDebounced(q, 250)
   const f = FILTERS.find((x) => x.key === filter) ?? FILTERS[0]
-  const list = useReservations({ q: search, status: f.status, expiring: f.expiring, branch_id: branchId, from: filter === 'upcoming' ? today() : undefined, page })
+  const filters = { q: search, status: f.status, expiring: f.expiring, branch_id: branchId, from: filter === 'upcoming' ? today() : undefined, sort: sort.by, dir: sort.dir }
+  const list = useReservations({ ...filters, page, per_page: perPage })
 
   return (
     <div className="flex flex-col gap-4">
@@ -125,57 +129,61 @@ function ReservationList() {
           </button>
         ))}
       </div>
-      <Card className="overflow-x-auto p-0">
-        <table className="w-full min-w-[820px] text-left text-[13px]">
-          <thead className="bg-sunken">
-            <tr>
-              <th className="px-4 py-2.5 font-semibold">{t('reservations.code')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('reservations.guest')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('reservations.stay')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('reservations.rooms')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('reservations.status')}</th>
-              <th className="px-4 py-2.5 text-right font-semibold">{t('reservations.total')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {list.data?.data.map((r) => (
-              <tr key={r.id} className="border-t border-border transition duration-75 hover:bg-sunken">
-                <td className="px-4 py-1.5">
-                  <Link to={`/reservations/${r.id}`} className="flex min-h-touch items-center font-medium text-accent-text">
-                    {r.code}
-                  </Link>
-                </td>
-                <td className="px-4 py-1.5">
-                  <span className="flex flex-col">
-                    <span className="font-medium">{r.guest?.name}</span>
-                    <span className="text-xs text-muted">{r.guest?.phone}</span>
-                  </span>
-                </td>
-                <td className="px-4 py-1.5 text-muted">
-                  <StayText checkIn={r.check_in_at} checkOut={r.check_out_at} stayType={r.stay_type} />
-                </td>
-                <td className="px-4 py-1.5 text-muted">{r.rooms.map((x) => x.room_number ?? x.room_type).join(', ')}</td>
-                <td className="px-4 py-1.5">
-                  <span className="flex flex-col items-start gap-0.5">
-                    <Badge tone={STATUS_TONES[r.status]}>{t(`reservations.statuses.${r.status}`)}</Badge>
-                    {r.status === 'pending' && r.expires_at && <span className="text-[11px] text-warn-text">{t('reservations.expiresAt', { time: `${date(localDate(r.expires_at))} ${localTime(r.expires_at)}` })}</span>}
-                  </span>
-                </td>
-                <td className="px-4 py-1.5 text-right tabular-nums">{money(r.total, r.currency)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {list.data?.data.length === 0 && (
-          <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+      <DataTable<ReservationSummary>
+        id="reservations"
+        rows={list.data?.data ?? []}
+        rowKey={(r) => r.id}
+        loading={list.isLoading}
+        sort={sort}
+        onSort={(s) => {
+          setSort(s)
+          setPage(1)
+        }}
+        paging={{ page, last: list.data?.last_page ?? 1, total: list.data?.total, perPage, onPage: setPage, onPerPage: (n) => (setPerPage(n), setPage(1)) }}
+        exportUrl={can('reports.export') ? listFileUrl('/reservations', { ...filters, page: undefined }) : null}
+        minWidth="820px"
+        empty={
+          <div className="flex flex-col items-center gap-3 py-6">
             <span className="flex size-12 items-center justify-center rounded-full bg-sunken">
               <CalendarDaysIcon aria-hidden className="size-6 text-icon" />
             </span>
-            <p className="text-muted">{t('reservations.empty')}</p>
+            <p>{t('reservations.empty')}</p>
           </div>
-        )}
-      </Card>
-      {list.data && list.data.last_page > 1 && <Pager page={page} last={list.data.last_page} onChange={setPage} />}
+        }
+        columns={[
+          {
+            key: 'code', label: t('reservations.code'), sort: 'code', hideable: false,
+            render: (r) => (
+              <Link to={`/reservations/${r.id}`} className="flex min-h-touch items-center font-medium text-accent-text">
+                {r.code}
+              </Link>
+            ),
+          },
+          {
+            key: 'guest', label: t('reservations.guest'), sort: 'guest',
+            render: (r) => (
+              <span className="flex flex-col">
+                <span className="font-medium">{r.guest?.name}</span>
+                <span className="text-xs text-muted">{r.guest?.phone}</span>
+              </span>
+            ),
+          },
+          { key: 'stay', label: t('reservations.stay'), sort: 'check_in', render: (r) => <span className="text-muted"><StayText checkIn={r.check_in_at} checkOut={r.check_out_at} stayType={r.stay_type} /></span> },
+          { key: 'rooms', label: t('reservations.rooms'), render: (r) => <span className="text-muted">{r.rooms.map((x) => x.room_number ?? x.room_type).join(', ')}</span> },
+          {
+            key: 'status', label: t('reservations.status'), sort: 'status',
+            render: (r) => (
+              <span className="flex flex-col items-start gap-0.5">
+                <Badge tone={STATUS_TONES[r.status]}>{t(`reservations.statuses.${r.status}`)}</Badge>
+                {r.status === 'pending' && r.expires_at && <span className="text-[11px] text-warn-text">{t('reservations.expiresAt', { time: `${date(localDate(r.expires_at))} ${localTime(r.expires_at)}` })}</span>}
+              </span>
+            ),
+          },
+          { key: 'branch', label: t('settings.rooms.branch'), defaultHidden: true, render: (r) => r.branch?.name },
+          { key: 'created', label: t('table.booked'), sort: 'created', defaultHidden: true, render: (r) => (r.booked_at ? date(localDate(r.booked_at)) : '') },
+          { key: 'total', label: t('reservations.total'), sort: 'total', align: 'right', render: (r) => money(r.total, r.currency) },
+        ]}
+      />
     </div>
   )
 }
