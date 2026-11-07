@@ -43,6 +43,8 @@ export type ReservationSummary = {
   /** Walk-in who did not know how long they stay: a night is added each day (Q16). */
   open_stay?: boolean
   source: string
+  /** Rooms only, as booked; `total` is the bills' total once there is a bill (extras included). */
+  booking_total?: string
   branch: { id: number; name: string } | null
   guest: { id: number; name: string; phone: string | null } | null
   check_in_at: string

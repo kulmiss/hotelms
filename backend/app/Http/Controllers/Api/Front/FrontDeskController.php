@@ -84,7 +84,7 @@ class FrontDeskController extends Controller
         $branch = $this->branch($request);
         $start = HotelClock::now($hotel)->startOfDay()->utc();
         $end = HotelClock::now($hotel)->endOfDay()->utc();
-        $base = fn () => Reservation::with(['guest:id,first_name,last_name,phone', 'branch:id,name', 'rooms.roomType:id,name', 'rooms.room:id,number'])->where('branch_id', $branch->id);
+        $base = fn () => ReservationPresenter::withBills(Reservation::with(['guest:id,first_name,last_name,phone', 'branch:id,name', 'rooms.roomType:id,name', 'rooms.room:id,number']))->where('branch_id', $branch->id);
 
         $arrivals = $base()->whereIn('status', ['pending', 'confirmed'])->where('check_in_at', '<=', $end)->where('check_out_at', '>', $start)->orderBy('check_in_at')->get();
         $inHouse = $base()->where('status', 'checked_in')->orderBy('check_out_at')->get();

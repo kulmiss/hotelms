@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Front;
 
 use App\Http\Controllers\Controller;
+use App\Http\Presenters\ReservationPresenter;
 use App\Models\Guest;
 use App\Models\GuestIdPhoto;
 use App\Models\GuestType;
@@ -43,11 +44,11 @@ class GuestController extends Controller
     {
         $guest = Guest::with('guestType:id,name')->findOrFail($id);
         $hotel = $request->user()->hotel;
-        $stays = Reservation::where('guest_id', $guest->id)->with('branch:id,name')->latest('check_in_at')->limit(50)->get()
+        $stays = ReservationPresenter::withBills(Reservation::where('guest_id', $guest->id))->with('branch:id,name')->latest('check_in_at')->limit(50)->get()
             ->map(fn (Reservation $r) => [
                 'id' => $r->id, 'code' => $r->code, 'branch' => $r->branch?->name, 'status' => $r->status, 'stay_type' => $r->stay_type,
                 'check_in_at' => HotelClock::iso($r->check_in_at, $hotel), 'check_out_at' => HotelClock::iso($r->check_out_at, $hotel),
-                'total' => $r->total, 'paid_total' => $r->paid_total, 'currency' => $r->currency,
+                'total' => ReservationPresenter::money($r)[0], 'paid_total' => ReservationPresenter::money($r)[1], 'currency' => $r->currency,
             ]);
 
         $photo = GuestIdPhoto::where('guest_id', $guest->id)->first(['id', 'mime', 'created_at']);

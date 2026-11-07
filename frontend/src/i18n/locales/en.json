@@ -1136,6 +1136,8 @@
     "unblacklist": "Remove from blacklist"
   },
   "reservations": {
+    "roomsTotal": "Rooms",
+    "extrasTotal": "Extras and fees",
     "subtitle": "Bookings in advance, deposits and cancellations.",
     "new": "New reservation",
     "list": "List",

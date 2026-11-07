@@ -285,6 +285,12 @@ class FrontDeskTest extends TestCase
         $this->postJson("/api/v1/front-desk/rooms/$room/charges", ['description' => 'Spa', 'unit_price' => '500'])->assertCreated()->assertJsonPath('data.description', 'Spa');
         $this->assertSame('3300.00', $this->invoice($id)['subtotal']); // 2000 + 250 + 250 + 300 + 500
         $this->assertSame('1495.00', $this->invoice($id)['balance']); // 3300 + 15% − 2300
+        // Every place that shows the stay's money shows the extras too (the bill is the truth).
+        $detail = $this->getJson("/api/v1/reservations/$id")->json('data');
+        $this->assertSame(['3795.00', '2300.00', '2300.00', '1495.00'], [$detail['total'], $detail['paid_total'], $detail['booking_total'], $detail['balance']]);
+        $this->assertSame('3795.00', collect($this->getJson('/api/v1/reservations?status=checked_in')->json('data'))->firstWhere('id', $id)['total']);
+        $this->assertSame('3795.00', collect($this->actingAs($this->admin)->getJson('/api/v1/guests/'.$this->guest->id)->json('stays'))->firstWhere('id', $id)['total']);
+        $this->actingAs($this->receptionist);
 
         $this->actingAs($this->admin)->deleteJson("/api/v1/front-desk/charges/$one")->assertNotFound(); // only the person who added it
         $this->actingAs($this->receptionist)->deleteJson("/api/v1/front-desk/charges/$one")->assertOk();

@@ -147,7 +147,7 @@ export function ReservationPage() {
 
           <Card className="flex flex-col gap-3">
             <h2 className="text-sm font-semibold">{t('reservations.rooms')}</h2>
-            <QuoteSummary q={{ ...r, rooms: r.rooms.map((x) => ({ room_type: x.room_type ?? '', room_number: x.room_number, total: x.total, lines: x.lines })), policy_name: r.policy?.name }} />
+            <QuoteSummary q={{ ...r, total: r.booking_total ?? r.total, rooms: r.rooms.map((x) => ({ room_type: x.room_type ?? '', room_number: x.room_number, total: x.total, lines: x.lines })), policy_name: r.policy?.name }} />
           </Card>
 
           <Card className="flex flex-col gap-3">
@@ -188,6 +188,13 @@ export function ReservationPage() {
 
         <Card className="flex flex-col gap-2 text-[13px] lg:sticky lg:top-20">
           <h2 className="text-sm font-semibold">{t('reservations.money')}</h2>
+          {/* Once there is a bill: rooms + extras (breakfast, laundry…) + fees, from the bill. */}
+          {r.booking_total && compareMoney(r.total, r.booking_total) > 0 && (
+            <>
+              <Line label={t('reservations.roomsTotal')} value={money(r.booking_total, r.currency)} />
+              <Line label={t('reservations.extrasTotal')} value={`+ ${money(subMoney(r.total, r.booking_total), r.currency)}`} />
+            </>
+          )}
           <Line label={t('reservations.total')} value={money(r.total, r.currency)} />
           <Line label={t('reservations.paid')} value={money(r.paid_total, r.currency)} />
           {r.cancellation_fee !== null && <Line label={t('reservations.cancellationFee')} value={money(r.cancellation_fee, r.currency)} />}
