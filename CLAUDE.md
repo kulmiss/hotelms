@@ -6,6 +6,8 @@ Multi-tenant hotel SaaS for Ethiopia. Plans and decisions live in the claude.ai 
 - Work on a branch, open a PR, owner merges. Never push to `main`.
 - Keep owner-facing messages short and simple (owner is not a developer).
 - Free options only unless the owner approves a cost.
+- **Update reminder (owner):** every message that reports a PR ends with the commands to get it after merging:
+  `git checkout main`, `git pull`, `docker compose up -d --build`, `docker compose exec backend php artisan migrate` (say when the migrate step is needed, and any other one-time step).
 - **Progress stays current (owner):** what is done, what is next, open questions and decisions Claude made live in the Project's `handover.md`. Read it at the start of a session; update it after every merged PR. Business rules: `workflows.md` (Q1…).
 - **Docs stay current (owner):** every PR that changes behaviour also updates the developer docs in `docs/` (start at `docs/README.md`) and, when staff see the change, the staff guide (Help → How to use: `frontend/src/lib/guides.ts` + `frontend/src/i18n/locales/en.guide.json`, very easy English). New business rules also go to the Project's `workflows.md`.
 
