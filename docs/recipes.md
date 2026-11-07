@@ -80,6 +80,21 @@ Tests: `Mail::fake()`, `Http::fake(['api.telegram.org/*' => …])`.
 - Guide: add `{ key, perm, module }` to `lib/guides.ts` and `topics.<key>` (title + steps) to `locales/en.guide.json`.
   Very easy English: short sentences, one action per step, the exact button names. `test/guides.test.tsx` checks every topic has text.
 
+## Add or update a guide picture (staff guide)
+
+1. Open the screen in a browser as a staff user of the **demo hotel** (Super Admin → log in as hotel), light mode,
+   about 860 px wide (tablet). Take a screenshot (PNG).
+2. Write a spec JSON: the screenshot, the part to keep (`origin`, `size`), `scale` (screenshot pixels per CSS pixel)
+   and the marks: `{"n": 1, "box": [x, y, w, h], "side": "right"}` (CSS pixels from the browser's `getBoundingClientRect`).
+   **The number = the step number** in `en.guide.json`.
+3. `python3 tools/pictures/annotate.py spec.json` → writes `frontend/public/guide/<key>.webp` (needs Pillow + Inter font).
+4. Add `pic: true` to the topic in `lib/guides.ts`. When a screen changes a lot, take its picture again.
+
+## Change a developer-doc diagram
+
+Diagrams are SVGs in `docs/images/`, made by `tools/pictures/diagrams.py` (edit, then `python3 tools/pictures/diagrams.py`).
+Use them in Markdown as `![what it shows](images/name.svg)`; GitHub and the in-app docs both show them.
+
 ## Release to a server
 
 See [hosting.md](hosting.md): `./deploy/package.sh`, upload, `php artisan migrate --force && php artisan optimize`.

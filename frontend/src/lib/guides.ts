@@ -3,7 +3,10 @@
  * `perm` (any of) and, for optional modules, `module`. The words are in en.json under "guide.topics.<key>"
  * (title + steps), in very easy English, so they can be translated to Amharic later.
  */
-export type GuideTopic = { key: string; perm?: string | string[]; module?: string }
+export type GuideTopic = { key: string; perm?: string | string[]; module?: string; pic?: boolean }
+
+/** A topic with `pic: true` shows `public/guide/<key>.webp` (a screenshot with orange numbers = the step numbers). */
+export const guidePicture = (key: string) => `/guide/${key}.webp`
 export type GuideSection = { key: string; topics: GuideTopic[] }
 
 export const GUIDE: GuideSection[] = [
@@ -22,18 +25,18 @@ export const GUIDE: GuideSection[] = [
     key: 'desk',
     topics: [
       { key: 'dashboard', perm: 'dashboard.view' },
-      { key: 'roomBoard', perm: 'frontdesk.view' },
+      { key: 'roomBoard', pic: true, perm: 'frontdesk.view' },
       { key: 'todayLists', perm: 'frontdesk.view' },
-      { key: 'walkIn', perm: 'frontdesk.walk_in' },
+      { key: 'walkIn', pic: true, perm: 'frontdesk.walk_in' },
       { key: 'quickCheckIn', perm: 'frontdesk.quick_check_in' },
       { key: 'newBooking', perm: 'reservations.create' },
-      { key: 'freeRooms', perm: 'reservations.view' },
-      { key: 'checkIn', perm: 'frontdesk.check_in' },
-      { key: 'moveExtend', perm: 'frontdesk.room_move' },
-      { key: 'checkOut', perm: 'frontdesk.check_out' },
-      { key: 'changeBooking', perm: 'reservations.edit' },
-      { key: 'cancelBooking', perm: 'reservations.cancel' },
-      { key: 'noShow', perm: 'reservations.no_show' },
+      { key: 'freeRooms', pic: true, perm: 'reservations.view' },
+      { key: 'checkIn', pic: true, perm: 'frontdesk.check_in' },
+      { key: 'moveExtend', pic: true, perm: 'frontdesk.room_move' },
+      { key: 'checkOut', pic: true, perm: 'frontdesk.check_out' },
+      { key: 'changeBooking', pic: true, perm: 'reservations.edit' },
+      { key: 'cancelBooking', pic: true, perm: 'reservations.cancel' },
+      { key: 'noShow', pic: true, perm: 'reservations.no_show' },
     ],
   },
   {
@@ -47,15 +50,15 @@ export const GUIDE: GuideSection[] = [
   {
     key: 'money',
     topics: [
-      { key: 'takePayment', perm: 'payments.take' },
-      { key: 'paymentProof', perm: 'payments.take' },
-      { key: 'extraCharge', perm: 'invoices.add_charge' },
+      { key: 'takePayment', pic: true, perm: 'payments.take' },
+      { key: 'paymentProof', pic: true, perm: 'payments.take' },
+      { key: 'extraCharge', pic: true, perm: 'invoices.add_charge' },
       { key: 'discount', perm: 'invoices.discount' },
       { key: 'printBill', perm: 'invoices.print' },
       { key: 'refund', perm: 'payments.refund' },
       { key: 'cancelBill', perm: 'invoices.void' },
       { key: 'unpaid', perm: 'checkout.approve_balance' },
-      { key: 'cashierShift', perm: 'cashier.own_shift', module: 'cashier_close' },
+      { key: 'cashierShift', pic: true, perm: 'cashier.own_shift', module: 'cashier_close' },
       { key: 'approveShift', perm: 'cashier.approve', module: 'cashier_close' },
     ],
   },
@@ -64,14 +67,14 @@ export const GUIDE: GuideSection[] = [
     topics: [
       { key: 'roomStatus', perm: 'rooms.change_status' },
       { key: 'maintenance', perm: 'rooms.maintenance' },
-      { key: 'cleaning', perm: ['housekeeping.view', 'housekeeping.own_tasks'], module: 'housekeeping' },
+      { key: 'cleaning', pic: true, perm: ['housekeeping.view', 'housekeeping.own_tasks'], module: 'housekeeping' },
       { key: 'assignCleaning', perm: 'housekeeping.assign', module: 'housekeeping' },
     ],
   },
   {
     key: 'work',
     topics: [
-      { key: 'clockIn', perm: 'attendance.clock', module: 'attendance' },
+      { key: 'clockIn', pic: true, perm: 'attendance.clock', module: 'attendance' },
       { key: 'myShifts', perm: 'shifts.view_own', module: 'shifts' },
       { key: 'roster', perm: 'shifts.manage', module: 'shifts' },
       { key: 'paperAttendance', perm: 'attendance.manual', module: 'attendance' },

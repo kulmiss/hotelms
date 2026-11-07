@@ -77,7 +77,7 @@ function MyShift({ shift }: { shift: CashierSession }) {
   const anyDiff = expected.some(([c, r]) => (diff(c, r.expected) ?? 0) !== 0)
 
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-[1fr_22rem]">
+    <div className="grid items-start gap-6 xl:grid-cols-[1fr_22rem]">
       <Card className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-semibold">{t('cashier.myShift')}</h2>

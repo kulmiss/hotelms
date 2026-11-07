@@ -20,7 +20,9 @@ class DocsTest extends TestCase
         parent::setUp();
         $this->dir = storage_path('framework/testing/docs');
         File::ensureDirectoryExists($this->dir);
-        File::put($this->dir.'/README.md', "# Start here\n\nRead [the money rules](architecture.md#money).\n\n<script>alert(1)</script>\n");
+        File::put($this->dir.'/README.md', "# Start here\n\nRead [the money rules](architecture.md#money).\n\n<script>alert(1)</script>\n\n![Flow](images/flow.svg) ![Up](images/../README.md)\n");
+        File::ensureDirectoryExists($this->dir.'/images');
+        File::put($this->dir.'/images/flow.svg', '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
         File::put($this->dir.'/architecture.md', "# Architecture\n\n| A | B |\n|---|---|\n| money | strings |\n");
         config(['hotelms.docs_path' => $this->dir]);
     }
@@ -41,6 +43,8 @@ class DocsTest extends TestCase
         $html = $this->getJson('/api/v1/admin/docs/readme')->assertOk()->json('data.html');
         $this->assertStringContainsString('href="/admin/docs/architecture#money"', $html); // opens in the app
         $this->assertStringNotContainsString('<script', $html); // raw HTML is removed
+        $this->assertStringContainsString('src="data:image/svg+xml;base64,'.base64_encode('<svg xmlns="http://www.w3.org/2000/svg"></svg>').'"', $html); // diagram inline
+        $this->assertStringContainsString('src="images/../README.md"', $html); // only images/<name>.svg is read, nothing else
         $this->assertStringContainsString('<table>', $this->getJson('/api/v1/admin/docs/architecture')->json('data.html'));
 
         $this->getJson('/api/v1/admin/docs?q=strings')->assertJsonCount(1, 'data')->assertJsonPath('data.0.name', 'architecture');

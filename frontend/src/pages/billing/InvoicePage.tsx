@@ -13,6 +13,7 @@ import { Select } from '@/components/ui/Select'
 import { ApiError } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { INVOICE_TONES, useAddCharge, useInvoice, useInvoicePayment, useRemoveItem, useSplitInvoice, useVoidInvoice, type InvoiceDetail } from '@/lib/desk'
+import { isPositive } from '@/lib/decimal'
 import { date, money } from '@/lib/format'
 import { localDate, localTime, useLookups } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
@@ -216,7 +217,7 @@ function PayPanel({ inv, onClose }: { inv: InvoiceDetail; onClose: () => void })
   const types = (['payment', 'refund'] as const).filter((x) => can(x === 'refund' ? 'payments.refund' : 'payments.take'))
   const [type, setType] = useState(types[0] ?? 'payment')
   const [methodId, setMethodId] = useState(0)
-  const [amount, setAmount] = useState(Number(inv.balance) > 0 ? inv.balance : '')
+  const [amount, setAmount] = useState(isPositive(inv.balance) ? inv.balance : '')
   const [currency, setCurrency] = useState(inv.currency)
   const [reference, setReference] = useState('')
   const [proof, setProof] = useState<Proof | null>(null)

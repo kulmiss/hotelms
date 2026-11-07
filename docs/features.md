@@ -5,6 +5,8 @@ Each section says the rule, the code and the tests. Backend paths are under `bac
 
 ## Bookings and front desk
 
+![Booking status: pending, confirmed, checked in, checked out, cancelled, no-show](images/booking-status.svg)
+
 | Rule | Code | Tests |
 |---|---|---|
 | Prices: base price + rate rules (weekend, season, guest type) per night; taxes inclusive/added | `Services/PriceCalculator`, `Booking/StayQuote`, `Billing/TaxCalculator` | `Hotel/SettingsTest`, `Front/ReservationsTest` |
@@ -45,6 +47,8 @@ Code: `Front/GuestController`, `Models/Guest`. Tests: `ReservationsTest`, `Front
 
 ## Rooms and housekeeping
 
+![Room status cycle: available, occupied, dirty, cleaning](images/room-status.svg)
+
 Status cycle (W7): available → occupied → dirty → cleaning → available; maintenance/out of order by managers.
 Every dirty room has one open cleaning task (`Housekeeping::taskForDirtyRoom`, `ensureTasks` for rooms made dirty in bulk;
 `Room` updated hook in `AppServiceProvider`). Check-out creates the task (`GuestCheckedOut` → `CreateCleaningTasks`).
@@ -79,7 +83,7 @@ Code: `Reports/Metrics`, `Reports/Insights`, `Reports/CustomReportEngine`, `Repo
 Command center, hotels (create with plan/trial, suspend, close, reopen, notes, live data with a reason, log in as hotel),
 plans and per-room pricing, subscription payments and invoices, switches and banners, support inbox, releases ("What's new"),
 content, team and permissions, platform settings (branding, Telegram, SMTP – Owner only), system health, activity log,
-**developer docs** (this folder, rendered by `Admin/DocsController` – Markdown to safe HTML, raw HTML stripped; `pages/admin/DocsPage.tsx`; Owner + `docs.view`),
+**developer docs** (this folder, rendered by `Admin/DocsController` – Markdown to safe HTML, raw HTML stripped, `images/*.svg` put inline as pictures; `pages/admin/DocsPage.tsx`; Owner + `docs.view`),
 **watchdog** (security, bugs, data leaks: bell for all, Telegram + email for serious ones). Code: `Http/Controllers/Api/Admin/*`,
 `pages/admin/*`. Tests: `tests/Feature/Admin/*`.
 
@@ -87,4 +91,5 @@ content, team and permissions, platform settings (branding, Telegram, SMTP – O
 
 Help → **How to use**: guides per topic in very easy English, filtered by the person's permissions and the hotel's modules
 (`lib/guides.ts`, `i18n/locales/en.guide.json`, `pages/help/HelpPage.tsx`). Help → **Ask us**: support requests.
-Tests: `test/guides.test.tsx` (every topic has text; people see only their topics).
+Topics with `pic: true` show a screenshot `frontend/public/guide/<key>.webp` with orange numbers that match the steps.
+Tests: `test/guides.test.tsx` (every topic has text; every picture file exists; people see only their topics).
