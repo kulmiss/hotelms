@@ -37,6 +37,8 @@ export function IdPhoto({ guestId, photo, canEdit, compact }: { guestId: number;
     meta: { toast: 'idPhoto.removed' },
   })
   const error = save.error instanceof ApiError ? (save.error.field('file') ?? save.error.message) : null
+  // Opened in a new tab with rel="noopener" (not "noreferrer"): the sign-in cookie only counts when the
+  // browser says the request comes from the app.
   const src = `${apiUrl(`/guests/${guestId}/id-photo`)}?v=${version}`
   const has = !!photo || save.isSuccess
 
@@ -46,11 +48,11 @@ export function IdPhoto({ guestId, photo, canEdit, compact }: { guestId: number;
       {has ? (
         <div className="flex flex-wrap items-center gap-3">
           {photo?.mime === 'application/pdf' ? (
-            <a href={src} target="_blank" rel="noreferrer" className="flex size-20 items-center justify-center rounded-lg bg-sunken ring-1 ring-ring">
+            <a href={src} target="_blank" rel="noopener" className="flex size-20 items-center justify-center rounded-lg bg-sunken ring-1 ring-ring">
               <IdentificationIcon aria-hidden className="size-8 text-icon" />
             </a>
           ) : (
-            <a href={src} target="_blank" rel="noreferrer">
+            <a href={src} target="_blank" rel="noopener">
               <img src={src} alt={t('idPhoto.title')} className="h-20 w-28 rounded-lg object-cover ring-1 ring-ring" />
             </a>
           )}

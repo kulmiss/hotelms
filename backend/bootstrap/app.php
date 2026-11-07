@@ -38,6 +38,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // The React app signs in with Sanctum's cookie session.
         $middleware->statefulApi();
+        // Not signed in: the API answers 401 (JSON). There is no server login page to send people to.
+        $middleware->redirectGuestsTo(fn (Request $request) => $request->is('api/*') ? null : '/');
         $middleware->append(SecurityHeaders::class);
         $middleware->append(RecordProblems::class); // for the Super Admin watchdog
 

@@ -83,8 +83,9 @@ export function ProofLink({ paymentId, proof, canAdd }: { paymentId: number; pro
   const file = useRef<HTMLInputElement>(null)
 
   if (proof) {
+    // Not "noreferrer": the sign-in cookie only counts when the browser says the request comes from the app.
     return (
-      <a href={proofUrl(proof.id)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-accent-text hover:underline">
+      <a href={proofUrl(proof.id)} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-xs font-medium text-accent-text hover:underline">
         <PaperClipIcon aria-hidden className="size-3.5" />
         {t('proof.view')}
       </a>
