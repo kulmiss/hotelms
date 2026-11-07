@@ -147,6 +147,14 @@ class ModulesTest extends TestCase
         $this->assertSame('102', $tasks[0]['room']['number']);
     }
 
+    public function test_a_room_made_dirty_in_bulk_still_shows_in_the_housekeepers_list(): void
+    {
+        $this->inHotel(fn () => Room::where('number', '102')->update(['status' => 'dirty'])); // no model events (imports, older data)
+        $tasks = $this->actingAs($this->housekeeper)->getJson('/api/v1/housekeeping/tasks')->assertOk()->json('data');
+        $this->assertSame(['102'], array_column(array_column($tasks, 'room'), 'number'));
+        $this->getJson('/api/v1/housekeeping/tasks')->assertJsonCount(1, 'data'); // made once
+    }
+
     public function test_tasks_given_to_someone_else_cannot_be_done(): void
     {
         $room = $this->inHotel(fn () => Room::where('number', '102')->first());
