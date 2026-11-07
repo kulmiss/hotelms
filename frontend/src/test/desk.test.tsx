@@ -65,7 +65,7 @@ describe('front desk', () => {
 
     expect(await screen.findByText('Early check-in fee: ETB 1,000.00')).toBeInTheDocument()
     await userEvent.selectOptions(screen.getByLabelText('Room number'), '101')
-    await userEvent.click(screen.getByRole('checkbox', { name: /Waive/ }))
+    await userEvent.click(screen.getByRole('checkbox', { name: /Don't charge/ }))
     const buttons = screen.getAllByRole('button', { name: 'Check in' })
     await userEvent.click(buttons[buttons.length - 1])
 

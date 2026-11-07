@@ -204,7 +204,7 @@ class InvoiceService
     public function void(Invoice $invoice, string $reason, User $user): Invoice
     {
         if ($invoice->isVoid()) {
-            throw ValidationException::withMessages(['invoice' => 'Already void.']);
+            throw ValidationException::withMessages(['invoice' => 'This bill is already cancelled.']);
         }
         $invoice->update(['status' => 'void', 'voided_by' => $user->id, 'voided_at' => now(), 'void_reason' => $reason]);
 
@@ -256,7 +256,7 @@ class InvoiceService
     public function assertEditable(Invoice $invoice): void
     {
         if ($invoice->isVoid()) {
-            throw ValidationException::withMessages(['invoice' => 'This invoice is void.']);
+            throw ValidationException::withMessages(['invoice' => 'This bill is cancelled.']);
         }
     }
 

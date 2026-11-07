@@ -16,7 +16,7 @@ describe('dashboard and reports', () => {
       'GET /dashboard': { body: { data: { date: '2026-11-12', arrivals: 4, arrived: 1, departures: 2, departed: 0, in_house: 7, occupancy: 58.3, rooms: { total: 12, by_status: { occupied: 7, available: 5 } }, pending_expiring: 1, late_arrivals: 0, next_7_days: [{ date: '2026-11-12', occupancy: 58.3 }], revenue_today: '12000.00', payments_today: '8000.00', unpaid_balances: '3000.00', cashier_shortages: 0, month: kpis } } },
     })
     renderApp('/')
-    expect(await screen.findByText('Arrivals today')).toBeInTheDocument()
+    expect(await screen.findByText('Arriving today')).toBeInTheDocument()
     expect(screen.getByText('1 unpaid booking expires within 3 hours.')).toBeInTheDocument()
     expect(screen.getByText('ETB 3,000.00')).toBeInTheDocument()
   })
@@ -66,6 +66,6 @@ describe('personal and insight reports', () => {
     renderApp('/reports?report=audit')
     expect(await screen.findByText('1 person needs a look.')).toBeInTheDocument()
     expect(screen.getByText('Cash short over 200')).toBeInTheDocument()
-    expect(screen.getByText('Many voids')).toBeInTheDocument()
+    expect(screen.getByText('Many cancelled bills')).toBeInTheDocument()
   })
 })

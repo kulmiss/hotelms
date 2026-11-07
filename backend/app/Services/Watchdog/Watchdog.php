@@ -284,8 +284,8 @@ class Watchdog
         }
         $voids = DB::table('invoices')->where('status', 'void')->where('voided_at', '>=', $today)->selectRaw('hotel_id, COUNT(*) as n')->groupBy('hotel_id')->having('n', '>=', 3)->get();
         foreach ($voids as $v) {
-            $this->found('fraud', "voids:{$v->hotel_id}:".now()->toDateString(), 'warning', 'Several bills voided today', [['Hotel', $this->hotelName($v->hotel_id)], ['Voided bills (24 h)', $v->n]],
-                'Voiding bills after taking money can hide theft. The hotel\'s Staff audit report shows who voided them.', "/admin/hotels/{$v->hotel_id}", (int) $v->hotel_id);
+            $this->found('fraud', "voids:{$v->hotel_id}:".now()->toDateString(), 'warning', 'Several bills cancelled today', [['Hotel', $this->hotelName($v->hotel_id)], ['Voided bills (24 h)', $v->n]],
+                'Cancelling bills after taking money can hide theft. The hotel\'s Staff audit report shows who cancelled them.', "/admin/hotels/{$v->hotel_id}", (int) $v->hotel_id);
         }
     }
 

@@ -12,11 +12,12 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { ApiError } from '@/lib/api'
 import { cn } from '@/lib/cn'
-import { INVOICE_TONES, useAddCharge, useChargeTypes, useInvoice, useInvoicePayment, useRemoveItem, useSplitInvoice, useVoidInvoice, type InvoiceDetail } from '@/lib/desk'
+import { INVOICE_TONES, useAddCharge, useInvoice, useInvoicePayment, useRemoveItem, useSplitInvoice, useVoidInvoice, type InvoiceDetail } from '@/lib/desk'
 import { date, money } from '@/lib/format'
 import { localDate, localTime, useLookups } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { Line } from '@/pages/reservations/ReservationFormPage'
+import { ChargePanel } from '@/components/billing/ChargePanel'
 
 const err = (e: unknown) => (e instanceof ApiError ? (Object.values(e.errors)[0]?.[0] ?? e.message) : null)
 
@@ -135,7 +136,7 @@ export function InvoicePage() {
               )}
             </div>
           )}
-          {panel === 'charge' && <ChargePanel inv={inv} onClose={() => setPanel(null)} />}
+          {panel === 'charge' && <ChargePanel invoiceId={inv.id} onClose={() => setPanel(null)} />}
           {panel === 'discount' && <DiscountPanel inv={inv} onClose={() => setPanel(null)} />}
           {panel === 'pay' && <PayPanel inv={inv} onClose={() => setPanel(null)} />}
 
@@ -180,51 +181,6 @@ export function InvoicePage() {
         </Card>
       </div>
     </div>
-  )
-}
-
-function ChargePanel({ inv, onClose }: { inv: InvoiceDetail; onClose: () => void }) {
-  const { t } = useTranslation()
-  const types = useChargeTypes()
-  const add = useAddCharge(inv.id)
-  const [typeId, setTypeId] = useState<number | null>(null)
-  const [description, setDescription] = useState('')
-  const [qty, setQty] = useState('1')
-  const [price, setPrice] = useState('')
-  const chosen = types.data?.data.find((x) => x.id === typeId)
-
-  return (
-    <Card className="grid gap-3 animate-page-in sm:grid-cols-4">
-      <Select
-        label={t('billing.chargeType')}
-        value={String(typeId ?? '')}
-        onChange={(e) => {
-          const id = e.target.value ? Number(e.target.value) : null
-          setTypeId(id)
-          const ct = types.data?.data.find((x) => x.id === id)
-          if (ct?.default_price) setPrice(String(Number(ct.default_price)))
-        }}
-      >
-        <option value="">{t('billing.other')}</option>
-        {types.data?.data.map((x) => (
-          <option key={x.id} value={x.id}>
-            {x.name}
-          </option>
-        ))}
-      </Select>
-      <Field label={t('billing.description')} value={description} placeholder={chosen?.name} onChange={(e) => setDescription(e.target.value)} />
-      <Field label={t('billing.qty')} inputMode="decimal" value={qty} onChange={(e) => setQty(e.target.value.replace(/[^0-9.]/g, ''))} />
-      <Field label={t('billing.unitPrice')} inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value.replace(/[^0-9.]/g, ''))} />
-      {add.error && <div className="sm:col-span-4"><Alert>{err(add.error)}</Alert></div>}
-      <div className="flex justify-end gap-2 sm:col-span-4">
-        <Button variant="ghost" onClick={onClose}>
-          {t('common.cancel')}
-        </Button>
-        <Button disabled={!price || (!typeId && !description) || add.isPending} onClick={() => add.mutate({ type: 'extra', charge_type_id: typeId, description: description || undefined, quantity: qty || '1', unit_price: price }, { onSuccess: onClose })}>
-          {t('billing.addCharge')}
-        </Button>
-      </div>
-    </Card>
   )
 }
 

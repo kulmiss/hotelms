@@ -58,7 +58,7 @@ class PlatformContentController extends Controller
         $invoice->update(['status' => 'void']);
         $this->log->log('hotel_invoice.voided', "Invoice {$invoice->number} voided", $invoice->hotel);
 
-        return response()->json(['message' => 'Voided.']);
+        return response()->json(['message' => 'Cancelled.']);
     }
 
     // ------------------------------------------------------------------ releases
