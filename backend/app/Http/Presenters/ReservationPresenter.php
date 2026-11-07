@@ -50,6 +50,24 @@ class ReservationPresenter
         return [(string) $r->total, (string) $r->paid_total];
     }
 
+    /**
+     * What the guest still owes (negative = money to give back). Once there is a bill, the bills;
+     * a cancelled or no-show booking owes nothing more (what was paid above the fee goes back); otherwise the booking total.
+     */
+    public static function balance(Reservation $r): string
+    {
+        $bills = $r->invoices->where('status', '!=', 'void');
+        if ($bills->isNotEmpty()) {
+            return Money::sum($bills->pluck('balance')->map(fn ($v) => (string) $v)->all());
+        }
+        // Cancelled / no-show: the hotel keeps up to the fee; the rest goes back. An unpaid fee is not a debt (decision 8).
+        if (in_array($r->status, ['cancelled', 'no_show'], true)) {
+            return Money::min(Money::sub((string) ($r->cancellation_fee ?? '0'), (string) $r->paid_total), '0.00');
+        }
+
+        return Money::sub((string) $r->total, (string) $r->paid_total);
+    }
+
     /** @return array<string, mixed> */
     public static function summary(Reservation $r, Hotel $hotel): array
     {
@@ -90,9 +108,7 @@ class ReservationPresenter
             'discount_amount' => $r->discount_amount,
             'tax_total' => $r->tax_total,
             // Once there is a bill, it is the truth (extras, fees, extensions); before that the booking total.
-            'balance' => $r->invoices->where('status', '!=', 'void')->isNotEmpty()
-                ? Money::sum($r->invoices->where('status', '!=', 'void')->pluck('balance')->map(fn ($v) => (string) $v)->all())
-                : Money::sub((string) $r->total, (string) $r->paid_total),
+            'balance' => self::balance($r),
             'cancellation_fee' => $r->cancellation_fee,
             'cancellation_policy_id' => $r->cancellation_policy_id,
             'policy' => $r->policy_snapshot,

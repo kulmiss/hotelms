@@ -211,6 +211,23 @@ class ReservationsTest extends TestCase
         $this->postJson('/api/v1/reservations', $this->booking(['check_in' => '2026-11-20', 'check_out' => '2026-11-22', 'rooms' => [['room_type_id' => $this->standard->id], ['room_type_id' => $this->standard->id]]]))->assertCreated();
     }
 
+    public function test_a_cancelled_booking_owes_nothing_more_and_shows_money_to_give_back(): void
+    {
+        $this->actingAs($this->admin);
+        $id = $this->postJson('/api/v1/reservations', $this->booking(['check_in' => '2026-11-20', 'check_out' => '2026-11-22']))->json('data.id');
+        $this->postJson("/api/v1/reservations/$id/payments", ['type' => 'deposit', 'payment_method_id' => $this->cash, 'amount' => '1380']);
+
+        // Free cancellation: the whole deposit goes back (not "owes 3220").
+        $this->postJson("/api/v1/reservations/$id/cancel", ['reason' => 'Plans changed'])->assertOk()
+            ->assertJsonPath('data.cancellation_fee', '0.00')->assertJsonPath('data.balance', '-1380.00');
+
+        // Late cancellation: fee 2000, paid 1380 → the hotel keeps 1380, nothing more is owed (decision 8), nothing goes back.
+        $late = $this->postJson('/api/v1/reservations', $this->booking(['check_in' => '2026-11-20', 'check_out' => '2026-11-22']))->json('data.id');
+        $this->postJson("/api/v1/reservations/$late/payments", ['type' => 'deposit', 'payment_method_id' => $this->cash, 'amount' => '1380']);
+        $this->travelTo(Carbon::parse('2026-11-19 10:00', 'Africa/Addis_Ababa'));
+        $this->postJson("/api/v1/reservations/$late/cancel", ['reason' => 'Late'])->assertJsonPath('data.balance', '0.00');
+    }
+
     public function test_a_repeated_payment_is_saved_once(): void
     {
         $this->actingAs($this->admin);
@@ -260,6 +277,11 @@ class ReservationsTest extends TestCase
         $id = $this->postJson('/api/v1/reservations', $this->booking())->json('data.id');
 
         $this->postJson("/api/v1/reservations/$id/no-show")->assertJsonValidationErrors('status');
+        // A bad reason is a form error, not a server error.
+        $this->postJson("/api/v1/reservations/$id/no-show", ['reason' => ['x']])->assertJsonValidationErrors('reason');
+        $this->postJson("/api/v1/reservations/$id/no-show", ['reason' => str_repeat('x', 201)])->assertJsonValidationErrors('reason');
+        $this->postJson('/api/v1/reservations/quote', $this->booking(['check_in' => '2029-01-01', 'check_out' => '2029-01-02']))
+            ->assertJsonPath('errors.check_in.0', 'Bookings can be made at most 2 years ahead.');
         $this->travelTo(Carbon::parse('2026-11-12 20:00', 'Africa/Addis_Ababa'));
         $this->postJson("/api/v1/reservations/$id/no-show")->assertOk()->assertJsonPath('data.status', 'no_show')->assertJsonPath('data.cancellation_fee', '2000.00');
     }

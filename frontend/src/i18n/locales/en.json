@@ -1215,7 +1215,8 @@
     "cancel": "Cancel booking",
     "cancelTitle": "Cancel this booking",
     "cancelFree": "Cancelling now is free under the booking's policy.",
-    "cancelFee": "Cancelling now costs {{fee}} ({{policy}}).",
+    "cancelFee": "Cancelling now costs {{fee}} ({{policy}}). The hotel keeps this from what the guest paid; nothing more is asked.",
+    "toGiveBack": "To give back to the guest",
     "refundDue": "Refund due to the guest: {{amount}} (a manager records the refund).",
     "reason": "Reason",
     "noShowReason": "Guest did not arrive",
@@ -1248,6 +1249,8 @@
     "policyLine_never": "{{name}}: not refundable.",
     "createdBy": "Booked by {{name}} on {{date}}",
     "form": {
+      "notEditable": "Only bookings that are waiting or confirmed can be changed. For a guest who is in, use Extend or Move on the booking.",
+      "backToBooking": "Back to the booking",
       "stay": "Stay",
       "stayType": "Type of stay",
       "checkIn": "Check-in",

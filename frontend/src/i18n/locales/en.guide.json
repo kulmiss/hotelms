@@ -207,16 +207,17 @@
         "Open the booking. Tap Edit.",
         "Change the dates, rooms or guests.",
         "The price is worked out again. The deposit stays on the booking.",
-        "Tap Save."
+        "Tap Save.",
+        "A guest who is already in? Use Extend or Move on the booking instead (Edit is only for bookings not checked in)."
       ]
     },
     "cancelBooking": {
       "title": "Cancel a booking",
       "steps": [
         "Open the booking. Tap Cancel booking.",
-        "The app shows if cancelling is free or if there is a fee (the hotel's rule).",
+        "The app shows if cancelling is free or if there is a fee (the hotel's rule). The fee is kept from what the guest paid; nothing more is asked.",
         "Write the reason. Tap Cancel booking.",
-        "If the guest gets money back, a manager gives it back as a refund."
+        "If the guest gets money back, the booking shows \"To give back to the guest\". A manager gives it back as a refund."
       ]
     },
     "noShow": {

@@ -7,6 +7,7 @@ import { CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIco
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { LoadFailed } from '@/components/ui/LoadFailed'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { Tabs } from '@/components/ui/Tabs'
@@ -134,6 +135,8 @@ function ReservationList() {
         rows={list.data?.data ?? []}
         rowKey={(r) => r.id}
         loading={list.isLoading}
+        error={list.error}
+        onRetry={() => list.refetch()}
         sort={sort}
         onSort={(s) => {
           setSort(s)
@@ -274,6 +277,7 @@ function ReservationCalendar() {
 
   return (
     <div className="flex flex-col gap-4">
+      {cal.isError && !cal.data && <LoadFailed error={cal.error} onRetry={() => cal.refetch()} />}
       <div className="flex flex-wrap items-end gap-3">
         {branches.length > 1 && (
           <div className="w-48">

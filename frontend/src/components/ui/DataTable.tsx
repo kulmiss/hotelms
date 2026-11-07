@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowDownTrayIcon, ChevronDownIcon, ChevronUpDownIcon, ChevronUpIcon, ViewColumnsIcon } from '@heroicons/react/20/solid'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { LoadFailed } from '@/components/ui/LoadFailed'
 import { cn } from '@/lib/cn'
 import { downloadText, toCsv } from '@/lib/csv'
 import { useMediaQuery } from '@/lib/useMediaQuery'
@@ -43,6 +44,9 @@ type Props<T> = {
   rows: T[]
   rowKey: (row: T) => string | number
   loading?: boolean
+  /** The rows could not be loaded: says so (with Try again) instead of "nothing here". */
+  error?: unknown
+  onRetry?: () => void
   empty?: ReactNode
   onRowClick?: (row: T) => void
   rowClassName?: (row: T) => string | undefined
@@ -71,7 +75,7 @@ function loadHidden(id: string, columns: Column<unknown>[]): string[] {
 }
 
 export function DataTable<T>({
-  id, columns, rows, rowKey, loading, empty, onRowClick, rowClassName, sort, onSort, paging, exportUrl, csvName, canExport, toolbar, minWidth = '720px',
+  id, columns, rows, rowKey, loading, error, onRetry, empty, onRowClick, rowClassName, sort, onSort, paging, exportUrl, csvName, canExport, toolbar, minWidth = '720px',
 }: Props<T>) {
   const { t } = useTranslation()
   const phone = useMediaQuery('(max-width: 639px)')
@@ -231,10 +235,10 @@ export function DataTable<T>({
             </tbody>
           </table>
           {loading && rows.length === 0 && <p className="p-6 text-center text-muted">{t('common.loading')}</p>}
-          {!loading && rows.length === 0 && <div className="p-6 text-center text-muted">{empty ?? t('table.empty')}</div>}
+          {!loading && rows.length === 0 && (error ? <LoadFailed error={error} onRetry={onRetry} /> : <div className="p-6 text-center text-muted">{empty ?? t('table.empty')}</div>)}
         </Card>
       )}
-      {phone && !loading && rows.length === 0 && <div className="p-6 text-center text-muted">{empty ?? t('table.empty')}</div>}
+      {phone && !loading && rows.length === 0 && (error ? <LoadFailed error={error} onRetry={onRetry} /> : <div className="p-6 text-center text-muted">{empty ?? t('table.empty')}</div>)}
 
       {pager && (pager.last > 1 || (pager.total ?? 0) > 25) && (
         <div className="flex flex-wrap items-center justify-end gap-2 text-[13px] text-muted">

@@ -72,6 +72,8 @@ export function HotelsPage() {
         rows={hotels.data?.data ?? []}
         rowKey={(h) => h.id}
         loading={hotels.isPending}
+        error={hotels.error}
+        onRetry={() => hotels.refetch()}
         csvName="hotels"
         canExport
         minWidth="640px"

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { CheckIcon, MinusIcon, PlusIcon, XMarkIcon } from '@heroicons/react/20/solid'
 import { Alert } from '@/components/ui/Alert'
@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
+import { LoadFailed } from '@/components/ui/LoadFailed'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { Tabs } from '@/components/ui/Tabs'
@@ -14,7 +15,7 @@ import { ApiError } from '@/lib/api'
 import { useMe } from '@/lib/auth'
 import { useCurrentBranch } from '@/lib/branch'
 import { cn } from '@/lib/cn'
-import { money } from '@/lib/format'
+import { date, money } from '@/lib/format'
 import {
   addDays,
   localDate,
@@ -42,10 +43,24 @@ const SOURCES = ['phone', 'walk_in', 'email', 'agent', 'other'] as const
 
 /** New reservation, or change one (workflows.md W1). */
 export function ReservationFormPage() {
+  const { t } = useTranslation()
   const { id } = useParams()
   const existing = useReservation(Number(id ?? 0))
+  if (id && existing.isError) return <LoadFailed error={existing.error} onRetry={() => existing.refetch()} back={{ to: '/reservations', label: t('loadFailed.toReservations') }} />
   if (id && !existing.data) return null
-  return <BookingForm key={id ?? 'new'} existing={existing.data?.data} />
+  const r = existing.data?.data
+  // Checked in, left or cancelled: nothing to change here (the stay has its own actions).
+  if (r && r.status !== 'pending' && r.status !== 'confirmed') {
+    return (
+      <div className="mx-auto flex w-full max-w-md flex-col gap-3 py-10">
+        <Alert tone="info">{t('reservations.form.notEditable')}</Alert>
+        <Link to={`/reservations/${r.id}`} className="flex min-h-touch items-center px-1 font-medium text-accent-text underline">
+          {t('reservations.form.backToBooking')}
+        </Link>
+      </div>
+    )
+  }
+  return <BookingForm key={id ?? 'new'} existing={r} />
 }
 
 function BookingForm({ existing }: { existing?: ReservationDetail }) {
@@ -186,8 +201,8 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
             {availability.data && (
               <p className="text-xs text-muted">
                 {t('reservations.form.times', {
-                  in: `${localDate(availability.data.check_in_at)} ${localTime(availability.data.check_in_at)}`,
-                  out: `${localDate(availability.data.check_out_at)} ${localTime(availability.data.check_out_at)}`,
+                  in: `${date(localDate(availability.data.check_in_at))} ${localTime(availability.data.check_in_at)}`,
+                  out: `${date(localDate(availability.data.check_out_at))} ${localTime(availability.data.check_out_at)}`,
                 })}
               </p>
             )}

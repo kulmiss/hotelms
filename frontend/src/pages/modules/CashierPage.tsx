@@ -193,6 +193,8 @@ function ShiftList() {
         rows={list.data?.data ?? []}
         rowKey={(s) => s.id}
         loading={list.isLoading}
+        error={list.error}
+        onRetry={() => list.refetch()}
         sort={sort}
         onSort={(x) => {
           setSort(x)

@@ -33,6 +33,8 @@ export function StaffPage() {
         rows={staff.data?.data ?? []}
         rowKey={(s) => s.id}
         loading={staff.isLoading}
+        error={staff.error}
+        onRetry={() => staff.refetch()}
         csvName="staff"
         canExport={can('staff.manage')}
         empty={
