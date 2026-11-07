@@ -110,6 +110,15 @@ class RoomsTest extends TestCase
         $this->postJson('/api/v1/settings/room-types', ['branch_id' => $this->second->id, 'name' => 'X', 'base_capacity' => 1, 'max_capacity' => 1, 'nightly_price' => '1', 'currency' => 'ETB'])
             ->assertJsonValidationErrors('branch_id');
         $this->postJson('/api/v1/settings/rooms', ['room_type_id' => $other, 'number' => '1'])->assertJsonValidationErrors('room_type_id');
+
+        // Prices: only rules for their own branch's room types (a rule for "all types" would change the other branch too).
+        $rule = ['name' => 'Weekend', 'rule_type' => 'weekend', 'days_of_week' => [6], 'adjustment' => 'percent', 'value' => '10', 'priority' => 10, 'is_active' => true];
+        $this->postJson('/api/v1/settings/rate-rules', $rule)->assertJsonValidationErrors('room_type_id');
+        $this->postJson('/api/v1/settings/rate-rules', $rule + ['room_type_id' => $other])->assertJsonValidationErrors('room_type_id');
+        $otherRule = $this->actingAs($this->admin)->postJson('/api/v1/settings/rate-rules', $rule + ['room_type_id' => $other])->assertCreated()->json('data.id');
+        $this->actingAs($manager)->getJson('/api/v1/settings/rate-rules')->assertJsonCount(0, 'data');
+        $this->putJson("/api/v1/settings/rate-rules/$otherRule", $rule + ['room_type_id' => $other, 'value' => '-90'])->assertNotFound();
+        $this->getJson("/api/v1/settings/price-preview?room_type_id=$other&from=2026-12-01&to=2026-12-02")->assertNotFound();
     }
 
     public function test_receptionist_cannot_change_rooms(): void

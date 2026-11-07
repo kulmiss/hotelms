@@ -45,6 +45,13 @@ Each section says the rule, the code and the tests. Backend paths are under `bac
 | Payment proof photo/PDF (optional), private files | `Front/PaymentProofController`, `components/payments/PaymentProof.tsx` | `FrontDeskTest` |
 | Cashier shift: opening cash, expected vs counted, reason for a difference, manager approval (W10) | `Modules/Cashier` | `ModulesTest` |
 
+## Staff, roles and settings (review notes)
+
+- A Branch Manager editing someone who also works in another branch keeps that other branch (`StaffController::update`).
+- Price rules: a Branch Manager only sees and changes rules of their own branch's room types; "All room types" is for the Hotel Admin (`RateRuleController`). Settings lists can give plain-word messages (`ResourceController::messages`).
+- Support ("log in as hotel") is not sent to "Set a new password" for a person with a temporary password (server and app).
+- The design-system page exists only in development builds.
+
 ## Guests
 
 Duplicate warning (smart `guest_check`), blacklist, ID numbers encrypted and masked in lists, optional encrypted ID photo

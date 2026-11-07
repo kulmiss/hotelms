@@ -284,7 +284,8 @@ export const routes = [
             element: <RequirePermission permission="approvals.decide" />,
             children: [{ path: 'approvals', element: page(<ApprovalsPage />) }],
           },
-          { path: 'design-system', element: page(<DesignSystemPage />) },
+          // Developer page: only while developing, never on a hotel's live site.
+          ...(import.meta.env.DEV ? [{ path: 'design-system', element: page(<DesignSystemPage />) }] : []),
           { path: '*', element: <NotFoundPage /> },
         ],
       },

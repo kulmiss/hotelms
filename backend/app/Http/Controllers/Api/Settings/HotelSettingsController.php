@@ -43,7 +43,7 @@ class HotelSettingsController extends Controller
             'night_cutoff' => ['sometimes', 'date_format:H:i', 'before_or_equal:12:00'],
             'hourly_min_hours' => ['required', 'integer', 'between:1,12'],
             'hourly_cleaning_minutes' => ['required', 'integer', 'between:0,240'],
-        ]);
+        ], ['night_cutoff.before_or_equal' => 'Choose a time up to 12:00 (noon).', 'deposit_value.max' => 'A percent deposit can be at most 100.']);
         $this->settings->put($data);
 
         return $this->bookingRules();

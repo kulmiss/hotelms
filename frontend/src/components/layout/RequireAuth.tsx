@@ -47,7 +47,8 @@ export function RequireAuth() {
     return <Navigate to="/setup" replace />
   }
 
-  if (me.data.user.must_change_password && location.pathname !== '/change-password' && !onSetup) {
+  // Support ("log in as hotel") never sets the person's password: the server lets support through, so does the app.
+  if (me.data.user.must_change_password && !me.data.impersonation && location.pathname !== '/change-password' && !onSetup) {
     return <Navigate to="/change-password" replace />
   }
 
