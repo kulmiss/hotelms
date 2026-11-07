@@ -182,12 +182,13 @@ export function DataTable<T>({
       ) : (
         <Card className="max-h-[75vh] overflow-auto p-0">
           <table className="w-full text-left text-[13px]" style={{ minWidth }}>
-            <thead className="sticky top-0 z-10 bg-sunken">
+            {/* The header sits on a solid surface: in dark mode the head colour is see-through. */}
+            <thead className="sticky top-0 z-10 bg-surface shadow-[0_1px_0_var(--color-border)]">
               <tr>
                 {shown.map((c) => {
                   const on = activeSort?.by === (sortable(c) ? sortKey(c) : '')
                   return (
-                    <th key={c.key} scope="col" aria-sort={on ? (activeSort!.dir === 'asc' ? 'ascending' : 'descending') : undefined} className={cn('px-4 py-2.5 font-semibold whitespace-nowrap', c.align === 'right' && 'text-right', c.className)}>
+                    <th key={c.key} scope="col" aria-sort={on ? (activeSort!.dir === 'asc' ? 'ascending' : 'descending') : undefined} className={cn('bg-sunken px-4 py-2.5 font-semibold whitespace-nowrap', c.align === 'right' && 'text-right', c.className)}>
                       {sortable(c) ? (
                         <button type="button" onClick={() => clickSort(c)} className={cn('inline-flex items-center gap-1 rounded hover:text-accent-text', c.align === 'right' && 'flex-row-reverse')}>
                           {c.label}
