@@ -53,12 +53,12 @@ class FrontDesk
         $now = now();
         $localToday = HotelClock::now($hotel)->toDateString();
         $inDate = HotelClock::local($reservation->check_in_at, $hotel)->toDateString();
-        $outDate = HotelClock::local($reservation->check_out_at, $hotel)->toDateString();
         $backfill = ! empty($data['backfill']); // demo history only (never reachable from the API)
         if (! $backfill && ($reservation->stay_type === 'nightly' ? $localToday < $inDate : $now->lt($reservation->check_in_at->copy()->subHour()))) {
             throw ValidationException::withMessages(['status' => 'This booking starts on '.$inDate.'. Change the dates to check in today.']);
         }
-        if (! $backfill && ($reservation->stay_type === 'nightly' ? $localToday >= $outDate : $now->gte($reservation->check_out_at))) {
+        // Until the check-out time (a guest arriving at 01:30 for last night's booking still checks in).
+        if (! $backfill && $now->gte($reservation->check_out_at)) {
             throw ValidationException::withMessages(['status' => 'This stay has already ended. Change the dates first.']);
         }
         // The hotel requires a photo of the guest's ID (quick check-in adds it later).
