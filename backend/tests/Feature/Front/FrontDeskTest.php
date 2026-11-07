@@ -114,6 +114,65 @@ class FrontDeskTest extends TestCase
         return $this->inHotel(fn () => Room::find($this->rooms[$n]));
     }
 
+    public function test_leaving_early_pays_the_nights_stayed_plus_the_fee(): void
+    {
+        $id = $this->booked(1, '2026-11-12', '2026-11-15'); // 3 nights: 6000 + 15% = 6900, deposit 2070
+        $this->at('2026-11-12 15:00');
+        $this->checkIn($id, ['101'])->assertOk();
+
+        $this->at('2026-11-13 10:00'); // leaves after one night
+        $info = $this->getJson("/api/v1/reservations/$id/check-out")->assertOk()->json('data.early');
+        $this->assertSame(2, $info['nights']);
+        $this->assertSame('1150.00', $info['fee']); // half a night (1000) + 15%
+        $this->assertSame('1380.00', $info['balance']); // 2000 + 1000 + 15% = 3450 − 2070
+        $this->assertSame('230.00', $info['balance_without_fee']);
+        $this->assertSame('4830.00', $this->invoice($id)['balance']); // nothing changed by looking
+
+        $this->postJson("/api/v1/reservations/$id/check-out", ['payment' => ['payment_method_id' => $this->cash, 'amount' => '1380']])->assertOk()->assertJsonPath('data.status', 'checked_out');
+        $inv = $this->invoice($id);
+        $this->assertSame('3450.00', $inv['total']);
+        $this->assertSame('0.00', $inv['balance']);
+        $this->assertSame(['room', 'early_check_out'], collect($inv['items'])->pluck('type')->all());
+        $this->assertSame('2026-11-13', substr((string) $this->getJson("/api/v1/reservations/$id")->json('data.check_out_at'), 0, 10));
+    }
+
+    public function test_the_early_check_out_fee_can_be_waived_and_the_first_night_is_always_paid(): void
+    {
+        $id = $this->booked(1, '2026-11-12', '2026-11-14');
+        $this->at('2026-11-12 15:00');
+        $this->checkIn($id, ['101'])->assertOk();
+        $this->at('2026-11-12 20:00'); // leaves the same evening: the first night still counts
+        $this->assertSame(1, $this->getJson("/api/v1/reservations/$id/check-out")->json('data.early.nights'));
+        $this->postJson("/api/v1/reservations/$id/check-out", ['waive_early_fee' => true, 'payment' => ['payment_method_id' => $this->cash, 'amount' => '920']])->assertOk();
+        $inv = $this->invoice($id);
+        $this->assertSame('2300.00', $inv['total']); // one night + tax, fee waived
+    }
+
+    public function test_a_walk_in_after_midnight_pays_for_last_night(): void
+    {
+        $this->at('2026-11-12 01:30'); // before the 06:00 cut-off
+        $res = $this->actingAs($this->admin)->postJson('/api/v1/front-desk/walk-in', [
+            'branch_id' => $this->branch->id, 'stay_type' => 'nightly', 'check_out' => '2026-11-12', 'guest_id' => $this->guest->id,
+            'rooms' => [['room_type_id' => $this->standard->id, 'room_id' => $this->rooms['101']]],
+            'payment' => ['payment_method_id' => $this->cash, 'amount' => '2300'],
+        ])->assertCreated();
+        $this->assertSame('2026-11-12', substr((string) $res->json('data.check_out_at'), 0, 10)); // leaves the same morning
+        $this->assertSame('2300.00', $res->json('data.total')); // one night
+        $this->assertSame('2026-11-11', $this->getJson('/api/v1/front-desk/walk-in/rooms?branch_id='.$this->branch->id)->json('night_date'));
+
+        $this->at('2026-11-12 07:00'); // after the cut-off: tonight
+        $this->assertSame('2026-11-12', $this->getJson('/api/v1/front-desk/walk-in/rooms?branch_id='.$this->branch->id)->json('night_date'));
+    }
+
+    public function test_paying_more_than_owed_needs_a_yes(): void
+    {
+        $id = $this->booked();
+        $this->postJson("/api/v1/reservations/$id/payments", ['type' => 'payment', 'payment_method_id' => $this->cash, 'amount' => '99999'])
+            ->assertUnprocessable()->assertJsonValidationErrors('confirm_overpay');
+        $this->postJson("/api/v1/reservations/$id/payments", ['type' => 'payment', 'payment_method_id' => $this->cash, 'amount' => '3220'])->assertCreated(); // exactly the rest
+        $this->postJson("/api/v1/reservations/$id/payments", ['type' => 'payment', 'payment_method_id' => $this->cash, 'amount' => '100', 'confirm_overpay' => true])->assertCreated();
+    }
+
     public function test_check_in_opens_the_bill_with_nights_tax_and_the_deposit(): void
     {
         $id = $this->booked();
@@ -208,6 +267,24 @@ class FrontDeskTest extends TestCase
             'rooms' => [['room_type_id' => $this->deluxe->id, 'room_id' => $this->rooms['201']]],
             'payment' => ['payment_method_id' => $this->cash, 'amount' => '310.50'], // 30% of 1035
         ])->assertCreated()->assertJsonPath('data.check_out_at', '2026-11-12T19:00:00+03:00');
+    }
+
+    public function test_an_hourly_guest_who_stays_longer_pays_the_extra_hours(): void
+    {
+        $this->at('2026-11-12 16:00');
+        $id = $this->actingAs($this->admin)->postJson('/api/v1/front-desk/walk-in', [
+            'branch_id' => $this->branch->id, 'stay_type' => 'hourly', 'hours' => 3, 'guest_id' => $this->guest->id,
+            'rooms' => [['room_type_id' => $this->deluxe->id, 'room_id' => $this->rooms['201']]],
+            'payment' => ['payment_method_id' => $this->cash, 'amount' => '1035'], // 3 × 300 + 15%
+        ])->assertCreated()->json('data.id');
+
+        $this->at('2026-11-12 19:10'); // within 15 minutes: nothing extra
+        $this->assertNull($this->getJson("/api/v1/reservations/$id/check-out")->json('data.late_fee'));
+        $this->at('2026-11-12 20:20'); // 1 h 20 min late: 2 started hours
+        $this->assertSame('690.00', $this->getJson("/api/v1/reservations/$id/check-out")->json('data.late_fee')); // 2 × 300 + 15%
+        $this->postJson("/api/v1/reservations/$id/check-out", ['payment' => ['payment_method_id' => $this->cash, 'amount' => '690']])->assertOk();
+        $line = collect($this->invoice($id)['items'])->firstWhere('type', 'late_check_out');
+        $this->assertSame('600.00', $line['amount']);
     }
 
     public function test_check_out_needs_payment_or_manager_approval(): void

@@ -145,7 +145,14 @@ class FrontDeskController extends Controller
             ->whereHas('items', fn ($q) => $q->where('type', 'late_check_out'))->exists();
         $late = $alreadyCharged ? null : $this->desk->lateFee($reservation, now());
         $lateAmount = '0.00';
-        if ($late) {
+        // Hourly and day-use stays past their end time: the extra hours.
+        foreach ($alreadyCharged ? [] : $this->desk->overstay($reservation, now()) as $line) {
+            $fee = Money::mul($line['unit_price'], $line['quantity']);
+            $taxes = collect(app(TaxCalculator::class)->forLine('late_check_out', $fee))->where('is_inclusive', false)->pluck('amount')->all();
+            $lateAmount = Money::add($lateAmount, Money::add($fee, Money::sum($taxes)));
+            $late = ['type' => 'hours'];
+        }
+        if ($late && $late['type'] !== 'hours') {
             foreach ($reservation->rooms()->with('rates')->get() as $rr) {
                 $night = (string) ($rr->rates->last()?->amount ?? '0');
                 $fee = $late['type'] === 'fixed' ? Money::round($late['value']) : Money::percentOf($night, $late['value']);
@@ -159,12 +166,14 @@ class FrontDeskController extends Controller
             'reservation' => ReservationPresenter::detail($reservation, $request->user()->hotel),
             'late_fee' => $late ? $lateAmount : null,
             'balance' => FrontDesk::balance($reservation),
+            // Leaving before the booked date: the nights not used come off the bill, the fee is added.
+            'early' => $this->desk->earlyDeparturePreview($reservation, $request->user()),
         ]]);
     }
 
     public function checkOut(Request $request, string $id): JsonResponse
     {
-        $data = $request->validate(['waive_late_fee' => ['boolean'], 'approve_balance' => ['boolean'], ...$this->paymentRules()]);
+        $data = $request->validate(['waive_late_fee' => ['boolean'], 'waive_early_fee' => ['boolean'], 'approve_balance' => ['boolean'], ...$this->paymentRules()]);
         $reservation = $this->desk->checkOut($this->reservation($request, $id), $data, $request->user());
 
         return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)]);
@@ -240,6 +249,7 @@ class FrontDeskController extends Controller
                 ])->values(),
             'walk_in_payment' => $settings['walk_in_payment'],
             'now' => HotelClock::iso(now(), $hotel),
+            'night_date' => $this->desk->nightDate($hotel), // the night a walk-in arriving now pays for
         ]);
     }
 
@@ -294,6 +304,7 @@ class FrontDeskController extends Controller
             'payment.currency' => ['nullable', 'string', 'size:3'],
             'payment.reference' => ['nullable', 'string', 'max:100'],
             'payment.proof_id' => ['nullable', 'integer'],
+            'payment.confirm_overpay' => ['nullable', 'boolean'],
         ];
     }
 

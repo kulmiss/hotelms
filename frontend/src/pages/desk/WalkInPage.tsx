@@ -32,7 +32,11 @@ export function WalkInPage() {
   const { branches, current, select: setBranchId } = useCurrentBranch(me.data) // the same branch as the top bar
   const branchId = current?.id ?? 0
   const [stayType, setStayType] = useState<StayType>('nightly')
-  const [checkOut, setCheckOut] = useState(addDays(today(), 1))
+  const [chosenOut, setChosenOut] = useState<string | null>(null)
+  const [nightFromServer, setNightFromServer] = useState<string | null>(null)
+  // After midnight, before the hotel's cut-off, a walk-in pays for last night (and leaves today).
+  const nightDate = nightFromServer ?? today()
+  const checkOut = chosenOut ?? addDays(nightDate, 1)
   const [hours, setHours] = useState(3)
   const [picked, setPicked] = useState<number[]>([])
   const [guest, setGuest] = useState<Guest | null>(null)
@@ -61,12 +65,13 @@ export function WalkInPage() {
     rooms: rooms.filter((r) => r.room_type_id === id).sort((a, b) => a.number.localeCompare(b.number, undefined, { numeric: true })),
   }))
   const now = free.data?.now ?? `${today()}T12:00:00`
+  if (free.data?.night_date && free.data.night_date !== nightFromServer) setNightFromServer(free.data.night_date)
   const input: BookingInput | null =
     branchId && chosen.length
       ? {
           branch_id: branchId,
           stay_type: stayType,
-          check_in: stayType === 'nightly' ? today() : now.slice(0, 16),
+          check_in: stayType === 'nightly' ? nightDate : now.slice(0, 16),
           check_out: stayType === 'nightly' ? checkOut : stayType === 'day_use' ? `${today()}T22:00` : null,
           hours: stayType === 'hourly' ? hours : null,
           guest_id: quick ? null : (guest?.id ?? null),
@@ -139,7 +144,7 @@ export function WalkInPage() {
                   ))}
                 </Select>
               )}
-              {stayType === 'nightly' && <Field label={t('reservations.form.checkOut')} type="date" min={addDays(today(), 1)} value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />}
+              {stayType === 'nightly' && <Field label={t('reservations.form.checkOut')} type="date" min={addDays(nightDate, 1)} value={checkOut} onChange={(e) => setChosenOut(e.target.value)} />}
               {stayType === 'hourly' && <Field label={t('reservations.form.hours')} type="number" inputMode="numeric" min={1} max={24} value={String(hours)} onChange={(e) => setHours(Math.max(1, Number(e.target.value) || 1))} />}
             </div>
             <p className="text-xs text-muted">

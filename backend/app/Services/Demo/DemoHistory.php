@@ -538,7 +538,7 @@ class DemoHistory
         if (! Money::isPositive($amount)) {
             return [];
         }
-        $group = in_array($type, ['room', 'early_check_in', 'late_check_out', 'discount'], true) ? 'rooms' : 'extras';
+        $group = in_array($type, ['room', 'early_check_in', 'late_check_out', 'early_check_out', 'discount'], true) ? 'rooms' : 'extras';
         $out = [];
         foreach ($this->taxes as $t) {
             if ($t['applies'] !== 'all' && $t['applies'] !== $group) {

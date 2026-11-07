@@ -177,6 +177,10 @@ class ReservationService
         if ($type === 'refund' && Money::compare($inBase, $paidSoFar) > 0) {
             throw ValidationException::withMessages(['amount' => 'A refund cannot be more than what was paid ('.$paidSoFar.' '.$reservation->currency.').']);
         }
+        if ($type !== 'refund' && empty($data['confirm_overpay'])) {
+            $owing = $invoice ? (string) $invoice->balance : Money::sub((string) $reservation->total, (string) $reservation->paid_total);
+            $this->assertNotOverpaying($inBase, $owing, $reservation->currency);
+        }
 
         return DB::transaction(function () use ($reservation, $data, $user, $method, $type, $amount, $currency, $rate, $inBase, $invoice) {
             $payment = Payment::create([
@@ -208,6 +212,18 @@ class ReservationService
     }
 
     /**
+     * More than the guest owes is usually a typing mistake (99999 for 2213): the person confirms it
+     * first (owner, 2026-11-07). Up to 0.99 over is fine (rounding of other currencies).
+     */
+    private function assertNotOverpaying(string $amountInBase, string $owing, string $currency): void
+    {
+        $owing = Money::max($owing, '0.00');
+        if (Money::compare($amountInBase, Money::add($owing, '0.99')) > 0) {
+            throw ValidationException::withMessages(['confirm_overpay' => 'This is '.Money::sub($amountInBase, $owing).' '.$currency.' more than the guest owes ('.$owing.' '.$currency.'). Is that right?']);
+        }
+    }
+
+    /**
      * One payment for a booking with several bills (split per room): it pays the bills in order,
      * as separate payment lines, so no bill is left owing while another is overpaid.
      *
@@ -224,6 +240,10 @@ class ReservationService
         $currency = strtoupper($data['currency'] ?? $reservation->currency);
         $rate = $this->converter->rate($currency, $reservation->currency);
         $left = Money::round((string) $data['amount']);
+        if (empty($data['confirm_overpay'])) {
+            $this->assertNotOverpaying(Money::mul($left, $rate), Money::sum($bills->pluck('balance')->map(fn ($v) => (string) $v)), $reservation->currency);
+            $data['confirm_overpay'] = true; // checked once for all bills
+        }
         $owing = $bills->filter(fn (Invoice $i) => Money::isPositive((string) $i->balance))->values();
         $targets = $owing->isNotEmpty() ? $owing : collect([$bills->first()]);
 
@@ -354,6 +374,7 @@ class ReservationService
         $stayType = $data['stay_type'] ?? 'nightly';
         $times = $this->quote->times($hotel, $branch, $stayType, (string) $data['check_in'], $data['check_out'] ?? null, isset($data['hours']) ? (int) $data['hours'] : null);
 
+        $priceFrom = $times['in']->copy(); // the first night paid (a walk-in after midnight: last night)
         if (! empty($data['walk_in'])) {
             $times['in'] = now()->startOfMinute(); // walk-ins start now
         } elseif (empty($data['allow_past']) && $times['in']->lt(now()->subMinutes(30)) && (! $existing || ! $existing->check_in_at->eq($times['in']))) {
@@ -407,7 +428,7 @@ class ReservationService
                 }
                 $usedRooms[] = $room->id;
             }
-            $price = $this->quote->price($hotel, $type, $stayType, $times['in'], $times['out'], $guestTypeId);
+            $price = $this->quote->price($hotel, $type, $stayType, $stayType === 'nightly' ? $priceFrom : $times['in'], $times['out'], $guestTypeId);
             $rooms[] = ['type' => $type, 'room' => $room, 'adults' => $adults, 'children' => $children, 'total' => $price['total'], 'lines' => $price['lines']];
         }
 

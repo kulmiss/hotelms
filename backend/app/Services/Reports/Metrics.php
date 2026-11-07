@@ -100,7 +100,7 @@ class Metrics
         $byType = $this->items()->whereBetween('it.service_date', [$from, $to])->selectRaw('it.type, SUM(it.amount) as total')->groupBy('it.type')->pluck('total', 'type');
         $room = Money::round((string) ($byType['room'] ?? '0'));
         $extras = Money::round((string) ($byType['extra'] ?? '0'));
-        $fees = Money::add((string) ($byType['early_check_in'] ?? '0'), (string) ($byType['late_check_out'] ?? '0'));
+        $fees = Money::sum([(string) ($byType['early_check_in'] ?? '0'), (string) ($byType['late_check_out'] ?? '0'), (string) ($byType['early_check_out'] ?? '0')]);
         $discounts = Money::sub('0', (string) ($byType['discount'] ?? '0'));
         $cancelFees = Money::round((string) $this->reservations()->whereIn('status', ['cancelled', 'no_show'])
             ->whereBetween('cancelled_at', [$this->utc($from), $this->utc($to)->addDay()])->sum('cancellation_fee') ?: '0');

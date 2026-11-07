@@ -19,7 +19,7 @@ class TaxCalculator
     private array $taxes = [];
 
     /** Line types that count as "rooms" for taxes. */
-    public const ROOM_TYPES = ['room', 'early_check_in', 'late_check_out', 'discount'];
+    public const ROOM_TYPES = ['room', 'early_check_in', 'late_check_out', 'early_check_out', 'discount'];
 
     /** @return list<array{tax_id: int, name: string, rate: string, is_inclusive: bool, amount: string}> */
     public function forLine(string $type, string $amount): array

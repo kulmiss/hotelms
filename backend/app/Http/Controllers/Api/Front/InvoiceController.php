@@ -79,7 +79,7 @@ class InvoiceController extends Controller
         // Removing an early/late fee is waiving it: the same permission as waiving at the desk.
         $permission = match ($line->type) {
             'discount' => 'invoices.discount',
-            'early_check_in', 'late_check_out' => 'fees.waive',
+            'early_check_in', 'late_check_out', 'early_check_out' => 'fees.waive',
             default => 'invoices.add_charge',
         };
         abort_unless($request->user()->hasPermission($permission), 403, 'You may not do this.');
@@ -99,6 +99,7 @@ class InvoiceController extends Controller
             'reference' => ['nullable', 'string', 'max:100'],
             'proof_id' => ['nullable', 'integer'],
             'refund_reason' => ['nullable', 'required_if:type,refund', 'string', 'max:200'],
+            'confirm_overpay' => ['nullable', 'boolean'], // yes, more than the balance
         ]);
         abort_unless($request->user()->hasPermission($data['type'] === 'refund' ? 'payments.refund' : 'payments.take'), 403, 'You may not do this.');
         if (! $invoice->reservation) {
