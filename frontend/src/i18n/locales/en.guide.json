@@ -1,0 +1,453 @@
+{
+  "title": "How to use",
+  "intro": "Short guides for your work. You see only the things you are allowed to do. Tap a title to open it.",
+  "tabs": { "guide": "How to use", "ask": "Ask us" },
+  "searchLabel": "Find a guide",
+  "searchPlaceholder": "For example: check-in, payment, clean",
+  "none": "No guide found. Try another word, or ask us.",
+  "sections": {
+    "start": "Start here",
+    "desk": "Front desk",
+    "guests": "Guests",
+    "money": "Money",
+    "rooms": "Rooms and cleaning",
+    "work": "My work time",
+    "manage": "For managers"
+  },
+  "topics": {
+    "signIn": {
+      "title": "Sign in and sign out",
+      "steps": [
+        "Open the app. Type your email and your password. Tap Sign in.",
+        "The first time, the app asks you to make a new password. Choose one only you know.",
+        "If the app asks for a code, open your code app (or your email) and type the 6 numbers.",
+        "Forgot your password? Tap \"Forgot password?\" on the sign-in page, or ask your manager.",
+        "To sign out: tap your picture at the top right, then Sign out."
+      ]
+    },
+    "lockScreen": {
+      "title": "Locked screen and PIN",
+      "steps": [
+        "If nobody uses the app for some minutes, the screen locks. This keeps guest data safe.",
+        "To open it again, type your password.",
+        "On a shared computer, another person can type their own 4-number PIN. Then the app opens for them.",
+        "Set your PIN in My profile (picture at the top right → My profile)."
+      ]
+    },
+    "search": {
+      "title": "Find anything fast",
+      "steps": [
+        "Use the search box at the top. Press Ctrl and K together to go there.",
+        "Type a guest name, a phone number, a room number or a booking code.",
+        "Tap the result to open it.",
+        "You can also ask simple questions, like \"free rooms\" or \"who is in room 105\"."
+      ]
+    },
+    "bell": {
+      "title": "Messages (the bell)",
+      "steps": [
+        "The bell at the top shows new messages for you, like \"Room 204 is ready\".",
+        "A red number means you have new messages.",
+        "Tap a message to open the page it is about."
+      ]
+    },
+    "profile": {
+      "title": "My profile and password",
+      "steps": [
+        "Tap your picture at the top right → My profile.",
+        "Change your name or phone, then tap Save.",
+        "Tap Change password to choose a new password.",
+        "Link Telegram if you want to get reports and alerts on your phone."
+      ]
+    },
+    "branch": {
+      "title": "Choose your branch",
+      "steps": [
+        "If your hotel has more than one branch, choose your branch at the top of the page.",
+        "All pages then show that branch: rooms, bookings, cleaning.",
+        "The app remembers your choice on this computer."
+      ]
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "steps": [
+        "The Dashboard is the first page. It shows today: guests arriving, guests leaving, free rooms.",
+        "The ✨ Smart box gives tips. Tap \"Why?\" to see how the app knows it.",
+        "Tap a number to open the list behind it."
+      ]
+    },
+    "roomBoard": {
+      "title": "Room board (all rooms)",
+      "steps": [
+        "Open Room board in the menu. You see every room as a box.",
+        "The color shows the room: green = free, blue = guest inside, orange = dirty, grey = repair.",
+        "Tap a color button at the top (for example Dirty) to see only those rooms. Tap again to see all.",
+        "Use Arriving, Leaving, Overdue or Free tonight to see only those rooms.",
+        "A red \"Owes\" tag means the guest still has money to pay.",
+        "Tap a room box to see the guest and to change the room status."
+      ]
+    },
+    "todayLists": {
+      "title": "Who arrives, who leaves today",
+      "steps": [
+        "In Room board, tap Arriving, Leaving or In house at the top.",
+        "Arriving = guests who come today. Late = they did not come yet after check-in time.",
+        "Leaving = guests who go today. Overdue = they did not leave after check-out time.",
+        "In house = all guests who are staying now."
+      ]
+    },
+    "walkIn": {
+      "title": "Walk-in (guest without a booking)",
+      "steps": [
+        "Room board → Walk-in.",
+        "Choose Nights, Day use or Hourly. For nights, choose the check-out date.",
+        "Tap a free room. You can also choose By room type.",
+        "Find the guest by name or phone. If new, tap New guest and fill in the details.",
+        "Check the price on the right side.",
+        "Choose how the guest pays (Cash, telebirr…) and type the amount. You can add a photo of the payment.",
+        "Tap Take payment and check in. The room is now taken."
+      ]
+    },
+    "quickCheckIn": {
+      "title": "Quick check-in (no time for details)",
+      "steps": [
+        "On the Walk-in page, tick Quick check-in.",
+        "Type only the guest name and phone.",
+        "Take the payment and check in.",
+        "The guest gets a \"Details missing\" mark. Add the ID details later, when you have time.",
+        "The app reminds you if you forget."
+      ]
+    },
+    "newBooking": {
+      "title": "Make a booking (for another day)",
+      "steps": [
+        "Reservations → New reservation.",
+        "Choose the dates: check-in and check-out.",
+        "Add the rooms the guest wants. The app shows only rooms that are free.",
+        "Find or add the guest.",
+        "Choose how the guest booked (phone, email…). Add a note if needed.",
+        "Tap Book. If the hotel asks for a deposit, the booking waits until the deposit is paid."
+      ]
+    },
+    "freeRooms": {
+      "title": "Is a room free on a date?",
+      "steps": [
+        "Reservations → Calendar. Each line is a room, each column is a day.",
+        "A colored bar is a booking. Move your mouse on it (or tap it) to see the guest and the dates.",
+        "An empty place means the room is free that day.",
+        "Tap a day at the top to see all rooms for that day."
+      ]
+    },
+    "checkIn": {
+      "title": "Check in a guest with a booking",
+      "steps": [
+        "Room board → Arriving. Tap the guest.",
+        "Tap Check in.",
+        "Choose a clean room for each booked room.",
+        "Check the guest's ID. If the hotel asks, take a photo of the ID.",
+        "If money is still needed, take the payment.",
+        "Before the check-in time, the app may add an early check-in fee. You can choose Don't charge if you are allowed.",
+        "Tap Check in. The bill opens by itself."
+      ]
+    },
+    "moveExtend": {
+      "title": "Move room or stay longer",
+      "steps": [
+        "Open the guest's booking. Tap Move / extend.",
+        "To move: choose the new room and tap Move. The old room becomes dirty.",
+        "To stay longer: choose the new check-out date and tap Extend. The price is added to the bill.",
+        "If the room is booked by someone else, move the guest to another room first."
+      ]
+    },
+    "checkOut": {
+      "title": "Check out a guest",
+      "steps": [
+        "Room board → Leaving. Tap the guest, then Check out.",
+        "Need to add something (minibar, laundry)? Tap Add charge first.",
+        "After the check-out time, a late fee may be added. Leaving before the booked date: the nights not used come off the bill, and an early check-out fee may be added. You can choose Don't charge if you are allowed.",
+        "The app shows \"To pay\". Take the money.",
+        "If the guest cannot pay now, a manager can let them leave with money owed.",
+        "Tap Check out. The room becomes dirty, and cleaning starts."
+      ]
+    },
+    "changeBooking": {
+      "title": "Change a booking",
+      "steps": [
+        "Open the booking. Tap Edit.",
+        "Change the dates, rooms or guests.",
+        "The price is worked out again. The deposit stays on the booking.",
+        "Tap Save."
+      ]
+    },
+    "cancelBooking": {
+      "title": "Cancel a booking",
+      "steps": [
+        "Open the booking. Tap Cancel booking.",
+        "The app shows if cancelling is free or if there is a fee (the hotel's rule).",
+        "Write the reason. Tap Cancel booking.",
+        "If the guest gets money back, a manager gives it back as a refund."
+      ]
+    },
+    "noShow": {
+      "title": "Guest did not come (no-show)",
+      "steps": [
+        "Only after the check-in time has passed.",
+        "Open the booking. Tap Mark no-show.",
+        "The hotel's no-show fee is taken from the deposit. The room is free again."
+      ]
+    },
+    "guests": {
+      "title": "Guests: add and change",
+      "steps": [
+        "Open Guests in the menu. Search by name, phone or ID.",
+        "Tap New guest to add one. Name and phone are the most important.",
+        "Tap a guest to see their stays, bills and notes, and to change their details.",
+        "The app warns you if the same guest already exists. Please do not add the same guest two times."
+      ]
+    },
+    "idPhoto": {
+      "title": "Photo of the guest's ID or passport",
+      "steps": [
+        "Only if your hotel turned this on.",
+        "Open the guest, or the check-in screen. Tap Take photo, or Choose file.",
+        "Hold the ID flat, with good light. Check that the words can be read.",
+        "The photo is kept safe and locked. Only staff who can see guests can open it."
+      ]
+    },
+    "blacklist": {
+      "title": "Block a guest (blacklist)",
+      "steps": [
+        "Open the guest. Tap Add to blacklist and write the reason.",
+        "A blocked guest cannot be booked or checked in. Staff see the reason.",
+        "To remove it, tap Remove from blacklist on the same page."
+      ]
+    },
+    "takePayment": {
+      "title": "Take a payment",
+      "steps": [
+        "Open the booking or the bill. Tap Record payment.",
+        "Choose how the guest pays: Cash, telebirr, CBE Birr, bank…",
+        "Type the amount. For telebirr or bank, type the transaction number in Reference.",
+        "Tap Save payment.",
+        "If the amount is more than the guest owes, the app asks \"Is that right?\". Check the number before you say yes."
+      ]
+    },
+    "paymentProof": {
+      "title": "Photo of the payment (proof)",
+      "steps": [
+        "When you take a payment, you can add a photo: a telebirr screen, a bank slip.",
+        "Tap Take photo, or Choose file.",
+        "Later, tap Add proof next to a payment to add it after.",
+        "The proof helps when someone asks about the payment."
+      ]
+    },
+    "extraCharge": {
+      "title": "Add an extra charge (laundry, food…)",
+      "steps": [
+        "Open the guest's bill: Billing, or the bill number on the booking. You can also do it at check-out.",
+        "Tap Add charge.",
+        "Choose the charge (for example Laundry), or choose Other and write what it is.",
+        "Type how many and the price each. Tap Add charge.",
+        "It goes on the bill. The guest pays it with the rest."
+      ]
+    },
+    "discount": {
+      "title": "Give a discount",
+      "steps": [
+        "Open the bill. Tap Add discount.",
+        "Type the percent (%) and the reason.",
+        "Your role has a highest discount. Bigger discounts need a manager."
+      ]
+    },
+    "printBill": {
+      "title": "Print a bill or receipt",
+      "steps": [
+        "Open the bill. Tap Print.",
+        "Choose A4 paper, or the small 80 mm receipt printer.",
+        "Print. Give the paper to the guest."
+      ]
+    },
+    "refund": {
+      "title": "Give money back (refund)",
+      "steps": [
+        "Open the booking or the bill. Tap Record payment.",
+        "Choose Refund, how the money goes back, and the amount.",
+        "Write the reason. Tap Save payment.",
+        "You cannot give back more than the guest paid."
+      ]
+    },
+    "cancelBill": {
+      "title": "Cancel a bill",
+      "steps": [
+        "Only when the bill is wrong. Open the bill. Tap Cancel bill.",
+        "Write the reason.",
+        "The bill stays in the records with the word CANCELLED. Give back any money as a refund.",
+        "The Hotel Admin is told when a paid bill is cancelled."
+      ]
+    },
+    "unpaid": {
+      "title": "Guest leaves without paying everything",
+      "steps": [
+        "At check-out, tick \"the guest leaves with this money unpaid\".",
+        "The money stays as owed, on the guest and in the reports.",
+        "When the guest pays later, open the bill and tap Record payment."
+      ]
+    },
+    "cashierShift": {
+      "title": "My cash drawer (cashier shift)",
+      "steps": [
+        "At the start of work: Cashier shift → count the money in the drawer → type it → Open shift.",
+        "All cash you take is added to your shift.",
+        "At the end of work: count the drawer again and type it.",
+        "The app shows if it matches. If it is short or over, write why.",
+        "Tap Close shift. A manager checks it."
+      ]
+    },
+    "approveShift": {
+      "title": "Check a cash drawer (manager)",
+      "steps": [
+        "Cashier shift → All cashier shifts. Tap a closed shift.",
+        "See what should be in the drawer, what was counted, and the reason for any difference.",
+        "Tap Approve when it is OK. Talk to the person if something is wrong."
+      ]
+    },
+    "roomStatus": {
+      "title": "Change a room's status",
+      "steps": [
+        "Room board → tap the room.",
+        "Tap the new status: Available (clean and ready), Dirty, or Cleaning.",
+        "A dirty room gets a cleaning task by itself."
+      ]
+    },
+    "maintenance": {
+      "title": "Room needs repair",
+      "steps": [
+        "Room board → tap the room → Maintenance, or Out of order.",
+        "The room cannot be booked or given to a guest.",
+        "When the repair is done, set it back to Available."
+      ]
+    },
+    "cleaning": {
+      "title": "Clean rooms (my tasks)",
+      "steps": [
+        "Open Housekeeping → My tasks. You see the rooms to clean, the most urgent first.",
+        "Tap Start when you begin a room.",
+        "Tap Done when the room is clean. You can write a note, for example \"broken lamp\".",
+        "The room becomes ready, and reception sees it at once."
+      ]
+    },
+    "assignCleaning": {
+      "title": "Give cleaning work to people",
+      "steps": [
+        "Housekeeping → Assign tasks.",
+        "Choose the room, the task (Cleaning, Inspection, Maintenance), how urgent, and the person.",
+        "Tap Add task. The person sees it in their list.",
+        "Rooms tab: see all rooms and who is cleaning which room."
+      ]
+    },
+    "clockIn": {
+      "title": "Start and end my work time",
+      "steps": [
+        "Open Attendance. Tap Clock in when you start work.",
+        "Tap Clock out when you finish.",
+        "On the shared kiosk tablet, type your PIN instead.",
+        "Set your kiosk PIN on the Attendance page."
+      ]
+    },
+    "myShifts": {
+      "title": "When do I work?",
+      "steps": [
+        "Open Shifts and attendance. You see your shifts for the week.",
+        "Ask your manager if you need to change a day."
+      ]
+    },
+    "roster": {
+      "title": "Plan the staff week (roster)",
+      "steps": [
+        "Shifts and attendance → Shifts: make the shift times (for example Morning 07:00–15:00).",
+        "Roster: choose a day and a shift, then add the people.",
+        "Staff see their shifts in their own page.",
+        "The app warns you if a day has too few people."
+      ]
+    },
+    "paperAttendance": {
+      "title": "Add attendance by hand",
+      "steps": [
+        "For days without the app or kiosk.",
+        "Attendance → Enter from the paper register.",
+        "Choose the person and the date. Type the time in and out, or choose Absent or Leave.",
+        "Tap Save."
+      ]
+    },
+    "reports": {
+      "title": "Reports",
+      "steps": [
+        "Open Reports. Choose a report on the left, for example Daily report.",
+        "Choose the dates at the top: today, this week, this month…",
+        "Tap a bar in a chart to see the bookings behind it.",
+        "Tap Print, or download Excel, to share it."
+      ]
+    },
+    "myReport": {
+      "title": "My work report",
+      "steps": [
+        "Open Reports. You see your own work: today, this week and this month.",
+        "Receptionists see their check-ins, payments and cash. Housekeepers see their cleaned rooms."
+      ]
+    },
+    "approvals": {
+      "title": "Approve requests",
+      "steps": [
+        "Open Approvals. You see things that wait for a manager, like a big discount.",
+        "Read the request. Tap Approve, or Reject with a reason.",
+        "The person who asked is told at once."
+      ]
+    },
+    "staff": {
+      "title": "Add staff",
+      "steps": [
+        "Staff → Add staff.",
+        "Type the name and email. Choose the role (what they can do) and their branch.",
+        "Tap Add staff member. The app makes a first password. Give it to the person; they change it the first time.",
+        "Forgot password? Open the person → Reset password.",
+        "Someone left the hotel? Open the person → Disable account. Do not share accounts."
+      ]
+    },
+    "roles": {
+      "title": "Roles: who can do what",
+      "steps": [
+        "Roles and permissions. Each role is a list of things a person can do.",
+        "Tap a role to change it, or New role to make one.",
+        "Tick what the role can do. Set the highest discount.",
+        "Everyone with that role gets the change at once."
+      ]
+    },
+    "devices": {
+      "title": "Computers and phones that use the app",
+      "steps": [
+        "Open Devices. You see every computer and phone that signed in.",
+        "A new device can wait for your OK (if your hotel turned this on). Tap Approve or Block.",
+        "Lost a phone? Tap Sign out next to it."
+      ]
+    },
+    "settings": {
+      "title": "Hotel settings",
+      "steps": [
+        "Open Settings. Use the search box to find a setting fast.",
+        "Hotel: name, logo, tax numbers (they are on the bills).",
+        "Rooms: room types, prices and rooms. Prices: weekend and season prices.",
+        "Booking rules: deposit, fees, the time a night starts, ID photo.",
+        "Money: currencies, exchange rates, taxes, payment methods.",
+        "Each page has a short help text at the top."
+      ]
+    },
+    "activity": {
+      "title": "Who did what (activity log)",
+      "steps": [
+        "Open Activity log. Every important action is written here: who, what and when.",
+        "Search by person, or by word, for example \"refund\".",
+        "Nobody can delete this list."
+      ]
+    }
+  }
+}
