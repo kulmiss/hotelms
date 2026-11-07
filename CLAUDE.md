@@ -5,6 +5,7 @@ Multi-tenant hotel SaaS for Ethiopia. Plans and decisions live in the claude.ai 
 ## Working rules
 - Work on a branch, open a PR, owner merges. Never push to `main`.
 - Keep owner-facing messages short and simple (owner is not a developer).
+- **Long task lists (owner):** go on part after part without stopping; note every question and ask them all as one list at the end (with Claude's recommendation for each).
 - Free options only unless the owner approves a cost.
 - **Update reminder (owner):** every message that reports a PR ends with the commands to get it after merging:
   `git checkout main`, `git pull`, `docker compose up -d --build`, `docker compose exec backend php artisan migrate` (say when the migrate step is needed, and any other one-time step).
