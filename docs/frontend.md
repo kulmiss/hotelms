@@ -11,7 +11,7 @@
 | `app/providers.tsx` | TanStack Query client: retries, global error handling (401 → sign-in), a toast after every change (`meta.toast`) |
 | `app/serviceWorker.ts` | Offline support (read-only copy, see below) |
 | `components/layout/` | App shell: `Sidebar`, `Topbar` (branch choice, search, bell, user menu), `GlobalSearch`, `ScreenLock`, banners |
-| `components/ui/` | The UI kit: `Button`, `Card`, `Field`, `Select`, `Tabs`, `Alert`, `Badge`, `PageHeader`, `DataTable` (every list: sort, 25/50/100 rows, hide columns, Excel, phone cards), `DateRangeFilter`, `ResourceList`, `SmartHints`, `StatTile`… |
+| `components/ui/` | The UI kit: `Button`, `Card`, `Field`, `Select`, `Tabs`, `Alert`, `Badge`, `PageHeader`, `DataTable` (every list: sort, 25/50/100 rows, hide columns, Excel, phone cards; the header scrolls with the rows), `DateRangeFilter`, `ResourceList`, `SmartHints`, `StatTile`… |
 | `components/billing`, `payments`, `guests`, `print`, `support` | Pieces shared by several screens (add charge, payment proof, ID photo, print header, support chat) |
 | `pages/<area>/` | Screens: `desk/` (room board, walk-in, front desk mode), `reservations/`, `guests/`, `billing/`, `modules/` (cashier, housekeeping, shifts, attendance), `reports/`, `settings/`, `setup/`, `team/`, `admin/` (Super Admin), `help/`, `security/`, `approvals/`, `subscription/` |
 | `lib/` | Data hooks and helpers per area (below) |

@@ -28,6 +28,8 @@ class DemoController extends Controller
 
         Auth::guard('web')->login($user);
         $request->session()->regenerate();
+        // The visit ends after the minutes the Super Admin set (DemoTimeLimit signs the visitor out).
+        $request->session()->put('demo_until', now()->addMinutes(max(5, (int) PlatformSetting::read('demo_minutes')))->getTimestamp());
 
         return response()->json(['message' => 'Welcome to the demo.']);
     }

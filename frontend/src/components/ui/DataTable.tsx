@@ -9,7 +9,8 @@ import { useMediaQuery } from '@/lib/useMediaQuery'
 
 /**
  * One table for every list (owner, 2026-11-07): sort by a column, 25 / 50 / 100 rows, hide or show
- * columns (remembered per person and browser), Excel download, a header that stays visible, and cards on phones.
+ * columns (remembered per person and browser), Excel download, and cards on phones. The header scrolls with the
+ * rows (owner: no floating header).
  *
  * Server lists pass `sort` + `onSort`, `paging` and `exportUrl` (the API sorts, pages and makes the file).
  * Small lists pass only `rows`: the table sorts and pages them itself, and `csvName` makes the download.
@@ -180,15 +181,15 @@ export function DataTable<T>({
           ))}
         </div>
       ) : (
-        <Card className="max-h-[75vh] overflow-auto p-0">
+        <Card className="overflow-x-auto p-0">
           <table className="w-full text-left text-[13px]" style={{ minWidth }}>
             {/* The header sits on a solid surface: in dark mode the head colour is see-through. */}
-            <thead className="sticky top-0 z-10 bg-surface shadow-[0_1px_0_var(--color-border)]">
+            <thead className="bg-sunken">
               <tr>
                 {shown.map((c) => {
                   const on = activeSort?.by === (sortable(c) ? sortKey(c) : '')
                   return (
-                    <th key={c.key} scope="col" aria-sort={on ? (activeSort!.dir === 'asc' ? 'ascending' : 'descending') : undefined} className={cn('bg-sunken px-4 py-2.5 font-semibold whitespace-nowrap', c.align === 'right' && 'text-right', c.className)}>
+                    <th key={c.key} scope="col" aria-sort={on ? (activeSort!.dir === 'asc' ? 'ascending' : 'descending') : undefined} className={cn('px-4 py-2.5 font-semibold whitespace-nowrap', c.align === 'right' && 'text-right', c.className)}>
                       {sortable(c) ? (
                         <button type="button" onClick={() => clickSort(c)} className={cn('inline-flex items-center gap-1 rounded hover:text-accent-text', c.align === 'right' && 'flex-row-reverse')}>
                           {c.label}

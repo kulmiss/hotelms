@@ -17,6 +17,7 @@ use App\Support\Money;
 use App\Support\Tenancy\TenantContext;
 use Database\Seeders\PlatformSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -78,6 +79,24 @@ class DemoHotelTest extends TestCase
         PlatformSetting::write('demo_public', true);
         $this->postJson('/api/v1/demo/login', ['role' => 'receptionist'])->assertOk();
         $this->getJson('/api/v1/me')->assertJsonPath('user.email', DemoHotel::email('receptionist'));
+    }
+
+    public function test_a_demo_visit_ends_after_the_minutes_the_super_admin_set(): void
+    {
+        app(DemoHotel::class)->reset();
+        PlatformSetting::write('demo_public', true);
+        PlatformSetting::write('demo_minutes', 20);
+
+        $this->postJson('/api/v1/demo/login', ['role' => 'receptionist'])->assertOk();
+        $ends = $this->getJson('/api/v1/me')->assertOk()->json('hotel.demo_ends_at');
+        $this->assertSame(now()->addMinutes(20)->startOfMinute()->format('Y-m-d H:i'), Carbon::parse($ends)->startOfMinute()->format('Y-m-d H:i'));
+
+        $this->travel(19)->minutes();
+        $this->getJson('/api/v1/me')->assertOk();
+        $this->travel(2)->minutes(); // time is over: signed out
+        $this->getJson('/api/v1/me')->assertUnauthorized()->assertJsonPath('demo_over', true);
+        $this->app['auth']->forgetGuards(); // a new request (tests keep the guard between requests)
+        $this->getJson('/api/v1/me')->assertUnauthorized(); // and stays signed out
     }
 
     public function test_the_nightly_command_rebuilds_the_demo(): void

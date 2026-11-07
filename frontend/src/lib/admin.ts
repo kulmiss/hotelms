@@ -69,6 +69,8 @@ export type PlatformSettings = {
   support_email: string | null
   support_phone: string | null
   demo_public: boolean
+  /** How long one "Try the demo" visit lasts. */
+  demo_minutes?: number
   two_factor_admins?: boolean
   default_trial_days: number
   default_trial_plan_id: number | null
