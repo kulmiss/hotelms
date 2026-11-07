@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\BlockDuringImpersonation;
+use App\Http\Middleware\DemoTimeLimit;
 use App\Http\Middleware\EnsureActiveUser;
 use App\Http\Middleware\EnsureDeviceActive;
 use App\Http\Middleware\EnsureHotelPermission;
@@ -42,6 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn (Request $request) => $request->is('api/*') ? null : '/');
         $middleware->append(SecurityHeaders::class);
         $middleware->append(RecordProblems::class); // for the Super Admin watchdog
+        $middleware->appendToGroup('api', DemoTimeLimit::class); // "Try the demo" visits end after X minutes
 
         // Set the hotel before route model binding, so {role} etc. only find
         // the signed-in user's own hotel's records (after authentication).

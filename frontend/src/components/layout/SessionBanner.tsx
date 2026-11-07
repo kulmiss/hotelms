@@ -1,7 +1,10 @@
+import { useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { ArrowUturnLeftIcon, LifebuoyIcon, SparklesIcon } from '@heroicons/react/20/solid'
-import { useMe, useStopImpersonation } from '@/lib/auth'
+import { ME_KEY, useMe, useStopImpersonation } from '@/lib/auth'
+import { markDemoOver, mmss } from '@/lib/demo'
 
 /**
  * A strip above the app when HotelMS support is inside a hotel ("Log in as"),
@@ -37,12 +40,34 @@ export function SessionBanner() {
 
   if (me.data?.hotel?.is_demo) {
     return (
-      <div role="status" className="flex items-center gap-x-2 bg-info-bg px-4 py-2 text-[13px] text-info-text md:px-6 lg:px-8">
+      <div role="status" className="flex flex-wrap items-center gap-x-2 bg-info-bg px-4 py-2 text-[13px] text-info-text md:px-6 lg:px-8">
         <SparklesIcon aria-hidden className="size-4 shrink-0" />
         {t('demo.banner')}
+        {me.data.hotel.demo_ends_at && <DemoClock endsAt={me.data.hotel.demo_ends_at} />}
       </div>
     )
   }
 
   return null
+}
+
+/** "Try the demo": time left; at zero the visitor is signed out (the server does the same). */
+function DemoClock({ endsAt }: { endsAt: string }) {
+  const { t } = useTranslation()
+  const qc = useQueryClient()
+  const end = new Date(endsAt).getTime()
+  const [left, setLeft] = useState(() => Math.round((end - Date.now()) / 1000))
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      const s = Math.round((end - Date.now()) / 1000)
+      setLeft(s)
+      if (s <= 0) {
+        window.clearInterval(id)
+        markDemoOver()
+        qc.setQueryData(ME_KEY, null)
+      }
+    }, 1000)
+    return () => window.clearInterval(id)
+  }, [end, qc])
+  return <strong className={left <= 120 ? 'text-warn-text' : undefined}>{t('demo.timeLeft', { time: mmss(left) })}</strong>
 }

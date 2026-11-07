@@ -48,7 +48,7 @@ Other artisan commands: see [backend.md → Commands](backend.md#commands).
 cashier shifts and cleaning tasks. Built by `app/Services/DemoHotel.php` + `app/Services/Demo/DemoHistory.php` and
 `DemoTeam.php`. It is rebuilt every night at 02:30 (dates move with today) and from Super Admin → Hotels → demo → Reset.
 Demo users: `demo.admin@`, `demo.manager@`, `demo.reception@`, `demo.housekeeping@`, `demo.accountant@hotelms.demo`
-(password in `DemoHotel::PASSWORD`). The public "Try the demo" login is on when the platform setting `demo_public` is on.
+(password in `DemoHotel::PASSWORD`). The public "Try the demo" login is on when the platform setting `demo_public` is on. A visit lasts `demo_minutes` (Super Admin → Settings, default 30): the sign-in stores `demo_until` in the session, `DemoTimeLimit` (api group) signs the visitor out after it (401, code `demo_over`), and the banner counts down. Super Admin "log in as hotel" is not limited.
 The demo never sends emails or Telegram messages, and is left out of platform reports.
 
 ## Checks (CI)

@@ -105,12 +105,13 @@ function GeneralTab({ initial }: { initial: PlatformSettings }) {
   const [email, setEmail] = useState(initial.support_email ?? '')
   const [phone, setPhone] = useState(initial.support_phone ?? '')
   const [demo, setDemo] = useState(initial.demo_public)
+  const [demoMinutes, setDemoMinutes] = useState(String(initial.demo_minutes ?? 30))
   const [twoStep, setTwoStep] = useState(initial.two_factor_admins ?? true)
   return (
     <SettingsForm
       title={t('admin.settings.tabs.general')}
       description={t('admin.settings.generalHelp')}
-      onSave={() => ({ platform_name: name, support_email: email || null, support_phone: phone || null, demo_public: demo, two_factor_admins: twoStep })}
+      onSave={() => ({ platform_name: name, support_email: email || null, support_phone: phone || null, demo_public: demo, demo_minutes: Number(demoMinutes) || 30, two_factor_admins: twoStep })}
     >
       {(error) => (
         <>
@@ -126,6 +127,11 @@ function GeneralTab({ initial }: { initial: PlatformSettings }) {
               <span className="text-muted">{t('admin.settings.demoPublicHint')}</span>
             </span>
           </label>
+          {demo && (
+            <div className="max-w-xs">
+              <Field label={t('admin.settings.demoMinutes')} type="number" min={5} max={480} value={demoMinutes} onChange={(e) => setDemoMinutes(e.target.value)} hint={t('admin.settings.demoMinutesHint')} error={error?.field('demo_minutes')} />
+            </div>
+          )}
           <label className="flex min-h-touch items-start gap-3 text-[13px]">
             <input type="checkbox" className="mt-0.5 size-4 rounded accent-accent" checked={twoStep} onChange={(e) => setTwoStep(e.target.checked)} />
             <span className="flex flex-col">

@@ -67,6 +67,8 @@ class MeController extends Controller
                 'default_currency' => $hotel->default_currency,
                 'timezone' => $hotel->timezone,
                 'is_demo' => $hotel->is_demo,
+                // A "Try the demo" visit: when it ends (the screen counts down).
+                'demo_ends_at' => $request->hasSession() && $request->session()->get('demo_until') ? now()->setTimestamp((int) $request->session()->get('demo_until'))->toIso8601String() : null,
                 'modules' => app(HotelModules::class)->enabled($hotel),
                 'setup' => $user->isHotelAdmin() ? $this->setup($hotel, $user) : null,
             ] : null,

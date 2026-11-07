@@ -17,6 +17,7 @@ class PlatformSetting extends Model
         'support_email' => null,
         'support_phone' => null,
         'demo_public' => false,
+        'demo_minutes' => 30, // how long one "Try the demo" visit lasts
         // Trials and billing
         'default_trial_days' => 30,
         'default_trial_plan_id' => null,
@@ -50,7 +51,7 @@ class PlatformSetting extends Model
     ];
 
     /** Settings anyone may read (shown on the sign-in page before login). */
-    public const PUBLIC = ['platform_name', 'brand_color', 'login_message', 'support_email', 'support_phone', 'demo_public'];
+    public const PUBLIC = ['platform_name', 'brand_color', 'login_message', 'support_email', 'support_phone', 'demo_public', 'demo_minutes'];
 
     protected function casts(): array
     {

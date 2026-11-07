@@ -130,7 +130,7 @@ export type Me = {
     is_super_admin: boolean
     must_change_password: boolean
   }
-  hotel: { id: number; name: string; status: string; default_currency: string; timezone: string; is_demo?: boolean; modules?: string[]; setup?: SetupSummary | null } | null
+  hotel: { id: number; name: string; status: string; default_currency: string; timezone: string; is_demo?: boolean; demo_ends_at?: string | null; modules?: string[]; setup?: SetupSummary | null } | null
   branches: { id: number; name: string }[]
   role: { id: number; name: string; is_hotel_admin: boolean; max_discount_percent: string } | null
   permissions: string[]

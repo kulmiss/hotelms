@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { Alert } from '@/components/ui/Alert'
@@ -8,9 +8,13 @@ import { Field } from '@/components/ui/Field'
 import { ApiError } from '@/lib/api'
 import { useDemoLogin, useLogin, useMe, useResendCode, useTwoFactorLogin } from '@/lib/auth'
 import { BrandMark, useBrand } from '@/lib/brand'
+import { clearDemoOver, isDemoOver } from '@/lib/demo'
 
 export function LoginPage() {
   const { t } = useTranslation()
+  // After a "Try the demo" visit ended: say so once.
+  const [demoOver] = useState(isDemoOver)
+  useEffect(() => clearDemoOver(), [])
   const me = useMe()
   const login = useLogin()
   const brand = useBrand()
@@ -52,6 +56,7 @@ export function LoginPage() {
         <div className="flex flex-col gap-y-2 text-center">
           <h1 className="text-xl font-semibold tracking-tight">{t('login.title')}</h1>
           <p className="text-sm text-muted">{brand.loginMessage || t('login.subtitle')}</p>
+          {demoOver && <Alert tone="info">{t('demo.over')}</Alert>}
         </div>
         {step ? (
           <CodeStep method={step.method} email={step.email} onDone={() => navigate(from, { replace: true })} onBack={() => { setStep(null); setPassword('') }} />

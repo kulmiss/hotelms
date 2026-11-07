@@ -380,6 +380,8 @@
       "footerHint": "A short line added at the bottom of every email.",
       "demoPublic": "Show \"Try the demo\" on the sign-in page",
       "demoPublicHint": "Anyone can explore the demo hotel without an account. It is reset every night and never sends real emails.",
+      "demoMinutes": "Demo visit length (minutes)",
+      "demoMinutesHint": "After this time the visitor is signed out (5–480). They can start again.",
       "mailServer": "Mail server (SMTP)",
       "mailServerHelp": "The email account the system sends from (welcome emails, new passwords, reports, warnings). Get these details from your hosting (cPanel → Email accounts) or email provider. Leave the server empty to use the server's .env file.",
       "mailOwnerOnly": "Only the Owner can see and change the mail server.",
@@ -615,6 +617,8 @@
   "demo": {
     "badge": "Demo",
     "banner": "This is the demo hotel. Feel free to try anything – it starts fresh every night.",
+    "timeLeft": "Time left: {{time}}",
+    "over": "Your demo time is over. You can start the demo again below.",
     "resetNow": "Reset demo now",
     "tryTitle": "Or try the demo hotel as:",
     "roles": {

@@ -3,6 +3,7 @@ import { useState, type ReactNode } from 'react'
 import i18n from '@/i18n'
 import { ApiError } from '@/lib/api'
 import { toast } from '@/lib/toast'
+import { markDemoOver } from '@/lib/demo'
 import { ME_KEY } from '@/lib/auth'
 import { startOfflineCopy } from '@/lib/offline'
 import { BrandingEffects } from '@/lib/brand'
@@ -41,6 +42,7 @@ function makeClient(): QueryClient {
   })
 
   function handle(e: unknown, isMe: boolean) {
+    if (e instanceof ApiError && e.code === 'demo_over') markDemoOver()
     if (!(e instanceof ApiError) || isMe) return
     if (e.status === 401 || e.status === 419) {
       client.setQueryData(ME_KEY, null)
