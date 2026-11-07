@@ -46,7 +46,10 @@ class CashierController extends Controller
 
     public function close(Request $request): JsonResponse
     {
-        $data = $request->validate(['counted' => ['required', 'array'], 'counted.*' => ['decimal:0,2', 'min:0', 'max:99999999'], 'notes' => ['nullable', 'string', 'max:1000']]);
+        $data = $request->validate(
+            ['counted' => ['required', 'array'], 'counted.*' => ['decimal:0,2', 'min:0', 'max:99999999'], 'notes' => ['nullable', 'string', 'max:1000']],
+            ['counted.required' => 'Type the cash you counted in the drawer.', 'counted.*.decimal' => 'Type the amount in numbers, like 1500 or 1500.50.'],
+        );
         $session = $this->cashier->current($request->user());
         if (! $session) {
             throw ValidationException::withMessages(['shift' => 'You have no open cashier shift.']);

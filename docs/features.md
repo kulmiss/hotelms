@@ -67,6 +67,7 @@ Tests: `ModulesTest`.
 - Two-step sign-in (app or email), recovery codes, required for admins (switch); screen lock + PIN switch on shared devices;
   device list, new-device alerts, approved devices only (W7). `Security/*`, `AuthController`. Tests: `Auth/SecurityTest`.
 - Rate limits on sign-in, codes and PINs (`AppServiceProvider`, `AuthController`).
+- PINs: a PIN set by someone else (manager, `attendance_pin_set_by`) works on the attendance kiosk but never for PIN switch (taking over a shared device). "PIN already used" answers are limited to 3 per person per day, so other people's PINs cannot be found by trying (`Attendance::setPin`, `ownPin`). Housekeeping tasks go only to active people with `housekeeping.own_tasks`; roster only active staff, within a year.
 - Activity log for every important action (`ActivityLogger`, `LogsActivity`).
 
 ## Reports and insights

@@ -98,8 +98,12 @@ class HousekeepingController extends Controller
             'due_at' => ['nullable', 'date'],
             'notes' => ['nullable', 'string', 'max:500'],
         ]);
-        if (! empty($data['assigned_to']) && ! User::where('hotel_id', $request->user()->hotel_id)->whereKey($data['assigned_to'])->exists()) {
-            throw ValidationException::withMessages(['assigned_to' => 'Choose a staff member.']);
+        if (! empty($data['assigned_to'])) {
+            // Only an active person who does housekeeping tasks (the same people as the "Assign to" list).
+            $person = User::where('hotel_id', $request->user()->hotel_id)->where('status', 'active')->with('role')->find($data['assigned_to']);
+            if (! $person || ! $person->hasPermission('housekeeping.own_tasks')) {
+                throw ValidationException::withMessages(['assigned_to' => 'Choose someone from the housekeeping list.']);
+            }
         }
         if (! empty($data['due_at'])) {
             $data['due_at'] = HotelClock::parse($data['due_at'], $request->user()->hotel);

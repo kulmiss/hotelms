@@ -94,6 +94,8 @@ class ModulesTest extends TestCase
 
         $this->getJson('/api/v1/cashier/current')->assertJsonPath('data.expected.ETB.expected', '1880.00')->assertJsonCount(1, 'data.payments');
 
+        $this->postJson('/api/v1/cashier/close', ['counted' => []])->assertJsonPath('errors.counted.0', 'Type the cash you counted in the drawer.');
+        $this->postJson('/api/v1/cashier/close', ['counted' => ['ETB' => 'abc']])->assertJsonValidationErrors(['counted.ETB' => 'Type the amount in numbers, like 1500 or 1500.50.']);
         $this->postJson('/api/v1/cashier/close', ['counted' => ['ETB' => '1800']])->assertJsonValidationErrors('notes');
         $closed = $this->postJson('/api/v1/cashier/close', ['counted' => ['ETB' => '1800'], 'notes' => 'Gave wrong change'])->assertOk()
             ->assertJsonPath('data.status', 'closed')->assertJsonPath('data.balances.0.difference', '-80.00');
@@ -163,6 +165,9 @@ class ModulesTest extends TestCase
 
         $this->actingAs($this->manager)->getJson('/api/v1/housekeeping/staff')->assertJsonFragment(['name' => $this->housekeeper->name]);
         $id = $this->postJson('/api/v1/housekeeping/tasks', ['room_id' => $room->id, 'type' => 'inspection', 'priority' => 'high', 'assigned_to' => $other->id])->assertCreated()->json('data.id');
+        // Not someone who does housekeeping (e.g. reception): refused.
+        $this->postJson('/api/v1/housekeeping/tasks', ['room_id' => $room->id, 'type' => 'inspection', 'priority' => 'high', 'assigned_to' => $this->receptionist->id])
+            ->assertJsonPath('errors.assigned_to.0', 'Choose someone from the housekeeping list.');
 
         $this->actingAs($this->housekeeper)->postJson("/api/v1/housekeeping/tasks/$id/start")->assertJsonValidationErrors('task');
         $this->postJson('/api/v1/housekeeping/tasks', ['room_id' => $room->id, 'type' => 'cleaning', 'priority' => 'low'])->assertForbidden();

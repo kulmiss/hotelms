@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Testing\TestResponse;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class SecurityTest extends TestCase
@@ -223,6 +224,40 @@ class SecurityTest extends TestCase
 
         $this->postJson('/api/v1/auth/unlock', ['password' => 'nope'])->assertUnprocessable();
         $this->postJson('/api/v1/auth/unlock', ['password' => 'password'])->assertOk();
+    }
+
+    public function test_a_pin_set_by_a_manager_cannot_take_over_a_device(): void
+    {
+        $sara = User::factory()->withRole($this->hotel, 'receptionist')->create(['name' => 'Sara']);
+        $manager = User::factory()->withRole($this->hotel, 'branch_manager')->create();
+        $this->inHotel(fn () => app(Attendance::class)->setPin($sara, '4821', $manager));
+        $this->login('hana@sheger.test')->assertOk();
+
+        $this->postJson('/api/v1/auth/pin-switch', ['pin' => '4821'])->assertJsonPath('errors.pin.0', 'This PIN was set by a manager. Set your own PIN in My profile to use it here.');
+        // Sara chooses her own PIN: now it works.
+        $this->inHotel(fn () => app(Attendance::class)->setPin($sara, '5937'));
+        $this->postJson('/api/v1/auth/pin-switch', ['pin' => '5937'])->assertOk();
+    }
+
+    public function test_other_peoples_pins_cannot_be_found_by_trying(): void
+    {
+        $sara = User::factory()->withRole($this->hotel, 'receptionist')->create(['name' => 'Sara']);
+        $this->inHotel(fn () => app(Attendance::class)->setPin($sara, '4821'));
+        $try = function (string $pin): string {
+            try {
+                $this->inHotel(fn () => app(Attendance::class)->setPin($this->staff, $pin));
+
+                return 'saved';
+            } catch (ValidationException $e) {
+                return $e->errors()['pin'][0];
+            }
+        };
+
+        // The same PIN as someone else: refused without saying whose, and only a few times a day (then even a free PIN waits).
+        for ($i = 0; $i < Attendance::PIN_CLASHES_PER_DAY; $i++) {
+            $this->assertSame('This PIN cannot be used. Choose another.', $try('4821'));
+        }
+        $this->assertSame('Too many tries today. Try again tomorrow, or ask your manager.', $try('5937'));
     }
 
     public function test_guest_id_numbers_and_notes_are_encrypted_but_still_found(): void

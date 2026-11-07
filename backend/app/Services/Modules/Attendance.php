@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\HotelSettings;
 use App\Support\HotelClock;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -32,16 +33,32 @@ class Attendance
         return hash_hmac('sha256', $hotelId.'|'.$pin, (string) config('app.key'));
     }
 
-    public function setPin(User $user, string $pin): void
+    /** How many "someone else uses this PIN" answers one person may get per day (stops finding other people's PINs by trying). */
+    public const PIN_CLASHES_PER_DAY = 3;
+
+    /** Set a PIN for $user; $by is who sets it (null = the person themselves). */
+    public function setPin(User $user, string $pin, ?User $by = null): void
     {
         if (self::isWeak($pin)) {
             throw ValidationException::withMessages(['pin' => 'This PIN is too easy to guess (like 1111 or 1234). Choose another.']);
         }
+        $by ??= $user;
+        $clashes = 'pin-clash:'.$by->id;
+        if (RateLimiter::tooManyAttempts($clashes, self::PIN_CLASHES_PER_DAY)) {
+            throw ValidationException::withMessages(['pin' => 'Too many tries today. Try again tomorrow, or ask your manager.']);
+        }
         $hash = self::pinHash($pin, (int) $user->hotel_id);
         if (User::where('hotel_id', $user->hotel_id)->where('attendance_pin', $hash)->whereKeyNot($user->id)->exists()) {
-            throw ValidationException::withMessages(['pin' => 'Someone else uses this PIN. Choose another.']);
+            RateLimiter::hit($clashes, 86400);
+            throw ValidationException::withMessages(['pin' => 'This PIN cannot be used. Choose another.']);
         }
-        $user->forceFill(['attendance_pin' => $hash])->save();
+        $user->forceFill(['attendance_pin' => $hash, 'attendance_pin_set_by' => $by->id])->save();
+    }
+
+    /** A PIN the person chose themselves (or set before this was recorded). Only those may take over a device. */
+    public static function ownPin(User $user): bool
+    {
+        return $user->attendance_pin_set_by === null || (int) $user->attendance_pin_set_by === (int) $user->id;
     }
 
     /** Same digit repeated, or a straight run up or down (1234, 9876). */
