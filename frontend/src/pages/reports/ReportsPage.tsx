@@ -85,7 +85,7 @@ export function ReportsPage() {
     <div className="flex flex-col gap-6 print:gap-3">
       <PageHeader
         title={t('nav.reports')}
-        subtitle={t('reports.subtitle')}
+        subtitle={t(allowed.length === 1 && ['my_work', 'my_shift'].includes(key) ? 'reports.subtitleMine' : 'reports.subtitle')}
         actions={
           <div className="flex flex-wrap gap-2 print:hidden">
             <button type="button" className={buttonClass('secondary')} onClick={() => window.print()}>
