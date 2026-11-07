@@ -20,8 +20,16 @@ class GuestController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        $request->validate(['stayed_from' => ['nullable', 'date'], 'stayed_to' => ['nullable', 'date']]);
+        $hotel = $request->user()->hotel;
+        $from = $request->input('stayed_from') ? HotelClock::parse($request->input('stayed_from'), $hotel) : null;
+        $to = $request->input('stayed_to') ? HotelClock::parse($request->input('stayed_to'), $hotel)->addDay() : null;
         $guests = Guest::query()->with('guestType:id,name')
             ->search($request->input('q'))
+            // Guests who stayed (were checked in) on any day between the two dates.
+            ->when($from || $to, fn ($q) => $q->whereHas('reservations', fn ($r) => $r->whereIn('status', ['checked_in', 'checked_out'])
+                ->when($to, fn ($w) => $w->where('check_in_at', '<', $to))
+                ->when($from, fn ($w) => $w->where('check_out_at', '>', $from))))
             ->when($request->boolean('blacklisted'), fn ($q) => $q->where('is_blacklisted', true))
             ->when($request->boolean('missing'), fn ($q) => $q->detailsMissing())
             ->withCount('reservations')

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { DateRangeFilter } from '@/components/ui/DateRangeFilter'
+import type { DateRange } from '@/lib/dateRange'
 import { IdPhoto } from '@/components/guests/IdPhoto'
 import { PlusIcon } from '@heroicons/react/20/solid'
 import { MagnifyingGlassIcon, UsersIcon } from '@heroicons/react/24/outline'
@@ -26,7 +28,8 @@ export function GuestsPage() {
   const search = useDebounced(q, 250)
   const [params, setParams] = useSearchParams()
   const missing = params.get('show') === 'missing'
-  const guests = useGuests(search, page, true, missing)
+  const [stayed, setStayed] = useState<DateRange>({})
+  const guests = useGuests(search, page, true, missing, stayed)
 
   return (
     <div className="flex flex-col gap-6">
@@ -56,7 +59,8 @@ export function GuestsPage() {
           ]}
         />
       </div>
-      <div className="relative max-w-md">
+      <div className="flex flex-wrap items-end gap-3">
+      <div className="relative w-full max-w-md">
         <MagnifyingGlassIcon aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-icon" />
         <input
           type="search"
@@ -68,6 +72,15 @@ export function GuestsPage() {
             setPage(1)
           }}
           className="min-h-touch w-full rounded-lg bg-surface pr-3 pl-9 text-[13px] shadow-sm ring-1 ring-ring outline-none focus:ring-2 focus:ring-accent"
+        />
+      </div>
+        <DateRangeFilter
+          label={t('dates.stayed')}
+          value={stayed}
+          onChange={(r) => {
+            setStayed(r)
+            setPage(1)
+          }}
         />
       </div>
       <Card className="overflow-x-auto p-0">

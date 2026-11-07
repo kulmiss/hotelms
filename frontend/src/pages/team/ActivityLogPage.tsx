@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { useActivityLog, type ActivityEntry } from '@/lib/hotel'
+import { DateRangeFilter } from '@/components/ui/DateRangeFilter'
+import type { DateRange } from '@/lib/dateRange'
 
 const when = (iso: string) =>
   new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -28,12 +30,14 @@ export function ActivityLogPage() {
   const { t } = useTranslation()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
-  const log = useActivityLog(search, page)
+  const [range, setRange] = useState<DateRange>({})
+  const log = useActivityLog(search, page, range)
 
   return (
     <div className="flex flex-col gap-8">
       <PageHeader title={t('nav.activityLog')} subtitle={t('team.activity.subtitle')} />
-      <label className="flex min-h-touch max-w-sm items-center gap-2 rounded-lg bg-surface px-3 shadow-sm ring-1 ring-ring-strong focus-within:ring-2 focus-within:ring-accent">
+      <div className="flex flex-wrap items-end gap-3">
+      <label className="flex min-h-touch w-full max-w-sm items-center gap-2 rounded-lg bg-surface px-3 shadow-sm ring-1 ring-ring-strong focus-within:ring-2 focus-within:ring-accent">
         <MagnifyingGlassIcon aria-hidden className="size-5 shrink-0 text-icon" />
         <span className="sr-only">{t('team.activity.search')}</span>
         <input
@@ -47,6 +51,14 @@ export function ActivityLogPage() {
           className="w-full bg-transparent text-base text-text placeholder:text-icon focus:outline-none sm:text-sm"
         />
       </label>
+        <DateRangeFilter
+          value={range}
+          onChange={(r) => {
+            setRange(r)
+            setPage(1)
+          }}
+        />
+      </div>
       <Card className="overflow-x-auto p-0">
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="bg-sunken text-text">

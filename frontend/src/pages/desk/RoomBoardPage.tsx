@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { ArrowRightEndOnRectangleIcon, ArrowRightStartOnRectangleIcon, CalendarDaysIcon, PlusIcon, UserPlusIcon } from '@heroicons/react/24/outline'
+import { ArrowRightEndOnRectangleIcon, ArrowRightStartOnRectangleIcon, CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, UserPlusIcon } from '@heroicons/react/24/outline'
 import { Alert } from '@/components/ui/Alert'
 import { QuickCharge } from '@/components/billing/QuickCharge'
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { Tabs } from '@/components/ui/Tabs'
@@ -81,7 +82,9 @@ export function RoomBoardPage() {
 
 function Board({ branchId }: { branchId: number | null }) {
   const { t } = useTranslation()
-  const board = useBoard(branchId)
+  // Another day (owner, 2026-11-07): who stays in each room that night. Today = live.
+  const [viewDay, setViewDay] = useState<string | null>(null)
+  const board = useBoard(branchId, viewDay)
   const [params] = useSearchParams()
   const [open, setOpen] = useState<BoardRoom | null>(null)
   const rooms = board.data?.data ?? []
@@ -98,7 +101,7 @@ function Board({ branchId }: { branchId: number | null }) {
     setFilterState(next)
     saveRoomFilter(next)
   }
-  const day = board.data ? localDate(board.data.refreshed_at) : todayDate()
+  const day = viewDay ?? (board.data ? localDate(board.data.refreshed_at) : todayDate())
   const shown = filterRooms(rooms, filter, day)
   const grouped = filter.sort === 'number'
   const floors = grouped ? [...new Set(shown.map((r) => r.floor ?? ''))] : ['']
@@ -106,8 +109,10 @@ function Board({ branchId }: { branchId: number | null }) {
 
   return (
     <div className="flex flex-col gap-4">
+      <DayPicker day={viewDay} onChange={(d) => setViewDay(d && d !== todayDate() ? d : null)} />
+      {viewDay && <Alert tone="info">{t('desk.otherDay', { date: date(viewDay) })}</Alert>}
       <RoomFilterBar rooms={rooms} counts={board.data?.counts ?? {}} day={day} filter={filter} setFilter={setFilter} />
-      {selected && <RoomPanel room={selected} branchId={branchId} onClose={() => setOpen(null)} />}
+      {selected && <RoomPanel room={selected} branchId={branchId} readOnly={!!viewDay} onClose={() => setOpen(null)} />}
       {floors.map((f) => (
         <div key={f} className="flex flex-col gap-2">
           {grouped && floors.length > 1 && <h2 className="text-xs font-semibold text-muted">{f ? t('desk.floor', { floor: f }) : t('desk.noFloor')}</h2>}
@@ -248,13 +253,13 @@ function RoomFilterBar({ rooms, counts, day, filter, setFilter }: { rooms: Board
 }
 
 /** Tap a room: who is in it, and quick status changes. */
-function RoomPanel({ room, branchId, onClose }: { room: BoardRoom; branchId: number | null; onClose: () => void }) {
+function RoomPanel({ room, branchId, readOnly = false, onClose }: { room: BoardRoom; branchId: number | null; readOnly?: boolean; onClose: () => void }) {
   const { t } = useTranslation()
   const can = useCan()
   const change = useRoomStatus()
   const error = change.error instanceof ApiError ? (change.error.field('status') ?? change.error.message) : null
   const next: string[] = []
-  if (room.status !== 'occupied') {
+  if (room.status !== 'occupied' && !readOnly) {
     if (can('rooms.change_status')) {
       if (room.status === 'dirty') next.push('cleaning', 'available')
       if (room.status === 'cleaning') next.push('available')
@@ -299,7 +304,7 @@ function RoomPanel({ room, branchId, onClose }: { room: BoardRoom; branchId: num
             </span>
           </span>
           <span className="flex flex-wrap gap-2">
-            <PlusNight id={room.stay.reservation_id} checkOut={room.stay.check_out_at} stayType={room.stay.stay_type} openStay={room.stay.open_stay} />
+            {!readOnly && <PlusNight id={room.stay.reservation_id} checkOut={room.stay.check_out_at} stayType={room.stay.stay_type} openStay={room.stay.open_stay} />}
             <Link to={`/reservations/${room.stay.reservation_id}`} className={buttonClass('secondary')}>
               <ArrowRightStartOnRectangleIcon aria-hidden className="size-4" />
               {t('desk.openStay')}
@@ -307,7 +312,7 @@ function RoomPanel({ room, branchId, onClose }: { room: BoardRoom; branchId: num
           </span>
         </div>
       )}
-      {room.stay && can('charges.room') && <RoomCharges roomId={room.id} roomNumber={room.number} branchId={branchId} />}
+      {room.stay && !readOnly && can('charges.room') && <RoomCharges roomId={room.id} roomNumber={room.number} branchId={branchId} />}
       {!room.stay && room.arriving && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-accent-soft px-3 py-2 text-[13px]">
           <span>{t('desk.arrivingToday', { guest: room.arriving.guest })}</span>
@@ -454,6 +459,30 @@ function RoomCharges({ roomId, roomNumber, branchId }: { roomId: number; roomNum
     <div className="flex flex-col gap-2 border-t border-border pt-3">
       <h3 className="text-[13px] font-semibold">{t('quickCharge.onRoom')}</h3>
       <QuickCharge key={roomId} roomId={roomId} roomNumber={roomNumber} buttons={quick.data?.buttons ?? []} />
+    </div>
+  )
+}
+
+/** Today, or another day: the previous / next day, or pick a date. */
+function DayPicker({ day, onChange }: { day: string | null; onChange: (d: string | null) => void }) {
+  const { t } = useTranslation()
+  const shown = day ?? todayDate()
+  return (
+    <div className="flex flex-wrap items-end gap-2">
+      <Button variant="secondary" aria-label={t('desk.dayBefore')} onClick={() => onChange(addDays(shown, -1))}>
+        <ChevronLeftIcon aria-hidden className="size-4" />
+      </Button>
+      <div className="w-44">
+        <Field label={t('desk.showDay')} type="date" value={shown} onChange={(e) => onChange(e.target.value || null)} />
+      </div>
+      <Button variant="secondary" aria-label={t('desk.dayAfter')} onClick={() => onChange(addDays(shown, 1))}>
+        <ChevronRightIcon aria-hidden className="size-4" />
+      </Button>
+      {day && (
+        <Button variant="ghost" onClick={() => onChange(null)}>
+          {t('desk.backToToday')}
+        </Button>
+      )}
     </div>
   )
 }

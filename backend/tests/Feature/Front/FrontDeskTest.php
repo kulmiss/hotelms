@@ -351,6 +351,38 @@ class FrontDeskTest extends TestCase
         $this->actingAs($cleaner)->putJson("/api/v1/invoices/$invoiceId/buyer", ['company' => 'X'])->assertForbidden();
     }
 
+    public function test_lists_filter_by_date_and_the_board_shows_another_day(): void
+    {
+        $id = $this->booked(); // 12 → 14 Nov
+        $this->at('2026-11-12 15:00');
+        $this->checkIn($id, ['101'])->assertOk();
+        $this->actingAs($this->admin)->postJson('/api/v1/reservations', [ // room 102 booked for 20 → 21 Nov
+            'branch_id' => $this->branch->id, 'stay_type' => 'nightly', 'check_in' => '2026-11-20', 'check_out' => '2026-11-21', 'guest_id' => $this->guest->id,
+            'rooms' => [['room_type_id' => $this->standard->id, 'room_id' => $this->rooms['102'], 'adults' => 1]],
+        ])->assertCreated();
+
+        // Bills by their date.
+        $this->assertCount(1, $this->getJson('/api/v1/invoices?from=2026-11-12&to=2026-11-12')->json('data'));
+        $this->assertCount(0, $this->getJson('/api/v1/invoices?from=2026-11-13')->json('data'));
+        // Guests who stayed on those days (a booking that has not started does not count).
+        $this->assertSame(['Abebe Kebede'], collect($this->getJson('/api/v1/guests?stayed_from=2026-11-13&stayed_to=2026-11-13')->json('data'))->pluck('full_name')->all());
+        $this->assertCount(0, $this->getJson('/api/v1/guests?stayed_from=2026-11-20&stayed_to=2026-11-21')->json('data'));
+        // Activity log by day.
+        $this->assertGreaterThan(0, $this->getJson('/api/v1/activity-log?from=2026-11-12&to=2026-11-12')->json('total'));
+        $this->assertSame(0, $this->getJson('/api/v1/activity-log?from=2026-11-15')->json('total'));
+
+        // The room board on another day: who stays that night.
+        $room = fn (array $rooms, string $n) => collect($rooms)->firstWhere('number', $n);
+        $on13 = $this->getJson('/api/v1/front-desk/board?branch_id='.$this->branch->id.'&date=2026-11-13')->assertOk()->json('data');
+        $this->assertSame(['occupied', 'Abebe Kebede', 'checked_in'], [$room($on13, '101')['status'], $room($on13, '101')['stay']['guest'], $room($on13, '101')['stay']['status']]);
+        $this->assertSame('available', $room($on13, '102')['status']);
+        $on14 = $this->getJson('/api/v1/front-desk/board?branch_id='.$this->branch->id.'&date=2026-11-14')->json('data');
+        $this->assertSame('available', $room($on14, '101')['status']); // leaves on the 14th: free that night
+        $on20 = $this->getJson('/api/v1/front-desk/board?branch_id='.$this->branch->id.'&date=2026-11-20')->json('data');
+        $this->assertSame(['occupied', 'pending'], [$room($on20, '102')['status'], $room($on20, '102')['stay']['status']]); // booked, deposit not paid yet
+        $this->getJson('/api/v1/front-desk/board?branch_id='.$this->branch->id.'&date=12-11-2026')->assertJsonValidationErrors('date');
+    }
+
     public function test_paying_more_than_owed_needs_a_yes(): void
     {
         $id = $this->booked();

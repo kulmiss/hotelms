@@ -88,7 +88,8 @@
         "Tap a color button at the top (for example Dirty) to see only those rooms. Tap again to see all.",
         "Use Arriving, Leaving, Overdue or Free tonight to see only those rooms.",
         "A red \"Owes\" tag means the guest still has money to pay.",
-        "Tap a room box to see the guest and to change the room status."
+        "Tap a room box to see the guest and to change the room status.",
+        "Want to see another day? Use the arrows or pick a date at the top. You see who stays in each room that night. Tap Back to today to work again."
       ]
     },
     "todayLists": {

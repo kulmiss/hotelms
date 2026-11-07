@@ -160,8 +160,14 @@ function useInvalidate() {
   }
 }
 
-export const useGuests = (q: string, page = 1, enabled = true, missing = false) =>
-  useQuery({ queryKey: ['guests', q, page, missing], queryFn: () => api<Page<Guest>>(`/guests?${qs({ q, page, missing: missing ? 1 : undefined })}`), placeholderData: keepPreviousData, enabled })
+/** `stayed`: only guests who stayed on a day between from and to (hotel days). */
+export const useGuests = (q: string, page = 1, enabled = true, missing = false, stayed: { from?: string; to?: string } = {}) =>
+  useQuery({
+    queryKey: ['guests', q, page, missing, stayed],
+    queryFn: () => api<Page<Guest>>(`/guests?${qs({ q, page, missing: missing ? 1 : undefined, stayed_from: stayed.from, stayed_to: stayed.to })}`),
+    placeholderData: keepPreviousData,
+    enabled,
+  })
 
 export const useGuest = (id: number) =>
   useQuery({ queryKey: ['guests', 'one', id], queryFn: () => api<{ data: Guest; stays: (Omit<ReservationSummary, 'guest' | 'rooms' | 'source' | 'expires_at' | 'adults' | 'children' | 'deposit_required'> & { branch: string | null })[]; id_photo?: { mime: string; at: string | null } | null }>(`/guests/${id}`), enabled: id > 0 })

@@ -1334,6 +1334,11 @@
       "foundBlacklisted": "This guest is on the blacklist. Ask the manager.",
       "useGuest": "Use this guest"
     },
+    "otherDay": "Showing the night of {{date}}: who stays in each room. Only to look; changes are made on today's board.",
+    "dayBefore": "Day before",
+    "dayAfter": "Day after",
+    "showDay": "Day",
+    "backToToday": "Back to today",
     "stillStaying": "Ask each guest: still staying? Tap \"Staying\" to add one night, or \"Leaving\" to check out.",
     "staying": "Staying",
     "leaving": "Leaving",
@@ -2731,6 +2736,19 @@
     "addToRoom": "Add to room {{room}}",
     "added": "Added: {{name}} {{amount}} to room {{room}}",
     "undo": "Undo"
+  },
+  "dates": {
+    "label": "Dates",
+    "any": "Any time",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "thisMonth": "This month",
+    "lastMonth": "Last month",
+    "custom": "Choose dates…",
+    "from": "From",
+    "to": "To",
+    "stayed": "Stayed"
   },
   "openStay": {
     "option": "Not sure how long (no end date)",

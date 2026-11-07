@@ -15,6 +15,8 @@ import { cn } from '@/lib/cn'
 import { date, money } from '@/lib/format'
 import { localDate, localTime, useLookups } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
+import { DateRangeFilter } from '@/components/ui/DateRangeFilter'
+import type { DateRange } from '@/lib/dateRange'
 import { useApproveShift, useCloseShift, useCurrentShift, useOpenShift, useShifts, type CashierSession } from '@/lib/modules'
 
 const err = (e: unknown) => (e instanceof ApiError ? (Object.values(e.errors)[0]?.[0] ?? e.message) : null)
@@ -165,17 +167,21 @@ function ShiftList() {
   const { t } = useTranslation()
   const can = useCan()
   const [short, setShort] = useState(false)
-  const list = useShifts({ short })
+  const [range, setRange] = useState<DateRange>({})
+  const list = useShifts({ short, ...range })
   const approve = useApproveShift()
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold">{can('cashier.view_all') ? t('cashier.allShifts') : t('cashier.pastShifts')}</h2>
-        <label className="flex items-center gap-2 text-[13px]">
-          <input type="checkbox" className="size-4 accent-accent" checked={short} onChange={(e) => setShort(e.target.checked)} />
-          {t('cashier.onlyShort')}
-        </label>
+        <div className="flex flex-wrap items-end gap-3">
+          <DateRangeFilter value={range} onChange={setRange} />
+          <label className="flex min-h-touch items-center gap-2 text-[13px]">
+            <input type="checkbox" className="size-4 accent-accent" checked={short} onChange={(e) => setShort(e.target.checked)} />
+            {t('cashier.onlyShort')}
+          </label>
+        </div>
       </div>
       {approve.error && <Alert>{err(approve.error)}</Alert>}
       <Card className="overflow-x-auto p-0">
