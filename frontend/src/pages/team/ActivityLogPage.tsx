@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { useActivityLog, type ActivityEntry } from '@/lib/hotel'
+import { DataTable, type SortState } from '@/components/ui/DataTable'
 import { DateRangeFilter } from '@/components/ui/DateRangeFilter'
+import { listFileUrl } from '@/lib/front'
 import type { DateRange } from '@/lib/dateRange'
 
 const when = (iso: string) =>
@@ -31,7 +31,9 @@ export function ActivityLogPage() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [range, setRange] = useState<DateRange>({})
-  const log = useActivityLog(search, page, range)
+  const [perPage, setPerPage] = useState(50)
+  const [sort, setSort] = useState<SortState>({ by: 'when', dir: 'desc' })
+  const log = useActivityLog(search, page, range, { sort: sort.by, dir: sort.dir, per_page: perPage })
 
   return (
     <div className="flex flex-col gap-8">
@@ -59,41 +61,34 @@ export function ActivityLogPage() {
           }}
         />
       </div>
-      <Card className="overflow-x-auto p-0">
-        <table className="w-full min-w-[640px] text-left text-sm">
-          <thead className="bg-sunken text-text">
-            <tr>
-              <th className="px-4 py-3 font-semibold">{t('team.activity.when')}</th>
-              <th className="px-4 py-3 font-semibold">{t('team.activity.who')}</th>
-              <th className="px-4 py-3 font-semibold">{t('team.activity.what')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {log.data?.data.map((e) => (
-              <tr key={e.id} className="border-t border-border align-top">
-                <td className="px-4 py-3 whitespace-nowrap text-muted">{when(e.created_at)}</td>
-                <td className="px-4 py-3">{e.user?.name ?? t('team.activity.system')}</td>
-                <td className="px-4 py-3">
-                  {e.description}
-                  <Changes entry={e} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {log.data && log.data.data.length === 0 && <p className="p-6 text-center text-sm text-muted">{t('team.activity.empty')}</p>}
-      </Card>
-      {log.data && log.data.last_page > 1 && (
-        <div className="flex items-center justify-between">
-          <Button variant="secondary" disabled={page <= 1} onClick={() => setPage(page - 1)}>
-            {t('common.previous')}
-          </Button>
-          <span className="text-sm text-muted">{t('team.activity.page', { page, of: log.data.last_page })}</span>
-          <Button variant="secondary" disabled={page >= log.data.last_page} onClick={() => setPage(page + 1)}>
-            {t('common.next')}
-          </Button>
-        </div>
-      )}
+      <DataTable<ActivityEntry>
+        id="activity"
+        rows={log.data?.data ?? []}
+        rowKey={(e) => e.id}
+        loading={log.isLoading}
+        sort={sort}
+        onSort={(x) => {
+          setSort(x)
+          setPage(1)
+        }}
+        paging={{ page, last: log.data?.last_page ?? 1, total: log.data?.total, perPage, onPage: setPage, onPerPage: (n) => (setPerPage(n), setPage(1)) }}
+        exportUrl={listFileUrl('/activity-log', { search, ...range, sort: sort.by, dir: sort.dir })}
+        minWidth="640px"
+        empty={t('team.activity.empty')}
+        columns={[
+          { key: 'when', label: t('team.activity.when'), sort: 'when', hideable: false, render: (e) => <span className="whitespace-nowrap text-muted">{when(e.created_at)}</span> },
+          { key: 'who', label: t('team.activity.who'), sort: 'who', render: (e) => e.user?.name ?? t('team.activity.system') },
+          {
+            key: 'what', label: t('team.activity.what'), hideable: false,
+            render: (e) => (
+              <>
+                {e.description}
+                <Changes entry={e} />
+              </>
+            ),
+          },
+        ]}
+      />
     </div>
   )
 }

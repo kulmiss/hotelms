@@ -55,12 +55,12 @@ export const usePermissionCatalog = () =>
 export const useStaff = () => useQuery({ queryKey: ['hotel', 'staff'], queryFn: () => api<{ data: StaffMember[] }>('/staff') })
 export const useStaffMember = (id: number) =>
   useQuery({ queryKey: ['hotel', 'staff', id], queryFn: () => api<{ data: StaffMember }>(`/staff/${id}`), enabled: id > 0 })
-export const useActivityLog = (search: string, page: number, range: { from?: string; to?: string } = {}) =>
+export const useActivityLog = (search: string, page: number, range: { from?: string; to?: string } = {}, opts: { sort?: string; dir?: string; per_page?: number } = {}) =>
   useQuery({
-    queryKey: ['hotel', 'activity', search, page, range],
+    queryKey: ['hotel', 'activity', search, page, range, opts],
     queryFn: () =>
-      api<{ data: ActivityEntry[]; current_page: number; last_page: number }>(
-        `/activity-log?page=${page}${search ? `&search=${encodeURIComponent(search)}` : ''}${range.from ? `&from=${range.from}` : ''}${range.to ? `&to=${range.to}` : ''}`,
+      api<{ data: ActivityEntry[]; current_page: number; last_page: number; total: number }>(
+        `/activity-log?${new URLSearchParams(Object.entries({ page, search, ...range, ...opts }).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => [k, String(v)]))}`,
       ),
     placeholderData: keepPreviousData,
   })

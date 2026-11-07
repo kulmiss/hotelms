@@ -156,11 +156,11 @@ export type PaymentRow = { id: number; type: string; amount: string; currency: s
 const qs = (p: Record<string, string | number | boolean | null | undefined>) =>
   new URLSearchParams(Object.entries(p).filter(([, v]) => v !== undefined && v !== null && v !== '' && v !== false).map(([k, v]) => [k, String(v)])).toString()
 
-export const useInvoices = (f: { q?: string; status?: string; unpaid?: boolean; page?: number; from?: string; to?: string }) =>
+export const useInvoices = (f: { q?: string; status?: string; unpaid?: boolean; page?: number; from?: string; to?: string; per_page?: number; sort?: string; dir?: string }) =>
   useQuery({ queryKey: ['invoices', 'list', f], queryFn: () => api<Page<InvoiceSummary>>(`/invoices?${qs(f)}`), placeholderData: keepPreviousData })
 export const useInvoice = (id: number) => useQuery({ queryKey: ['invoices', 'one', id], queryFn: () => api<{ data: InvoiceDetail }>(`/invoices/${id}`), enabled: id > 0 })
 export const useChargeTypes = () => useQuery({ queryKey: ['invoices', 'charge-types'], queryFn: () => api<{ data: { id: number; name: string; default_price: string | null; currency: string }[] }>('/charge-types'), staleTime: 60_000 })
-export const usePayments = (f: { type?: string; from?: string; to?: string; page?: number }) =>
+export const usePayments = (f: { type?: string; from?: string; to?: string; page?: number; per_page?: number; sort?: string; dir?: string }) =>
   useQuery({ queryKey: ['invoices', 'payments', f], queryFn: () => api<Page<PaymentRow>>(`/payments?${qs(f)}`), placeholderData: keepPreviousData })
 
 /** Quick charges (breakfast, laundry, taxi…): rooms with a guest now and the hotel's quick buttons. */

@@ -3,18 +3,17 @@ import { Link, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { DocumentTextIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { Badge } from '@/components/ui/Badge'
-import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Tabs } from '@/components/ui/Tabs'
 import { cn } from '@/lib/cn'
-import { INVOICE_TONES, useInvoices, usePayments } from '@/lib/desk'
+import { INVOICE_TONES, useInvoices, usePayments, type InvoiceSummary, type PaymentRow } from '@/lib/desk'
 import { DateRangeFilter } from '@/components/ui/DateRangeFilter'
 import type { DateRange } from '@/lib/dateRange'
 import { date, money } from '@/lib/format'
-import { localDate, localTime } from '@/lib/front'
+import { listFileUrl, localDate, localTime } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { useDebounced } from '@/lib/useDebounced'
-import { Pager } from '@/pages/guests/GuestsPage'
+import { DataTable, type SortState } from '@/components/ui/DataTable'
 
 /** Invoices and payments (screen-list.md 6.1, 6.6). */
 export function BillingPage() {
@@ -60,7 +59,11 @@ function InvoiceList() {
   const [range, setRange] = useState<DateRange>({})
   const search = useDebounced(q, 250)
   const f = FILTERS.find((x) => x.key === filter) ?? FILTERS[0]
-  const list = useInvoices({ q: search, status: 'status' in f ? f.status : undefined, unpaid: 'unpaid' in f ? f.unpaid : undefined, page, ...range })
+  const [perPage, setPerPage] = useState(25)
+  const [sort, setSort] = useState<SortState>({ by: 'issued', dir: 'desc' })
+  const can = useCan()
+  const filters = { q: search, status: 'status' in f ? f.status : undefined, unpaid: 'unpaid' in f ? f.unpaid : undefined, ...range, sort: sort.by, dir: sort.dir }
+  const list = useInvoices({ ...filters, page, per_page: perPage })
 
   return (
     <div className="flex flex-col gap-4">
@@ -103,48 +106,47 @@ function InvoiceList() {
           </button>
         ))}
       </div>
-      <Card className="overflow-x-auto p-0">
-        <table className="w-full min-w-[760px] text-left text-[13px]">
-          <thead className="bg-sunken">
-            <tr>
-              <th className="px-4 py-2.5 font-semibold">{t('billing.number')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('reservations.guest')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('billing.date')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('reservations.status')}</th>
-              <th className="px-4 py-2.5 text-right font-semibold">{t('reservations.total')}</th>
-              <th className="px-4 py-2.5 text-right font-semibold">{t('reservations.balance')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {list.data?.data.map((i) => (
-              <tr key={i.id} className="border-t border-border transition duration-75 hover:bg-sunken">
-                <td className="px-4 py-1.5">
-                  <Link to={`/billing/${i.id}`} className="flex min-h-touch flex-col justify-center">
-                    <span className="font-medium text-accent-text">{i.number}</span>
-                    <span className="text-xs text-muted">{i.reservation?.code}</span>
-                  </Link>
-                </td>
-                <td className="px-4 py-1.5">{i.guest?.name}</td>
-                <td className="px-4 py-1.5 text-muted">{date(localDate(i.issued_at))}</td>
-                <td className="px-4 py-1.5">
-                  <Badge tone={INVOICE_TONES[i.status]}>{t(`billing.statuses.${i.status}`)}</Badge>
-                </td>
-                <td className="px-4 py-1.5 text-right tabular-nums">{money(i.total, i.currency)}</td>
-                <td className={cn('px-4 py-1.5 text-right tabular-nums', Number(i.balance) > 0 && i.status !== 'void' && 'font-semibold text-danger-text')}>{money(i.balance, i.currency)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {list.data?.data.length === 0 && (
-          <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+      <DataTable<InvoiceSummary>
+        id="bills"
+        rows={list.data?.data ?? []}
+        rowKey={(i) => i.id}
+        loading={list.isLoading}
+        sort={sort}
+        onSort={(x) => {
+          setSort(x)
+          setPage(1)
+        }}
+        paging={{ page, last: list.data?.last_page ?? 1, total: list.data?.total, perPage, onPage: setPage, onPerPage: (n) => (setPerPage(n), setPage(1)) }}
+        exportUrl={can('reports.export') ? listFileUrl('/invoices', { ...filters }) : null}
+        minWidth="760px"
+        empty={
+          <div className="flex flex-col items-center gap-3 py-6">
             <span className="flex size-12 items-center justify-center rounded-full bg-sunken">
               <DocumentTextIcon aria-hidden className="size-6 text-icon" />
             </span>
-            <p className="text-muted">{t('billing.empty')}</p>
+            <p>{t('billing.empty')}</p>
           </div>
-        )}
-      </Card>
-      {list.data && list.data.last_page > 1 && <Pager page={page} last={list.data.last_page} onChange={setPage} />}
+        }
+        columns={[
+          {
+            key: 'number', label: t('billing.number'), sort: 'number', hideable: false,
+            render: (i) => (
+              <Link to={`/billing/${i.id}`} className="flex min-h-touch flex-col justify-center">
+                <span className="font-medium text-accent-text">{i.number}</span>
+                <span className="text-xs text-muted">{i.reservation?.code}</span>
+              </Link>
+            ),
+          },
+          { key: 'guest', label: t('reservations.guest'), sort: 'guest', render: (i) => i.guest?.name },
+          { key: 'date', label: t('billing.date'), sort: 'issued', render: (i) => <span className="text-muted">{date(localDate(i.issued_at))}</span> },
+          { key: 'status', label: t('reservations.status'), sort: 'status', render: (i) => <Badge tone={INVOICE_TONES[i.status]}>{t(`billing.statuses.${i.status}`)}</Badge> },
+          { key: 'total', label: t('reservations.total'), sort: 'total', align: 'right', render: (i) => money(i.total, i.currency) },
+          {
+            key: 'balance', label: t('reservations.balance'), sort: 'balance', align: 'right',
+            render: (i) => <span className={cn(Number(i.balance) > 0 && i.status !== 'void' && 'font-semibold text-danger-text')}>{money(i.balance, i.currency)}</span>,
+          },
+        ]}
+      />
     </div>
   )
 }
@@ -153,7 +155,10 @@ function PaymentList() {
   const { t } = useTranslation()
   const [page, setPage] = useState(1)
   const [range, setRange] = useState<DateRange>({})
-  const list = usePayments({ page, ...range })
+  const [perPage, setPerPage] = useState(25)
+  const [sort, setSort] = useState<SortState>({ by: 'paid', dir: 'desc' })
+  const can = useCan()
+  const list = usePayments({ page, ...range, per_page: perPage, sort: sort.by, dir: sort.dir })
   return (
     <div className="flex flex-col gap-4">
       <DateRangeFilter
@@ -163,50 +168,55 @@ function PaymentList() {
           setPage(1)
         }}
       />
-      <Card className="overflow-x-auto p-0">
-        <table className="w-full min-w-[760px] text-left text-[13px]">
-          <thead className="bg-sunken">
-            <tr>
-              <th className="px-4 py-2.5 font-semibold">{t('billing.date')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('reservations.paymentType')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('reservations.method')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('reservations.guest')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('billing.takenBy')}</th>
-              <th className="px-4 py-2.5 text-right font-semibold">{t('reservations.amount')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {list.data?.data.map((p) => (
-              <tr key={p.id} className="border-t border-border">
-                <td className="px-4 py-2 text-muted">
-                  {date(localDate(p.paid_at))} {localTime(p.paid_at)}
-                </td>
-                <td className="px-4 py-2">{t(`reservations.paymentTypes.${p.type}`)}</td>
-                <td className="px-4 py-2">
-                  {p.method}
-                  {p.reference && <span className="text-xs text-muted"> · {p.reference}</span>}
-                </td>
-                <td className="px-4 py-2">
-                  {p.reservation ? (
-                    <Link to={`/reservations/${p.reservation.id}`} className="text-accent-text">
-                      {p.reservation.guest} · {p.reservation.code}
-                    </Link>
-                  ) : (
-                    '—'
-                  )}
-                </td>
-                <td className="px-4 py-2 text-muted">{p.by}</td>
-                <td className={cn('px-4 py-2 text-right tabular-nums', p.type === 'refund' && 'text-danger-text')}>
-                  {p.type === 'refund' ? '− ' : ''}
-                  {money(p.amount, p.currency)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {list.data?.data.length === 0 && <p className="p-6 text-center text-muted">{t('billing.noPayments')}</p>}
-      </Card>
-      {list.data && list.data.last_page > 1 && <Pager page={page} last={list.data.last_page} onChange={setPage} />}
+      <DataTable<PaymentRow>
+        id="payments"
+        rows={list.data?.data ?? []}
+        rowKey={(p) => p.id}
+        loading={list.isLoading}
+        sort={sort}
+        onSort={(x) => {
+          setSort(x)
+          setPage(1)
+        }}
+        paging={{ page, last: list.data?.last_page ?? 1, total: list.data?.total, perPage, onPage: setPage, onPerPage: (n) => (setPerPage(n), setPage(1)) }}
+        exportUrl={can('reports.export') ? listFileUrl('/payments', { ...range, sort: sort.by, dir: sort.dir }) : null}
+        minWidth="760px"
+        empty={t('billing.noPayments')}
+        columns={[
+          { key: 'date', label: t('billing.date'), sort: 'paid', hideable: false, render: (p) => <span className="text-muted">{date(localDate(p.paid_at))} {localTime(p.paid_at)}</span> },
+          { key: 'type', label: t('reservations.paymentType'), sort: 'type', render: (p) => t(`reservations.paymentTypes.${p.type}`) },
+          {
+            key: 'method', label: t('reservations.method'),
+            render: (p) => (
+              <>
+                {p.method}
+                {p.reference && <span className="text-xs text-muted"> · {p.reference}</span>}
+              </>
+            ),
+          },
+          {
+            key: 'guest', label: t('reservations.guest'),
+            render: (p) =>
+              p.reservation ? (
+                <Link to={`/reservations/${p.reservation.id}`} className="text-accent-text">
+                  {p.reservation.guest} · {p.reservation.code}
+                </Link>
+              ) : (
+                '—'
+              ),
+          },
+          { key: 'by', label: t('billing.takenBy'), render: (p) => <span className="text-muted">{p.by}</span> },
+          {
+            key: 'amount', label: t('reservations.amount'), sort: 'amount', align: 'right',
+            render: (p) => (
+              <span className={cn(p.type === 'refund' && 'text-danger-text')}>
+                {p.type === 'refund' ? '− ' : ''}
+                {money(p.amount, p.currency)}
+              </span>
+            ),
+          },
+        ]}
+      />
     </div>
   )
 }

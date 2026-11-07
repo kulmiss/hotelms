@@ -13,8 +13,9 @@ import { ApiError } from '@/lib/api'
 import { subMoney } from '@/lib/decimal'
 import { cn } from '@/lib/cn'
 import { date, money } from '@/lib/format'
-import { localDate, localTime, useLookups } from '@/lib/front'
+import { listFileUrl, localDate, localTime, useLookups } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
+import { DataTable, type SortState } from '@/components/ui/DataTable'
 import { DateRangeFilter } from '@/components/ui/DateRangeFilter'
 import type { DateRange } from '@/lib/dateRange'
 import { useApproveShift, useCloseShift, useCurrentShift, useOpenShift, useShifts, type CashierSession } from '@/lib/modules'
@@ -168,7 +169,10 @@ function ShiftList() {
   const can = useCan()
   const [short, setShort] = useState(false)
   const [range, setRange] = useState<DateRange>({})
-  const list = useShifts({ short, ...range })
+  const [page, setPage] = useState(1)
+  const [perPage, setPerPage] = useState(25)
+  const [sort, setSort] = useState<SortState>({ by: 'opened', dir: 'desc' })
+  const list = useShifts({ short, ...range, page, per_page: perPage, sort: sort.by, dir: sort.dir })
   const approve = useApproveShift()
 
   return (
@@ -184,55 +188,70 @@ function ShiftList() {
         </div>
       </div>
       {approve.error && <Alert>{err(approve.error)}</Alert>}
-      <Card className="overflow-x-auto p-0">
-        <table className="w-full min-w-[720px] text-left text-[13px]">
-          <thead className="bg-sunken">
-            <tr>
-              <th className="px-4 py-2.5 font-semibold">{t('cashier.person')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('cashier.when')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('reservations.status')}</th>
-              <th className="px-4 py-2.5 text-right font-semibold">{t('cashier.difference')}</th>
-              <th className="px-4 py-2.5" />
-            </tr>
-          </thead>
-          <tbody>
-            {list.data?.data.map((s) => (
-              <tr key={s.id} className="border-t border-border align-top">
-                <td className="px-4 py-2 font-medium">
-                  {s.user?.name}
-                  <span className="block text-xs font-normal text-muted">{s.branch?.name}</span>
-                </td>
-                <td className="px-4 py-2 text-muted">
-                  {date(localDate(s.opened_at))} {localTime(s.opened_at)}
-                  {s.closed_at && ` – ${localTime(s.closed_at)}`}
-                  {s.notes && <span className="block text-xs">“{s.notes}”</span>}
-                </td>
-                <td className="px-4 py-2">
-                  <Badge tone={TONES[s.status]}>{t(`cashier.statuses.${s.status}`)}</Badge>
-                  {s.approved_by && <span className="block text-xs text-muted">{s.approved_by}</span>}
-                </td>
-                <td className="px-4 py-2 text-right tabular-nums">
-                  {s.balances
-                    .filter((b) => b.difference !== null)
-                    .map((b) => (
-                      <span key={b.currency} className={cn('block', Number(b.difference) < 0 ? 'text-danger-text' : Number(b.difference) > 0 ? 'text-warn-text' : 'text-muted')}>
-                        {money(b.difference ?? '0', b.currency)}
-                      </span>
-                    ))}
-                </td>
-                <td className="px-4 py-2 text-right">
-                  {s.status === 'closed' && can('cashier.approve') && (
-                    <Button variant="secondary" disabled={approve.isPending} onClick={() => approve.mutate(s.id)}>
-                      {t('cashier.approve')}
-                    </Button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {list.data?.data.length === 0 && <p className="p-6 text-center text-muted">{t('cashier.noShifts')}</p>}
-      </Card>
+      <DataTable<CashierSession>
+        id="cashier-shifts"
+        rows={list.data?.data ?? []}
+        rowKey={(s) => s.id}
+        loading={list.isLoading}
+        sort={sort}
+        onSort={(x) => {
+          setSort(x)
+          setPage(1)
+        }}
+        paging={{ page, last: list.data?.last_page ?? 1, total: list.data?.total, perPage, onPage: setPage, onPerPage: (n) => (setPerPage(n), setPage(1)) }}
+        exportUrl={can('reports.export') ? listFileUrl('/cashier/sessions', { short: short ? 1 : undefined, ...range, sort: sort.by, dir: sort.dir }) : null}
+        empty={t('cashier.noShifts')}
+        columns={[
+          {
+            key: 'person', label: t('cashier.person'), sort: 'person', hideable: false,
+            render: (s) => (
+              <span className="font-medium">
+                {s.user?.name}
+                <span className="block text-xs font-normal text-muted">{s.branch?.name}</span>
+              </span>
+            ),
+          },
+          {
+            key: 'when', label: t('cashier.when'), sort: 'opened',
+            render: (s) => (
+              <span className="text-muted">
+                {date(localDate(s.opened_at))} {localTime(s.opened_at)}
+                {s.closed_at && ` – ${localTime(s.closed_at)}`}
+                {s.notes && <span className="block text-xs">“{s.notes}”</span>}
+              </span>
+            ),
+          },
+          {
+            key: 'status', label: t('reservations.status'), sort: 'status',
+            render: (s) => (
+              <>
+                <Badge tone={TONES[s.status]}>{t(`cashier.statuses.${s.status}`)}</Badge>
+                {s.approved_by && <span className="block text-xs text-muted">{s.approved_by}</span>}
+              </>
+            ),
+          },
+          {
+            key: 'difference', label: t('cashier.difference'), align: 'right',
+            render: (s) =>
+              s.balances
+                .filter((b) => b.difference !== null)
+                .map((b) => (
+                  <span key={b.currency} className={cn('block', Number(b.difference) < 0 ? 'text-danger-text' : Number(b.difference) > 0 ? 'text-warn-text' : 'text-muted')}>
+                    {money(b.difference ?? '0', b.currency)}
+                  </span>
+                )),
+          },
+          {
+            key: 'actions', label: '', hideable: false, align: 'right',
+            render: (s) =>
+              s.status === 'closed' && can('cashier.approve') ? (
+                <Button variant="secondary" disabled={approve.isPending} onClick={() => approve.mutate(s.id)}>
+                  {t('cashier.approve')}
+                </Button>
+              ) : null,
+          },
+        ]}
+      />
     </div>
   )
 }

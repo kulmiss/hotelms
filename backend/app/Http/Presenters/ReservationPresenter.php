@@ -61,6 +61,7 @@ class ReservationPresenter
             'open_stay' => (bool) $r->open_stay,
             'source' => $r->source,
             'branch' => $r->branch?->only(['id', 'name']),
+            'booked_at' => HotelClock::iso($r->created_at, $hotel),
             'guest' => $r->guest ? ['id' => $r->guest->id, 'name' => $r->guest->full_name, 'phone' => $r->guest->phone] : null,
             'check_in_at' => HotelClock::iso($r->check_in_at, $hotel),
             'check_out_at' => HotelClock::iso($r->check_out_at, $hotel),

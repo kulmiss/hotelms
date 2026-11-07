@@ -16,6 +16,7 @@ export const GUIDE: GuideSection[] = [
       { key: 'signIn' },
       { key: 'lockScreen' },
       { key: 'search' },
+      { key: 'lists' },
       { key: 'bell' },
       { key: 'profile' },
       { key: 'branch' },

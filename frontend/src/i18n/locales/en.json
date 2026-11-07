@@ -2737,6 +2737,14 @@
     "added": "Added: {{name}} {{amount}} to room {{room}}",
     "undo": "Undo"
   },
+  "table": {
+    "excel": "Excel",
+    "columns": "Columns",
+    "perPage": "Rows",
+    "empty": "Nothing to show.",
+    "booked": "Booked on",
+    "city": "City"
+  },
   "dates": {
     "label": "Dates",
     "any": "Any time",
