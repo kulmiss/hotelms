@@ -251,6 +251,15 @@ describe('guest ID photo', () => {
 })
 
 describe('payment proof', () => {
+  it('shows extra charges in the money box of the stay', async () => {
+    mockApi({ 'GET /me': { body: me() }, 'GET /reservations/9': { body: { data: { ...reservation, status: 'checked_in', total: '5175.00', booking_total: '4600.00', paid_total: '1380.00', balance: '3795.00' } } } })
+    renderApp('/reservations/9')
+
+    expect(await screen.findByText('Extras and fees')).toBeInTheDocument()
+    expect(screen.getByText('+ ETB 575.00')).toBeInTheDocument()
+    expect(screen.getByText('ETB 5,175.00')).toBeInTheDocument() // total with the extras
+  })
+
   it('opens a payment proof in a new tab, still signed in', async () => {
     const paid = { id: 3, type: 'deposit', amount: '1380.00', currency: 'ETB', amount_in_base: '1380.00', method: 'Bank transfer', reference: null, refund_reason: null, paid_at: '2026-11-10T09:00:00+03:00', by: 'Meron', proof: { id: 5, mime: 'image/jpeg' } }
     mockApi({ 'GET /me': { body: me() }, 'GET /reservations/9': { body: { data: { ...reservation, payments: [paid] } } } })

@@ -13,6 +13,43 @@ use App\Support\Money;
 /** JSON shape of a reservation (times in the hotel's own time zone). */
 class ReservationPresenter
 {
+    /**
+     * Adds the bills' totals to a reservation query (one question for a whole list), so lists show the
+     * real total: rooms plus extra charges, fees and extensions, and everything paid.
+     */
+    public static function withBills($query)
+    {
+        $live = fn ($q) => $q->where('status', '!=', 'void');
+
+        return $query->withCount(['invoices as bills_count' => $live])
+            ->withSum(['invoices as bills_total' => $live], 'total')
+            ->withSum(['invoices as bills_paid' => $live], 'paid_total');
+    }
+
+    /**
+     * Total and paid of a stay. Once there is a bill, the bills are the truth (extras such as breakfast,
+     * fees, extensions); before that, the booking.
+     *
+     * @return array{0: string, 1: string}
+     */
+    public static function money(Reservation $r): array
+    {
+        $attrs = $r->getAttributes();
+        if (array_key_exists('bills_count', $attrs)) {
+            return (int) $attrs['bills_count'] > 0
+                ? [Money::round((string) $attrs['bills_total']), Money::round((string) $attrs['bills_paid'])]
+                : [(string) $r->total, (string) $r->paid_total];
+        }
+        if ($r->relationLoaded('invoices')) {
+            $bills = $r->invoices->where('status', '!=', 'void');
+            if ($bills->isNotEmpty()) {
+                return [Money::sum($bills->pluck('total')->map(fn ($v) => (string) $v)->all()), Money::sum($bills->pluck('paid_total')->map(fn ($v) => (string) $v)->all())];
+            }
+        }
+
+        return [(string) $r->total, (string) $r->paid_total];
+    }
+
     /** @return array<string, mixed> */
     public static function summary(Reservation $r, Hotel $hotel): array
     {
@@ -32,8 +69,9 @@ class ReservationPresenter
             'adults' => $r->adults,
             'children' => $r->children,
             'currency' => $r->currency,
-            'total' => $r->total,
-            'paid_total' => $r->paid_total,
+            'total' => self::money($r)[0],
+            'paid_total' => self::money($r)[1],
+            'booking_total' => $r->total, // rooms only, as booked (the price breakdown)
             'deposit_required' => $r->deposit_required,
         ];
     }

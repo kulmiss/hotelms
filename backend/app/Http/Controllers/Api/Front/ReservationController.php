@@ -36,7 +36,7 @@ class ReservationController extends Controller
         $branches = $request->user()->accessibleBranches()->pluck('id');
         $q = trim((string) $request->input('q'));
 
-        $page = Reservation::query()->with(['guest:id,first_name,last_name,phone', 'branch:id,name', 'rooms.roomType:id,name', 'rooms.room:id,number'])
+        $page = ReservationPresenter::withBills(Reservation::query())->with(['guest:id,first_name,last_name,phone', 'branch:id,name', 'rooms.roomType:id,name', 'rooms.room:id,number'])
             ->whereIn('branch_id', $branches)
             ->when($request->input('branch_id'), fn ($w, $b) => $w->where('branch_id', $b))
             ->when($request->input('status'), fn ($w, $s) => $w->whereIn('status', explode(',', $s)))
