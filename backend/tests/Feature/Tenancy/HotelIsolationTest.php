@@ -68,6 +68,19 @@ class HotelIsolationTest extends TestCase
         $this->assertNull($found);
     }
 
+    public function test_another_hotels_record_says_not_found_in_plain_words(): void
+    {
+        $user = User::factory()->withRole($this->hotelA, 'hotel_admin')->create();
+        $other = Branch::withoutGlobalScope('hotel')->where('hotel_id', $this->hotelB->id)->first();
+
+        // Same answer as a record that never existed: nothing tells the other hotel's data exists, and no class names.
+        foreach ([$other->id, 999999] as $id) {
+            $res = $this->actingAs($user)->putJson("/api/v1/settings/branches/{$id}", ['name' => 'X'])->assertNotFound();
+            $res->assertJson(['code' => 'not_found', 'message' => 'Not found. It may have been removed, or the link is wrong.']);
+            $this->assertStringNotContainsString('App\\Models', $res->getContent());
+        }
+    }
+
     public function test_new_records_get_the_current_hotel_automatically(): void
     {
         $branch = app(TenantContext::class)->runAs($this->hotelB, fn () => Branch::create(['name' => 'B CMC']));

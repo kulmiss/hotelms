@@ -10,6 +10,7 @@ import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { LoadFailed } from '@/components/ui/LoadFailed'
 import { Select } from '@/components/ui/Select'
 import { ApiError } from '@/lib/api'
 import { compareMoney, isPositive, subMoney } from '@/lib/decimal'
@@ -32,6 +33,7 @@ export function ReservationPage() {
   )
   const lookups = useLookups()
   const payLater = usePayLater(Number(id))
+  if (q.isError) return <LoadFailed error={q.error} onRetry={() => q.refetch()} back={{ to: '/reservations', label: t('loadFailed.toReservations') }} />
   if (!q.data) return null
   const r = q.data.data
   const editable = r.status === 'pending' || r.status === 'confirmed'

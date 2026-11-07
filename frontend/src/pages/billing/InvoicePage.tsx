@@ -9,6 +9,7 @@ import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { LoadFailed } from '@/components/ui/LoadFailed'
 import { Select } from '@/components/ui/Select'
 import { ApiError } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -31,6 +32,7 @@ export function InvoicePage() {
   const remove = useRemoveItem(Number(id))
   const split = useSplitInvoice(Number(id))
   const [panel, setPanel] = useState<'charge' | 'discount' | 'pay' | 'void' | null>(null)
+  if (q.isError) return <LoadFailed error={q.error} onRetry={() => q.refetch()} back={{ to: '/billing', label: t('loadFailed.toBilling') }} />
   if (!q.data) return null
   const inv = q.data.data
   const editable = inv.status !== 'void'

@@ -179,6 +179,15 @@
     "title": "Page not found",
     "back": "Back to dashboard"
   },
+  "loadFailed": {
+    "notFound": "Not found. It may have been removed, it may belong to a branch you do not work in, or the link is wrong.",
+    "forbidden": "Your role cannot open this. Ask your manager if you need it.",
+    "other": "This could not be loaded. Check the internet connection and try again.",
+    "retry": "Try again",
+    "toReservations": "Back to reservations",
+    "toBilling": "Back to billing",
+    "toGuests": "Back to guests"
+  },
   "hotelStatus": {
     "trial": "Trial",
     "active": "Active",
@@ -1318,7 +1327,7 @@
       "clear": "Clear filters",
       "none": "No rooms match these filters."
     },
-    "openStay": "Open stay",
+    "openStay": "Stay details",
     "checkIn": "Check in",
     "checkOut": "Check out",
     "markAs": "Mark {{status}}",
@@ -1352,6 +1361,7 @@
     "overdueHelp": "Check-out time has passed and the guest has not checked out yet.",
     "lateHelp": "Check-in time has passed and the guest has not arrived yet.",
     "nextBooking": "Next booking: {{from}} → {{to}} · {{guest}}",
+    "lastNight": "After midnight: this guest pays for last night ({{night}}) and leaves today. Your hotel set this cut-off time.",
     "walkInStartsNow": "A walk-in checks in now. Guest arriving on another day?",
     "bookForLater": "Make a reservation",
     "depositRule": "Your hotel takes a deposit up front for walk-ins.",
@@ -2288,6 +2298,7 @@
       "checkOut": "Check out",
       "walkIn": "Walk-in",
       "takePayment": "Take payment",
+      "chargeRoom": "Charge a room",
       "roomBoard": "Room board"
     }
   },

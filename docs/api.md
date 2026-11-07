@@ -12,7 +12,7 @@ lists the route groups; the file itself is the exact, complete list (with each r
 | **Who am I** | `GET /me`: user, hotel (modules, setup), branches, role, permissions, platform role, impersonation, switches, emergency, security |
 | **Hotel** | Always the signed-in person's hotel (never a `hotel_id` in the request). Records of another hotel answer **404**. |
 | **Branch** | Lists take `?branch_id=`; without it, all branches the person may see |
-| **Errors** | `422` `{message, errors: {field: [text]}}` – plain English, the field the screen shows; `403` not allowed; `404` not found (or another hotel's); `423` locked (suspended/emergency) |
+| **Errors** | `422` `{message, errors: {field: [text]}}` – plain English, the field the screen shows; `403` not allowed; `404` not found (or another hotel's) – a missing record answers `{message: "Not found. …", code: "not_found"}`, never a class name; `423` locked (suspended/emergency) |
 | **Money** | Strings with 2 decimals (`"4662.50"`) and a currency code |
 | **Dates** | ISO 8601 with the hotel's offset (`2026-11-12T14:00:00+03:00`); plain dates `YYYY-MM-DD` are hotel-local |
 | **Money actions** | Send `Idempotency-Key: <uuid>`; a repeat gets the first answer (`Idempotent-Replay: true`). Only successful answers are kept. |
