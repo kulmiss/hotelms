@@ -182,7 +182,7 @@ export function CheckOutPanel({ r, onClose }: { r: ReservationDetail; onClose: (
           <span>{t('desk.earlyLeave', { count: early.nights })}</span>
           {isPositive(early.fee) && (
             <label className="flex items-center gap-3">
-              <span className="flex-1">{t('desk.earlyFee', { amount: money(early.fee, r.currency) })}</span>
+              <span className="flex-1">{t('desk.earlyLeaveFee', { amount: money(early.fee, r.currency) })}</span>
               {can('fees.waive') && (
                 <span className="flex items-center gap-2">
                   <input type="checkbox" className="size-4 accent-accent" checked={waiveEarly} onChange={(e) => setWaiveEarly(e.target.checked)} />

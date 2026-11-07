@@ -1316,7 +1316,7 @@
     "lateFee": "Late check-out fee: {{amount}}",
     "earlyLeave_one": "Leaving early: {{count}} night not used comes off the bill.",
     "earlyLeave_other": "Leaving early: {{count}} nights not used come off the bill.",
-    "earlyFee": "Early check-out fee: {{amount}}",
+    "earlyLeaveFee": "Early check-out fee: {{amount}}",
     "giveBack": "Give back to the guest: {{amount}} (record it as a refund after check-out).",
     "toPay": "To pay: {{amount}}",
     "allPaid": "Everything is paid.",
