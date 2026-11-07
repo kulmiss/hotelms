@@ -237,7 +237,7 @@ function PaymentForm({ r, onDone }: { r: ReservationDetail; onDone: () => void }
   return (
     <form
       noValidate
-      className="grid gap-3 rounded-lg bg-sunken p-4 sm:grid-cols-3"
+      className="grid gap-3 rounded-lg bg-sunken p-4 sm:grid-cols-2"
       onSubmit={(e) => {
         e.preventDefault()
         pay.mutate({ ...f, payment_method_id: methodId, proof_id: proof?.id }, { onSuccess: onDone })
@@ -257,8 +257,8 @@ function PaymentForm({ r, onDone }: { r: ReservationDetail; onDone: () => void }
           </option>
         ))}
       </Select>
-      <div className="flex gap-2">
-        <div className="flex-1">
+      <div className="flex min-w-0 gap-2">
+        <div className="min-w-0 flex-1">
           <Field label={t('reservations.amount')} inputMode="decimal" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value.replace(/[^0-9.]/g, '') })} error={error?.field('amount')} />
         </div>
         {(lookups.data?.currencies.length ?? 0) > 1 && (
@@ -274,13 +274,13 @@ function PaymentForm({ r, onDone }: { r: ReservationDetail; onDone: () => void }
         )}
       </div>
       <Field label={t('reservations.reference')} value={f.reference ?? ''} hint={t('reservations.referenceHint')} onChange={(e) => setF({ ...f, reference: e.target.value })} />
-      <div className="sm:col-span-3">
+      <div className="sm:col-span-2">
         <ProofField value={proof} onChange={setProof} />
       </div>
       {f.type === 'refund' && <Field label={t('reservations.refundReason')} value={f.refund_reason ?? ''} onChange={(e) => setF({ ...f, refund_reason: e.target.value })} error={error?.field('refund_reason')} />}
       {pay.error && !error && <Alert>{t('common.serverUnreachable')}</Alert>}
       {error && !Object.keys(error.errors).length && <Alert>{error.message}</Alert>}
-      <div className="flex items-end justify-end gap-2 sm:col-span-3">
+      <div className="flex items-end justify-end gap-2 sm:col-span-2">
         <Button variant="ghost" onClick={onDone}>
           {t('common.cancel')}
         </Button>

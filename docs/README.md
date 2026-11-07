@@ -23,7 +23,7 @@ When code and those documents disagree, ask the owner before changing either.
 
 **Staff guides** (for hotel staff, in very easy English) are inside the app: Help → How to use.
 Their text is in `frontend/src/i18n/locales/en.guide.json`; which guide shows to whom is in
-`frontend/src/lib/guides.ts`.
+`frontend/src/lib/guides.ts`; their pictures are in `frontend/public/guide/` (see [recipes.md](recipes.md)).
 
 > **Rule:** every pull request that changes behaviour also updates these documents
 > and, when staff see the change, the staff guide. (Also written in `CLAUDE.md`.)

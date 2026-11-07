@@ -9,7 +9,7 @@ export function Field({ label, hint, error, className, id, ...props }: FieldProp
   const hintId = hint ? `${inputId}-hint` : undefined
   const errorId = error ? `${inputId}-error` : undefined
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex min-w-0 flex-col gap-1.5">
       <label htmlFor={inputId} className="text-[13px] font-medium text-text">
         {label}
       </label>
@@ -18,7 +18,8 @@ export function Field({ label, hint, error, className, id, ...props }: FieldProp
         aria-describedby={[hintId, errorId].filter(Boolean).join(' ') || undefined}
         aria-invalid={error ? true : undefined}
         className={cn(
-          'min-h-touch rounded-lg border-0 bg-surface px-3 text-base text-text shadow-sm ring-1 ring-ring-strong placeholder:text-icon sm:text-sm',
+          // w-full + min-w-0: never wider than its column (a field next to a currency box overflowed its card)
+          'min-h-touch w-full min-w-0 rounded-lg border-0 bg-surface px-3 text-base text-text shadow-sm ring-1 ring-ring-strong placeholder:text-icon sm:text-sm',
           'transition duration-75 focus:ring-2 focus:ring-accent focus:outline-none disabled:bg-sunken disabled:text-muted',
           error && 'ring-danger',
           className,

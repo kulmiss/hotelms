@@ -72,6 +72,14 @@ class DocsController extends Controller
         return response()->json(['data' => $rows, 'available' => self::folder() !== null]);
     }
 
+    /** A diagram from docs/images as a data URL; only plain names (no folders), only files that exist. */
+    private function picture(string $file): string
+    {
+        $path = self::folder().'/images/'.Str::lower($file);
+
+        return is_file($path) ? 'data:image/svg+xml;base64,'.base64_encode((string) file_get_contents($path)) : '';
+    }
+
     /** One document as safe HTML (raw HTML in the file is removed); links to other documents open in the app. */
     public function show(string $name): JsonResponse
     {
@@ -80,6 +88,8 @@ class DocsController extends Controller
         $html = Str::markdown($markdown, ['html_input' => 'strip', 'allow_unsafe_links' => false]);
         // "architecture.md#money" → the same page in the app.
         $html = preg_replace_callback('/href="([a-z0-9-]+)\.md(#[^"]*)?"/i', fn ($m) => 'href="/admin/docs/'.Str::lower($m[1]).($m[2] ?? '').'"', $html);
+        // ![…](images/x.svg) → the picture inline (no extra request; <img> never runs scripts in an SVG).
+        $html = preg_replace_callback('/src="images\/([a-z0-9-]+\.svg)"/i', fn ($m) => 'src="'.$this->picture($m[1]).'"', $html);
 
         return response()->json(['data' => [
             'name' => $name,

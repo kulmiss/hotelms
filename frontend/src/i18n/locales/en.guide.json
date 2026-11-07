@@ -2,6 +2,7 @@
   "title": "How to use",
   "intro": "Short guides for your work. You see only the things you are allowed to do. Tap a title to open it.",
   "tabs": { "guide": "How to use", "ask": "Ask us" },
+  "pictureAlt": "Picture: {{title}}. The orange numbers are the steps below.",
   "searchLabel": "Find a guide",
   "searchPlaceholder": "For example: check-in, payment, clean",
   "none": "No guide found. Try another word, or ask us.",

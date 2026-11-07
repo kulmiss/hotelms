@@ -14,7 +14,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { ApiError } from '@/lib/api'
 import { useMe } from '@/lib/auth'
 import { useBrand } from '@/lib/brand'
-import { guideFor } from '@/lib/guides'
+import { guideFor, guidePicture } from '@/lib/guides'
 import { useCan } from '@/lib/hotel'
 import { Tabs } from '@/components/ui/Tabs'
 import { cn } from '@/lib/cn'
@@ -69,6 +69,14 @@ function Guides() {
                   {t(`guide.topics.${tp.key}.title`)}
                   <ChevronDownIcon aria-hidden className="size-4 shrink-0 text-icon transition duration-150 group-open:rotate-180" />
                 </summary>
+                {tp.pic && (
+                  <img
+                    src={guidePicture(tp.key)}
+                    alt={t('guide.pictureAlt', { title: t(`guide.topics.${tp.key}.title`) })}
+                    loading="lazy"
+                    className="mx-4 mt-1 mb-2 block h-auto w-[calc(100%-2rem)] max-w-xl rounded-lg ring-1 ring-ring"
+                  />
+                )}
                 <ol className="flex list-decimal flex-col gap-1.5 px-4 pt-1 pb-4 pl-9 text-[13px] leading-relaxed">
                   {steps(tp.key).map((step, i) => (
                     <li key={i}>{step}</li>

@@ -19,6 +19,8 @@ Browser (React app)  ──HTTPS, cookie session──►  Laravel API (/api/v1,
 In production, **one domain** serves both: `public/app.html` (the React build) and `/api/...` (Laravel).
 See [hosting.md](hosting.md).
 
+![How one request travels: browser, sign-in, tenant, permission, controller, database](images/request-flow.svg)
+
 ### Hosting limits shape the code (owner decision)
 The same code must run on **cPanel shared hosting** and on a **VPS**:
 - No always-on worker: background work runs from one cron line (`schedule:run` every minute); queued jobs run with `--stop-when-empty`.
@@ -39,6 +41,8 @@ A Super Admin can **"log in as hotel"** (impersonation) for support, with a requ
 ## Multi-hotel isolation (the most important rule)
 
 A data leak between hotels is the worst possible bug. Isolation is enforced in **three layers**:
+
+![The three layers of hotel isolation](images/tenancy.svg)
 
 1. **Every hotel-owned table has `hotel_id`** (and `branch_id` where it matters).
 2. **Models use the `BelongsToHotel` trait** (`app/Models/Concerns/BelongsToHotel.php`):

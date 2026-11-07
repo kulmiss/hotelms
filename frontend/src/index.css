@@ -210,6 +210,7 @@
     & th { @apply bg-sunken font-semibold; }
     & blockquote { @apply border-l-4 border-accent/50 pl-3 text-muted; }
     & hr { @apply my-4 border-border; }
+    & img { @apply my-3 block h-auto max-w-full rounded-lg ring-1 ring-ring; }
   }
 }
 

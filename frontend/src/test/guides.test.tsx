@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import en from '@/i18n/locales/en.guide.json'
-import { GUIDE, guideFor } from '@/lib/guides'
+import { GUIDE, guideFor, guidePicture } from '@/lib/guides'
 import { makeMe, mockApi } from './mockApi'
 import { renderApp } from './renderApp'
 
@@ -16,6 +16,13 @@ describe('staff guides', () => {
         expect(topics[tp.key]?.steps.length, tp.key).toBeGreaterThan(0)
       }
     }
+  })
+
+  it('has a picture file for every topic that says it has one', () => {
+    const withPic = GUIDE.flatMap((s) => s.topics).filter((tp) => tp.pic)
+    expect(withPic.length).toBeGreaterThan(10)
+    const files = Object.keys(import.meta.glob('../../public/guide/*.webp')).map((f) => f.replace('../../public', ''))
+    for (const tp of withPic) expect(files, tp.key).toContain(guidePicture(tp.key))
   })
 
   it('shows each person only what they may do', () => {
@@ -35,6 +42,7 @@ describe('staff guides', () => {
     renderApp('/help')
     expect(await screen.findByText('Walk-in (guest without a booking)')).toBeInTheDocument()
     expect(screen.queryByText('Add staff')).not.toBeInTheDocument()
+    expect(screen.getByAltText(/Walk-in \(guest without a booking\)/)).toHaveAttribute('src', '/guide/walkIn.webp')
     await userEvent.type(screen.getByLabelText('Find a guide'), 'walk-in')
     expect(screen.queryByText('Sign in and sign out')).not.toBeInTheDocument()
   })
