@@ -295,8 +295,9 @@
       "title": "Print a bill or receipt",
       "steps": [
         "Open the bill. Tap Print.",
+        "Does a company pay? First, on the bill, tap Add company and TIN. They print on the bill.",
         "Choose A4 paper, or the small 80 mm receipt printer.",
-        "Print. Give the paper to the guest."
+        "Print. Give the paper to the guest. (The guest's phone and ID number are not printed.)"
       ]
     },
     "refund": {

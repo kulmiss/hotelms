@@ -76,9 +76,10 @@ export function InvoicePrintPage() {
         <section className={cn('grid gap-2 py-3', small ? 'grid-cols-1' : 'grid-cols-2')}>
           <div className="flex flex-col">
             <span className="text-black/60">{t('billing.billTo')}</span>
+            {/* Name only (VAT invoice: the buyer's name). Phone and ID stay on the registration card. */}
             <strong>{inv.guest.full_name}</strong>
-            {inv.guest.phone && <span>{inv.guest.phone}</span>}
-            {inv.guest.id_number && <span>ID: {inv.guest.id_number}</span>}
+            {inv.buyer?.company && <span>{inv.buyer.company}</span>}
+            {inv.buyer?.tin && <span>{t('billing.buyer.tin')}: {inv.buyer.tin}</span>}
           </div>
           {inv.stay && (
             <div className={cn('flex flex-col', !small && 'text-right')}>

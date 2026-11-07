@@ -226,6 +226,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
                 Route::delete('/invoices/{id}/items/{item}', [InvoiceController::class, 'removeItem'])->middleware('one.at.a.time:invoice');
                 Route::post('/invoices/{id}/payments', [InvoiceController::class, 'payment'])->middleware(['idempotent', 'one.at.a.time:invoice']); // payments.take / refund checked inside
             });
+            Route::put('/invoices/{id}/buyer', [InvoiceController::class, 'buyer'])->middleware(['permission:invoices.print', 'one.at.a.time:invoice']);
             Route::post('/invoices/{id}/void', [InvoiceController::class, 'void'])->middleware(['permission:invoices.void', 'one.at.a.time:invoice']);
             Route::post('/invoices/{id}/split', [InvoiceController::class, 'split'])->middleware(['permission:invoices.split', 'one.at.a.time:invoice']);
             Route::get('/payments', [InvoiceController::class, 'payments'])->middleware('permission:payments.view');

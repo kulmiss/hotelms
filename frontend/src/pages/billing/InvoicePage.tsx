@@ -12,7 +12,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { ApiError } from '@/lib/api'
 import { cn } from '@/lib/cn'
-import { INVOICE_TONES, useAddCharge, useInvoice, useInvoicePayment, useRemoveItem, useSplitInvoice, useVoidInvoice, type InvoiceDetail } from '@/lib/desk'
+import { INVOICE_TONES, useAddCharge, useInvoice, useInvoiceBuyer, useInvoicePayment, useRemoveItem, useSplitInvoice, useVoidInvoice, type InvoiceDetail } from '@/lib/desk'
 import { isPositive } from '@/lib/decimal'
 import { date, money } from '@/lib/format'
 import { localDate, localTime, useLookups } from '@/lib/front'
@@ -168,7 +168,8 @@ export function InvoicePage() {
           </Card>
         </div>
 
-        <Card className="flex flex-col gap-2 text-[13px] lg:sticky lg:top-20">
+        <div className="flex flex-col gap-6 lg:sticky lg:top-20">
+        <Card className="flex flex-col gap-2 text-[13px]">
           <h2 className="text-sm font-semibold">{t('reservations.money')}</h2>
           <Line label={t('billing.charges')} value={money(inv.subtotal, c)} />
           {Number(inv.discount_total) > 0 && <Line label={t('billing.discounts')} value={`− ${money(inv.discount_total, c)}`} />}
@@ -180,6 +181,8 @@ export function InvoicePage() {
           <Line label={t('reservations.balance')} value={money(inv.balance, c)} strong />
           {inv.outstanding_approved_at && <p className="text-xs text-danger-text">{t('billing.outstandingSince', { date: date(localDate(inv.outstanding_approved_at)) })}</p>}
         </Card>
+        <BuyerBox inv={inv} canEdit={inv.status !== 'void' && can('invoices.print')} />
+        </div>
       </div>
     </div>
   )
@@ -290,6 +293,60 @@ function VoidPanel({ inv, onClose }: { inv: InvoiceDetail; onClose: () => void }
           {t('billing.void')}
         </Button>
       </div>
+    </Card>
+  )
+}
+
+/** A company that pays the bill: its name and TIN print on the invoice (optional). */
+function BuyerBox({ inv, canEdit }: { inv: InvoiceDetail; canEdit: boolean }) {
+  const { t } = useTranslation()
+  const save = useInvoiceBuyer(inv.id)
+  const [editing, setEditing] = useState(false)
+  const [company, setCompany] = useState(inv.buyer?.company ?? '')
+  const [tin, setTin] = useState(inv.buyer?.tin ?? '')
+  const has = !!inv.buyer?.company
+  if (!has && !canEdit) return null
+
+  return (
+    <Card className="flex flex-col gap-2 text-[13px]">
+      <h2 className="text-sm font-semibold">{t('billing.buyer.title')}</h2>
+      {editing ? (
+        <form
+          className="flex flex-col gap-3"
+          onSubmit={(e) => {
+            e.preventDefault()
+            save.mutate({ company: company.trim() || null, tin: tin.trim() || null }, { onSuccess: () => setEditing(false) })
+          }}
+        >
+          <Field label={t('billing.buyer.company')} value={company} onChange={(e) => setCompany(e.target.value)} autoFocus />
+          <Field label={t('billing.buyer.tin')} inputMode="numeric" value={tin} onChange={(e) => setTin(e.target.value.replace(/\D/g, ''))} hint={t('billing.buyer.tinHint')} />
+          {save.error && <Alert>{err(save.error)}</Alert>}
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setEditing(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button type="submit" disabled={save.isPending || (!company.trim() && !!tin.trim())}>
+              {t('common.save')}
+            </Button>
+          </div>
+        </form>
+      ) : (
+        <>
+          {has ? (
+            <p className="flex flex-col">
+              <span className="font-medium">{inv.buyer?.company}</span>
+              {inv.buyer?.tin && <span className="text-muted">TIN: {inv.buyer.tin}</span>}
+            </p>
+          ) : (
+            <p className="text-muted">{t('billing.buyer.none')}</p>
+          )}
+          {canEdit && (
+            <Button variant="secondary" className="self-start" onClick={() => setEditing(true)}>
+              {has ? t('billing.buyer.change') : t('billing.buyer.add')}
+            </Button>
+          )}
+        </>
+      )}
     </Card>
   )
 }

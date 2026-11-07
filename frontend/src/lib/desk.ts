@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRef } from 'react'
-import { api, del, newIdempotencyKey, post } from './api'
+import { api, del, newIdempotencyKey, post, put } from './api'
 import type { Page, ReservationDetail, ReservationSummary } from './front'
 
 /* ------------------------------------------------------------- front desk */
@@ -132,7 +132,9 @@ export type InvoiceDetail = InvoiceSummary & {
   discount_total: string
   tax_total: string
   reservation_room_id: number | null
-  guest: { id: number; full_name: string; phone: string | null; email: string | null; id_number: string | null; nationality: string | null }
+  guest: { id: number; full_name: string; phone: string | null; email: string | null }
+  /** A company that pays the bill (prints on the invoice). */
+  buyer?: { company: string | null; tin: string | null }
   outstanding_approved_at: string | null
   voided_at: string | null
   void_reason: string | null
@@ -171,6 +173,7 @@ export const useAddCharge = (id: number) =>
 export const useRemoveItem = (id: number) => useDeskAction((itemId: number) => del(`/invoices/${id}/items/${itemId}`))
 export const useInvoicePayment = (id: number) =>
   useMoneyAction((v: { type: 'payment' | 'refund'; payment_method_id: number; amount: string; currency: string; reference?: string; refund_reason?: string; proof_id?: number }, h) => post<{ data: InvoiceDetail }>(`/invoices/${id}/payments`, v, h))
+export const useInvoiceBuyer = (id: number) => useDeskAction((v: { company: string | null; tin: string | null }) => put<{ data: InvoiceDetail }>(`/invoices/${id}/buyer`, v))
 export const useVoidInvoice = (id: number) => useDeskAction((reason: string) => post<{ data: InvoiceDetail }>(`/invoices/${id}/void`, { reason }))
 export const useSplitInvoice = (id: number) => useDeskAction(() => post<{ data: InvoiceSummary[] }>(`/invoices/${id}/split`))
 

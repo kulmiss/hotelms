@@ -48,7 +48,9 @@ class InvoicePresenter
             'discount_total' => $i->discount_total,
             'tax_total' => $i->tax_total,
             'reservation_room_id' => $i->reservation_room_id,
-            'guest' => $i->guest,
+            // Only what a bill needs: the full ID number stays on the guest's page and the registration card.
+            'guest' => $i->guest ? ['id' => $i->guest->id, 'full_name' => $i->guest->full_name, 'phone' => $i->guest->phone, 'email' => $i->guest->email] : null,
+            'buyer' => ['company' => $i->buyer_company, 'tin' => $i->buyer_tin],
             'outstanding_approved_at' => HotelClock::iso($i->outstanding_approved_at, $hotel),
             'voided_at' => HotelClock::iso($i->voided_at, $hotel),
             'void_reason' => $i->void_reason,

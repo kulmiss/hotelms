@@ -110,6 +110,20 @@ class InvoiceController extends Controller
         return response()->json(['data' => InvoicePresenter::detail($invoice->fresh(), $request->user()->hotel)], 201);
     }
 
+    /** The company that pays (name + TIN on the printed invoice); empty both to remove it. Also on a paid bill. */
+    public function buyer(Request $request, string $id): JsonResponse
+    {
+        $invoice = $this->find($request, $id);
+        abort_if($invoice->status === 'void', 422, 'This bill is cancelled.');
+        $data = $request->validate([
+            'company' => ['nullable', 'required_with:tin', 'string', 'max:150'],
+            'tin' => ['nullable', 'string', 'regex:/^[0-9]{6,15}$/'],
+        ], ['tin.regex' => 'The TIN has only numbers (usually 10).']);
+        $invoice->update(['buyer_company' => $data['company'] ?: null, 'buyer_tin' => $data['tin'] ?: null]);
+
+        return response()->json(['data' => InvoicePresenter::detail($invoice->fresh(), $request->user()->hotel)]);
+    }
+
     public function void(Request $request, string $id): JsonResponse
     {
         $invoice = $this->find($request, $id);

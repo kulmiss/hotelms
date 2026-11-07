@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'hotel_id', 'branch_id', 'reservation_id', 'reservation_room_id', 'guest_id', 'number', 'currency', 'subtotal', 'discount_total',
+    'hotel_id', 'branch_id', 'reservation_id', 'reservation_room_id', 'guest_id', 'buyer_company', 'buyer_tin', 'number', 'currency', 'subtotal', 'discount_total',
     'tax_total', 'total', 'paid_total', 'balance', 'status', 'issued_at', 'outstanding_approved_by', 'outstanding_approved_at',
     'voided_by', 'voided_at', 'void_reason',
 ])]

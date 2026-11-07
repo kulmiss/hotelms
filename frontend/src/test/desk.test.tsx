@@ -373,6 +373,29 @@ describe('reception extras', () => {
     expect(screen.getByText('National ID')).toBeInTheDocument()
   })
 
+  it('prints the company and its TIN, never the guest phone or ID', async () => {
+    const guest = { ...invoice.guest, phone: '+251911223344', id_number: 'ET1234567' } // even if an old server still sent them
+    mockApi({ 'GET /me': { body: me() }, 'GET /invoices/4': { body: { data: { ...invoice, guest, buyer: { company: 'Abay Trading PLC', tin: '0098765432' } } } } })
+    renderApp('/billing/4/print')
+    expect(await screen.findByText('Abay Trading PLC')).toBeInTheDocument()
+    expect(screen.getByText('Buyer TIN: 0098765432')).toBeInTheDocument()
+    expect(screen.queryByText('+251911223344')).not.toBeInTheDocument()
+    expect(screen.queryByText(/ET1234567/)).not.toBeInTheDocument()
+  })
+
+  it('adds the company that pays on the bill', async () => {
+    const fetchMock = mockApi({ 'GET /me': { body: me() }, 'GET /invoices/4': { body: { data: { ...invoice, buyer: { company: null, tin: null } } } }, 'PUT /invoices/4/buyer': { body: { data: invoice } } })
+    renderApp('/billing/4')
+    await userEvent.click(await screen.findByRole('button', { name: 'Add company and TIN' }))
+    await userEvent.type(screen.getByLabelText('Company name'), 'Abay Trading PLC')
+    await userEvent.type(screen.getByLabelText('Buyer TIN'), '00987-65432')
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await waitFor(() => {
+      const call = fetchMock.mock.calls.find(([url, init]) => String(url).endsWith('/invoices/4/buyer') && init?.method === 'PUT')
+      expect(JSON.parse(String(call?.[1]?.body))).toEqual({ company: 'Abay Trading PLC', tin: '0098765432' })
+    })
+  })
+
   it('prints on the hotel’s default paper', async () => {
     mockApi({ 'GET /me': { body: me() }, 'GET /invoices/4': { body: { data: { ...invoice, hotel: { ...invoice.hotel, receipt_paper: 'receipt' } } } } })
     renderApp('/billing/4/print')
