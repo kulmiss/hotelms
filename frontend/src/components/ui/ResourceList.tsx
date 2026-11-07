@@ -7,6 +7,7 @@ import { useSettingsDelete, useSettingsList, useSettingsSave } from '@/lib/setti
 import { Alert } from './Alert'
 import { Button } from './Button'
 import { Card } from './Card'
+import { DataTable, type Column } from './DataTable'
 import { Field } from './Field'
 import { Select } from './Select'
 
