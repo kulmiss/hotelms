@@ -7,7 +7,6 @@ use App\Models\ReportTarget;
 use App\Models\User;
 use App\Services\Reports\Insights;
 use App\Support\HotelClock;
-use App\Support\Money;
 use App\Support\Spreadsheet;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -95,19 +94,12 @@ class InsightController extends Controller
     public function accounting(Request $request): JsonResponse|Response
     {
         [$from, $to] = $this->period($request);
-        $lines = $this->insights($request)->journal($from, $to);
         $format = $request->input('format', 'json');
         if ($format === 'json') {
-            // The screen shows a total per account (exact sums); every line is in the download.
-            $accounts = [];
-            foreach ($lines as $l) {
-                $accounts[$l['account']] ??= ['account' => $l['account'], 'debit' => '0.00', 'credit' => '0.00'];
-                $accounts[$l['account']]['debit'] = Money::add($accounts[$l['account']]['debit'], $l['debit']);
-                $accounts[$l['account']]['credit'] = Money::add($accounts[$l['account']]['credit'], $l['credit']);
-            }
-
-            return response()->json(['data' => ['from' => $from, 'to' => $to, 'accounts' => array_values($accounts), 'line_count' => count($lines), 'currency' => $this->currency($request)]]);
+            // The screen shows a total per account, added up by the database; every line is in the download.
+            return response()->json(['data' => ['from' => $from, 'to' => $to, 'accounts' => $this->insights($request)->journalTotals($from, $to), 'currency' => $this->currency($request)]]);
         }
+        $lines = $this->insights($request)->journal($from, $to);
         $headers = ['Date', 'Account', 'Reference', 'Description', 'Debit', 'Credit'];
         $rows = array_map(fn ($l) => array_values($l), $lines);
         $name = "journal-{$from}-{$to}";

@@ -506,7 +506,7 @@ export function MyWorkReport() {
 
 export function AccountingReport({ f }: { f: ReportFilters }) {
   const { t } = useTranslation()
-  const q = useInsight<{ accounts: { account: string; debit: string; credit: string }[]; line_count: number; currency: string }>('accounting', { from: f.from, to: f.to, branch_id: f.branch_id })
+  const q = useInsight<{ accounts: { account: string; debit: string; credit: string }[]; currency: string }>('accounting', { from: f.from, to: f.to, branch_id: f.branch_id })
   const d = q.data?.data
   const params = qs({ from: f.from, to: f.to, branch_id: f.branch_id })
   return (

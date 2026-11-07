@@ -10,7 +10,9 @@ use App\Models\Plan;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\User;
+use App\Services\Reports\Insights;
 use App\Services\HotelDefaults;
+use App\Support\Money;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -218,6 +220,12 @@ class ReportsTest extends TestCase
         $this->assertEqualsWithDelta($debit, $credit, 0.001);
         $this->assertSame('4000.00', $accounts['Room revenue']['credit']);
         $this->assertSame('645.00', $accounts['Tax payable']['credit']);
+        // The database's totals match the journal's lines exactly.
+        $lines = $this->inHotel(fn () => Insights::for($this->hotel, [$this->branch->id])->journal('2026-11-01', '2026-11-30'));
+        foreach (collect($lines)->groupBy('account') as $account => $rows) {
+            $this->assertSame(Money::sum($rows->pluck('debit')), $accounts[$account]['debit'], $account);
+            $this->assertSame(Money::sum($rows->pluck('credit')), $accounts[$account]['credit'], $account);
+        }
         $csv = (string) $this->get('/api/v1/reports/accounting?from=2026-11-01&to=2026-11-30&format=csv')->assertOk()->getContent();
         $this->assertStringContainsString('Room revenue', $csv); // every line is in the download
         $this->assertStringStartsWith('PK', $this->get('/api/v1/reports/accounting?from=2026-11-01&to=2026-11-30&format=xlsx')->assertOk()->getContent());
