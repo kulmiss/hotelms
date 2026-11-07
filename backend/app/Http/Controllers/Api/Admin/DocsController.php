@@ -50,7 +50,7 @@ class DocsController extends Controller
     /** The list of documents; with ?q= only those that contain the words, with a short piece of text. */
     public function index(Request $request): JsonResponse
     {
-        $q = trim((string) $request->validate(['q' => ['nullable', 'string', 'max:100']])['q'] ?? '');
+        $q = trim((string) ($request->validate(['q' => ['nullable', 'string', 'max:100']])['q'] ?? ''));
         $rows = [];
         foreach ($this->files() as $name => $path) {
             $text = (string) file_get_contents($path);
