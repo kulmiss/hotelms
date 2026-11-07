@@ -14,7 +14,7 @@ export type TodayRow = ReservationSummary & { late: boolean; overdue: boolean; b
 
 export type CheckInInfo = {
   reservation: ReservationDetail
-  rooms: { id: number; room_type: string | null; room_id: number | null; room_number: string | null; room_status: string | null; free_rooms: { id: number; number: string; floor: string | null }[]; early_fee: string | null }[]
+  rooms: { id: number; room_type: string | null; room_id: number | null; room_number: string | null; room_status: string | null; free_rooms: { id: number; number: string; floor: string | null }[]; early_fee: string | null; early_is_night?: boolean }[]
   deposit_due: string
   /** The hotel requires a photo of the guest's ID and there is none yet. */
   id_photo_needed?: boolean

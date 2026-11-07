@@ -83,6 +83,7 @@ class InvoiceController extends Controller
         }
         $permission = $data['type'] === 'discount' ? 'invoices.discount' : 'invoices.add_charge';
         abort_unless($request->user()->hasPermission($permission), 403, 'You may not do this.');
+        $this->invoices->assertMayChangeLines($invoice, $request->user());
 
         return response()->json(['data' => InvoicePresenter::detail($this->invoices->addCharge($invoice, $data, $request->user()), $request->user()->hotel)], 201);
     }
@@ -98,6 +99,7 @@ class InvoiceController extends Controller
             default => 'invoices.add_charge',
         };
         abort_unless($request->user()->hasPermission($permission), 403, 'You may not do this.');
+        $this->invoices->assertMayChangeLines($invoice, $request->user());
 
         return response()->json(['data' => InvoicePresenter::detail($this->invoices->removeLine($invoice, $line), $request->user()->hotel)]);
     }

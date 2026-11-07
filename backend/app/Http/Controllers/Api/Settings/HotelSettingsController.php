@@ -35,15 +35,15 @@ class HotelSettingsController extends Controller
             'id_photo_required' => ['sometimes', 'boolean'],
             'id_photo_keep_months' => ['sometimes', 'integer', Rule::in([0, 3, 6, 12, 24, 60])],
             'early_check_in_fee_type' => ['required', Rule::in(['fixed', 'percent'])],
-            'early_check_in_fee_value' => ['required', 'decimal:0,2', 'min:0', 'max:99999999'],
+            'early_check_in_fee_value' => ['required', 'decimal:0,2', 'min:0', $request->input('early_check_in_fee_type') === 'percent' ? 'max:100' : 'max:99999999'],
             'late_check_out_fee_type' => ['required', Rule::in(['fixed', 'percent'])],
-            'late_check_out_fee_value' => ['required', 'decimal:0,2', 'min:0', 'max:99999999'],
+            'late_check_out_fee_value' => ['required', 'decimal:0,2', 'min:0', $request->input('late_check_out_fee_type') === 'percent' ? 'max:100' : 'max:99999999'],
             'early_check_out_fee_type' => ['sometimes', Rule::in(['fixed', 'percent'])],
-            'early_check_out_fee_value' => ['sometimes', 'decimal:0,2', 'min:0', 'max:99999999'],
+            'early_check_out_fee_value' => ['sometimes', 'decimal:0,2', 'min:0', $request->input('early_check_out_fee_type') === 'percent' ? 'max:100' : 'max:99999999'],
             'night_cutoff' => ['sometimes', 'date_format:H:i', 'before_or_equal:12:00'],
             'hourly_min_hours' => ['required', 'integer', 'between:1,12'],
             'hourly_cleaning_minutes' => ['required', 'integer', 'between:0,240'],
-        ], ['night_cutoff.before_or_equal' => 'Choose a time up to 12:00 (noon).', 'deposit_value.max' => 'A percent deposit can be at most 100.']);
+        ], ['night_cutoff.before_or_equal' => 'Choose a time up to 12:00 (noon).', 'deposit_value.max' => 'A percent deposit can be at most 100.', 'early_check_in_fee_value.max' => 'A percent fee can be at most 100 (one full night).', 'late_check_out_fee_value.max' => 'A percent fee can be at most 100 (one full night).', 'early_check_out_fee_value.max' => 'A percent fee can be at most 100 (one full night).']);
         $this->settings->put($data);
 
         return $this->bookingRules();

@@ -41,6 +41,11 @@ class SettingsTest extends TestCase
         $this->getJson('/api/v1/settings/cancellation-policies')->assertJsonCount(4, 'data')
             ->assertJsonFragment(['name' => 'Standard', 'is_default' => true]);
         $this->getJson('/api/v1/settings/booking-rules')->assertJsonPath('data.pending_expiry_hours', 24);
+        // A percent fee is at most one full night (100%); a fixed fee can be any amount (owner, 2026-11-08).
+        $rules = $this->getJson('/api/v1/settings/booking-rules')->json('data');
+        $this->putJson('/api/v1/settings/booking-rules', ['late_check_out_fee_type' => 'percent', 'late_check_out_fee_value' => '150'] + $rules)
+            ->assertJsonPath('errors.late_check_out_fee_value.0', 'A percent fee can be at most 100 (one full night).');
+        $this->putJson('/api/v1/settings/booking-rules', ['late_check_out_fee_type' => 'fixed', 'late_check_out_fee_value' => '1500'] + $rules)->assertOk();
         $this->getJson('/api/v1/me')->assertJsonPath('hotel.modules', ['housekeeping', 'cashier_close']);
     }
 

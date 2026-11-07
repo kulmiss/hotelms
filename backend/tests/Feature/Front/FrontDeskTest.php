@@ -463,6 +463,22 @@ class FrontDeskTest extends TestCase
         $this->assertSame('0.00', $fee['amount']);
     }
 
+    public function test_a_booked_guest_arriving_after_midnight_pays_a_full_night(): void
+    {
+        $id = $this->booked();
+        $this->at('2026-11-12 00:30'); // the booking starts at 14:00 today; the night cut-off is 06:00
+        $this->actingAs($this->receptionist);
+        $this->getJson("/api/v1/reservations/$id/check-in")
+            ->assertJsonPath('data.rooms.0.early_fee', '2000.00') // a full night, not 50%
+            ->assertJsonPath('data.rooms.0.early_is_night', true);
+
+        $this->checkIn($id, ['101'])->assertOk();
+        $line = collect($this->invoice($id)['items'])->firstWhere('type', 'early_check_in');
+        $this->assertSame('2000.00', $line['amount']);
+        $this->assertStringStartsWith('Last night (arrived after midnight)', $line['description']);
+        $this->assertSame('2026-11-11', $line['service_date']);
+    }
+
     public function test_check_in_refuses_wrong_rooms_dates_and_missing_deposit(): void
     {
         $id = $this->booked();
@@ -553,6 +569,12 @@ class FrontDeskTest extends TestCase
             ->assertOk()->assertJsonPath('data.status', 'checked_out');
         $this->assertSame('dirty', $this->room('101')->status);
         $this->assertSame('paid', $this->invoice($id)['status']);
+
+        // The guest has left: reception can no longer add or remove lines on the bill; the Hotel Admin can.
+        $bill = $this->invoice($id)['id'];
+        $this->postJson("/api/v1/invoices/$bill/items", ['type' => 'extra', 'description' => 'Minibar', 'unit_price' => '50'])
+            ->assertJsonPath('errors.invoice.0', 'The guest has left. Only a manager can change this bill now.');
+        $this->actingAs($this->admin)->postJson("/api/v1/invoices/$bill/items", ['type' => 'extra', 'description' => 'Minibar', 'unit_price' => '50'])->assertCreated();
     }
 
     public function test_manager_can_leave_a_balance_outstanding_and_it_can_be_paid_later(): void

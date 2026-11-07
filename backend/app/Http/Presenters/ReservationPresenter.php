@@ -2,6 +2,7 @@
 
 namespace App\Http\Presenters;
 
+use App\Models\Guest;
 use App\Models\Hotel;
 use App\Models\Invoice;
 use App\Models\Payment;
@@ -101,7 +102,8 @@ class ReservationPresenter
         $r->load(['guest', 'branch:id,name,code', 'rooms.roomType:id,name', 'rooms.room:id,number', 'rooms.rates', 'rooms.guests:id,first_name,last_name', 'payments.method:id,name', 'payments.receiver:id,name', 'payments.proof', 'creator:id,name', 'payLaterBy:id,name', 'invoices']);
 
         return array_merge(self::summary($r, $hotel), [
-            'guest' => $r->guest,
+            // Only the end of the ID number here (owner, 2026-11-08); the full number is on the guest's own page and the registration card.
+            'guest' => $r->guest ? ['id_number' => Guest::maskId($r->guest->id_number)] + $r->guest->toArray() : null,
             'notes' => $r->notes,
             'subtotal' => $r->subtotal,
             'discount_percent' => $r->discount_percent,

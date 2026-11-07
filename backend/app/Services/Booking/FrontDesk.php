@@ -135,13 +135,14 @@ class FrontDesk
             $early = $this->earlyFee($reservation, $now);
             if ($early) {
                 foreach ($reservation->rooms()->with(['room', 'rates'])->get() as $rr) {
+                    $night = $early['type'] === 'night';
                     $this->invoices->line($invoice, [
                         'type' => 'early_check_in',
-                        'description' => 'Early check-in · Room '.$rr->room?->number,
+                        'description' => ($night ? 'Last night (arrived after midnight) · Room ' : 'Early check-in · Room ').$rr->room?->number,
                         'unit_price' => $this->fee($early, (string) ($rr->rates->first()?->amount ?? '0')),
                         'is_waived' => $waive,
                         'reservation_room_id' => $rr->id,
-                        'service_date' => HotelClock::now($user->hotel)->toDateString(),
+                        'service_date' => $night ? HotelClock::now($user->hotel)->subDay()->toDateString() : HotelClock::now($user->hotel)->toDateString(),
                     ], $user);
                 }
                 $this->invoices->recalc($invoice);
@@ -584,6 +585,13 @@ class FrontDesk
             return null;
         }
         $rules = $this->settings->group(HotelSettings::BOOKING_DEFAULTS);
+        // Arriving after midnight, before the night cut-off, on the check-in day: the night has already
+        // started, so it is a full night, not an early check-in fee (owner, 2026-11-08; like Q13 for walk-ins).
+        $local = HotelClock::local($at, $reservation->hotel);
+        $cutoff = (string) ($rules['night_cutoff'] ?: '00:00');
+        if ($local->toDateString() === HotelClock::local($reservation->check_in_at, $reservation->hotel)->toDateString() && $local->format('H:i') < $cutoff) {
+            return ['type' => 'night', 'value' => '100'];
+        }
 
         return Money::isPositive((string) $rules['early_check_in_fee_value']) ? ['type' => $rules['early_check_in_fee_type'], 'value' => (string) $rules['early_check_in_fee_value']] : null;
     }
@@ -640,7 +648,7 @@ class FrontDesk
     /** @param  array{type: string, value: string}  $rule */
     private function fee(array $rule, string $night): string
     {
-        return $rule['type'] === 'fixed' ? Money::round($rule['value']) : Money::percentOf($night, $rule['value']);
+        return $rule['type'] === 'fixed' ? Money::round($rule['value']) : Money::percentOf($night, $rule['value']); // 'percent' and 'night' (100%)
     }
 
     /** @return list<array{date: string, label: string, amount: string, rate_rule_id: ?int, rule_name: ?string}> */

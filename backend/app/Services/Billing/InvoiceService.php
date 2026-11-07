@@ -253,6 +253,19 @@ class InvoiceService
         return $this->recalc($invoice);
     }
 
+    /**
+     * The guest has left (or the booking was cancelled): only a manager (invoices.void) may add or remove
+     * lines, so closed bills, cash counts and reports do not change quietly (owner, 2026-11-08).
+     */
+    public function assertMayChangeLines(Invoice $invoice, User $user): void
+    {
+        $this->assertEditable($invoice);
+        $closed = in_array($invoice->reservation?->status, ['checked_out', 'cancelled', 'no_show'], true);
+        if ($closed && ! $user->hasPermission('invoices.void')) {
+            throw ValidationException::withMessages(['invoice' => 'The guest has left. Only a manager can change this bill now.']);
+        }
+    }
+
     public function assertEditable(Invoice $invoice): void
     {
         if ($invoice->isVoid()) {

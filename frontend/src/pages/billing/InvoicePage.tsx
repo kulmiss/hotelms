@@ -36,6 +36,8 @@ export function InvoicePage() {
   if (!q.data) return null
   const inv = q.data.data
   const editable = inv.status !== 'void'
+  // The guest has left: only a manager adds or removes lines (owner, 2026-11-08). Payments stay possible.
+  const linesEditable = editable && (!['checked_out', 'cancelled', 'no_show'].includes(inv.stay?.status ?? '') || can('invoices.void'))
   const c = inv.currency
 
   return (
@@ -104,7 +106,7 @@ export function InvoicePage() {
                     <td className="px-4 py-2 text-right tabular-nums">{Number(it.quantity)}</td>
                     <td className={cn('px-4 py-2 text-right tabular-nums', Number(it.amount) < 0 && 'text-ok-text')}>{money(it.amount, c)}</td>
                     <td className="px-2 py-1 text-right">
-                      {editable && it.type !== 'room' && can(it.type === 'discount' ? 'invoices.discount' : 'invoices.add_charge') && (
+                      {linesEditable && it.type !== 'room' && can(it.type === 'discount' ? 'invoices.discount' : 'invoices.add_charge') && (
                         <button
                           type="button"
                           aria-label={t('common.delete')}
@@ -124,12 +126,12 @@ export function InvoicePage() {
           {remove.error && <Alert>{err(remove.error)}</Alert>}
           {editable && (
             <div className="flex flex-wrap gap-2">
-              {can('invoices.add_charge') && (
+              {linesEditable && can('invoices.add_charge') && (
                 <Button variant="secondary" onClick={() => setPanel('charge')}>
                   {t('billing.addCharge')}
                 </Button>
               )}
-              {can('invoices.discount') && (
+              {linesEditable && can('invoices.discount') && (
                 <Button variant="secondary" onClick={() => setPanel('discount')}>
                   {t('billing.addDiscount')}
                 </Button>
