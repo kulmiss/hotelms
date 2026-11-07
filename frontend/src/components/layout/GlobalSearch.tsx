@@ -10,6 +10,7 @@ import { searchSettings, settingsLink, useSettingsSections } from '@/lib/setting
 import { useDebounced } from '@/lib/useDebounced'
 
 type Hit = { type: 'answer' | 'booking' | 'guest' | 'room' | 'bill' | 'hotel' | 'person' | 'setting'; title: string; subtitle: string; link: string }
+const MAC = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent)
 const ICONS = { setting: Cog6ToothIcon, answer: SparklesIcon, booking: CalendarDaysIcon, guest: UserIcon, room: HomeModernIcon, bill: DocumentTextIcon, hotel: BuildingOffice2Icon, person: UsersIcon }
 
 /** The search box in the top bar: guests, bookings, rooms and bills (Ctrl+K / ⌘K or "/" to jump here). */
@@ -108,7 +109,16 @@ export function GlobalSearch() {
           placeholder={admin ? t('search.adminLabel') : t('topbar.search')}
           className="w-full bg-transparent text-base text-text placeholder:text-icon focus:outline-none sm:text-sm"
         />
-        <kbd aria-hidden className="hidden rounded border border-border px-1.5 text-[11px] text-icon lg:inline">Ctrl K</kbd>
+        {/* The shortcut as two small keys (⌘ K on a Mac), hidden while typing. */}
+        {!q && (
+          <span aria-hidden className="hidden shrink-0 items-center gap-1 whitespace-nowrap lg:flex">
+            {[MAC ? '⌘' : 'Ctrl', 'K'].map((k) => (
+              <kbd key={k} className="flex h-5 min-w-5 items-center justify-center rounded-md bg-sunken px-1.5 font-sans text-[11px] leading-none font-medium text-muted shadow-[inset_0_-1px_0_var(--color-ring-strong)] ring-1 ring-ring">
+                {k}
+              </kbd>
+            ))}
+          </span>
+        )}
       </label>
       {show && (
         <div className="panel absolute top-full right-0 left-0 z-40 mt-2 w-[min(28rem,calc(100vw-2rem))] p-1.5 animate-page-in">

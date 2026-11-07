@@ -17,6 +17,8 @@ import { date, money } from '@/lib/format'
 import { ROOM_DOTS, ROOM_TONES, useBoard, useRoomStatus, useToday, type BoardRoom, type TodayRow } from '@/lib/desk'
 import { localDate, localTime, STATUS_TONES, today as todayDate } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
+import { isPositive } from '@/lib/decimal'
+import { filterRooms, isFiltered, loadRoomFilter, matchesToday, NO_FILTER, ROOM_SORTS, ROOM_STATUSES, saveRoomFilter, TODAY_FILTERS, type RoomFilter } from '@/lib/roomFilter'
 
 const TABS = ['board', 'arrivals', 'departures', 'in_house'] as const
 type Tab = (typeof TABS)[number]
@@ -90,26 +92,27 @@ function Board({ branchId }: { branchId: number | null }) {
     const hit = rooms.find((r) => r.id === fromSearch)
     if (hit) setOpen(hit)
   }
-  const floors = [...new Set(rooms.map((r) => r.floor ?? ''))]
+  const [filter, setFilterState] = useState<RoomFilter>(loadRoomFilter)
+  const setFilter = (next: RoomFilter) => {
+    setFilterState(next)
+    saveRoomFilter(next)
+  }
+  const day = board.data ? localDate(board.data.refreshed_at) : todayDate()
+  const shown = filterRooms(rooms, filter, day)
+  const grouped = filter.sort === 'number'
+  const floors = grouped ? [...new Set(shown.map((r) => r.floor ?? ''))] : ['']
   const selected = open ? (rooms.find((r) => r.id === open.id) ?? open) : null
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-3 text-[13px] text-muted">
-        {['available', 'occupied', 'dirty', 'cleaning', 'maintenance', 'out_of_order'].map((s) => (
-          <span key={s} className="flex items-center gap-1.5">
-            <span className={cn('size-2.5 rounded-full', ROOM_DOTS[s])} />
-            {t(`roomStatus.${s}`)} <span className="tabular-nums">{board.data?.counts[s] ?? 0}</span>
-          </span>
-        ))}
-      </div>
+      <RoomFilterBar rooms={rooms} counts={board.data?.counts ?? {}} day={day} filter={filter} setFilter={setFilter} />
       {selected && <RoomPanel room={selected} branchId={branchId} onClose={() => setOpen(null)} />}
       {floors.map((f) => (
         <div key={f} className="flex flex-col gap-2">
-          {floors.length > 1 && <h2 className="text-xs font-semibold text-muted">{f ? t('desk.floor', { floor: f }) : t('desk.noFloor')}</h2>}
+          {grouped && floors.length > 1 && <h2 className="text-xs font-semibold text-muted">{f ? t('desk.floor', { floor: f }) : t('desk.noFloor')}</h2>}
           <div className="grid grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] gap-2">
-            {rooms
-              .filter((r) => (r.floor ?? '') === f)
+            {shown
+              .filter((r) => !grouped || (r.floor ?? '') === f)
               .map((r) => (
                 <button
                   key={r.id}
@@ -120,14 +123,23 @@ function Board({ branchId }: { branchId: number | null }) {
                 >
                   <span className="flex w-full items-center justify-between gap-2">
                     <span className="text-base font-semibold">{r.number}</span>
-                    <span className={cn('size-2.5 rounded-full', ROOM_DOTS[r.status])} />
+                    <span className="flex items-center gap-1.5">
+                      {r.stay && isPositive(r.stay.balance) && (
+                        <span title={t('desk.owes', { amount: money(r.stay.balance) })} className="rounded-full bg-danger-bg px-1.5 text-[10px] font-semibold text-danger-text">
+                          {t('desk.owesShort')}
+                        </span>
+                      )}
+                      <span className={cn('size-2.5 rounded-full', ROOM_DOTS[r.status])} />
+                    </span>
                   </span>
                   <span className="text-[11px] text-muted">{r.room_type}</span>
                   {r.stay ? (
                     <span className="mt-auto flex flex-col text-[11px]">
                       <span className="truncate font-medium">{r.stay.guest}</span>
                       <span className={r.stay.overdue ? 'font-semibold text-danger-text' : 'text-muted'}>
-                        {t('desk.until', { date: date(localDate(r.stay.check_out_at)) })}
+                        {localDate(r.stay.check_out_at) === day
+                          ? t('desk.leavesAt', { time: localTime(r.stay.check_out_at) })
+                          : t('desk.until', { date: date(localDate(r.stay.check_out_at)) })}
                       </span>
                     </span>
                   ) : r.arriving ? (
@@ -144,6 +156,92 @@ function Board({ branchId }: { branchId: number | null }) {
         </div>
       ))}
       {board.data && rooms.length === 0 && <p className="text-muted">{t('reservations.noRooms')}</p>}
+      {rooms.length > 0 && shown.length === 0 && (
+        <p className="text-[13px] text-muted">
+          {t('desk.filter.none')}{' '}
+          <button type="button" className="font-medium text-accent-text underline" onClick={() => setFilter({ ...NO_FILTER, sort: filter.sort })}>
+            {t('desk.filter.clear')}
+          </button>
+        </p>
+      )}
+    </div>
+  )
+}
+
+/** Filters above the room board: tap a status count, a "today" chip, a type or floor; search; sort. */
+function RoomFilterBar({ rooms, counts, day, filter, setFilter }: { rooms: BoardRoom[]; counts: Record<string, number>; day: string; filter: RoomFilter; setFilter: (f: RoomFilter) => void }) {
+  const { t } = useTranslation()
+  const types = [...new Map(rooms.map((r) => [r.room_type_id, r.room_type ?? ''])).entries()]
+  const floors = [...new Set(rooms.map((r) => r.floor ?? ''))].filter(Boolean)
+  const chip = (active: boolean) =>
+    cn(
+      'flex min-h-touch items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium ring-1 transition duration-75',
+      active ? 'bg-accent/15 text-accent-text ring-accent' : 'bg-surface text-muted ring-ring hover:bg-sunken hover:text-text',
+    )
+  const toggleStatus = (s: string) =>
+    setFilter({ ...filter, statuses: filter.statuses.includes(s) ? filter.statuses.filter((x) => x !== s) : [...filter.statuses, s] })
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap gap-2" role="group" aria-label={t('desk.filter.status')}>
+        {ROOM_STATUSES.map((s) => (
+          <button key={s} type="button" aria-pressed={filter.statuses.includes(s)} onClick={() => toggleStatus(s)} className={chip(filter.statuses.includes(s))}>
+            <span className={cn('size-2.5 rounded-full', ROOM_DOTS[s])} />
+            {t(`roomStatus.${s}`)} <span className="tabular-nums">{counts[s] ?? 0}</span>
+          </button>
+        ))}
+      </div>
+      <div className="flex flex-wrap items-end gap-2">
+        <div className="flex flex-wrap gap-2" role="group" aria-label={t('desk.filter.today')}>
+          {TODAY_FILTERS.map((k) => (
+            <button key={k} type="button" aria-pressed={filter.today === k} onClick={() => setFilter({ ...filter, today: filter.today === k ? null : k })} className={chip(filter.today === k)}>
+              {t(`desk.filter.${k}`)} <span className="tabular-nums">{rooms.filter((r) => matchesToday(r, k, day)).length}</span>
+            </button>
+          ))}
+        </div>
+        <div className="ml-auto flex flex-wrap items-end gap-2">
+          <input
+            type="search"
+            value={filter.q}
+            onChange={(e) => setFilter({ ...filter, q: e.target.value })}
+            placeholder={t('desk.filter.search')}
+            aria-label={t('desk.filter.search')}
+            className="min-h-touch w-44 rounded-lg bg-surface px-3 text-[13px] ring-1 ring-ring-strong outline-none focus:ring-2 focus:ring-accent"
+          />
+          {types.length > 1 && (
+            <select aria-label={t('desk.filter.type')} value={filter.typeId ?? ''} onChange={(e) => setFilter({ ...filter, typeId: e.target.value ? Number(e.target.value) : null })} className="min-h-touch rounded-lg bg-surface px-3 text-[13px] ring-1 ring-ring-strong">
+              <option value="">{t('desk.filter.allTypes')}</option>
+              {types.map(([id, name]) => (
+                <option key={id} value={id}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          )}
+          {floors.length > 1 && (
+            <select aria-label={t('desk.filter.floor')} value={filter.floor ?? ''} onChange={(e) => setFilter({ ...filter, floor: e.target.value || null })} className="min-h-touch rounded-lg bg-surface px-3 text-[13px] ring-1 ring-ring-strong">
+              <option value="">{t('desk.filter.allFloors')}</option>
+              {floors.map((f) => (
+                <option key={f} value={f}>
+                  {t('desk.floor', { floor: f })}
+                </option>
+              ))}
+            </select>
+          )}
+          <select aria-label={t('desk.filter.sort')} value={filter.sort} onChange={(e) => setFilter({ ...filter, sort: e.target.value as RoomFilter['sort'] })} className="min-h-touch rounded-lg bg-surface px-3 text-[13px] ring-1 ring-ring-strong">
+            {ROOM_SORTS.map((k) => (
+              <option key={k} value={k}>
+                {t(`desk.filter.sort_${k}`)}
+              </option>
+            ))}
+          </select>
+          {isFiltered(filter) && (
+            <button type="button" onClick={() => setFilter({ ...NO_FILTER, sort: filter.sort })} className="min-h-touch rounded-lg px-3 text-[13px] font-medium text-accent-text hover:bg-sunken">
+              {t('desk.filter.clear')}
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
