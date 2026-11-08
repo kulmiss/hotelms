@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { DocumentTextIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { FileTextIcon, SearchIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Tabs } from '@/components/ui/Tabs'
@@ -14,6 +14,7 @@ import { listFileUrl, localDate, localTime } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { useDebounced } from '@/lib/useDebounced'
 import { DataTable, type SortState } from '@/components/ui/DataTable'
+import { inputClass } from '@/components/ui/formStyles'
 
 /** Invoices and payments (screen-list.md 6.1, 6.6). */
 export function BillingPage() {
@@ -69,7 +70,7 @@ function InvoiceList() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
       <div className="relative w-full max-w-xs">
-        <MagnifyingGlassIcon aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-icon" />
+        <SearchIcon aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-icon" />
         <input
           type="search"
           aria-label={t('billing.search')}
@@ -79,7 +80,7 @@ function InvoiceList() {
             setQ(e.target.value)
             setPage(1)
           }}
-          className="min-h-touch w-full rounded-lg bg-surface pr-3 pl-9 text-[13px] shadow-sm ring-1 ring-ring outline-none focus:ring-2 focus:ring-accent"
+          className={cn(inputClass, 'w-full ps-9')}
         />
       </div>
         <DateRangeFilter
@@ -100,7 +101,7 @@ function InvoiceList() {
               setFilter(x.key)
               setPage(1)
             }}
-            className={cn('min-h-touch rounded-full px-3 text-[13px] font-medium ring-1 transition duration-75', filter === x.key ? 'bg-accent text-on-accent ring-accent' : 'bg-surface text-muted ring-ring hover:bg-sunken')}
+            className={cn('min-h-touch rounded-full px-3 text-sm font-medium border shadow-xs transition-colors', filter === x.key ? 'border-primary bg-primary text-primary-foreground' : 'bg-background text-muted hover:bg-sunken dark:bg-input/30')}
           >
             {t(`billing.filters.${x.key}`)}
           </button>
@@ -124,7 +125,7 @@ function InvoiceList() {
         empty={
           <div className="flex flex-col items-center gap-3 py-6">
             <span className="flex size-12 items-center justify-center rounded-full bg-sunken">
-              <DocumentTextIcon aria-hidden className="size-6 text-icon" />
+              <FileTextIcon aria-hidden className="size-6 text-icon" />
             </span>
             <p>{t('billing.empty')}</p>
           </div>

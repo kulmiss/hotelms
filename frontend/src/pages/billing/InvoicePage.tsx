@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { ProofField, ProofLink, type Proof } from '@/components/payments/PaymentProof'
-import { PrinterIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { PrinterIcon, Trash2Icon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
@@ -85,14 +85,14 @@ export function InvoicePage() {
       <div className="grid items-start gap-6 lg:grid-cols-[1fr_22rem]">
         <div className="flex flex-col gap-6">
           <Card className="overflow-x-auto p-0">
-            <table className="w-full min-w-[560px] text-left text-[13px]">
-              <thead className="bg-sunken">
+            <table className="w-full min-w-[560px] text-left text-sm">
+              <thead>
                 <tr>
-                  <th className="px-4 py-2.5 font-semibold">{t('billing.date')}</th>
-                  <th className="px-4 py-2.5 font-semibold">{t('billing.description')}</th>
-                  <th className="px-4 py-2.5 text-right font-semibold">{t('billing.qty')}</th>
-                  <th className="px-4 py-2.5 text-right font-semibold">{t('billing.amount')}</th>
-                  <th className="w-12 px-2 py-2.5" />
+                  <th className="px-4 h-10 font-medium">{t('billing.date')}</th>
+                  <th className="px-4 h-10 font-medium">{t('billing.description')}</th>
+                  <th className="px-4 h-10 text-right font-medium">{t('billing.qty')}</th>
+                  <th className="px-4 h-10 text-right font-medium">{t('billing.amount')}</th>
+                  <th className="w-12 px-2 h-10" />
                 </tr>
               </thead>
               <tbody>
@@ -112,9 +112,9 @@ export function InvoicePage() {
                           aria-label={t('common.delete')}
                           disabled={remove.isPending}
                           onClick={() => remove.mutate(it.id)}
-                          className="flex size-touch items-center justify-center rounded-lg text-icon hover:bg-danger-bg hover:text-danger-text"
+                          className="flex size-touch items-center justify-center rounded-md text-muted hover:bg-danger-bg hover:text-danger-text"
                         >
-                          <TrashIcon aria-hidden className="size-4" />
+                          <Trash2Icon aria-hidden className="size-4" />
                         </button>
                       )}
                     </td>
@@ -147,8 +147,8 @@ export function InvoicePage() {
 
           <Card className="flex flex-col gap-2">
             <h2 className="text-sm font-semibold">{t('reservations.payments')}</h2>
-            {inv.payments.length === 0 && <p className="text-[13px] text-muted">{t('reservations.noPayments')}</p>}
-            <ul className="flex flex-col divide-y divide-border text-[13px]">
+            {inv.payments.length === 0 && <p className="text-sm text-muted">{t('reservations.noPayments')}</p>}
+            <ul className="flex flex-col divide-y divide-border text-sm">
               {inv.payments.map((p) => (
                 <li key={p.id} className="flex items-center justify-between gap-3 py-2">
                   <span className="flex flex-col">
@@ -173,7 +173,7 @@ export function InvoicePage() {
         </div>
 
         <div className="flex flex-col gap-6 lg:sticky lg:top-20">
-        <Card className="flex flex-col gap-2 text-[13px]">
+        <Card className="flex flex-col gap-2 text-sm">
           <h2 className="text-sm font-semibold">{t('reservations.money')}</h2>
           <Line label={t('billing.charges')} value={money(inv.subtotal, c)} />
           {Number(inv.discount_total) > 0 && <Line label={t('billing.discounts')} value={`− ${money(inv.discount_total, c)}`} />}
@@ -284,9 +284,9 @@ function VoidPanel({ inv, onClose }: { inv: InvoiceDetail; onClose: () => void }
   const voidIt = useVoidInvoice(inv.id)
   const [reason, setReason] = useState('')
   return (
-    <Card className="flex flex-col gap-3 ring-danger/40 animate-page-in">
+    <Card className="flex flex-col gap-3 border-danger/40 animate-page-in">
       <h2 className="text-sm font-semibold">{t('billing.voidTitle')}</h2>
-      <p className="text-[13px] text-muted">{t('billing.voidHelp')}</p>
+      <p className="text-sm text-muted">{t('billing.voidHelp')}</p>
       <Field label={t('reservations.reason')} value={reason} onChange={(e) => setReason(e.target.value)} />
       {voidIt.error && <Alert>{err(voidIt.error)}</Alert>}
       <div className="flex justify-end gap-2">
@@ -312,7 +312,7 @@ function BuyerBox({ inv, canEdit }: { inv: InvoiceDetail; canEdit: boolean }) {
   if (!has && !canEdit) return null
 
   return (
-    <Card className="flex flex-col gap-2 text-[13px]">
+    <Card className="flex flex-col gap-2 text-sm">
       <h2 className="text-sm font-semibold">{t('billing.buyer.title')}</h2>
       {editing ? (
         <form

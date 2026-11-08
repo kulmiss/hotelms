@@ -187,7 +187,7 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [x] List (data-table, search with icon, status filter chips), calendar (bars with borders, today column), new / change form (stay-type toggle, room picker, guest search), booking page, stay panels (check-in, check-out, move, extend, pay), room calendar; Lucide. **Registration card page not touched** (it is the print page)
 
 ### P8 – Bills
-- [ ] Billing list (bills, payments), bill page, charge / discount / payment panels. **Invoice print untouched**
+- [x] Billing list (bills, payments; search with icon, filter chips), bill page (lines, delete buttons, void card), charge / discount / payment panels, payment proof; Lucide. **Invoice print untouched** (no diff in `InvoicePrintPage.tsx` / `components/print`)
 
 ### P9 – Guests
 - [ ] Guest list, guest page, guest form, ID photo
@@ -233,3 +233,4 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P5 Room board, front desk mode, charge a room | open (stacked on #90) | #91 |
 | P6 Walk-in | open (stacked on #91) | #92 |
 | P7 Bookings | open (stacked on #92) | #93 |
+| P8 Bills | open (stacked on #93) | #94 |
