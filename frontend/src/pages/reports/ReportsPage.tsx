@@ -12,6 +12,7 @@ import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { useMe } from '@/lib/auth'
+import { CollapsibleToolbar, type ActiveFilter } from '@/components/ui/CollapsibleToolbar'
 import { cn } from '@/lib/cn'
 import { addMoney } from '@/lib/decimal'
 import { date, money } from '@/lib/format'
@@ -160,47 +161,64 @@ export function ReportsPage() {
 
 function Filters({ f, setF, branches }: { f: ReportFilters; setF: (f: ReportFilters) => void; branches: { id: number; name: string }[] }) {
   const { t } = useTranslation()
+  // Phones and tablets (P19): the period, compare and branch fold behind "Filters". The period always shows as a
+  // chip (a report means nothing without it); it counts as a filter only when it is not the first choice.
+  const first = presets()[0]
+  const preset = presets().find((p) => p.from === f.from && p.to === f.to)
+  const isFirst = f.from === first.from && f.to === first.to
+  const branch = branches.find((b) => b.id === f.branch_id)?.name
+  const active: ActiveFilter[] = [
+    {
+      key: 'period',
+      label: preset ? t(`reports.presets.${preset.key}`) : `${date(f.from)} – ${date(f.to)}`,
+      onRemove: isFirst ? undefined : () => setF({ ...f, from: first.from, to: first.to }),
+    },
+    ...((f.compare ?? 'prev') !== 'prev' ? [{ key: 'compare', label: `${t('reports.compareWith')}: ${t(`reports.compare.${f.compare}`)}`, onRemove: () => setF({ ...f, compare: 'prev' }) }] : []),
+    ...((f.branch_id ?? null) !== null ? [{ key: 'branch', label: branch ?? t('settings.rooms.branch'), onRemove: () => setF({ ...f, branch_id: null }) }] : []),
+  ]
   return (
-    <div className="flex flex-wrap items-end gap-3 print:hidden">
-      <div className="flex flex-wrap gap-1.5">
-        {presets().map((p) => (
-          <button
-            key={p.key}
-            type="button"
-            aria-pressed={f.from === p.from && f.to === p.to}
-            onClick={() => setF({ ...f, from: p.from, to: p.to })}
-            className={cn('min-h-touch rounded-full px-3 text-sm font-medium border shadow-xs transition-colors', f.from === p.from && f.to === p.to ? 'border-primary bg-primary text-primary-foreground' : 'bg-background text-muted hover:bg-sunken dark:bg-input/30')}
-          >
-            {t(`reports.presets.${p.key}`)}
-          </button>
-        ))}
-      </div>
-      <div className="w-36">
-        <Field label={t('settings.rates.from')} type="date" value={f.from} max={f.to} onChange={(e) => setF({ ...f, from: e.target.value })} />
-      </div>
-      <div className="w-36">
-        <Field label={t('settings.rates.to')} type="date" value={f.to} min={f.from} onChange={(e) => setF({ ...f, to: e.target.value })} />
-      </div>
-      <div className="w-44">
-        <Select label={t('reports.compareWith')} value={f.compare ?? 'prev'} onChange={(e) => setF({ ...f, compare: e.target.value as ReportFilters['compare'] })}>
-          <option value="prev">{t('reports.compare.prev')}</option>
-          <option value="ly">{t('reports.compare.ly')}</option>
-          <option value="none">{t('reports.compare.none')}</option>
-        </Select>
-      </div>
-      {branches.length > 1 && (
+    <CollapsibleToolbar id="reports" active={active} onClearAll={() => setF({ ...f, from: first.from, to: first.to, compare: 'prev', branch_id: null })} className="print:hidden">
+      <div className="flex flex-wrap items-end gap-3 print:hidden">
+        <div className="flex flex-wrap gap-1.5">
+          {presets().map((p) => (
+            <button
+              key={p.key}
+              type="button"
+              aria-pressed={f.from === p.from && f.to === p.to}
+              onClick={() => setF({ ...f, from: p.from, to: p.to })}
+              className={cn('min-h-touch rounded-full px-3 text-sm font-medium border shadow-xs transition-colors', f.from === p.from && f.to === p.to ? 'border-primary bg-primary text-primary-foreground' : 'bg-background text-muted hover:bg-sunken dark:bg-input/30')}
+            >
+              {t(`reports.presets.${p.key}`)}
+            </button>
+          ))}
+        </div>
+        <div className="w-36">
+          <Field label={t('settings.rates.from')} type="date" value={f.from} max={f.to} onChange={(e) => setF({ ...f, from: e.target.value })} />
+        </div>
+        <div className="w-36">
+          <Field label={t('settings.rates.to')} type="date" value={f.to} min={f.from} onChange={(e) => setF({ ...f, to: e.target.value })} />
+        </div>
         <div className="w-44">
-          <Select label={t('settings.rooms.branch')} value={String(f.branch_id ?? '')} onChange={(e) => setF({ ...f, branch_id: e.target.value ? Number(e.target.value) : null })}>
-            <option value="">{t('reservations.allBranches')}</option>
-            {branches.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
+          <Select label={t('reports.compareWith')} value={f.compare ?? 'prev'} onChange={(e) => setF({ ...f, compare: e.target.value as ReportFilters['compare'] })}>
+            <option value="prev">{t('reports.compare.prev')}</option>
+            <option value="ly">{t('reports.compare.ly')}</option>
+            <option value="none">{t('reports.compare.none')}</option>
           </Select>
         </div>
-      )}
-    </div>
+        {branches.length > 1 && (
+          <div className="w-44">
+            <Select label={t('settings.rooms.branch')} value={String(f.branch_id ?? '')} onChange={(e) => setF({ ...f, branch_id: e.target.value ? Number(e.target.value) : null })}>
+              <option value="">{t('reservations.allBranches')}</option>
+              {branches.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+        )}
+      </div>
+    </CollapsibleToolbar>
   )
 }
 

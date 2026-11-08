@@ -3,7 +3,8 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { DataTable, type SortState } from '@/components/ui/DataTable'
 import { DateRangeFilter } from '@/components/ui/DateRangeFilter'
-import type { DateRange } from '@/lib/dateRange'
+import { rangeChip, type DateRange } from '@/lib/dateRange'
+import { ToolbarSearch } from '@/components/ui/CollapsibleToolbar'
 import { IdPhoto } from '@/components/guests/IdPhoto'
 import { PlusIcon, SearchIcon, UsersIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
@@ -64,32 +65,43 @@ export function GuestsPage() {
           ]}
         />
       </div>
-      <div className="flex flex-wrap items-end gap-3">
-      <div className="relative w-full max-w-md">
-        <SearchIcon aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-icon" />
-        <input
-          type="search"
-          aria-label={t('guests.search')}
-          placeholder={t('guests.search')}
-          value={q}
-          onChange={(e) => {
-            setQ(e.target.value)
-            setPage(1)
-          }}
-          className={cn(inputClass, 'w-full ps-9')}
-        />
-      </div>
-        <DateRangeFilter
-          label={t('dates.stayed')}
-          value={stayed}
-          onChange={(r) => {
-            setStayed(r)
-            setPage(1)
-          }}
-        />
-      </div>
       <DataTable<Guest>
         id="guests"
+        search={
+          <div className="relative w-full lg:max-w-md">
+            <SearchIcon aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-icon" />
+            <input
+              type="search"
+              aria-label={t('guests.search')}
+              placeholder={t('guests.search')}
+              value={q}
+              onChange={(e) => {
+                setQ(e.target.value)
+                setPage(1)
+              }}
+              className={cn(inputClass, 'w-full ps-9')}
+            />
+          </div>
+        }
+        filters={
+          <div className="flex flex-wrap items-end gap-3">
+            <ToolbarSearch />
+            <DateRangeFilter
+              label={t('dates.stayed')}
+              value={stayed}
+              onChange={(r) => {
+                setStayed(r)
+                setPage(1)
+              }}
+            />
+          </div>
+        }
+        activeFilters={rangeChip(t, 'stayed', t('dates.stayed'), stayed, () => (setStayed({}), setPage(1)))}
+        onClearFilters={() => {
+          setStayed({})
+          setPage(1)
+        }}
+        filtersGap="gap-6"
         rows={guests.data?.data ?? []}
         rowKey={(g) => g.id}
         loading={guests.isLoading}

@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+import { date } from './format'
 import { addDays, today } from './front'
 
 /** A date range in hotel days ("2026-11-01"), both ends included. Empty = any time. */
@@ -34,4 +36,16 @@ export function presetRange(preset: DatePreset, now: string = today()): DateRang
 export function presetOf(range: DateRange, now: string = today()): DatePreset {
   if (!range.from && !range.to) return 'any'
   return DATE_PRESETS.find((p) => p !== 'any' && p !== 'custom' && presetRange(p, now).from === range.from && presetRange(p, now).to === range.to) ?? 'custom'
+}
+
+/** "This month", or "1 Nov 2026 – 5 Nov 2026" for own dates. */
+export function rangeText(t: TFunction, range: DateRange): string {
+  const p = presetOf(range)
+  if (p !== 'custom') return t(`dates.${p}`)
+  return `${range.from ? date(range.from) : '…'} – ${range.to ? date(range.to) : '…'}`
+}
+
+/** The chip for a date filter that is on (phones and tablets, P19): "Stayed: This month". None for any time. */
+export function rangeChip(t: TFunction, key: string, label: string, range: DateRange, onRemove: () => void) {
+  return range.from || range.to ? [{ key, label: `${label}: ${rangeText(t, range)}`, onRemove }] : []
 }
