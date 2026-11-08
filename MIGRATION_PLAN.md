@@ -178,7 +178,7 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [x] Template dashboard pattern (as on the approved canvas): stat cards (title + icon, big number, small line), "next 7 days" chart card, rooms card, money cards in the same card style, smart hint alert; occupancy shows "85%" on one line (was "85" with "%" below)
 
 ### P5 – Room board, front desk mode, charge a room
-- [ ] Room cards, status filter chips, tabs (Arriving / Leaving / In house) as data-table toolbar + tabs; room panel; front desk mode tiles
+- [x] Room cards (template card shape: rounded-xl, border, small shadow; room colours kept), status / today filter chips as the template's outline filter buttons, toolbar search + selects in the template look, tabs, room panel, Arriving / Leaving lists, front desk mode tiles, Charge a room, quick charges; Lucide icons
 
 ### P6 – Walk-in
 - [ ] Form pattern: sections as cards, room picker, guest quick check-in, summary card, payment
@@ -230,3 +230,4 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P2 fixes | open | #88 |
 | P3 Building blocks | open (stacked on #88) | #89 |
 | P4 Dashboard | open (stacked on #89) | #90 |
+| P5 Room board, front desk mode, charge a room | open (stacked on #90) | #91 |

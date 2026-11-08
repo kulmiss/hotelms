@@ -107,7 +107,7 @@ function HkBoard({ branchId }: { branchId: number | null }) {
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-2">
       {board.data?.data.map((r) => (
-        <div key={r.id} className={cn('flex min-h-20 flex-col gap-1 rounded-xl p-3 ring-1', ROOM_TONES[r.status])}>
+        <div key={r.id} className={cn('flex min-h-20 flex-col gap-1 rounded-xl border p-3 shadow-xs', ROOM_TONES[r.status])}>
           <span className="flex items-center justify-between">
             <span className="text-base font-semibold">{r.number}</span>
             <span className={cn('size-2.5 rounded-full', ROOM_DOTS[r.status])} />

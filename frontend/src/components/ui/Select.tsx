@@ -25,3 +25,15 @@ export function Select({ label, hint, error, className, id, children, ...props }
     </div>
   )
 }
+
+/** A select without its own label (toolbars, filters): give it `aria-label`. Same look as Select. */
+export function SelectBox({ className, wrapperClassName, children, ...props }: SelectHTMLAttributes<HTMLSelectElement> & { wrapperClassName?: string }) {
+  return (
+    <div className={cn('relative min-w-0', wrapperClassName)}>
+      <select className={cn(selectClass, className)} {...props}>
+        {children}
+      </select>
+      <ChevronDown aria-hidden className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 opacity-50" />
+    </div>
+  )
+}

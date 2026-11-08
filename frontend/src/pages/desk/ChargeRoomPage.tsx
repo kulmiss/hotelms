@@ -55,18 +55,18 @@ export function ChargeRoomPage() {
               aria-pressed={room?.room_id === r.room_id}
               onClick={() => setRoomId(r.room_id)}
               className={cn(
-                'flex min-h-16 flex-col items-start justify-center rounded-xl px-3 py-2 text-left ring-1 transition duration-75',
-                room?.room_id === r.room_id ? 'bg-accent-soft ring-2 ring-accent' : 'bg-surface ring-ring hover:bg-sunken',
+                'flex min-h-16 flex-col items-start justify-center rounded-xl border px-3 py-2 text-left shadow-xs transition-colors',
+                room?.room_id === r.room_id ? 'border-primary bg-accent-soft ring-1 ring-primary' : 'bg-surface hover:bg-sunken',
               )}
             >
               <span className="text-base font-semibold">{r.number}</span>
-              <span className="truncate text-[11px] text-muted">{r.guest}</span>
+              <span className="truncate text-xs text-muted">{r.guest}</span>
             </button>
           ))}
         </div>
         {data.isError && !data.data && <LoadFailed error={data.error} onRetry={() => data.refetch()} />}
-        {data.data && rooms.length === 0 && <p className="text-[13px] text-muted">{t('quickCharge.noGuests')}</p>}
-        {data.data && rooms.length > 0 && shown.length === 0 && <p className="text-[13px] text-muted">{t('quickCharge.noMatch')}</p>}
+        {data.data && rooms.length === 0 && <p className="text-sm text-muted">{t('quickCharge.noGuests')}</p>}
+        {data.data && rooms.length > 0 && shown.length === 0 && <p className="text-sm text-muted">{t('quickCharge.noMatch')}</p>}
       </Card>
 
       {room && (

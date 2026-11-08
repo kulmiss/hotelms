@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeftStartOnRectangleIcon, ArrowRightEndOnRectangleIcon, BanknotesIcon, ShoppingBagIcon, Squares2X2Icon, UserPlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { BanknoteIcon, LayoutGridIcon, LogInIcon, LogOutIcon, ShoppingBagIcon, UserPlusIcon, XIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { SelectBox } from '@/components/ui/Select'
 import { SwipeRow } from '@/components/ui/SwipeRow'
 import { useMe } from '@/lib/auth'
 import { useBrand } from '@/lib/brand'
@@ -34,12 +35,12 @@ export function FrontDeskModePage() {
   const arrivals = today.data?.arrivals ?? []
   const departures = today.data?.departures ?? []
   const tiles = [
-    { key: 'checkIn', icon: ArrowRightEndOnRectangleIcon, to: '#arrivals', count: arrivals.length, show: can('frontdesk.check_in') },
-    { key: 'checkOut', icon: ArrowLeftStartOnRectangleIcon, to: '#departures', count: departures.length, show: can('frontdesk.check_out') },
+    { key: 'checkIn', icon: LogInIcon, to: '#arrivals', count: arrivals.length, show: can('frontdesk.check_in') },
+    { key: 'checkOut', icon: LogOutIcon, to: '#departures', count: departures.length, show: can('frontdesk.check_out') },
     { key: 'walkIn', icon: UserPlusIcon, to: '/rooms/walk-in', show: can('frontdesk.walk_in') },
-    { key: 'takePayment', icon: BanknotesIcon, to: '/billing', show: can('payments.take') },
+    { key: 'takePayment', icon: BanknoteIcon, to: '/billing', show: can('payments.take') },
     { key: 'chargeRoom', icon: ShoppingBagIcon, to: '/charge', show: can('charges.room') },
-    { key: 'roomBoard', icon: Squares2X2Icon, to: '/rooms', show: can('frontdesk.view') },
+    { key: 'roomBoard', icon: LayoutGridIcon, to: '/rooms', show: can('frontdesk.view') },
   ].filter((x) => x.show)
 
   const exit = () => {
@@ -57,21 +58,16 @@ export function FrontDeskModePage() {
           </p>
         </div>
         {branches.length > 1 && (
-          <select
-            aria-label={t('frontDesk.branch')}
-            value={current?.id ?? ''}
-            onChange={(e) => select(Number(e.target.value))}
-            className="min-h-touch rounded-lg border-0 bg-surface px-3 text-[13px] ring-1 ring-ring-strong"
-          >
+          <SelectBox aria-label={t('frontDesk.branch')} value={current?.id ?? ''} onChange={(e) => select(Number(e.target.value))} className="w-auto">
             {branches.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}
               </option>
             ))}
-          </select>
+          </SelectBox>
         )}
         <Button variant="secondary" onClick={exit}>
-          <XMarkIcon aria-hidden className="size-4 text-icon" />
+          <XIcon aria-hidden />
           {t('frontDesk.exit')}
         </Button>
       </header>
@@ -81,12 +77,12 @@ export function FrontDeskModePage() {
           {tiles.map(({ key, icon: Icon, to, count }) => {
             const body = (
               <>
-                <Icon aria-hidden className="size-8 text-accent-text" />
+                <Icon aria-hidden className="size-8 text-primary" />
                 <span className="text-base font-semibold">{t(`frontDesk.tiles.${key}`)}</span>
                 {count !== undefined && <span className="text-xs text-muted">{t('frontDesk.today', { count })}</span>}
               </>
             )
-            const cls = 'panel flex min-h-32 flex-col items-center justify-center gap-2 p-4 text-center transition duration-75 hover:bg-sunken active:scale-[0.98]'
+            const cls = 'panel flex min-h-32 flex-col items-center justify-center gap-2 p-4 text-center transition-colors hover:bg-sunken/50 active:scale-[0.98]'
             return to.startsWith('#') ? (
               <a key={key} href={to} className={cls}>
                 {body}
@@ -119,12 +115,12 @@ function TodayColumn({ id, title, rows, loading, kind, enabled }: { id: string; 
       <h2 className="text-sm font-semibold">
         {title} <span className="text-muted">({rows.length})</span>
       </h2>
-      {loading && <p className="text-[13px] text-muted">{t('common.loading')}</p>}
-      {!loading && rows.length === 0 && <p className="panel p-4 text-center text-[13px] text-muted">{t(`desk.empty.${kind === 'in' ? 'arrivals' : 'departures'}`)}</p>}
+      {loading && <p className="text-sm text-muted">{t('common.loading')}</p>}
+      {!loading && rows.length === 0 && <p className="panel p-4 text-center text-sm text-muted">{t(`desk.empty.${kind === 'in' ? 'arrivals' : 'departures'}`)}</p>}
       <ul className="flex flex-col gap-2">
         {rows.map((r) => {
           const content = (
-            <div className={cn('panel flex min-h-16 items-center gap-3 px-4 py-2', (r.late || r.overdue) && 'ring-warn-text/40')}>
+            <div className={cn('panel flex min-h-16 items-center gap-3 px-4 py-2', (r.late || r.overdue) && 'border-warn-text/40')}>
               <Link to={`/reservations/${r.id}`} className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-sm font-medium">{r.guest?.name}</span>
                 <span className="truncate text-xs text-muted">
@@ -133,7 +129,7 @@ function TodayColumn({ id, title, rows, loading, kind, enabled }: { id: string; 
               </Link>
               {r.late && <Badge tone="warn">{t('desk.late')}</Badge>}
               {r.overdue && <Badge tone="danger">{t('desk.overdue')}</Badge>}
-              <span className="hidden text-[13px] tabular-nums sm:inline">{money(r.balance, r.currency)}</span>
+              <span className="hidden text-sm tabular-nums sm:inline">{money(r.balance, r.currency)}</span>
               {enabled && (
                 <Button size="lg" variant={kind === 'in' ? 'primary' : 'secondary'} onClick={() => go(r)}>
                   {action}

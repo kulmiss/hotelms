@@ -23,3 +23,9 @@ Format: **question** – options – *chosen* and why – how easy to change lat
 5. **Date filter** – the template's date picker needs an extra calendar package (react-day-picker). *Chose:* keep the preset list + two date fields, restyled. – Medium (new package + install).
 6. **Table header** – no grey background any more (template); rows get a light grey on hover. – Easy.
 7. **Select boxes** stay native (the phone's own picker, decided in P0) with the template's look and a chevron. – Easy.
+
+## P5 – Room board, front desk mode, charge a room
+
+1. **Room card colours** – kept the soft room-status colours (green free, teal occupied, amber dirty, blue cleaning, grey maintenance) inside the template's card shape (rounded-xl, border, small shadow). A fully grey template card would hide the status at a glance. – Easy (`ROOM_TONES` in `lib/desk.ts`).
+2. **Filter chips** – shown like the template's table filter buttons (outline, dashed until chosen, brand tint when on), 32px with a mouse / 44px on touch. – Easy.
+3. **Text size** – 13px texts on screens become the template's 14px (11px → 12px). Rooms and lists are a little taller. – Easy (but touches every screen).
