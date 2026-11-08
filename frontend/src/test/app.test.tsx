@@ -51,8 +51,19 @@ describe('app shell (signed in)', () => {
     expect(screen.getByRole('menu')).toBeVisible()
     expect(screen.getByRole('menuitem', { name: 'My profile' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Sign out' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Sign-in security' })).toHaveAttribute('href', '/profile#security')
+    expect(screen.queryByRole('menuitem', { name: 'Lock screen' })).not.toBeInTheDocument() // screen lock is off
     await userEvent.keyboard('{Escape}')
     expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+  })
+
+  it('locks the screen from the account menu when the hotel uses the screen lock', async () => {
+    const me = { ...makeMe(), security: { two_factor: null, two_factor_setup_required: false, screen_lock_minutes: 5, has_pin: false } }
+    mockApi({ 'GET /me': { body: me }, 'GET /health': healthOk })
+    renderApp('/')
+    await userEvent.click(await screen.findByRole('button', { name: 'Account menu' }))
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Lock screen' }))
+    expect(await screen.findByRole('dialog', { name: 'Screen locked' })).toBeInTheDocument()
   })
 
   it('opens a screen from the navigation', async () => {

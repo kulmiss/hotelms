@@ -106,6 +106,8 @@
       "system": "Same as device"
     },
     "skipToMain": "Skip to main content",
+    "security": "Sign-in security",
+    "lockScreen": "Lock screen",
     "chooseBranch": "Choose branch (now: {{branch}})"
   },
   "login": {

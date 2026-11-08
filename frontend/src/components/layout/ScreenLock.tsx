@@ -10,6 +10,9 @@ import { errorText, usePinSwitch, useUnlock } from '@/lib/security'
 
 const KEY = 'hms_locked'
 
+/** "Lock screen" in the account menu: lock now, without waiting. */
+export const LOCK_NOW_EVENT = 'hms:lock-screen'
+
 function stored(): string | null {
   try {
     return localStorage.getItem(KEY)
@@ -36,6 +39,16 @@ export function ScreenLock() {
   const userId = me.data ? String(me.data.user.id) : null
   const [locked, setLocked] = useState(() => userId !== null && stored() === userId)
   const last = useRef(Date.now())
+
+  useEffect(() => {
+    if (!userId) return
+    const lockNow = () => {
+      store(userId)
+      setLocked(true)
+    }
+    window.addEventListener(LOCK_NOW_EVENT, lockNow)
+    return () => window.removeEventListener(LOCK_NOW_EVENT, lockNow)
+  }, [userId])
 
   useEffect(() => {
     if (!minutes || !userId) return

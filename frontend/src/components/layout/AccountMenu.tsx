@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { ChevronsUpDown, CircleUser, Gift, KeyRound, LayoutGrid, LifeBuoy, LogOut } from 'lucide-react'
+import { ChevronsUpDown, CircleUser, Gift, KeyRound, LayoutGrid, LifeBuoy, Lock, LogOut, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/shadcn/button'
 import {
   DropdownMenu,
@@ -16,6 +16,7 @@ import { useLogout, useMe } from '@/lib/auth'
 import { cn } from '@/lib/cn'
 import { useFrontDeskMode } from '@/lib/frontDeskMode'
 import { useHasWhatsNew } from '@/lib/whatsNew'
+import { LOCK_NOW_EVENT } from './ScreenLock'
 
 function initials(name: string) {
   return name
@@ -89,6 +90,15 @@ function AccountItems({ signOut }: { signOut: () => void }) {
             {t('topbar.changePassword')}
           </Link>
         </DropdownMenuItem>
+        {/* Two-step sign-in and PIN live in My profile (hidden there while HotelMS support is signed in). */}
+        {!me.impersonation && (
+          <DropdownMenuItem asChild>
+            <Link to="/profile#security">
+              <ShieldCheck aria-hidden />
+              {t('topbar.security')}
+            </Link>
+          </DropdownMenuItem>
+        )}
         {!user.is_super_admin && me.permissions.includes('frontdesk.view') && (
           <DropdownMenuItem
             onSelect={() => {
@@ -117,6 +127,13 @@ function AccountItems({ signOut }: { signOut: () => void }) {
         )}
       </DropdownMenuGroup>
       <DropdownMenuSeparator />
+      {/* Shared reception screens: lock now instead of waiting (only when the hotel turned the screen lock on). */}
+      {!user.is_super_admin && (me.security?.screen_lock_minutes ?? 0) > 0 && (
+        <DropdownMenuItem onSelect={() => window.dispatchEvent(new Event(LOCK_NOW_EVENT))}>
+          <Lock aria-hidden />
+          {t('topbar.lockScreen')}
+        </DropdownMenuItem>
+      )}
       <DropdownMenuItem variant="destructive" onSelect={signOut}>
         <LogOut aria-hidden />
         {t('topbar.signOut')}
