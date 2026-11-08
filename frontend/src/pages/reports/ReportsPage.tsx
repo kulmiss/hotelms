@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { SmartHints } from '@/components/ui/SmartHints'
 import { useSmart } from '@/lib/smart'
-import { ArrowDownTrayIcon, PrinterIcon } from '@heroicons/react/24/outline'
+import { DownloadIcon, PrinterIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Bars, Delta } from '@/components/ui/Delta'
 import { buttonClass } from '@/components/ui/Button'
@@ -96,7 +96,7 @@ export function ReportsPage() {
             {can('reports.export') && !NO_EXPORT.includes(key) && (
               <>
                 <a className={buttonClass('secondary')} href={reportFileUrl(key, f, 'xlsx')} download>
-                  <ArrowDownTrayIcon aria-hidden className="size-4" />
+                  <DownloadIcon aria-hidden className="size-4" />
                   Excel
                 </a>
                 <a className={buttonClass('ghost')} href={reportFileUrl(key, f, 'csv')} download>
@@ -117,8 +117,9 @@ export function ReportsPage() {
                   aria-current={key === r.key ? 'page' : undefined}
                   onClick={() => setParams({ report: r.key })}
                   className={cn(
-                    'flex min-h-touch w-full items-center rounded-lg px-3 text-left text-[13px] font-medium whitespace-nowrap transition duration-75',
-                    key === r.key ? 'bg-surface text-accent-text shadow-sm ring-1 ring-ring' : 'text-muted hover:bg-sunken hover:text-text',
+                    // The template's settings-style side menu: ghost buttons, the open one grey.
+                    'flex min-h-touch w-full items-center justify-start rounded-md px-3 text-left text-sm font-medium whitespace-nowrap transition-colors',
+                    key === r.key ? 'bg-sunken text-text' : 'text-muted hover:bg-sunken hover:text-text',
                   )}
                 >
                   {t(`reports.names.${r.key}`)}
@@ -168,7 +169,7 @@ function Filters({ f, setF, branches }: { f: ReportFilters; setF: (f: ReportFilt
             type="button"
             aria-pressed={f.from === p.from && f.to === p.to}
             onClick={() => setF({ ...f, from: p.from, to: p.to })}
-            className={cn('min-h-touch rounded-full px-3 text-[13px] font-medium ring-1 transition duration-75', f.from === p.from && f.to === p.to ? 'bg-accent text-on-accent ring-accent' : 'bg-surface text-muted ring-ring hover:bg-sunken')}
+            className={cn('min-h-touch rounded-full px-3 text-sm font-medium border shadow-xs transition-colors', f.from === p.from && f.to === p.to ? 'border-primary bg-primary text-primary-foreground' : 'bg-background text-muted hover:bg-sunken dark:bg-input/30')}
           >
             {t(`reports.presets.${p.key}`)}
           </button>
@@ -224,7 +225,7 @@ export function KpiGrid({ kpis, compare, currency }: { kpis: Kpis; compare: Kpis
         const v = kpis[k.key]
         return (
           <Card key={k.key} className="flex flex-col gap-1 p-4">
-            <span className="text-[13px] font-medium text-muted">{t(`reports.kpis.${k.key}`)}</span>
+            <span className="text-sm font-medium text-muted">{t(`reports.kpis.${k.key}`)}</span>
             <span className="text-xl font-semibold tabular-nums">{k.money ? money(String(v), currency) : k.pct ? `${v}%` : String(v)}</span>
             {compare && (
               <span className="flex items-center gap-1.5 text-xs text-muted">
@@ -261,14 +262,14 @@ function Performance({ f }: { f: ReportFilters }) {
           <h3 className="text-sm font-semibold">{t('reports.dayByDay')}</h3>
           <div className="flex flex-wrap gap-1">
             {METRICS.map((m) => (
-              <button key={m} type="button" aria-pressed={metric === m} onClick={() => setMetric(m)} className={cn('min-h-touch rounded-lg px-2.5 text-xs font-medium', metric === m ? 'bg-sunken text-text ring-1 ring-ring' : 'text-muted hover:text-text')}>
+              <button key={m} type="button" aria-pressed={metric === m} onClick={() => setMetric(m)} className={cn('min-h-touch rounded-lg px-2.5 text-xs font-medium', metric === m ? 'bg-sunken text-text border' : 'text-muted hover:text-text')}>
                 {t(`reports.kpis.${m}`)}
               </button>
             ))}
           </div>
         </div>
         <Bars label={t('reports.dayByDay')} items={d.daily.map((x) => ({ key: x.date, label: date(x.date), value: Number(x[metric]) }))} format={fmt} selected={day} onSelect={(k) => setDay(day === k ? null : k)} />
-        <div className="flex justify-between text-[11px] text-muted">
+        <div className="flex justify-between text-xs text-muted">
           <span>{date(d.from)}</span>
           <span>{t('reports.tapBar')}</span>
           <span>{date(d.to)}</span>
@@ -278,7 +279,7 @@ function Performance({ f }: { f: ReportFilters }) {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card className="overflow-x-auto p-0">
           <h3 className="px-4 pt-4 text-sm font-semibold">{t('reports.byRoomType')}</h3>
-          <table className="mt-2 w-full text-left text-[13px]">
+          <table className="mt-2 w-full text-left text-sm">
             <thead className="text-muted">
               <tr>
                 <th className="px-4 py-1.5 font-medium">{t('settings.rooms.type')}</th>
@@ -312,7 +313,7 @@ function Drilldown({ date: day, metric, branchId, currency }: { date: string; me
   const { t } = useTranslation()
   const q = useDrilldown(metric, day, branchId)
   return (
-    <div className="flex flex-col gap-1 rounded-lg bg-sunken p-3 text-[13px]">
+    <div className="flex flex-col gap-1 rounded-lg bg-sunken p-3 text-sm">
       <span className="text-xs font-semibold text-muted">{t('reports.behind', { date: date(day) })}</span>
       {q.data?.data.length === 0 && <span className="text-muted">{t('reports.nothing')}</span>}
       {q.data?.data.map((r, i) => (
@@ -330,7 +331,7 @@ function Drilldown({ date: day, metric, branchId, currency }: { date: string; me
 function SimpleTable({ head, rows, right = true }: { head: string[]; rows: (string | number)[][]; right?: boolean }) {
   const { t } = useTranslation()
   return (
-    <table className="mt-2 w-full text-left text-[13px]">
+    <table className="mt-2 w-full text-left text-sm">
       <thead className="text-muted">
         <tr>
           {head.map((h, i) => (
@@ -372,7 +373,7 @@ function Payments({ f }: { f: ReportFilters }) {
   return (
     <div className="flex flex-col gap-4">
       <Card className="flex items-baseline justify-between">
-        <span className="text-[13px] text-muted">{t('reports.received')}</span>
+        <span className="text-sm text-muted">{t('reports.received')}</span>
         <span className="text-xl font-semibold tabular-nums">{money(d.total, d.currency)}</span>
       </Card>
       <div className="grid gap-4 lg:grid-cols-2">
@@ -400,7 +401,7 @@ function Outstanding({ f }: { f: ReportFilters }) {
         <h3 className="text-sm font-semibold">{t('reports.unpaidBills', { count: rows.length })}</h3>
         <span className="font-semibold tabular-nums text-danger-text">{money(total, q.data?.data.currency)}</span>
       </div>
-      <table className="mt-2 w-full min-w-[640px] text-left text-[13px]">
+      <table className="mt-2 w-full min-w-[640px] text-left text-sm">
         <tbody>
           {rows.map((r) => (
             <tr key={r.id} className="border-t border-border">
@@ -453,11 +454,11 @@ function Guests({ f }: { f: ReportFilters }) {
     <div className="flex flex-col gap-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <Card className="flex flex-col gap-1 p-4">
-          <span className="text-[13px] text-muted">{t('reports.guestsStayed')}</span>
+          <span className="text-sm text-muted">{t('reports.guestsStayed')}</span>
           <span className="text-xl font-semibold">{d.guests}</span>
         </Card>
         <Card className="flex flex-col gap-1 p-4">
-          <span className="text-[13px] text-muted">{t('reports.repeatGuests')}</span>
+          <span className="text-sm text-muted">{t('reports.repeatGuests')}</span>
           <span className="text-xl font-semibold">{d.repeat}</span>
         </Card>
       </div>
@@ -492,7 +493,7 @@ function Cancellations({ f }: { f: ReportFilters }) {
           ] as const
         ).map(([k, v]) => (
           <Card key={k} className="flex flex-col gap-1 p-4">
-            <span className="text-[13px] text-muted">{t(`reports.cancel.${k}`)}</span>
+            <span className="text-sm text-muted">{t(`reports.cancel.${k}`)}</span>
             <span className="text-xl font-semibold tabular-nums">{v}</span>
           </Card>
         ))}

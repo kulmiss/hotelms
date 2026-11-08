@@ -1,7 +1,7 @@
 import { dateTime } from '@/lib/format'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CheckIcon, XMarkIcon } from '@heroicons/react/20/solid'
+import { CheckIcon, XIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -28,8 +28,8 @@ export function ApprovalsPage() {
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
       <PageHeader title={t('nav.approvals')} subtitle={t('approvals.subtitle')} />
       <Tabs label={t('nav.approvals')} active={status} onChange={setStatus} items={['pending', 'approved', 'rejected', 'expired'].map((s) => ({ key: s, label: t(`approvals.status.${s}`) }))} />
-      {q.isPending && <p className="text-[13px] text-muted">{t('common.loading')}</p>}
-      {!q.isPending && rows.length === 0 && <Card className="text-center text-[13px] text-muted">{t('approvals.none')}</Card>}
+      {q.isPending && <p className="text-sm text-muted">{t('common.loading')}</p>}
+      {!q.isPending && rows.length === 0 && <Card className="text-center text-sm text-muted">{t('approvals.none')}</Card>}
       <ul className="flex flex-col gap-3">
         {rows.map((a) => (
           <ApprovalCard key={a.id} a={a} />
@@ -57,7 +57,7 @@ function ApprovalCard({ a }: { a: ApprovalItem }) {
       <Card className="flex flex-col gap-3">
         <div className="flex flex-wrap items-start gap-2">
           <div className="min-w-0 flex-1">
-            <p className="text-[13px] font-semibold">{a.title}</p>
+            <p className="text-sm font-semibold">{a.title}</p>
             <p className="text-xs text-muted">
               {[a.branch, when(a.created_at)].filter(Boolean).join(' · ')}
               {!refund && ` · ${t('approvals.usual', { usual: Math.round(Number(a.payload.usual ?? 0)) })}`}
@@ -96,7 +96,7 @@ function ApprovalCard({ a }: { a: ApprovalItem }) {
                 {refund ? t('approvals.giveRefund') : t('approvals.approve')}
               </Button>
               <Button variant="secondary" disabled={reject.isPending} onClick={() => reject.mutate({ id: a.id, note: note || undefined })}>
-                <XMarkIcon aria-hidden className="size-4 text-icon" />
+                <XIcon aria-hidden className="size-4 text-icon" />
                 {t('approvals.reject')}
               </Button>
             </div>

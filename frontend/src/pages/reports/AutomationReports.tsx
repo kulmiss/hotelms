@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BookmarkIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { BookmarkIcon, Trash2Icon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -53,14 +53,14 @@ export function SavedViews({ reportKey, f, apply }: { reportKey: string; f: Repo
   return (
     <div className="flex flex-wrap items-center gap-1.5 print:hidden">
       {views.data?.data.map((v) => (
-        <span key={v.id} className="flex items-center rounded-full bg-surface ring-1 ring-ring">
-          <button type="button" onClick={() => apply({ from: String(v.filters.from ?? f.from), to: String(v.filters.to ?? f.to), compare: (v.filters.compare as ReportFilters['compare']) ?? 'prev', branch_id: v.filters.branch_id ? Number(v.filters.branch_id) : null })} className="flex min-h-touch items-center gap-1 px-3 text-[13px] font-medium">
+        <span key={v.id} className="flex items-center rounded-full bg-surface border">
+          <button type="button" onClick={() => apply({ from: String(v.filters.from ?? f.from), to: String(v.filters.to ?? f.to), compare: (v.filters.compare as ReportFilters['compare']) ?? 'prev', branch_id: v.filters.branch_id ? Number(v.filters.branch_id) : null })} className="flex min-h-touch items-center gap-1 px-3 text-sm font-medium">
             {v.is_pinned && <BookmarkIcon aria-hidden className="size-3.5 text-accent-text" />}
             {v.name}
           </button>
           {v.mine && (
             <button type="button" aria-label={t('common.delete')} onClick={() => remove.mutate(v.id)} className="flex size-8 items-center justify-center text-icon hover:text-danger-text">
-              <TrashIcon aria-hidden className="size-3.5" />
+              <Trash2Icon aria-hidden className="size-3.5" />
             </button>
           )}
         </span>
@@ -128,10 +128,10 @@ export function CustomReportBuilder({ f }: { f: ReportFilters }) {
       {(list.data?.data.length ?? 0) > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {list.data?.data.map((r) => (
-            <span key={r.id} className="flex items-center rounded-full bg-surface ring-1 ring-ring">
+            <span key={r.id} className="flex items-center rounded-full bg-surface border">
               <button
                 type="button"
-                className="min-h-touch px-3 text-[13px] font-medium"
+                className="min-h-touch px-3 text-sm font-medium"
                 onClick={() => {
                   setMeasures(r.measures)
                   setGroup(r.group_by)
@@ -145,7 +145,7 @@ export function CustomReportBuilder({ f }: { f: ReportFilters }) {
               </button>
               {r.mine && (
                 <button type="button" aria-label={t('common.delete')} onClick={() => remove.mutate(r.id)} className="flex size-8 items-center justify-center text-icon hover:text-danger-text">
-                  <TrashIcon aria-hidden className="size-3.5" />
+                  <Trash2Icon aria-hidden className="size-3.5" />
                 </button>
               )}
             </span>
@@ -154,11 +154,11 @@ export function CustomReportBuilder({ f }: { f: ReportFilters }) {
       )}
       <Card className="flex flex-col gap-4">
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 text-[13px] font-medium">{t('automation.measures')}</legend>
+          <legend className="mb-1 text-sm font-medium">{t('automation.measures')}</legend>
           <div className="flex flex-wrap gap-2">
             {(list.data?.measures ?? []).map((m) => (
-              <label key={m} className="flex min-h-touch items-center gap-2 rounded-lg px-2 text-[13px] ring-1 ring-ring">
-                <input type="checkbox" className="size-4 accent-accent" checked={measures.includes(m)} onChange={(e) => setMeasures(e.target.checked ? [...measures, m] : measures.filter((x) => x !== m))} />
+              <label key={m} className="flex min-h-touch items-center gap-2 rounded-lg px-2 text-sm border">
+                <input type="checkbox" checked={measures.includes(m)} onChange={(e) => setMeasures(e.target.checked ? [...measures, m] : measures.filter((x) => x !== m))} />
                 {t(`automation.m.${m}`)}
               </label>
             ))}
@@ -198,7 +198,7 @@ export function CustomReportBuilder({ f }: { f: ReportFilters }) {
           {chart === 'bar' && result.columns[0] && (
             <Bars label={t(`automation.m.${result.columns[0]}`)} items={result.rows.map((r) => ({ key: r.key, label: r.label, value: Number(r[result.columns[0]] ?? 0) }))} format={(v) => fmt(result.columns[0], v)} />
           )}
-          <table className="w-full text-left text-[13px]">
+          <table className="w-full text-left text-sm">
             <thead className="text-muted">
               <tr>
                 <th className="py-1.5 pr-3 font-medium">{t(`automation.g.${group}`)}</th>
@@ -245,7 +245,7 @@ export function SchedulesReport() {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="max-w-prose text-[13px] text-muted">{t('automation.schedulesHelp')}</p>
+      <p className="max-w-prose text-sm text-muted">{t('automation.schedulesHelp')}</p>
       {test.data && (test.data.sent ? <Alert tone="ok">{t('automation.sent')}</Alert> : <Alert>{test.data.problems.join(' ')}</Alert>)}
       {(save.error || test.error) && <Alert>{err(save.error ?? test.error)}</Alert>}
       {edit ? (
@@ -304,7 +304,7 @@ export function SchedulesReport() {
         </div>
       )}
       <Card className="overflow-x-auto p-0">
-        <table className="w-full min-w-[720px] text-left text-[13px]">
+        <table className="w-full min-w-[720px] text-left text-sm">
           <tbody>
             {q.data?.data.map((s) => (
               <tr key={s.id} className="border-t border-border first:border-t-0">
@@ -327,7 +327,7 @@ export function SchedulesReport() {
                     {t('common.edit')}
                   </Button>
                   <Button variant="ghost" aria-label={t('common.delete')} disabled={remove.isPending} onClick={() => remove.mutate(s.id)}>
-                    <TrashIcon aria-hidden className="size-4" />
+                    <Trash2Icon aria-hidden className="size-4" />
                   </Button>
                 </td>
               </tr>
@@ -343,11 +343,11 @@ function Channels({ value, onChange, options }: { value: string[]; onChange: (v:
   const { t } = useTranslation()
   return (
     <fieldset className="flex flex-col gap-1.5">
-      <legend className="mb-1 text-[13px] font-medium">{t('automation.channels')}</legend>
+      <legend className="mb-1 text-sm font-medium">{t('automation.channels')}</legend>
       <div className="flex flex-wrap gap-2">
         {options.map((c) => (
-          <label key={c} className="flex min-h-touch items-center gap-2 text-[13px]">
-            <input type="checkbox" className="size-4 accent-accent" checked={value.includes(c)} onChange={(e) => onChange(e.target.checked ? [...value, c] : value.filter((x) => x !== c))} />
+          <label key={c} className="flex min-h-touch items-center gap-2 text-sm">
+            <input type="checkbox" checked={value.includes(c)} onChange={(e) => onChange(e.target.checked ? [...value, c] : value.filter((x) => x !== c))} />
             {t(`automation.ch.${c}`)}
           </label>
         ))}
@@ -360,11 +360,11 @@ function People({ people, value, onChange }: { people: Person[]; value: number[]
   const { t } = useTranslation()
   return (
     <fieldset className="flex flex-col gap-1.5">
-      <legend className="mb-1 text-[13px] font-medium">{t('automation.sendTo')}</legend>
-      <div className="flex max-h-32 flex-col gap-1 overflow-y-auto rounded-lg p-2 ring-1 ring-ring">
+      <legend className="mb-1 text-sm font-medium">{t('automation.sendTo')}</legend>
+      <div className="flex max-h-32 flex-col gap-1 overflow-y-auto rounded-lg p-2 border">
         {people.map((p) => (
-          <label key={p.id} className="flex items-center gap-2 text-[13px]">
-            <input type="checkbox" className="size-4 accent-accent" checked={value.includes(p.id)} onChange={(e) => onChange(e.target.checked ? [...value, p.id] : value.filter((x) => x !== p.id))} />
+          <label key={p.id} className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={value.includes(p.id)} onChange={(e) => onChange(e.target.checked ? [...value, p.id] : value.filter((x) => x !== p.id))} />
             {p.name}
           </label>
         ))}
@@ -382,7 +382,7 @@ export function AlertsReport() {
   const save = useSaveAlertRule()
   return (
     <div className="flex flex-col gap-3">
-      <p className="max-w-prose text-[13px] text-muted">{t('automation.alertsHelp')}</p>
+      <p className="max-w-prose text-sm text-muted">{t('automation.alertsHelp')}</p>
       {save.error && <Alert>{err(save.error)}</Alert>}
       {q.data?.data.map((r) => (
         <AlertRuleCard key={r.id} rule={r} people={q.data.people} onSave={(v) => save.mutate(v)} saving={save.isPending} />
@@ -400,15 +400,15 @@ function AlertRuleCard({ rule, people, onSave, saving }: { rule: AlertRule; peop
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-col">
           <span className="text-sm font-semibold">{t(`automation.alerts.${r.type}.title`)}</span>
-          <span className="text-[13px] text-muted">{t(`automation.alerts.${r.type}.text`, r.threshold)}</span>
+          <span className="text-sm text-muted">{t(`automation.alerts.${r.type}.text`, r.threshold)}</span>
         </div>
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-2 text-[13px]">
+          <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
               role="switch"
               aria-label={t(`automation.alerts.${r.type}.title`)}
-              className="size-4 accent-accent"
+              className="size-4"
               checked={r.is_active}
               onChange={(e) => {
                 const next = { ...r, is_active: e.target.checked }

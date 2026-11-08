@@ -196,8 +196,8 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 
 - [x] Cashier, housekeeping (room cards, task list selects), shifts / roster (select boxes), attendance, kiosk keypad; Lucide
 ### P11 – Reports and approvals
-- [ ] Reports library + every report, insights, automation reports, approvals
 
+- [x] Reports library (template side menu), every report (KPI cards, tables, heat map, pickup, targets), insights, automation reports, approvals; filter chips; Lucide
 ### P12 – Settings and setup
 - [ ] Settings layout (template Settings pattern) + all sections, import, automations, setup walkthrough
 
@@ -236,3 +236,4 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P8 Bills | open (stacked on #93) | #94 |
 | P9 | open (stacked) | #95 |
 | P10 | open (stacked) | #96 |
+| P11 | open (stacked on the previous PR) | (this PR) |
