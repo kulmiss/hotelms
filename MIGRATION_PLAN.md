@@ -137,6 +137,9 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 |---|---:|---:|---|
 | P1 (#86) | ≈ 218.5 KB | ≈ 0 | estimate from the raw build sizes (CI did not measure yet) |
 | P2 (#87) | 251.6 KB | ≈ 33 KB | Radix menus / tooltip / dialog, Lucide nav icons, tw-animate CSS; cmdk is lazy (CommandMenu chunk, not counted) |
+| P2 fixes (#88) | 252.2 KB | ≈ 33.7 KB | lock screen / security items |
+| P3 (#89) | 252.9 KB | ≈ 34.4 KB | building blocks, checkbox CSS |
+| P17 (#103, all partitions) | 252.5 KB | **≈ 34 KB** | screens are lazy, so P4–P16 add nothing to the first download |
 
 ### P1 – Foundation (tokens, fonts, theme, notices)
 - [x] Packages: owner chose real packages; he runs the pinned install once (command in the P1 report) before P2. P1 itself needs no new package
