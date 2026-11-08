@@ -44,18 +44,25 @@ function useAccount() {
   return { me: me.data, user, role: user.is_super_admin ? t('topbar.hotelmsTeam') : (me.data.hotel?.name ?? '') }
 }
 
+/**
+ * Sign out, then the sign-in page. Lives in the menu button (always on screen), not in the menu items:
+ * the menu closes when an item is chosen, and a closed menu would never hear that sign-out finished.
+ */
+function useSignOut() {
+  const logout = useLogout()
+  const navigate = useNavigate()
+  return () => logout.mutate(undefined, { onSettled: () => navigate('/login', { replace: true }) })
+}
+
 /** The same items in the header menu and the sidebar menu: profile, password, front desk mode, what's new, help, sign out. */
-function AccountItems() {
+function AccountItems({ signOut }: { signOut: () => void }) {
   const { t } = useTranslation()
   const account = useAccount()
-  const logout = useLogout()
   const navigate = useNavigate()
   const [, setFrontDesk] = useFrontDeskMode(account?.user.id)
   const hasNews = useHasWhatsNew(account?.user.id)
   if (!account) return null
   const { me, user, role } = account
-
-  const signOut = () => logout.mutate(undefined, { onSettled: () => navigate('/login', { replace: true }) })
 
   return (
     <>
@@ -122,6 +129,7 @@ function AccountItems() {
 export function ProfileDropdown() {
   const { t } = useTranslation()
   const account = useAccount()
+  const signOut = useSignOut()
   if (!account) return null
   return (
     <DropdownMenu modal={false}>
@@ -131,7 +139,7 @@ export function ProfileDropdown() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-60" align="end">
-        <AccountItems />
+        <AccountItems signOut={signOut} />
       </DropdownMenuContent>
     </DropdownMenu>
   )
@@ -141,6 +149,7 @@ export function ProfileDropdown() {
 export function NavUser() {
   const { isMobile } = useSidebar()
   const account = useAccount()
+  const signOut = useSignOut()
   if (!account) return null
   return (
     <SidebarMenu>
@@ -157,7 +166,7 @@ export function NavUser() {
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg" side={isMobile ? 'bottom' : 'right'} align="end" sideOffset={4}>
-            <AccountItems />
+            <AccountItems signOut={signOut} />
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
