@@ -225,6 +225,12 @@
   body[data-scroll-locked] {
     overflow: unset !important;
   }
+  /* The page keeps its scrollbar while a menu or the search is open, so no room is made for a missing one:
+     the header and page no longer jump sideways (the lock adds this margin; html raises our rule above it). */
+  html body[data-scroll-locked] {
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+  }
   /* The template's focus ring: 3px, focus colour at 50%. */
   :focus-visible {
     outline: 3px solid color-mix(in oklab, var(--focus) 50%, transparent);
