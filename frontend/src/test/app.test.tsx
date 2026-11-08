@@ -43,7 +43,10 @@ describe('app shell (signed in)', () => {
     mockApi({ 'GET /me': { body: makeMe() }, 'GET /health': healthOk })
     renderApp('/')
     expect(await screen.findByText('Meron Tesfaye')).toBeInTheDocument()
-    expect(screen.getByRole('option', { name: 'Piassa branch' })).toBeInTheDocument()
+    // The branch is chosen at the top of the sidebar.
+    await userEvent.click(screen.getByRole('button', { name: /Choose branch/ }))
+    expect(screen.getByRole('menuitemradio', { name: 'Piassa branch' })).toBeInTheDocument()
+    await userEvent.keyboard('{Escape}')
     await userEvent.click(screen.getByRole('button', { name: 'Account menu' }))
     expect(screen.getByRole('menu')).toBeVisible()
     expect(screen.getByRole('menuitem', { name: 'My profile' })).toBeInTheDocument()
@@ -60,13 +63,14 @@ describe('app shell (signed in)', () => {
     expect(screen.getByRole('navigation', { name: 'Reports' })).toHaveTextContent('Revenue and performance')
   })
 
-  it('switches to dark mode from the account menu and remembers it', async () => {
+  it('switches to dark mode from the theme button and remembers it', async () => {
     mockApi({ 'GET /me': { body: makeMe() }, 'GET /health': healthOk })
     renderApp('/')
-    await userEvent.click(await screen.findByRole('button', { name: 'Account menu' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Theme' }))
     await userEvent.click(screen.getByRole('menuitemradio', { name: 'Dark' }))
     await waitFor(() => expect(document.documentElement).toHaveClass('dark'))
     expect(localStorage.getItem('hms-theme')).toBe('dark')
+    await userEvent.click(screen.getByRole('button', { name: 'Theme' }))
     expect(screen.getByRole('menuitemradio', { name: 'Dark' })).toHaveAttribute('aria-checked', 'true')
   })
 

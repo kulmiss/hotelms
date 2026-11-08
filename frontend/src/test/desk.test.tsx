@@ -333,6 +333,7 @@ describe('billing', () => {
     })
     renderApp('/rooms')
 
+    await userEvent.click(await screen.findByRole('button', { name: 'Search guests, rooms, bookings, bills' }))
     const box = await screen.findByRole('combobox', { name: 'Search guests, rooms, bookings, bills' })
     await userEvent.type(box, 'Abebe')
     expect(await screen.findByRole('option', { name: /BL-26-00001 · Abebe Kebede/ })).toBeInTheDocument()
@@ -353,7 +354,7 @@ describe('reception extras', () => {
     })
     renderApp('/rooms')
 
-    await userEvent.click(await screen.findByRole('button', { name: /Account menu|Meron Tesfaye/ }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Account menu' }))
     await userEvent.click(screen.getByRole('menuitem', { name: 'Front desk mode' }))
     expect(await screen.findByRole('heading', { name: 'Front desk' })).toBeInTheDocument()
     expect(await screen.findByText('Abebe Kebede')).toBeInTheDocument()
