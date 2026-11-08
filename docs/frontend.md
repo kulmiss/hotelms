@@ -11,7 +11,7 @@
 | `app/providers.tsx` | TanStack Query client: retries, global error handling (401 → sign-in), a toast after every change (`meta.toast`) |
 | `app/serviceWorker.ts` | Offline support (read-only copy, see below) |
 | `components/layout/` | App shell (shadcn-admin layout): `AppShell` (SidebarProvider + inset), `AppSidebar` (menu groups from `app/navigation.ts`, `BranchSwitcher` at the top, `NavUser` at the bottom), `Header` (menu button, `Search` → lazy `CommandMenu` with cmdk, `AlertBell`, `ThemeSwitch`, `ProfileDropdown`), `ScreenLock`, banners |
-| `components/shadcn/` | shadcn primitives from the template (Radix UI + cmdk): sidebar, button, dropdown menu, popover, tooltip, dialog, sheet, command, separator. Class names translated to our tokens (see its README) |
+| `components/shadcn/` | shadcn primitives from the template (Radix UI + cmdk): sidebar, button, dropdown menu, popover, tooltip, dialog, sheet, command, separator, collapsible (own copy with the template's API). Class names translated to our tokens (see its README) |
 | `components/ui/` | The UI kit (shadcn-admin look, same props as before): `Button`, `Card`, `Field`, `Select` (+ `SelectBox` for selects without a label), `formStyles.ts` (template input / select / label classes for raw fields), `Tabs`, `Alert`, `Badge`, `PageHeader`, `DataTable` (every list: sort, 25/50/100 rows, hide columns, Excel, phone cards; the header scrolls with the rows), `DateRangeFilter`, `LoadFailed` (a screen whose data did not load shows "not found" / "not allowed" / "could not load" + Try again, never an empty page; `DataTable` takes `error` + `onRetry` for the same on lists), `ResourceList`, `SmartHints`, `StatTile`… |
 | `components/billing`, `payments`, `guests`, `print`, `support` | Pieces shared by several screens (add charge, payment proof, ID photo, print header, support chat) |
 | `pages/<area>/` | Screens: `desk/` (room board, walk-in, front desk mode), `reservations/`, `guests/`, `billing/`, `modules/` (cashier, housekeeping, shifts, attendance), `reports/`, `settings/`, `setup/`, `team/`, `admin/` (Super Admin), `help/`, `security/`, `approvals/`, `subscription/` |
@@ -31,7 +31,8 @@
 - **Forms next to a summary card** (walk-in, new booking): the stay fields use a container query on their card (`@container`, `@sm:grid-cols-2 @2xl:grid-cols-3`), so dates always show in full whatever the screen and sidebar width.
 - **Grey text**: `text-muted` is darker than the template's (≥ 4.5:1 on white, grey boxes and room colours); small text on room cards uses `text-grey-text`.
 - **Shortcuts**: Ctrl/⌘+K or `/` opens the command menu (search, pages, theme); Ctrl/⌘+B opens/closes the sidebar; Tab from the top shows "Skip to main content".
-- **Icons**: Lucide, imported one by one (`import { House } from 'lucide-react'`) so only the used icons are downloaded. Heroicons are still used by screens not restyled yet (MIGRATION_PLAN P3–P16).
+- **Icons**: Lucide, imported one by one (`import { House } from 'lucide-react'`) so only the used icons are downloaded. Heroicons are left only in the on-screen toolbar of the three print pages (invoice, registration card, HotelMS invoice).
+- **Layout rules** (QA 8 Nov): two-column screens use `lg:grid-cols-[minmax(0,1fr)_22rem]` (never `1fr`, or a wide table pushes the side card off screen); a scrolling table card that has hidden (`sr-only`) labels is `relative`; long words such as email addresses in a flex label sit in a `min-w-0 [overflow-wrap:anywhere]` span; small links get a 44px tap area on touch with `pointer-coarse:-my-3 pointer-coarse:inline-block pointer-coarse:py-3` (no layout change).
 - **Speed**: cmdk and the command menu are loaded only when the menu is first opened (or the search button is hovered).
 
 ## Data loading
