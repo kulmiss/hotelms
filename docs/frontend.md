@@ -10,7 +10,8 @@
 | `app/navigation.ts` | The menu: items, icons, permission, module, group (`mainNav`, `adminNav`) |
 | `app/providers.tsx` | TanStack Query client: retries, global error handling (401 → sign-in), a toast after every change (`meta.toast`) |
 | `app/serviceWorker.ts` | Offline support (read-only copy, see below) |
-| `components/layout/` | App shell: `Sidebar`, `Topbar` (branch choice, search, bell, user menu), `GlobalSearch`, `ScreenLock`, banners |
+| `components/layout/` | App shell (shadcn-admin layout): `AppShell` (SidebarProvider + inset), `AppSidebar` (menu groups from `app/navigation.ts`, `BranchSwitcher` at the top, `NavUser` at the bottom), `Header` (menu button, `Search` → lazy `CommandMenu` with cmdk, `AlertBell`, `ThemeSwitch`, `ProfileDropdown`), `ScreenLock`, banners |
+| `components/shadcn/` | shadcn primitives from the template (Radix UI + cmdk): sidebar, button, dropdown menu, popover, tooltip, dialog, sheet, command, separator. Class names translated to our tokens (see its README) |
 | `components/ui/` | The UI kit: `Button`, `Card`, `Field`, `Select`, `Tabs`, `Alert`, `Badge`, `PageHeader`, `DataTable` (every list: sort, 25/50/100 rows, hide columns, Excel, phone cards; the header scrolls with the rows), `DateRangeFilter`, `LoadFailed` (a screen whose data did not load shows "not found" / "not allowed" / "could not load" + Try again, never an empty page; `DataTable` takes `error` + `onRetry` for the same on lists), `ResourceList`, `SmartHints`, `StatTile`… |
 | `components/billing`, `payments`, `guests`, `print`, `support` | Pieces shared by several screens (add charge, payment proof, ID photo, print header, support chat) |
 | `pages/<area>/` | Screens: `desk/` (room board, walk-in, front desk mode), `reservations/`, `guests/`, `billing/`, `modules/` (cashier, housekeeping, shifts, attendance), `reports/`, `settings/`, `setup/`, `team/`, `admin/` (Super Admin), `help/`, `security/`, `approvals/`, `subscription/` |
@@ -18,6 +19,13 @@
 | `i18n/` | `index.ts`; `locales/en.json` (all screen text), `locales/en.guide.json` (staff guides) |
 | `index.css` | Tailwind v4 theme in the **shadcn-admin** look (slate OKLCH tokens, radius 0.625rem; our token names map to shadcn's – see the comment at the top), `.panel` (= shadcn card), touch sizes, focus ring, print rules. Template notice: `THIRD_PARTY_NOTICES`; plan: `MIGRATION_PLAN.md` |
 | `test/` | Vitest + Testing Library; `mockApi.ts` (fake API + `makeMe`), `renderApp.tsx` |
+
+## Layout and shortcuts
+
+- **Sidebar** (template, `variant="inset"`, `collapsible="icon"`): 16rem wide, 3rem when collapsed (3.75rem on touch screens so the 44px buttons fit), a drawer below 768px. Collapsed or not is saved on the device (`hms-sidebar-collapsed`). Collapsed items show their name as a tooltip.
+- **Shortcuts**: Ctrl/⌘+K or `/` opens the command menu (search, pages, theme); Ctrl/⌘+B opens/closes the sidebar; Tab from the top shows "Skip to main content".
+- **Icons**: Lucide, imported one by one (`import { House } from 'lucide-react'`) so only the used icons are downloaded. Heroicons are still used by screens not restyled yet (MIGRATION_PLAN P3–P16).
+- **Speed**: cmdk and the command menu are loaded only when the menu is first opened (or the search button is hovered).
 
 ## Data loading
 
@@ -34,7 +42,7 @@
 
 - `useMe()` (`lib/auth.ts`): the signed-in person, hotel, branches, role, `permissions`, modules, switches, impersonation.
 - `useCan()` (`lib/hotel.ts`): `can('x.y')` or `can(['a', 'b'])` (any). Menu items and buttons hide when not allowed; the server checks again.
-- **Branch**: `useCurrentBranch(me)` (`lib/branch.ts`) – one shared choice for the whole app (top bar, room board, calendar, walk-in, housekeeping…), saved on the device.
+- **Branch**: `useCurrentBranch(me)` (`lib/branch.ts`) – one shared choice for the whole app (sidebar branch switcher, room board, calendar, walk-in, housekeeping…), saved on the device.
 - Optional modules: `me.hotel.modules`; switches: `me.switches`.
 
 ## Main helpers
@@ -46,10 +54,12 @@
 | `lib/front.ts` | `localDate`, `localTime`, `today()`, `addDays`, `sleepingOn` (who has a room on a day) |
 | `lib/roomFilter.ts` | Room board filters and sort (pure functions, tested) |
 | `lib/guides.ts` | Staff guide topics and who sees them |
-| `lib/settingsSearch.ts` | Settings search (top search and the settings page) |
+| `lib/settingsSearch.ts` | Settings search (command menu and the settings page) |
 | `lib/offline.ts` | Read-only offline copy for reception |
 | `lib/brand.tsx` | Platform name, logo, colour from `/api/v1/branding` |
 | `lib/theme.tsx` | Light / dark |
+| `lib/cn.ts` | `cn()` = `clsx` + `tailwind-merge` (a later class wins over an earlier one of the same kind) |
+| `lib/useIsMobile.ts` | Below 768px the sidebar is a drawer |
 | `lib/photos.ts` | Shrinks photos before upload |
 
 ## Offline (decisions.md W6)

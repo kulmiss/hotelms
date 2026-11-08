@@ -132,15 +132,16 @@ describe('collapsible sidebar', () => {
     mockApi({ 'GET /me': { body: superAdmin() }, 'GET /admin/dashboard': dashboard })
     renderApp('/admin')
     await userEvent.click(await screen.findByRole('button', { name: 'Collapse menu' }))
-    expect(screen.getByRole('complementary')).toHaveAttribute('data-collapsed', 'true')
+    const sidebar = () => document.querySelector('[data-slot="sidebar"]')
+    expect(sidebar()).toHaveAttribute('data-state', 'collapsed')
     expect(localStorage.getItem('hms-sidebar-collapsed')).toBe('1')
     // Collapsed: icons only; each link still has its name for screen readers and a tooltip.
     expect(screen.getByRole('link', { name: 'Hotels' })).toBeInTheDocument()
     await userEvent.hover(screen.getByRole('link', { name: 'Hotels' }))
-    expect(screen.getByRole('tooltip')).toHaveTextContent('Hotels')
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Hotels')
 
     await userEvent.click(screen.getByRole('button', { name: 'Expand menu' }))
-    expect(screen.getByRole('complementary')).toHaveAttribute('data-collapsed', 'false')
+    expect(sidebar()).toHaveAttribute('data-state', 'expanded')
   })
 })
 

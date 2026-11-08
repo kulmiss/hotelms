@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { XMarkIcon } from '@heroicons/react/20/solid'
+import { X } from 'lucide-react'
 import { useMe } from '@/lib/auth'
 import { cn } from '@/lib/cn'
 
@@ -27,7 +27,7 @@ export function HotelBanners() {
           key={b.id}
           role="status"
           className={cn(
-            'flex items-center gap-x-2 px-4 py-2 text-[13px] md:px-6 lg:px-8',
+            'flex items-center gap-x-2 px-4 py-2 text-sm',
             b.tone === 'danger' ? 'bg-danger-bg text-danger-text' : b.tone === 'warn' ? 'bg-warn-bg text-warn-text' : 'bg-info-bg text-info-text',
           )}
         >
@@ -44,9 +44,9 @@ export function HotelBanners() {
                 /* private mode */
               }
             }}
-            className="flex size-8 items-center justify-center rounded-md hover:bg-black/5 dark:hover:bg-white/10"
+            className="flex size-8 items-center justify-center rounded-md hover:bg-black/5 pointer-coarse:size-11 dark:hover:bg-white/10"
           >
-            <XMarkIcon aria-hidden className="size-4" />
+            <X aria-hidden className="size-4" />
           </button>
         </div>
       ))}

@@ -106,13 +106,13 @@ Light primary is near-black slate; dark primary is near-white. We swap primary f
 
 ## 4. Risks and what cannot match 100%
 
-1. **I cannot run npm in my workspace** (package downloads are blocked). Typecheck, lint, tests and build run on **GitHub CI** after each push. For the visual check in the browser, the owner switches his local copy to the branch (commands in each report), then I check light/dark, phone and tablet in the browser pane.
+1. **I cannot run npm in my workspace** (package downloads are blocked). **Owner decision (8 Nov): real packages** (lucide-react, Radix parts, cmdk…), installed **once by the owner** with the pinned command from the P1 report; he commits `package.json` + `package-lock.json` to the branch. Typecheck, lint, tests and build run on **GitHub CI** after each push. For the visual check in the browser, the owner switches his local copy to the branch (commands in each report), then I check light/dark, phone and tablet in the browser pane.
 2. **Deploy safety:** PRs go into `ui/shadcn-admin` (not `main`), so `main` is never half-restyled. A last PR `ui/shadcn-admin → main` when everything is done. *(Needs the owner's OK – question 1.)*
 3. **Brand colour as primary:** some brand colours are light (e.g. yellow). `lib/brand.tsx` already picks dark or white text on the colour; it will feed `--primary` / `--primary-foreground` / `--ring` too.
 4. **Touch sizes:** template buttons are 32–36 px; on touch screens they become 44 px (decision 4). Slightly taller rows on tablets than the template.
 5. **Native `<select>`** keeps the phone's own picker (better on tablets and for tests); it is styled like the shadcn select trigger, but the open list is the device's, not a Radix popover.
 6. **Tests** find things by role and text. Restyling keeps roles and texts, but Radix menus (user menu, column toggle) behave differently in jsdom; some tests need small updates (same assertions, new way to open the menu).
-7. **Bundle size (speed):** Radix parts, cmdk and lucide add about 40–60 KB gzipped, loaded with the shell; icons are tree-shaken. Screens stay lazy-loaded. Measured in each report.
+7. **Bundle size (speed):** first download stays **≤ 60 KB** (owner). Lucide icons are imported **one by one** (`import { House } from 'lucide-react'`, never the whole set or dynamic names); **cmdk and other heavy parts are lazy-loaded** (the command menu loads on first ⌘K / click); Radix parts load with the screen that uses them where possible. Screens stay lazy-loaded. The first-download size is measured from the build output in every report.
 8. **Fonts:** the template loads Inter from Google Fonts; we keep the **self-hosted** Inter (`@fontsource-variable/inter`) so it works offline and on cPanel without Google.
 9. **No top nav links:** the template's Overview / Customers / Products links have no equivalent in HotelMS; the header has the search on the left of the icons instead.
 10. **Print pages** use their own black-on-white styles; token changes must not reach them (checked in every partition).
@@ -122,27 +122,39 @@ Light primary is near-black slate; dark primary is near-white. We swap primary f
 
 Each partition: list files → change → compare old/new for lost buttons, handlers, fields, messages, loading / empty / error states and permission checks → CI green (typecheck, lint, tests, build) → browser check (light, dark, 375 px, 768 px, desktop) → commit(s) → tick here → short report → **stop for OK**.
 
+**Every partition also (owner, 8 Nov):**
+- [ ] **Merge `main`** into `ui/shadcn-admin` (and the partition branch) first, so fixes on `main` are never lost and the final merge stays small
+- [ ] **Room / status colour contrast** checked in light and dark (room cards, status badges, chips – readable text, WCAG AA 4.5:1 for text)
+- [ ] **Offline check:** the app shell, fonts and icons work with the network off (offline banner, cached screens); nothing loaded from outside sites
+- [ ] **Every new text goes through `t()`** (`en.json`); no hard-coded words
+- [ ] **Before / after screenshots** of the changed screens in the report
+- [ ] First-download size (≤ 60 KB) noted in the report
+
 ### P1 – Foundation (tokens, fonts, theme, notices)
-- [ ] ~~Add packages~~ **Not possible from Claude's workspace (npm registry blocked); see the P1 report – question to the owner.** P1 needs no new package
+- [x] Packages: owner chose real packages; he runs the pinned install once (command in the P1 report) before P2. P1 itself needs no new package
 - [x] `components.json` (template's, aliases adapted to our folders)
 - [x] shadcn tokens (slate, OKLCH, radius) in `index.css`, light + dark
 - [x] Our old token names (`bg-surface`, `text-muted`, `bg-accent`…) point at the new values, so **every screen changes colour at once** and nothing breaks
 - [x] Brand colour → primary: `lib/brand.tsx` already writes it into `--accent` / `--on-accent` (= shadcn primary / primary-foreground); the sidebar uses it in P2
 - [x] Base styles from the template (border colour, focus ring `ring/50`, cursor pointer, thin scrollbars, 16 px inputs on phones)
-- [ ] `cn()` uses `clsx` + `tailwind-merge` (waits for the package question)
+- [x] `cn()` uses `clsx` + `tailwind-merge` → done in P2
 - [x] `THIRD_PARTY_NOTICES` with the template's MIT licence
 - [x] `CLAUDE.md` design rules → shadcn-admin style (Lucide, slate tokens, brand primary, touch rule)
-- [ ] Check: every page renders; print pages unchanged
+- [x] Check (owner's machine, 8 Nov): dashboard, room board, walk-in, bookings, bills render in light / dark, phone / desktop; invoice print unchanged; no new errors
 
 ### P2 – Layout shell
-- [ ] Sidebar (inset, collapsible to icons, rail, tooltips when collapsed, mobile sheet, state remembered), groups / items / collapsible Settings / badges from `app/navigation.ts`
-- [ ] Branch switcher in the team-switcher slot; brand logo + name from Super Admin branding
-- [ ] `NavUser` footer and `ProfileDropdown` with all current user-menu items
-- [ ] Header: trigger, separator, search button (⌘K), alert bell, theme switch (Light / Dark / System), profile; blur + shadow when scrolled
-- [ ] Command menu (cmdk): current global search + settings search + navigation + theme, same permissions
-- [ ] Banners (demo countdown, support, session, offline, maintenance) in alert style above the header; navigation progress bar
-- [ ] Super Admin uses the same shell with its own nav
-- [ ] Skip-to-main link; keyboard and focus checks
+- [x] Owner's package install committed (`package.json` + `package-lock.json`, 90b0068); `cn()` with `clsx` + `tailwind-merge`
+- [x] shadcn primitives from the template in `components/shadcn/` (sidebar, button, dropdown menu, popover, tooltip, dialog, sheet, command, separator); class names translated to our tokens (README there)
+- [x] Sidebar (inset, collapsible to icons, rail, tooltips when collapsed, phone drawer below 768px, state remembered with the old key), groups / items from `app/navigation.ts` (Lucide icons). *No Settings sub-menu: Settings keeps its own page menu.*
+- [x] Branch switcher in the team-switcher slot; brand logo + name from Super Admin branding, branch as the second line
+- [x] `NavUser` footer and `ProfileDropdown` with all current user-menu items (profile, password, front desk mode, what's new, help, sign out)
+- [x] Header: trigger, separator, search button (Ctrl/⌘K), alert bell (Radix popover), theme switch (Light / Dark / Same as device – moved out of the account menu, like the template), profile; blur + shadow when scrolled
+- [x] Command menu (cmdk, **lazy**): server search + settings search + pages + theme, same permissions; Enter opens the first result
+- [x] Banners (demo countdown, support, offline, new version, read-only, HotelMS messages) as strips above the header (Lucide icons); progress bar 2px grey
+- [x] Super Admin uses the same shell with its own nav
+- [x] Skip-to-main link; keyboard: Ctrl/⌘K, `/`, Ctrl/⌘B, Esc; touch: 44px targets (collapsed sidebar 3.75rem wide on touch screens)
+- [x] CI prints the first-download size (`frontend/scripts/first-download.mjs`, run summary)
+- [ ] Browser check on the owner's machine (light / dark, 375 / 768 / desktop, keyboard)
 
 ### P3 – The 21 building blocks + Lucide
 - [ ] Button, Card, Badge, StatusBadge, Alert, Field, Select, Tabs, PageHeader, StatTile, Delta
@@ -195,10 +207,12 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [ ] Second-pass review of the whole branch against `main`
 - [ ] All checks + every route in light / dark, phone / desktop
 - [ ] Redo the 15 staff-guide pictures (`tools/pictures/`)
+- [ ] **Staging test** before the final PR: deploy `ui/shadcn-admin` to a staging copy (shared-hosting style build), click through as every role
 - [ ] Final report; PR `ui/shadcn-admin → main`
 
 ## 6. Status
 | Partition | Status | PR |
 |---|---|---|
 | P0 Plan | approved 8 Nov | – |
-| P1 Foundation | done, waiting for OK | (this PR) |
+| P1 Foundation | merged 8 Nov | #86 |
+| P2 Layout shell | done, waiting for browser check + OK | (this PR) |

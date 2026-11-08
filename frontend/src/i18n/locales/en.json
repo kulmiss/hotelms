@@ -81,7 +81,8 @@
     "platformActivity": "Activity log",
     "approvals": "Approvals",
     "releases": "Releases",
-    "content": "Content"
+    "content": "Content",
+    "menuDescription": "Pages you can open"
   },
   "topbar": {
     "search": "Search guests, rooms, bookings, bills",
@@ -103,7 +104,9 @@
       "light": "Light",
       "dark": "Dark",
       "system": "Same as device"
-    }
+    },
+    "skipToMain": "Skip to main content",
+    "chooseBranch": "Choose branch (now: {{branch}})"
   },
   "login": {
     "title": "Sign in",
@@ -2140,7 +2143,9 @@
       "person": "Person",
       "answer": "Answer",
       "setting": "Setting"
-    }
+    },
+    "pages": "Pages",
+    "description": "Find guests, bookings, rooms, bills, settings and pages."
   },
   "help": {
     "menu": "Help",

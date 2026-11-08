@@ -54,7 +54,7 @@ describe('front desk review (part 1)', () => {
     renderApp('/charge')
 
     expect(await screen.findByRole('heading', { name: 'Charge a room' })).toBeInTheDocument()
-    expect(screen.queryByRole('combobox', { name: /Search guests/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Search guests/ })).not.toBeInTheDocument()
   })
 
   it('tells reception when a walk-in after midnight pays for last night', async () => {

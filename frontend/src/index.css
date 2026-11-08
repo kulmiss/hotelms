@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
 @import '@fontsource-variable/inter';
 
 /* Dark mode is controlled by the .dark class on <html> (see lib/theme.tsx). */
@@ -131,6 +132,14 @@
   --color-room-maintenance: var(--room-maintenance);
   --color-focus: var(--focus);
   --color-sidebar: var(--sidebar);
+  /* The template's sidebar colours, mapped to ours (the brand colour is the sidebar primary). */
+  --color-sidebar-foreground: var(--text);
+  --color-sidebar-primary: var(--accent);
+  --color-sidebar-primary-foreground: var(--on-accent);
+  --color-sidebar-accent: var(--sunken);
+  --color-sidebar-accent-foreground: var(--text);
+  --color-sidebar-border: var(--border);
+  --color-sidebar-ring: var(--focus);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -196,6 +205,10 @@
   :root {
     --touch: 2.75rem;
   }
+  /* Collapsed sidebar: room for 44px icon buttons. */
+  [data-slot='sidebar-wrapper'] {
+    --sidebar-width-icon: 3.75rem !important;
+  }
 }
 
 @layer base {
@@ -215,6 +228,14 @@
   body {
     @apply bg-bg font-sans text-sm text-text antialiased;
     -webkit-tap-highlight-color: transparent;
+  }
+  /* Inset sidebar (template): the page behind the rounded content area takes the sidebar colour. */
+  body:has(div[data-variant='inset']) {
+    background-color: var(--sidebar);
+  }
+  /* Menus and dialogs lock scrolling; keep the sticky header working (template). */
+  body[data-scroll-locked] {
+    overflow: unset !important;
   }
   /* The template's focus ring: 3px, focus colour at 50%. */
   :focus-visible {

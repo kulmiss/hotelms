@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { ArrowUturnLeftIcon, LifebuoyIcon, SparklesIcon } from '@heroicons/react/20/solid'
+import { LifeBuoy, Sparkles, Undo2 } from 'lucide-react'
 import { ME_KEY, useMe, useStopImpersonation } from '@/lib/auth'
 import { markDemoOver, mmss } from '@/lib/demo'
 
@@ -19,8 +19,8 @@ export function SessionBanner() {
 
   if (support && me.data) {
     return (
-      <div role="status" className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-warn-bg px-4 py-2 text-[13px] text-warn-text ring-1 ring-warn-text/20 md:px-6 lg:px-8">
-        <LifebuoyIcon aria-hidden className="size-4 shrink-0" />
+      <div role="status" className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-warn-bg px-4 py-2 text-sm text-warn-text">
+        <LifeBuoy aria-hidden className="size-4 shrink-0" />
         <span className="flex-1">
           {t('support.banner', { name: me.data.user.name, hotel: me.data.hotel?.name ?? '', by: support.by })}
           <span className="opacity-80"> {t('support.reason', { reason: support.reason })}</span>
@@ -29,9 +29,9 @@ export function SessionBanner() {
           type="button"
           disabled={stop.isPending}
           onClick={() => stop.mutate(undefined, { onSuccess: () => navigate('/admin', { replace: true }) })}
-          className="inline-flex min-h-touch items-center gap-1.5 rounded-lg px-2 font-semibold hover:bg-warn-text/10"
+          className="inline-flex min-h-8 items-center gap-1.5 rounded-md px-2 font-medium hover:bg-warn-text/10 pointer-coarse:min-h-11"
         >
-          <ArrowUturnLeftIcon aria-hidden className="size-4" />
+          <Undo2 aria-hidden className="size-4" />
           {t('support.return')}
         </button>
       </div>
@@ -40,8 +40,8 @@ export function SessionBanner() {
 
   if (me.data?.hotel?.is_demo) {
     return (
-      <div role="status" className="flex flex-wrap items-center gap-x-2 bg-info-bg px-4 py-2 text-[13px] text-info-text md:px-6 lg:px-8">
-        <SparklesIcon aria-hidden className="size-4 shrink-0" />
+      <div role="status" className="flex flex-wrap items-center gap-x-2 bg-info-bg px-4 py-2 text-sm text-info-text">
+        <Sparkles aria-hidden className="size-4 shrink-0" />
         {t('demo.banner')}
         {me.data.hotel.demo_ends_at && <DemoClock endsAt={me.data.hotel.demo_ends_at} />}
       </div>
