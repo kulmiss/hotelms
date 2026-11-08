@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Approval;
 use App\Models\Branch;
 use App\Models\Guest;
 use App\Models\Hotel;
 use App\Models\Invoice;
+use App\Models\PaymentMethod;
 use App\Models\PlatformSetting;
 use App\Models\Reservation;
 use App\Models\Room;
@@ -56,6 +58,31 @@ class DemoHotelTest extends TestCase
             $this->assertGreaterThan(50, Invoice::where('status', 'paid')->count());
             $this->assertTrue(Reservation::where('status', 'checked_out')->where('check_in_at', '<', now()->subMonths(3))->exists());
         });
+    }
+
+    /** Owner (QA 8 Nov): the demo has approvals waiting, and a manager can approve or reject them. */
+    public function test_demo_has_approvals_to_try(): void
+    {
+        $hotel = app(DemoHotel::class)->reset();
+        $pending = app(TenantContext::class)->runAs($hotel, fn () => Approval::where('status', 'pending')->get());
+        $this->assertGreaterThanOrEqual(3, $pending->count());
+        $this->assertTrue($pending->contains('kind', 'price_up'));
+        $this->assertTrue($pending->contains('kind', 'price_down'));
+
+        $manager = User::where('email', DemoHotel::email('manager'))->firstOrFail();
+        $this->actingAs($manager);
+        $up = $pending->firstWhere('kind', 'price_up');
+        $down = $pending->firstWhere('kind', 'price_down');
+        $this->postJson("/api/v1/approvals/{$up->id}/approve")->assertOk();
+        $this->postJson("/api/v1/approvals/{$down->id}/reject", ['note' => 'Not this week'])->assertOk();
+        $this->postJson("/api/v1/approvals/{$up->id}/approve")->assertStatus(422); // acts once
+        $this->assertSame(['approved', 'rejected'], app(TenantContext::class)->runAs($hotel, fn () => [$up->fresh()->status, $down->fresh()->status]));
+
+        if ($refund = $pending->firstWhere('kind', 'refund')) {
+            $cash = app(TenantContext::class)->runAs($hotel, fn () => PaymentMethod::where('type', 'cash')->value('id'));
+            $this->actingAs(User::where('email', DemoHotel::email('admin'))->firstOrFail());
+            $this->postJson("/api/v1/approvals/{$refund->id}/approve", ['payment_method_id' => $cash])->assertOk();
+        }
     }
 
     public function test_reset_wipes_visitors_changes(): void

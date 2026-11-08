@@ -2,6 +2,8 @@
 
 namespace App\Services\Demo;
 
+use App\Models\Approval;
+use App\Models\Branch;
 use App\Models\ChargeType;
 use App\Models\Guest;
 use App\Models\Hotel;
@@ -107,6 +109,40 @@ class DemoHistory
         Room::whereIn('id', $more->pluck('id'))->update(['status' => 'dirty']);
         $this->toClean($more->all());
         app(DemoTeam::class)->build($hotel, $branches, $this->today, $this->tz);
+        $this->approvals($branches);
+    }
+
+    /**
+     * A few approvals waiting, so managers can try Approve / Reject in the demo (owner, QA 8 Nov). The demo runs no
+     * automations, which normally make them: a refund for a cancelled paid booking and price suggestions.
+     *
+     * @param  list<Branch>  $branches
+     */
+    private function approvals(array $branches): void
+    {
+        $paid = DB::table('payments')->where('hotel_id', $this->hotel->id)->where('type', '!=', 'refund')->whereNotNull('reservation_id')
+            ->whereIn('reservation_id', DB::table('reservations')->where('hotel_id', $this->hotel->id)->where('status', 'cancelled')->select('id'))
+            ->orderByDesc('paid_at')->first();
+        if ($paid) {
+            $code = DB::table('reservations')->where('id', $paid->reservation_id)->value('code');
+            $amount = Money::round((string) $paid->amount);
+            Approval::create([
+                'branch_id' => $paid->branch_id, 'kind' => 'refund', 'status' => 'pending', 'fingerprint' => "refund:r{$paid->reservation_id}",
+                'title' => "Refund {$paid->currency} {$amount} for cancelled booking {$code}",
+                'payload' => ['reservation_id' => $paid->reservation_id, 'amount' => $amount, 'currency' => $paid->currency, 'fee' => '0.00'],
+            ]);
+        }
+        foreach ([[0, 5, 10, 88.0, 61.0], [1, 9, 10, 22.0, 47.0], [0, 12, 15, 91.0, 64.0]] as [$b, $days, $percent, $booked, $usual]) {
+            $branch = $branches[$b] ?? $branches[0];
+            $date = $this->today->copy()->addDays($days);
+            $way = $booked >= 85 ? 'up' : 'down';
+            $sign = $way === 'up' ? '+' : '-';
+            Approval::create([
+                'branch_id' => $branch->id, 'kind' => "price_{$way}", 'status' => 'pending', 'fingerprint' => "price:{$branch->id}:{$date->toDateString()}",
+                'title' => "{$sign}{$percent}% on {$date->format('D d M')} at {$branch->name} (".round($booked).'% booked)',
+                'payload' => ['date' => $date->toDateString(), 'percent' => $way === 'up' ? $percent : -$percent, 'occupancy' => $booked, 'usual' => $usual],
+            ]);
+        }
     }
 
     /** Rooms waiting for cleaning have a task, like after a real check-out. @param list<Room> $rooms */

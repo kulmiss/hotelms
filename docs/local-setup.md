@@ -40,6 +40,8 @@ docker compose exec frontend npm run lint
 docker compose exec frontend npm run typecheck
 ```
 
+The demo hotel runs no automations (no messages), so the reset also makes **approvals waiting** to try: two or three price suggestions and, when there is a cancelled paid booking, a refund (`DemoHistory::approvals`).
+
 Other artisan commands: see [backend.md → Commands](backend.md#commands).
 
 ## The demo hotel
