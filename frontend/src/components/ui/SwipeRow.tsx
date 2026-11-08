@@ -46,7 +46,7 @@ export function SwipeRow({ children, action, onAction, tone = 'accent' }: { chil
         aria-hidden
         onClick={onAction}
         style={{ width: OPEN }}
-        className={cn('absolute inset-y-0 right-0 flex items-center justify-center text-sm font-medium', tone === 'warn' ? 'bg-warn-text text-white' : 'bg-primary text-primary-foreground')}
+        className={cn('absolute inset-y-0 right-0 flex items-center justify-center text-sm font-medium', tone === 'warn' ? 'bg-warn-text text-white dark:text-background' : 'bg-primary text-primary-foreground')}
       >
         {action}
       </button>

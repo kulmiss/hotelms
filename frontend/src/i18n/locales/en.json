@@ -4,6 +4,7 @@
   },
   "common": {
     "loading": "Loading…",
+    "breadcrumb": "Where you are",
     "serverUnreachable": "Can't reach the server. Check the internet and try again.",
     "tryAgain": "Try again",
     "cancel": "Cancel",

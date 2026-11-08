@@ -341,7 +341,7 @@ function ReservationCalendar() {
                   aria-pressed={day === d}
                   title={t('roomCal.dayTitle', { date: date(d) })}
                   onClick={() => setDay(day === d ? null : d)}
-                  className={cn('border-l border-border px-1 py-2 text-center transition duration-75 hover:bg-surface hover:text-accent-text', d === today() && 'bg-accent/10 text-accent-text', (wd === 0 || wd === 6) && 'text-text', day === d && 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent')}
+                  className={cn('border-l border-border px-1 py-2 text-center transition duration-75 pointer-coarse:min-h-11 hover:bg-surface hover:text-accent-text', d === today() && 'bg-accent/10 text-accent-text', (wd === 0 || wd === 6) && 'text-text', day === d && 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent')}
                 >
                   {t(`common.weekdays.${wd === 0 ? 7 : wd}`)} {Number(d.slice(8, 10))}
                 </button>

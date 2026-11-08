@@ -69,14 +69,14 @@ export function DashboardPage() {
             <div className="flex flex-col gap-2">
               {d.late_arrivals > 0 && (
                 <Alert tone="info">
-                  <Link to="/rooms?tab=arrivals" className="underline">
+                  <Link to="/rooms?tab=arrivals" className="underline pointer-coarse:-my-3 pointer-coarse:inline-block pointer-coarse:py-3">
                     {t('dashboard.lateArrivals', { count: d.late_arrivals })}
                   </Link>
                 </Alert>
               )}
               {d.pending_expiring > 0 && (
                 <Alert tone="info">
-                  <Link to="/reservations" className="underline">
+                  <Link to="/reservations" className="underline pointer-coarse:-my-3 pointer-coarse:inline-block pointer-coarse:py-3">
                     {t('dashboard.expiring', { count: d.pending_expiring })}
                   </Link>
                 </Alert>

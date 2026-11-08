@@ -196,14 +196,17 @@ function PermissionGrid({ roles, permissions }: { roles: string[]; permissions: 
                   <CheckIcon aria-label={t('common.on')} className="inline size-4 text-icon" />
                 </td>
                 {roles.map((r) => (
-                  <td key={r} className="px-2 py-2 text-center">
-                    <input
-                      type="checkbox"
-                      aria-label={`${t(`platformTeam.roles.${r}`)}: ${t(`platformTeam.permissions.${p.replace('.', '_')}`)}`}
-                      checked={grid[p]?.includes(r) ?? false}
-                      onChange={() => toggle(p, r)}
-                      className="size-4"
-                    />
+                  <td key={r} className="px-2 py-1 text-center">
+                    {/* The whole 44px square is the tap area on touch screens (the box stays small). */}
+                    <label className="inline-flex size-touch cursor-pointer items-center justify-center">
+                      <input
+                        type="checkbox"
+                        aria-label={`${t(`platformTeam.roles.${r}`)}: ${t(`platformTeam.permissions.${p.replace('.', '_')}`)}`}
+                        checked={grid[p]?.includes(r) ?? false}
+                        onChange={() => toggle(p, r)}
+                        className="size-4"
+                      />
+                    </label>
                   </td>
                 ))}
               </tr>

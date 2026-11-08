@@ -121,7 +121,7 @@ function TodayColumn({ id, title, rows, loading, kind, enabled }: { id: string; 
         {rows.map((r) => {
           const content = (
             <div className={cn('panel flex min-h-16 items-center gap-3 px-4 py-2', (r.late || r.overdue) && 'border-warn-text/40')}>
-              <Link to={`/reservations/${r.id}`} className="flex min-w-0 flex-1 flex-col">
+              <Link to={`/reservations/${r.id}`} className="flex min-h-11 min-w-0 flex-1 flex-col justify-center self-stretch">
                 <span className="truncate text-sm font-medium">{r.guest?.name}</span>
                 <span className="truncate text-xs text-muted">
                   {localTime(kind === 'in' ? r.check_in_at : r.check_out_at)} · {r.rooms.map((x) => x.room_number ?? x.room_type).join(', ')} · {r.code}
