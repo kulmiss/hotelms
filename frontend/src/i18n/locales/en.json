@@ -1614,7 +1614,24 @@
     "subtitleMine": "Your own work: today, this week and this month.",
     "noAccess": "Your role has no reports.",
     "library": "Reports",
+    "overview": {
+      "bookings": "Bookings made",
+      "cancellationRate": "Cancellation rate",
+      "leadTime": "Booked ahead",
+      "averageStay": "Average stay",
+      "days": "{{n}} days",
+      "nights": "{{n}} nights",
+      "was": "was {{value}}",
+      "perfLine": "Occupancy {{occ}}% · revenue {{revenue}}",
+      "paysLine": "{{total}} taken · {{count}} payments",
+      "owedLine": "{{count}} unpaid bills · {{total}} (now)",
+      "cancelLine": "{{rate}}% of {{count}} bookings",
+      "taxLine": "Tax {{tax}}",
+      "guestsLine": "Who stayed, where they come from, who comes back.",
+      "open": "Open the report"
+    },
     "names": {
+      "overview": "Overview",
       "performance": "Revenue and performance",
       "payments": "Payments",
       "outstanding": "Outstanding balances",
@@ -3049,6 +3066,34 @@
       "approvals": "Approvals waiting",
       "noApprovals": "Nothing waiting.",
       "openApproval": "Open on the Approvals page"
+    }
+  },
+  "overviews": {
+    "cashier": {
+      "myShift": "My shift",
+      "open": "Open",
+      "notOpen": "Not open",
+      "since": "since {{time}}",
+      "expected": "Cash expected in the drawer",
+      "expectedSub": "start {{start}} + cash in {{cash}}",
+      "paymentsShift": "Payments this shift",
+      "openNow": "Shifts open now",
+      "toApprove": "Closed, waiting for approval",
+      "shortOver_one": "Short or over ({{count}} shift)",
+      "shortOver_other": "Short or over ({{count}} shifts)",
+      "shortCount_one": "{{count}} shift was short",
+      "shortCount_other": "{{count}} shifts were short",
+      "noDifferences": "no differences",
+      "chart": "Short or over, last closed shifts",
+      "chartHelp": "Down (red) = short, up = over.",
+      "chartAria": "Short or over for the last {{count}} closed shifts; {{short}} short",
+      "noClosed": "No closed shifts yet."
+    },
+    "hk": {
+      "toClean": "to clean",
+      "tasksToday": "Tasks today",
+      "tasksAria": "{{in_progress}} in progress, {{pending}} to do, {{done}} done",
+      "who": "Who is cleaning"
     }
   }
 }

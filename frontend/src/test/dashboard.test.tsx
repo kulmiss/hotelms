@@ -110,3 +110,50 @@ describe('Super Admin command center (P18)', () => {
     expect(within(sheet).getByRole('link', { name: /Open the hotel page/ })).toHaveAttribute('href', '/admin/hotels/2')
   })
 })
+
+describe('module overviews (P18)', () => {
+  const meWith = (permissions: string[]) => {
+    const me = makeMe({}, permissions)
+    return { ...me, hotel: { ...(me.hotel as NonNullable<typeof me.hotel>), modules: ['housekeeping', 'cashier_close'] } }
+  }
+  const shift = (id: number, status: string, difference: string | null) => ({
+    id, status, user: { id: 1, name: 'Hana' }, branch: { id: 1, name: 'Bole branch' }, opened_at: '2026-11-11T07:05:00+03:00', closed_at: null, approved_by: null, approved_at: null, notes: null,
+    balances: [{ currency: 'ETB', opening_amount: '2000.00', expected_amount: null, counted_amount: null, difference }],
+  })
+
+  it('adds up short and over on the cashier page', async () => {
+    mockApi({
+      'GET /me': { body: meWith(['cashier.view_all']) },
+      'GET /cashier/sessions': { body: { data: [shift(3, 'open', null), shift(2, 'closed', '-150.00'), shift(1, 'approved', '50.00')], current_page: 1, last_page: 1, total: 3, per_page: 20 } },
+    })
+    renderApp('/cashier')
+    expect(await screen.findByText('ETB -100.00')).toBeInTheDocument()
+    expect(screen.getByText('1 shift was short')).toBeInTheDocument()
+    expect(screen.getByText('Closed, waiting for approval')).toBeInTheDocument()
+  })
+
+  it('shows rooms to clean and who is cleaning on the housekeeping page', async () => {
+    const task = (id: number, status: string, room: string) => ({ id, type: 'cleaning', priority: 'normal', status, notes: null, room: { id, number: room, floor: '1', status: 'dirty' }, assigned_to: { id: 5, name: 'Mulu Girma' }, due_at: null, started_at: null, completed_at: null })
+    mockApi({
+      'GET /me': { body: meWith(['housekeeping.view', 'housekeeping.assign']) },
+      'GET /housekeeping/board': { body: { data: [{ id: 1, number: '401', floor: '4', status: 'dirty', room_type: 'Standard', tasks: [] }, { id: 2, number: '402', floor: '4', status: 'available', room_type: 'Standard', tasks: [] }] } },
+      'GET /housekeeping/tasks': { body: { data: [task(1, 'in_progress', '401'), task(2, 'pending', '301')] } },
+      'GET /housekeeping/staff': { body: { data: [] } },
+    })
+    renderApp('/housekeeping')
+    expect(await screen.findByRole('heading', { name: 'Who is cleaning' })).toBeInTheDocument()
+    expect(await screen.findByText('401 in progress · 301 to do')).toBeInTheDocument()
+  })
+
+  it('opens Reports on an overview with the main numbers for managers', async () => {
+    mockApi({
+      'GET /me': { body: makeMe({}, ['reports.revenue', 'reports.my_shift', 'cashier.own_shift']) },
+      'GET /reports/performance': { body: { data: { kpis, compare: { ...kpis, bookings: 10 }, daily: [], room_types: [], sources: [], from: '2026-11-01', to: '2026-11-12', currency: 'ETB', compare_range: null } } },
+    })
+    renderApp('/reports')
+    expect(await screen.findByText('Bookings made')).toBeInTheDocument()
+    expect(screen.getByText('100%')).toBeInTheDocument() // 20 bookings, up from 10
+    await userEvent.click(screen.getAllByRole('button', { name: /performance/i })[0])
+    expect(window.location.search).toContain('report=performance')
+  })
+})

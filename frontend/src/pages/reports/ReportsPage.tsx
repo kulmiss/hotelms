@@ -21,9 +21,12 @@ import { useCan } from '@/lib/hotel'
 import { AlertsReport, CustomReportBuilder, SavedViews, SchedulesReport } from './AutomationReports'
 import { AccountingReport, AuditReport, DailyReport, ForecastReport, MyShiftReport, MyWorkReport } from './InsightReports'
 import { change, reportFileUrl, useDrilldown, useReport, type Kpis, type ReportFilters } from '@/lib/reports'
+import { ReportsOverview } from './ReportsOverview'
 
 /** Report key → permissions (any). Keep in step with ReportController::REPORTS. */
 const LIBRARY: { key: string; perms: string[]; module?: string }[] = [
+  // P18: the reports landing (KPIs and small charts, each opens its report).
+  { key: 'overview', perms: ['reports.revenue', 'reports.occupancy'] },
   { key: 'my_shift', perms: ['reports.my_shift'] },
   { key: 'my_work', perms: ['reports.my_work'], module: 'housekeeping' },
   { key: 'daily', perms: ['reports.revenue'] },
@@ -45,7 +48,7 @@ const LIBRARY: { key: string; perms: string[]; module?: string }[] = [
 
 /** Reports with their own period controls (no shared filter bar / export). */
 const OWN_FILTERS = ['my_shift', 'my_work', 'daily', 'forecast', 'outstanding', 'schedules', 'alerts']
-const NO_EXPORT = ['my_shift', 'my_work', 'daily', 'forecast', 'audit', 'accounting', 'custom', 'schedules', 'alerts']
+const NO_EXPORT = ['overview', 'my_shift', 'my_work', 'daily', 'forecast', 'audit', 'accounting', 'custom', 'schedules', 'alerts']
 
 function presets(): { key: string; from: string; to: string }[] {
   const t = today()
@@ -145,6 +148,7 @@ export function ReportsPage() {
           {key === 'forecast' && <ForecastReport branchId={f.branch_id} />}
           {key === 'audit' && <AuditReport f={f} />}
           {key === 'accounting' && <AccountingReport f={f} />}
+          {key === 'overview' && <ReportsOverview f={f} open={(k) => setParams({ report: k })} />}
           {key === 'performance' && <Performance f={f} />}
           {key === 'payments' && <Payments f={f} />}
           {key === 'outstanding' && <Outstanding f={f} />}

@@ -20,6 +20,7 @@ import { DateRangeFilter } from '@/components/ui/DateRangeFilter'
 import { rangeChip, type DateRange } from '@/lib/dateRange'
 import { useCompactToolbar } from '@/lib/compactToolbar'
 import { useApproveShift, useCloseShift, useCurrentShift, useOpenShift, useShifts, type CashierSession } from '@/lib/modules'
+import { CashierOverview } from './ModuleOverviews'
 
 const err = (e: unknown) => (e instanceof ApiError ? (Object.values(e.errors)[0]?.[0] ?? e.message) : null)
 const TONES = { open: 'info', closed: 'warn', approved: 'ok' } as const
@@ -36,6 +37,7 @@ export function CashierPage() {
     <div className="flex flex-col gap-6">
       <PageHeader title={t('nav.cashier')} subtitle={t('cashier.subtitle')} />
       {shift && <SmartHints hints={smart.data?.data} />}
+      <CashierOverview shift={shift} />
       {can('cashier.own_shift') && current.data && (shift ? <MyShift shift={shift} /> : <OpenShift />)}
       <ShiftList />
     </div>
