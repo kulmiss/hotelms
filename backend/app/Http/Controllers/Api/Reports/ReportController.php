@@ -66,10 +66,10 @@ class ReportController extends Controller
             'rooms' => ['total' => array_sum($rooms->all()), 'by_status' => $rooms],
             'pending_expiring' => $res()->where('status', 'pending')->where('expires_at', '<=', now()->addHours(3))->count(),
             'late_arrivals' => $res()->whereIn('status', ['pending', 'confirmed'])->where('check_in_at', '<', now())->where('check_in_at', '>=', $start)->count(),
-            'next_7_days' => array_map(fn ($d) => ['date' => $d, 'occupancy' => $this->onTheBooks($hotel, $branchIds, $d, $sellable)], Metrics::days($today, Carbon::parse($today)->addDays(6)->toDateString())),
+            'next_7_days' => $this->onTheBooks($hotel, $branchIds, $today, Carbon::parse($today)->addDays(6)->toDateString(), $sellable),
         ];
         if ($money) {
-            $data['revenue_today'] = $metrics->kpis($today, $today)['revenue'];
+            $data['revenue_today'] = $metrics->revenueParts($today, $today)['revenue'];
             $data['payments_today'] = Money::round((string) Payment::whereIn('branch_id', $branchIds)->whereBetween('paid_at', [$start, $end])
                 ->selectRaw("SUM(CASE WHEN type = 'refund' THEN -amount_in_base ELSE amount_in_base END) as t")->value('t') ?? '0');
             $data['unpaid_balances'] = Money::round((string) Invoice::whereIn('branch_id', $branchIds)->where('status', '!=', 'void')->where('balance', '>', 0)->sum('balance') ?: '0');
@@ -171,17 +171,20 @@ class ReportController extends Controller
         ];
     }
 
-    /** Share of rooms already booked for a day (on the books, any active booking). */
-    private function onTheBooks($hotel, array $branchIds, string $date, int $sellable): float
+    /**
+     * Share of rooms already booked per day (on the books, any active booking), in ONE question for the whole range.
+     *
+     * @return list<array{date: string, occupancy: float}>
+     */
+    private function onTheBooks($hotel, array $branchIds, string $from, string $to, int $sellable): array
     {
-        if ($sellable === 0) {
-            return 0.0;
-        }
-        $n = ReservationRoomRate::query()->join('reservation_rooms as rr', 'rr.id', '=', 'reservation_room_rates.reservation_room_id')
+        $booked = $sellable === 0 ? collect() : ReservationRoomRate::query()->join('reservation_rooms as rr', 'rr.id', '=', 'reservation_room_rates.reservation_room_id')
             ->join('reservations as res', 'res.id', '=', 'rr.reservation_id')->where('res.hotel_id', $hotel->id)->whereIn('res.branch_id', $branchIds)
-            ->whereIn('rr.status', ['pending', 'confirmed', 'checked_in', 'checked_out'])->where('reservation_room_rates.date', $date)->where('reservation_room_rates.label', 'Night')->count();
+            ->whereIn('rr.status', ['pending', 'confirmed', 'checked_in', 'checked_out'])->whereBetween('reservation_room_rates.date', [$from, $to])->where('reservation_room_rates.label', 'Night')
+            ->selectRaw('reservation_room_rates.date as d, COUNT(*) as n')->groupBy('reservation_room_rates.date')->pluck('n', 'd')
+            ->mapWithKeys(fn ($n, $d) => [substr((string) $d, 0, 10) => (int) $n]);
 
-        return round($n / $sellable * 100, 1);
+        return array_map(fn (string $d) => ['date' => $d, 'occupancy' => $sellable > 0 ? round(($booked[$d] ?? 0) / $sellable * 100, 1) : 0.0], Metrics::days($from, $to));
     }
 
     /** @return list<int> */

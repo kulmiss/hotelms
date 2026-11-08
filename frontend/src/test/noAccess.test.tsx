@@ -29,6 +29,30 @@ describe('no access page', () => {
     expect(await screen.findByRole('heading', { name: "You can't open this page" })).toBeInTheDocument()
   })
 
+  // QA #120: screens that used to open by address for a role without the permission.
+  it('blocks Reports for a role with no report (Restaurant / Bar)', async () => {
+    mockApi({ 'GET /me': { body: makeMe({}, ['charges.room', 'attendance.clock']) } })
+    renderApp('/reports')
+    expect(await screen.findByRole('heading', { name: "You can't open this page" })).toBeInTheDocument()
+  })
+
+  it('blocks adding staff with only staff.view', async () => {
+    mockApi({ 'GET /me': { body: makeMe({}, ['dashboard.view', 'staff.view']) } })
+    renderApp('/staff/new')
+    expect(await screen.findByRole('heading', { name: "You can't open this page" })).toBeInTheDocument()
+  })
+
+  it('blocks a Super Admin page the team member may not use', async () => {
+    const sales = { ...makeMe({ is_super_admin: true, name: 'Sales' }, []), role: null, hotel: null, branches: [], platform: { role: 'sales', permissions: ['hotels.view', 'support.answer'] } }
+    mockApi({ 'GET /me': { body: sales } })
+    const { unmount } = renderApp('/admin/switches')
+    expect(await screen.findByRole('heading', { name: "You can't open this page" })).toBeInTheDocument()
+    unmount()
+    mockApi({ 'GET /me': { body: sales } })
+    renderApp('/admin/team')
+    expect(await screen.findByRole('heading', { name: "You can't open this page" })).toBeInTheDocument()
+  })
+
   it('goes back to the start page with the button', async () => {
     mockApi({ 'GET /me': { body: makeMe({}, RECEPTION) }, 'GET /dashboard': { body: { data: {} } } })
     renderApp('/roles')

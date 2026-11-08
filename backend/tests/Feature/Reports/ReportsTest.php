@@ -17,6 +17,7 @@ use App\Support\Money;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /** Every report number is checked against known data (build-plan.md risk 4). */
@@ -145,6 +146,23 @@ class ReportsTest extends TestCase
         $csv = $this->get('/api/v1/reports/performance?from=2026-11-12&to=2026-11-14&format=csv')->assertOk()->getContent();
         $this->assertStringContainsString('2026-11-13', (string) $csv);
         $this->assertStringStartsWith('PK', $this->get('/api/v1/reports/tax?from=2026-11-01&to=2026-11-30&format=xlsx')->assertOk()->getContent());
+    }
+
+    public function test_dashboard_booking_pace_and_few_database_questions(): void
+    {
+        // QA #120 speed: the 7-day pace is one question, revenue today is not a full KPI set, rooms are counted once.
+        $this->at('2026-11-12 16:00');
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $data = $this->getJson('/api/v1/dashboard')->assertOk()->json('data');
+        $queries = count(DB::getQueryLog());
+        DB::disableQueryLog();
+
+        $this->assertCount(7, $data['next_7_days']);
+        $this->assertEquals(['date' => '2026-11-12', 'occupancy' => 50], $data['next_7_days'][0]); // 1 of 2 rooms booked tonight
+        $this->assertEquals(['date' => '2026-11-13', 'occupancy' => 50], $data['next_7_days'][1]); // the cancelled booking does not count
+        $this->assertEquals(['date' => '2026-11-14', 'occupancy' => 0], $data['next_7_days'][2]); // check-out day
+        $this->assertLessThan(40, $queries, "The dashboard asked the database $queries times.");
     }
 
     public function test_dashboard_today(): void
