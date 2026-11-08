@@ -32,3 +32,20 @@ describe('double submit', () => {
     expect(fetchMock).toHaveBeenCalledTimes(4)
   })
 })
+
+describe('Idempotency-Key on every change', () => {
+  it('reuses the key for the same change within 3 seconds, then makes a new one', async () => {
+    const { autoIdempotencyKey } = await import('@/lib/api')
+    const a = autoIdempotencyKey('POST', '/front-desk/rooms/2/charges', '{"charge_type_id":4}', 1_000)
+    expect(autoIdempotencyKey('POST', '/front-desk/rooms/2/charges', '{"charge_type_id":4}', 3_500)).toBe(a)
+    expect(autoIdempotencyKey('POST', '/front-desk/rooms/2/charges', '{"charge_type_id":5}', 3_500)).not.toBe(a)
+    expect(autoIdempotencyKey('POST', '/front-desk/rooms/2/charges', '{"charge_type_id":4}', 4_100)).not.toBe(a) // a second breakfast later
+  })
+
+  it('sends the key with every change, never with reading', async () => {
+    const fetchMock = slowServer()
+    await post('/guests', { first_name: 'QA' })
+    const headers = (fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].headers as Record<string, string>
+    expect(headers['Idempotency-Key']).toBeTruthy()
+  })
+})

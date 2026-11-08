@@ -178,7 +178,7 @@ function TwoFactorCard({ required, method, left }: { required: boolean; method: 
           <div className="w-64">
             <Field label={t('security.yourPassword')} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
-          <Button type="submit" variant={mode === 'off' ? 'danger' : 'primary'} disabled={!password}>
+          <Button type="submit" variant={mode === 'off' ? 'danger' : 'primary'} disabled={!password || disable.isPending || renew.isPending}>
             {mode === 'off' ? t('security.turnOff') : t('security.newCodes')}
           </Button>
           <Button variant="ghost" onClick={() => setMode('idle')}>

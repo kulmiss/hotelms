@@ -121,6 +121,7 @@ function RosterGrid() {
                         aria-label={`${s.name} ${d}`}
                         className="w-full ps-1.5 pe-6 text-xs md:text-xs"
                         value={String(a?.shift_id ?? '')}
+                        disabled={assign.isPending || unassign.isPending}
                         onChange={(e) => {
                           const v = Number(e.target.value)
                           if (a) unassign.mutate(a.id, { onSuccess: () => v && assign.mutate({ user_id: s.id, shift_id: v, date: d }) })

@@ -44,7 +44,7 @@ Order for hotel routes: `auth:sanctum` → `active` → `device` → `tenant` �
 | `module:x` | `EnsureModuleEnabled` | The hotel has this optional module on |
 | `switch:x` | `EnsureSwitchOn` | A Super Admin switch is on for this hotel |
 | `not.impersonating` | `BlockDuringImpersonation` | Not allowed in a "log in as hotel" support session |
-| `idempotent` | `Idempotent` | Money actions: the same `Idempotency-Key` header gives the first answer again (no double payment) |
+| `idempotent` | `Idempotent` | Every action that takes money or creates / changes a booking, bill, charge, cashier shift, guest or approval (owner, QA 8 Nov): the same `Idempotency-Key` header gives the first answer again – nothing is saved twice |
 | `one.at.a.time:kind` | `OneAtATime` | One change at a time per booking/bill (a lock in the cache) |
 | (global) | `SecurityHeaders` | nosniff, frame deny, referrer policy, HSTS on HTTPS |
 | (global) | `RecordProblems` | Notes refused requests and errors for the watchdog |

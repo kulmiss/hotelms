@@ -12,6 +12,8 @@ use Symfony\Component\HttpFoundation\Response;
  * Money is never taken twice on a bad network (api-outline.md): the app sends an
  * Idempotency-Key with each payment. If the same key arrives again (the internet dropped after
  * the server had already saved it, or a second tap), the first answer is sent back, nothing new is saved.
+ * Owner (QA 8 Nov): every action that takes money or creates / changes a booking, bill, charge, cashier shift,
+ * guest or approval uses this (routes/api.php); the app sends a key for every change (lib/api.ts).
  */
 class Idempotent
 {
@@ -27,7 +29,7 @@ class Idempotent
             return response()->json($saved['body'], $saved['status'])->header('Idempotent-Replay', 'true');
         }
         if (! Cache::add($base.':busy', 1, 60)) {
-            return response()->json(['message' => 'This payment is still being saved. Please wait a moment.', 'code' => 'busy'], 409);
+            return response()->json(['message' => 'This is still being saved. Please wait a moment.', 'code' => 'busy'], 409);
         }
         try {
             $response = $next($request);

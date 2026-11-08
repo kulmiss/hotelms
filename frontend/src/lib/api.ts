@@ -61,6 +61,25 @@ export function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   return p
 }
 
+/**
+ * Every change carries an Idempotency-Key (owner, QA 8 Nov). The same change sent again within 3 seconds (a
+ * double-click that lands after the first answer, a second tab) reuses the key, so the server answers with the first
+ * result instead of saving it twice. After 3 seconds the same change is a new one (e.g. a second breakfast).
+ * Money forms pass their own key (`useMoneyAction`), kept until the payment is saved.
+ */
+const REPEAT_MS = 3000
+const recentKeys = new Map<string, { key: string; at: number }>()
+
+export function autoIdempotencyKey(method: string, path: string, body: unknown, now = Date.now()): string {
+  const sig = `${method} ${path} ${typeof body === 'string' ? body : ''}`
+  const recent = recentKeys.get(sig)
+  if (recent && now - recent.at < REPEAT_MS) return recent.key
+  for (const [k, v] of recentKeys) if (now - v.at >= REPEAT_MS) recentKeys.delete(k)
+  const key = newIdempotencyKey()
+  recentKeys.set(sig, { key, at: now })
+  return key
+}
+
 async function send<T>(path: string, init: RequestInit = {}): Promise<T> {
   // Offline: nothing can be changed (read-only copy). The form keeps what was typed.
   if ((init.method ?? 'GET') !== 'GET' && typeof navigator !== 'undefined' && navigator.onLine === false) {
@@ -74,6 +93,7 @@ async function send<T>(path: string, init: RequestInit = {}): Promise<T> {
       Accept: 'application/json',
       'Content-Type': 'application/json',
       ...(token ? { 'X-XSRF-TOKEN': token } : {}),
+      ...((init.method ?? 'GET').toUpperCase() !== 'GET' ? { 'Idempotency-Key': autoIdempotencyKey((init.method ?? 'GET').toUpperCase(), path, init.body) } : {}),
       ...init.headers,
     },
   })
