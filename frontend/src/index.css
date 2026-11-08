@@ -246,6 +246,67 @@
   [role='button']:not(:disabled) {
     cursor: pointer;
   }
+  /*
+   * Checkboxes and radio buttons look like the template's (shadcn Checkbox / RadioGroup) without changing
+   * any screen's code: a 16px box, brand colour when ticked. Switches (role=switch) keep their own look.
+   */
+  input[type='checkbox']:not([role='switch']),
+  input[type='radio'] {
+    appearance: none;
+    display: inline-grid;
+    place-content: center;
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    border: 1px solid var(--color-input);
+    border-radius: 4px;
+    background-color: transparent;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    transition: box-shadow 150ms, background-color 150ms, border-color 150ms;
+  }
+  input[type='radio'] {
+    border-radius: 9999px;
+  }
+  .dark input[type='checkbox']:not([role='switch']),
+  .dark input[type='radio'] {
+    background-color: color-mix(in oklab, var(--color-input) 30%, transparent);
+  }
+  input[type='checkbox']:not([role='switch'])::before,
+  input[type='radio']::before {
+    content: '';
+    transform: scale(0);
+    transition: transform 120ms ease-in-out;
+  }
+  input[type='checkbox']:not([role='switch'])::before {
+    width: 0.625rem;
+    height: 0.625rem;
+    background-color: var(--on-accent);
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  }
+  input[type='radio']::before {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background-color: var(--accent);
+  }
+  input[type='checkbox']:not([role='switch']):checked {
+    background-color: var(--accent);
+    border-color: var(--accent);
+  }
+  input[type='checkbox']:not([role='switch']):checked::before,
+  input[type='radio']:checked::before {
+    transform: scale(1);
+  }
+  input[type='checkbox']:not([role='switch']):disabled,
+  input[type='radio']:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  input[type='checkbox']:not([role='switch'])[aria-invalid='true'],
+  input[type='radio'][aria-invalid='true'] {
+    border-color: var(--danger);
+  }
   /* Phones: 16px text in fields so iOS does not zoom in. */
   @media screen and (max-width: 767px) {
     input,

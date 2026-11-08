@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { ChevronRightIcon } from '@heroicons/react/20/solid'
+import { ChevronRight } from 'lucide-react'
 
 type Crumb = { label: string; to?: string }
 
-/** Filament page header: breadcrumbs, a bold heading and actions on the right. */
+/** The template's page heading (bold 24px title, grey line under it, actions on the right), with breadcrumbs. */
 export function PageHeader({
   title,
   subtitle,
@@ -20,28 +20,30 @@ export function PageHeader({
     <div className="flex flex-col gap-y-2">
       {breadcrumbs && (
         <nav aria-label="Breadcrumb">
-          <ol className="flex flex-wrap items-center gap-x-2 text-[13px] font-medium text-muted">
+          <ol className="flex flex-wrap items-center gap-1.5 text-sm break-words text-muted sm:gap-2.5">
             {breadcrumbs.map((c, i) => (
-              <li key={i} className="flex items-center gap-x-2">
-                {i > 0 && <ChevronRightIcon aria-hidden className="size-4 text-icon" />}
+              <li key={i} className="inline-flex items-center gap-1.5 sm:gap-2.5">
+                {i > 0 && <ChevronRight aria-hidden className="size-3.5" />}
                 {c.to ? (
-                  <Link to={c.to} className="transition duration-75 hover:text-text">
+                  <Link to={c.to} className="transition-colors hover:text-text">
                     {c.label}
                   </Link>
                 ) : (
-                  <span>{c.label}</span>
+                  <span aria-current="page" className="font-normal text-text">
+                    {c.label}
+                  </span>
                 )}
               </li>
             ))}
           </ol>
         </nav>
       )}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="flex min-w-0 flex-col gap-y-1">
-          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{title}</h1>
-          {subtitle && <div className="text-sm text-muted">{subtitle}</div>}
+          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+          {subtitle && <div className="text-muted">{subtitle}</div>}
         </div>
-        {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}
+        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
     </div>
   )

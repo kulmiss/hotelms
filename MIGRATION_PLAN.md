@@ -167,11 +167,12 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [ ] Browser check on the owner's machine (light / dark, 375 / 768 / 1024 / desktop, keyboard, room board at 768 and 1024)
 
 ### P3 – The 21 building blocks + Lucide
-- [ ] Button, Card, Badge, StatusBadge, Alert, Field, Select, Tabs, PageHeader, StatTile, Delta
-- [ ] DataTable + ResourceList (table look, toolbar, column-toggle dropdown, pagination, phone cards)
-- [ ] DateRangeFilter (popover), Toaster (sonner look), SmartHints, LoadFailed, SwipeRow, PhotoPickers, QrCode, TempPassword
-- [ ] Heroicons → Lucide inside the building blocks and the navigation
-- [ ] List of screens that still look different → the page partitions below
+- [x] Button, Card, Badge, StatusBadge, Alert, Field, Select, Tabs, PageHeader, StatTile, Delta (same props; template classes; `components/ui/formStyles.ts` holds the input / select / label classes for raw fields on screens)
+- [x] DataTable + ResourceList (template table, toolbar, Radix "Columns" menu that stays open while ticking, pagination, phone cards)
+- [x] DateRangeFilter (kept preset + dates, restyled – QUESTIONS P3-5), Toaster (sonner look), SmartHints, LoadFailed, SwipeRow, PhotoPickers, QrCode, TempPassword
+- [x] Native checkboxes / radios look like the template's (CSS only, no form code changed)
+- [x] Heroicons → Lucide inside the building blocks and the navigation
+- [x] Screens that still look different: raw inputs / selects / tables and Heroicons inside pages → P4–P16
 
 ### P4 – Dashboard (hotel)
 - [ ] Template dashboard pattern (as on the approved canvas): stat cards, "next 7 days" chart card, rooms card, money cards, smart hint alert
@@ -225,4 +226,6 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 |---|---|---|
 | P0 Plan | approved 8 Nov | – |
 | P1 Foundation | merged 8 Nov | #86 |
-| P2 Layout shell | done, waiting for browser check + OK | (this PR) |
+| P2 Layout shell | merged 8 Nov | #87 |
+| P2 fixes | open | #88 |
+| P3 Building blocks | open (stacked on #88) | #89 |
