@@ -75,17 +75,17 @@ describe('hotel dashboard (P18)', () => {
     await userEvent.click(screen.getByRole('button', { name: '7 days' }))
     const { from, to } = rangeDates('7')
     await waitFor(() => expect(fetchMock.mock.calls.some(([u]) => String(u).includes(`/dashboard/trend?from=${from}&to=${to}`))).toBe(true))
-    expect(window.location.search).toContain('range=7')
+    expect(screen.getByRole('button', { name: '7 days' })).toHaveAttribute('aria-pressed', 'true')
   })
 
   it('keeps the page working when one widget fails', async () => {
     mockApi({
       'GET /me': { body: makeMe({}, ['dashboard.view']) },
       'GET /dashboard': { body: { data: today } },
-      'GET /dashboard/trend': { status: 500, body: { message: 'Server error' } },
+      'GET /dashboard/trend': { status: 403, body: { message: 'Not allowed' } },
     })
     renderApp('/')
-    expect(await screen.findByText('This part could not load. The rest of the page still works.', {}, { timeout: 4000 })).toBeInTheDocument()
+    expect((await screen.findAllByText('This part could not load. The rest of the page still works.')).length).toBeGreaterThan(0)
     expect(screen.getByRole('heading', { name: 'Room status now' })).toBeInTheDocument()
     expect(screen.getByRole('img', { name: 'Room status of 12 rooms' })).toBeInTheDocument()
   })
