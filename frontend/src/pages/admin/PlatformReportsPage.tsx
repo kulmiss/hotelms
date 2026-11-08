@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { Badge, type Tone } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
+import { CollapsibleToolbar } from '@/components/ui/CollapsibleToolbar'
 import { Bars } from '@/components/ui/Delta'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatusBadge } from '@/components/ui/StatusBadge'
@@ -106,19 +107,27 @@ export function PlatformReportsPage() {
         <Card className="flex flex-col gap-3 overflow-x-auto p-0">
           <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-4">
             <h2 className="text-sm font-semibold">{t('admin.reports.health')}</h2>
-            <div className="flex flex-wrap gap-1.5">
-              {HEALTH.map((k) => (
-                <button
-                  key={k}
-                  type="button"
-                  aria-pressed={filter === k}
-                  onClick={() => setFilter(filter === k ? null : k)}
-                  className={cn('min-h-touch rounded-full px-3 text-sm font-medium border shadow-xs transition-colors', filter === k ? 'border-primary bg-primary text-primary-foreground' : 'bg-background text-muted hover:bg-sunken dark:bg-input/30')}
-                >
-                  {t(`admin.reports.healthStates.${k}`)} · {counts[k] ?? 0}
-                </button>
-              ))}
-            </div>
+            {/* Phones and tablets (P19): the health choices fold behind "Filters". */}
+            <CollapsibleToolbar
+              id="platform-health"
+              active={filter ? [{ key: 'health', label: t(`admin.reports.healthStates.${filter}`), onRemove: () => setFilter(null) }] : []}
+              onClearAll={() => setFilter(null)}
+              className="w-full"
+            >
+              <div className="flex flex-wrap gap-1.5">
+                {HEALTH.map((k) => (
+                  <button
+                    key={k}
+                    type="button"
+                    aria-pressed={filter === k}
+                    onClick={() => setFilter(filter === k ? null : k)}
+                    className={cn('min-h-touch rounded-full px-3 text-sm font-medium border shadow-xs transition-colors', filter === k ? 'border-primary bg-primary text-primary-foreground' : 'bg-background text-muted hover:bg-sunken dark:bg-input/30')}
+                  >
+                    {t(`admin.reports.healthStates.${k}`)} · {counts[k] ?? 0}
+                  </button>
+                ))}
+              </div>
+            </CollapsibleToolbar>
           </div>
           <p className="px-4 text-xs text-muted">{t('admin.reports.healthHelp')}</p>
           <table className="w-full min-w-[720px] text-left text-sm">

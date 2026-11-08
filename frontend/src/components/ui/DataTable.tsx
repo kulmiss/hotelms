@@ -5,6 +5,8 @@ import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMe
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { LoadFailed } from '@/components/ui/LoadFailed'
+import { CollapsibleToolbar, ToolbarSearch, type ActiveFilter } from '@/components/ui/CollapsibleToolbar'
+import { useCompactToolbar } from '@/lib/compactToolbar'
 import { cn } from '@/lib/cn'
 import { downloadText, toCsv } from '@/lib/csv'
 import { useMediaQuery } from '@/lib/useMediaQuery'
@@ -17,6 +19,10 @@ import { selectClass } from './formStyles'
  *
  * Server lists pass `sort` + `onSort`, `paging` and `exportUrl` (the API sorts, pages and makes the file).
  * Small lists pass only `rows`: the table sorts and pages them itself, and `csvName` makes the download.
+ *
+ * Filters (P19): pass `filters` (laid out as on desktop, with <ToolbarSearch /> where the search box goes), `search`,
+ * `activeFilters` and `onClearFilters`. Below 1024px they fold behind one "Filters" button with the Excel and
+ * Columns buttons (CollapsibleToolbar); from 1024px they show above the table as before.
  */
 export type Column<T> = {
   key: string
@@ -60,7 +66,15 @@ type Props<T> = {
   /** Small list: file name for the download (only when `canExport`). */
   csvName?: string
   canExport?: boolean
-  toolbar?: ReactNode
+  /** Filter and sort controls above the table (desktop layout). */
+  filters?: ReactNode
+  /** The search box: stays in view on phones and tablets. */
+  search?: ReactNode
+  /** Filters that are on: the count and chips on phones and tablets. */
+  activeFilters?: ActiveFilter[]
+  onClearFilters?: () => void
+  /** Space between the filters and the table (default gap-4, as most pages had). */
+  filtersGap?: string
   minWidth?: string
 }
 
@@ -77,10 +91,12 @@ function loadHidden(id: string, columns: Column<unknown>[]): string[] {
 }
 
 export function DataTable<T>({
-  id, columns, rows, rowKey, loading, error, onRetry, empty, onRowClick, rowClassName, sort, onSort, paging, exportUrl, csvName, canExport, toolbar, minWidth = '720px',
+  id, columns, rows, rowKey, loading, error, onRetry, empty, onRowClick, rowClassName, sort, onSort, paging, exportUrl, csvName, canExport, filters, search, activeFilters, onClearFilters, filtersGap = 'gap-4', minWidth = '720px',
 }: Props<T>) {
   const { t } = useTranslation()
   const phone = useMediaQuery('(max-width: 639px)')
+  const compact = useCompactToolbar()
+  const hasFilters = filters !== undefined || search !== undefined
   const [hidden, setHidden] = useState<string[]>(() => loadHidden(id, columns as Column<unknown>[]))
   const [localSort, setLocalSort] = useState<SortState | null>(null)
   const [localPage, setLocalPage] = useState(1)
@@ -170,12 +186,10 @@ export function DataTable<T>({
     </div>
   )
 
-  return (
+  const table = (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <div className="flex flex-wrap items-end gap-2">{toolbar}</div>
-        {tools}
-      </div>
+      {/* Phones and tablets with filters: Excel and Columns fold away with them. */}
+      {!(compact && hasFilters) && <div className="flex flex-wrap items-end justify-end gap-2">{tools}</div>}
 
       {phone ? (
         <div className="flex flex-col gap-2">
@@ -259,6 +273,16 @@ export function DataTable<T>({
           </Button>
         </div>
       )}
+    </div>
+  )
+
+  if (!hasFilters) return table
+  return (
+    <div className={cn('flex flex-col', filtersGap)}>
+      <CollapsibleToolbar id={id} search={search} active={activeFilters} onClearAll={onClearFilters} tools={tools}>
+        {filters ?? <ToolbarSearch />}
+      </CollapsibleToolbar>
+      {table}
     </div>
   )
 }

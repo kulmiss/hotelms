@@ -7,6 +7,8 @@ import { Alert } from './Alert'
 import { Button } from './Button'
 import { Card } from './Card'
 import { DataTable, type Column } from './DataTable'
+import type { ActiveFilter } from './CollapsibleToolbar'
+import { useCompactToolbar } from '@/lib/compactToolbar'
 import { Field } from './Field'
 import { Select } from './Select'
 
@@ -43,6 +45,8 @@ export function ResourceList({
   defaults,
   canDelete = () => true,
   header,
+  filters,
+  activeFilters,
   query = '',
 }: {
   endpoint: string
@@ -54,10 +58,17 @@ export function ResourceList({
   defaults: Record<string, Value>
   canDelete?: (row: Row) => boolean
   header?: ReactNode
+  /**
+   * List filters (e.g. the branch). Desktop: shown above `header`. Phones and tablets: they fold behind the
+   * table's "Filters" button with Excel and Columns (P19); `activeFilters` are the chips shown meanwhile.
+   */
+  filters?: ReactNode
+  activeFilters?: ActiveFilter[]
   /** Extra list filter, e.g. "?branch_id=2" (saving still uses the plain endpoint). */
   query?: string
 }) {
   const { t } = useTranslation()
+  const compact = useCompactToolbar()
   const list = useSettingsList<Row>(endpoint + query)
   const remove = useSettingsDelete(endpoint)
   const [editing, setEditing] = useState<Row | null>(null)
@@ -77,12 +88,15 @@ export function ResourceList({
           </Button>
         )}
       </div>
+      {!compact && filters}
       {header}
       {deleteError && <Alert>{deleteError}</Alert>}
       {editing && <RecordForm key={editing.id ?? 'new'} endpoint={endpoint} fields={fields} record={editing} onDone={() => setEditing(null)} />}
 
       <DataTable<Row>
         id={`settings${endpoint}`}
+        filters={compact && filters ? filters : undefined}
+        activeFilters={activeFilters}
         rows={list.data?.data ?? []}
         rowKey={(row) => String(row.id)}
         loading={list.isPending}

@@ -6,6 +6,7 @@ import { CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, SearchIc
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { ToolbarSearch, type ActiveFilter } from '@/components/ui/CollapsibleToolbar'
 import { inputClass } from '@/components/ui/formStyles'
 import { LoadFailed } from '@/components/ui/LoadFailed'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -81,113 +82,132 @@ function ReservationList() {
   const filters = { q: search, status: f.status, expiring: f.expiring, branch_id: branchId, from: filter === 'upcoming' ? today() : undefined, sort: sort.by, dir: sort.dir }
   const list = useReservations({ ...filters, page, per_page: perPage })
 
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="relative w-full max-w-xs">
-          <SearchIcon aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted" />
-          <input
-            type="search"
-            aria-label={t('reservations.search')}
-            placeholder={t('reservations.search')}
-            value={q}
-            onChange={(e) => {
-              setQ(e.target.value)
-              setPage(1)
-            }}
-            className={cn(inputClass, 'ps-9')}
-          />
-        </div>
-        {branches.length > 1 && (
-          <div className="w-48">
-            <Select label={t('settings.rooms.branch')} value={String(branchId ?? '')} onChange={(e) => setBranchId(e.target.value ? Number(e.target.value) : null)}>
-              <option value="">{t('reservations.allBranches')}</option>
-              {branches.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </Select>
-          </div>
-        )}
-      </div>
-      <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('reservations.filter')}>
-        {FILTERS.map((x) => (
-          <button
-            key={x.key}
-            type="button"
-            aria-pressed={filter === x.key}
-            onClick={() => {
-              setFilter(x.key)
-              setPage(1)
-            }}
-            className={cn(
-              'min-h-touch rounded-full px-3 text-sm font-medium border shadow-xs transition-colors',
-              filter === x.key ? 'border-primary bg-primary text-primary-foreground' : 'bg-background text-muted hover:bg-sunken dark:bg-input/30 hover:text-text',
-            )}
-          >
-            {t(`reservations.filters.${x.key}`)}
-          </button>
-        ))}
-      </div>
-      <DataTable<ReservationSummary>
-        id="reservations"
-        rows={list.data?.data ?? []}
-        rowKey={(r) => r.id}
-        loading={list.isLoading}
-        error={list.error}
-        onRetry={() => list.refetch()}
-        sort={sort}
-        onSort={(s) => {
-          setSort(s)
+  // Phones and tablets (P19): branch and status fold behind "Filters"; the search stays.
+  const branchName = branches.find((b) => b.id === branchId)?.name
+  const active: ActiveFilter[] = [
+    ...(filter !== 'upcoming' ? [{ key: 'status', label: t(`reservations.filters.${filter}`), onRemove: () => (setFilter('upcoming'), setPage(1)) }] : []),
+    ...(branchId !== null ? [{ key: 'branch', label: branchName ?? t('settings.rooms.branch'), onRemove: () => (setBranchId(null), setPage(1)) }] : []),
+  ]
+  const searchBox = (
+    <div className="relative w-full lg:max-w-xs">
+      <SearchIcon aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted" />
+      <input
+        type="search"
+        aria-label={t('reservations.search')}
+        placeholder={t('reservations.search')}
+        value={q}
+        onChange={(e) => {
+          setQ(e.target.value)
           setPage(1)
         }}
-        paging={{ page, last: list.data?.last_page ?? 1, total: list.data?.total, perPage, onPage: setPage, onPerPage: (n) => (setPerPage(n), setPage(1)) }}
-        exportUrl={can('reports.export') ? listFileUrl('/reservations', { ...filters, page: undefined }) : null}
-        minWidth="820px"
-        empty={
-          <div className="flex flex-col items-center gap-3 py-6">
-            <span className="flex size-12 items-center justify-center rounded-full bg-sunken">
-              <CalendarDaysIcon aria-hidden className="size-6 text-icon" />
-            </span>
-            <p>{t('reservations.empty')}</p>
-          </div>
-        }
-        columns={[
-          {
-            key: 'code', label: t('reservations.code'), sort: 'code', hideable: false,
-            render: (r) => (
-              <Link to={`/reservations/${r.id}`} className="flex min-h-touch items-center font-medium text-accent-text">
-                {r.code}
-              </Link>
-            ),
-          },
-          {
-            key: 'guest', label: t('reservations.guest'), sort: 'guest',
-            render: (r) => (
-              <span className="flex flex-col">
-                <span className="font-medium">{r.guest?.name}</span>
-                <span className="text-xs text-muted">{r.guest?.phone}</span>
-              </span>
-            ),
-          },
-          { key: 'stay', label: t('reservations.stay'), sort: 'check_in', render: (r) => <span className="text-muted"><StayText checkIn={r.check_in_at} checkOut={r.check_out_at} stayType={r.stay_type} /></span> },
-          { key: 'rooms', label: t('reservations.rooms'), render: (r) => <span className="text-muted">{r.rooms.map((x) => x.room_number ?? x.room_type).join(', ')}</span> },
-          {
-            key: 'status', label: t('reservations.status'), sort: 'status',
-            render: (r) => (
-              <span className="flex flex-col items-start gap-0.5">
-                <Badge tone={STATUS_TONES[r.status]}>{t(`reservations.statuses.${r.status}`)}</Badge>
-                {r.status === 'pending' && r.expires_at && <span className="text-xs text-warn-text">{t('reservations.expiresAt', { time: `${date(localDate(r.expires_at))} ${localTime(r.expires_at)}` })}</span>}
-              </span>
-            ),
-          },
-          { key: 'branch', label: t('settings.rooms.branch'), defaultHidden: true, render: (r) => r.branch?.name },
-          { key: 'created', label: t('table.booked'), sort: 'created', defaultHidden: true, render: (r) => (r.booked_at ? date(localDate(r.booked_at)) : '') },
-          { key: 'total', label: t('reservations.total'), sort: 'total', align: 'right', render: (r) => money(r.total, r.currency) },
-        ]}
+        className={cn(inputClass, 'ps-9')}
       />
     </div>
+  )
+
+  return (
+    <DataTable<ReservationSummary>
+      id="reservations"
+      search={searchBox}
+      activeFilters={active}
+      onClearFilters={() => {
+        setFilter('upcoming')
+        setBranchId(null)
+        setPage(1)
+      }}
+      filters={
+        <>
+          <div className="flex flex-wrap items-end gap-3">
+            <ToolbarSearch />
+            {branches.length > 1 && (
+              <div className="w-48">
+                <Select label={t('settings.rooms.branch')} value={String(branchId ?? '')} onChange={(e) => setBranchId(e.target.value ? Number(e.target.value) : null)}>
+                  <option value="">{t('reservations.allBranches')}</option>
+                  {branches.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('reservations.filter')}>
+            {FILTERS.map((x) => (
+              <button
+                key={x.key}
+                type="button"
+                aria-pressed={filter === x.key}
+                onClick={() => {
+                  setFilter(x.key)
+                  setPage(1)
+                }}
+                className={cn(
+                  'min-h-touch rounded-full px-3 text-sm font-medium border shadow-xs transition-colors',
+                  filter === x.key ? 'border-primary bg-primary text-primary-foreground' : 'bg-background text-muted hover:bg-sunken dark:bg-input/30 hover:text-text',
+                )}
+              >
+                {t(`reservations.filters.${x.key}`)}
+              </button>
+            ))}
+          </div>
+        </>
+      }
+      rows={list.data?.data ?? []}
+      rowKey={(r) => r.id}
+      loading={list.isLoading}
+      error={list.error}
+      onRetry={() => list.refetch()}
+      sort={sort}
+      onSort={(s) => {
+        setSort(s)
+        setPage(1)
+      }}
+      paging={{ page, last: list.data?.last_page ?? 1, total: list.data?.total, perPage, onPage: setPage, onPerPage: (n) => (setPerPage(n), setPage(1)) }}
+      exportUrl={can('reports.export') ? listFileUrl('/reservations', { ...filters, page: undefined }) : null}
+      minWidth="820px"
+      empty={
+        <div className="flex flex-col items-center gap-3 py-6">
+          <span className="flex size-12 items-center justify-center rounded-full bg-sunken">
+            <CalendarDaysIcon aria-hidden className="size-6 text-icon" />
+          </span>
+          <p>{t('reservations.empty')}</p>
+        </div>
+      }
+      columns={[
+        {
+          key: 'code', label: t('reservations.code'), sort: 'code', hideable: false,
+          render: (r) => (
+            <Link to={`/reservations/${r.id}`} className="flex min-h-touch items-center font-medium text-accent-text">
+              {r.code}
+            </Link>
+          ),
+        },
+        {
+          key: 'guest', label: t('reservations.guest'), sort: 'guest',
+          render: (r) => (
+            <span className="flex flex-col">
+              <span className="font-medium">{r.guest?.name}</span>
+              <span className="text-xs text-muted">{r.guest?.phone}</span>
+            </span>
+          ),
+        },
+        { key: 'stay', label: t('reservations.stay'), sort: 'check_in', render: (r) => <span className="text-muted"><StayText checkIn={r.check_in_at} checkOut={r.check_out_at} stayType={r.stay_type} /></span> },
+        { key: 'rooms', label: t('reservations.rooms'), render: (r) => <span className="text-muted">{r.rooms.map((x) => x.room_number ?? x.room_type).join(', ')}</span> },
+        {
+          key: 'status', label: t('reservations.status'), sort: 'status',
+          render: (r) => (
+            <span className="flex flex-col items-start gap-0.5">
+              <Badge tone={STATUS_TONES[r.status]}>{t(`reservations.statuses.${r.status}`)}</Badge>
+              {r.status === 'pending' && r.expires_at && <span className="text-xs text-warn-text">{t('reservations.expiresAt', { time: `${date(localDate(r.expires_at))} ${localTime(r.expires_at)}` })}</span>}
+            </span>
+          ),
+        },
+        { key: 'branch', label: t('settings.rooms.branch'), defaultHidden: true, render: (r) => r.branch?.name },
+        { key: 'created', label: t('table.booked'), sort: 'created', defaultHidden: true, render: (r) => (r.booked_at ? date(localDate(r.booked_at)) : '') },
+        { key: 'total', label: t('reservations.total'), sort: 'total', align: 'right', render: (r) => money(r.total, r.currency) },
+      ]}
+    />
   )
 }
 

@@ -54,7 +54,9 @@
         "Columns: tick or untick to show or hide a column. The app remembers it.",
         "Rows (at the bottom): show 25, 50 or 100 rows on one page.",
         "Excel: download the list with the same filters. You see this button only if you may export.",
-        "On a phone, each row is a small card."
+        "On a phone, each row is a small card.",
+        "On a phone or tablet, the filters are behind the Filters button. Tap it to open or close them. The number on it shows how many filters are on.",
+        "Each filter that is on shows as a small chip under the button. Tap × on a chip to remove it, or Clear all to remove all."
       ]
     },
     "bell": {
@@ -99,7 +101,8 @@
         "Use Arriving, Leaving, Overdue or Free tonight to see only those rooms.",
         "A red \"Owes\" tag means the guest still has money to pay.",
         "Tap a room box to see the guest and to change the room status. A guest is inside? Tap Check out to let them leave, or Stay details to see the booking.",
-        "Want to see another day? Use the arrows or pick a date at the top. You see who stays in each room that night. Tap Back to today to work again."
+        "Want to see another day? Use the arrows or pick a date at the top. You see who stays in each room that night. Tap Back to today to work again.",
+        "On a phone or tablet, the color buttons, the day and the sort are behind the Filters button, so you see the rooms first. The search box stays at the top."
       ]
     },
     "todayLists": {

@@ -2781,6 +2781,12 @@
     "booked": "Booked on",
     "city": "City"
   },
+  "filters": {
+    "button": "Filters",
+    "active": "Filters that are on",
+    "remove": "Remove filter: {{label}}",
+    "clearAll": "Clear all"
+  },
   "dates": {
     "label": "Dates",
     "any": "Any time",

@@ -227,7 +227,14 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [ ] **Staging test** before the final PR: deploy `ui/shadcn-admin` to a staging copy (shared-hosting style build), click through as every role
 - [ ] Final PR `ui/shadcn-admin → main` (after the staging test)
 
-## 6. Status
+### P19 – Collapsible filters on phones and tablets (owner, 8 Nov; after #105)
+- [x] Audit: every page with a filter or sort bar (list in QUESTIONS.md P19)
+- [x] One shared block, `CollapsibleToolbar`, used by `DataTable`, `ResourceList` and the room board; closed below 1024px, desktop unchanged
+- [x] Search stays; count badge; removable chips; Clear all; open/closed per page for the session only
+- [x] Keyboard and screen readers: `aria-expanded`, `aria-controls`, closed part `inert`, Enter opens and goes to the first control, Escape closes and goes back, focus never lost after × / Clear all
+- [x] Tests (collapsed below 1024px, desktop as before, count and chips, Clear all, session memory, keyboard, room board on a phone)
+- [ ] Browser check at 375 / 768 / 1024 / 1280, light and dark, before/after pictures – needs the owner's machine on this branch
+
 | Partition | Status | PR |
 |---|---|---|
 | P0 Plan | approved 8 Nov | – |
@@ -249,3 +256,6 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P15 | open (stacked) | #101 |
 | P16 | open (stacked) | #102 |
 | P17 | open (stacked) | #103 |
+| P17 package cleanup | open (stacked) | #104 |
+| Browser-check fixes | open (stacked) | #105 |
+| P19 Collapsible filters | open (stacked on #105) | (this PR) |

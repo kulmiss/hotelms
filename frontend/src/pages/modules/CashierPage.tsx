@@ -17,7 +17,8 @@ import { listFileUrl, localDate, localTime, useLookups } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { DataTable, type SortState } from '@/components/ui/DataTable'
 import { DateRangeFilter } from '@/components/ui/DateRangeFilter'
-import type { DateRange } from '@/lib/dateRange'
+import { rangeChip, type DateRange } from '@/lib/dateRange'
+import { useCompactToolbar } from '@/lib/compactToolbar'
 import { useApproveShift, useCloseShift, useCurrentShift, useOpenShift, useShifts, type CashierSession } from '@/lib/modules'
 
 const err = (e: unknown) => (e instanceof ApiError ? (Object.values(e.errors)[0]?.[0] ?? e.message) : null)
@@ -174,22 +175,33 @@ function ShiftList() {
   const [sort, setSort] = useState<SortState>({ by: 'opened', dir: 'desc' })
   const list = useShifts({ short, ...range, page, per_page: perPage, sort: sort.by, dir: sort.dir })
   const approve = useApproveShift()
+  const compact = useCompactToolbar()
+  const controls = (
+    <div className="flex flex-wrap items-end gap-3">
+      <DateRangeFilter value={range} onChange={setRange} />
+      <label className="flex min-h-touch items-center gap-2 text-sm">
+        <input type="checkbox" checked={short} onChange={(e) => setShort(e.target.checked)} />
+        {t('cashier.onlyShort')}
+      </label>
+    </div>
+  )
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold">{can('cashier.view_all') ? t('cashier.allShifts') : t('cashier.pastShifts')}</h2>
-        <div className="flex flex-wrap items-end gap-3">
-          <DateRangeFilter value={range} onChange={setRange} />
-          <label className="flex min-h-touch items-center gap-2 text-sm">
-            <input type="checkbox" checked={short} onChange={(e) => setShort(e.target.checked)} />
-            {t('cashier.onlyShort')}
-          </label>
-        </div>
+        {!compact && controls}
       </div>
       {approve.error && <Alert>{err(approve.error)}</Alert>}
       <DataTable<CashierSession>
         id="cashier-shifts"
+        // Phones and tablets (P19): the dates and "only short" fold behind "Filters" by the table.
+        filters={compact ? controls : undefined}
+        activeFilters={[
+          ...rangeChip(t, 'dates', t('dates.label'), range, () => setRange({})),
+          ...(short ? [{ key: 'short', label: t('cashier.onlyShort'), onRemove: () => setShort(false) }] : []),
+        ]}
+        onClearFilters={() => (setRange({}), setShort(false))}
         rows={list.data?.data ?? []}
         rowKey={(s) => s.id}
         loading={list.isLoading}

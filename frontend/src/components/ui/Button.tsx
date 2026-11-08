@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react'
+import type { ComponentProps } from 'react'
 import { cn } from '@/lib/cn'
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
@@ -24,7 +24,7 @@ const sizes: Record<Size, string> = {
   lg: 'min-h-10 px-6 has-[>svg]:px-4 pointer-coarse:min-h-13',
 }
 
-export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+export type ButtonProps = ComponentProps<'button'> & {
   variant?: Variant
   size?: Size
 }

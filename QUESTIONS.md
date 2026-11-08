@@ -56,3 +56,17 @@ Format: **question** – options – *chosen* and why – how easy to change lat
 3. **[Answered 8 Nov: remove – PR #104]** **`@radix-ui/react-avatar`, `-checkbox`, `-radio-group`, `-switch`, `-tabs`, `-label`, `-alert-dialog`, `-scroll-area`, `-collapsible`** are installed but not used (CSS / own components did the job without changing form code). They are not in the download (unused code is dropped by the build). *Recommend:* keep for now, or remove together with sonner. – Easy.
 4. **Staff guide pictures** (15 screenshots in `frontend/public/guide/`) still show the old look. They are made by `tools/pictures/` against a running app; I cannot run the app in my workspace. *Recommend:* after the staging test, I redo them in your browser. – Medium.
 5. **Final PR `ui/shadcn-admin → main` is not opened yet** – your plan asks for a staging test first. *Recommend:* merge #88 → #103 in order into `ui/shadcn-admin`, test on staging (or locally), then I open the final PR. – —
+
+## P19 – Collapsible filters on phones and tablets
+
+**Pages audited** (✓ = filters now fold below 1024px):
+✓ Room board (day, status, today chips, type, floor, sort, branch box) · ✓ Bookings list (branch, status) · ✓ Guests (stayed dates) · ✓ Bills (dates, status) · ✓ Payments (dates) · ✓ Cashier shifts (dates, only short) · ✓ Reports (period, compare, branch) · ✓ Activity log (dates) · ✓ Attendance report (dates) · ✓ Settings: room types, rooms (branch) · ✓ Super Admin hotels (status) · ✓ Super Admin reports, hotel health (state).
+No change (nothing to fold): Staff, Roles, Devices, Shifts, Housekeeping, Approvals, Watchdog, Support inbox (only tabs = navigation); Platform activity, Docs, Help, Settings menu (search only); booking calendar and roster (week arrows = navigation, one row); front desk mode (its own big-screen layout); forms (new booking, walk-in, price preview).
+
+1. **Collapsible without a package** – the template's Collapsible needs `@radix-ui/react-collapsible`, which #104 removed (your OK). I wrote a 70-line copy with the same names instead, so nothing needs installing. *Recommend:* keep it. If you prefer the original: `cd frontend && npm install @radix-ui/react-collapsible@1.1.12 --save-exact` and I switch the import. – Easy.
+2. **Tabs that filter** (Support inbox status, Approvals status, Watchdog open/fixed, Guests "Details missing") stay visible like the room board tabs: they are short and work as navigation. *Recommend:* keep. – Easy.
+3. **What counts as "on"** – only choices that differ from the page's start (e.g. bookings "Upcoming", reports "This month" and "previous period" are the start, so not counted). The search text is not a chip (the box is in view). The sort is not counted. A report's period and a settings list's branch always show as a chip without × (a report means nothing without its period). *Recommend:* keep. – Easy.
+4. **"Session"** = this browser tab until it is closed (`sessionStorage`). Signing out and in again in the same tab keeps it. *Recommend:* keep; or I clear it on sign-out. – Easy.
+5. **Room board branch box** folds away on the Room board tab only; on Arriving / Leaving / In house it stays (those lists have no other filters). – Easy.
+6. **Small desktop change** – settings → Rooms (hotels with 2+ branches): the branch box now sits on its own line above the room-limit badge (before: same line). Everything else on desktop is unchanged. – Easy.
+
