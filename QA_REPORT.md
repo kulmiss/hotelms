@@ -261,3 +261,53 @@ Done through the app's own API as the role named, with the business rules checke
 2. s6: block a second open cleaning task for the same room (recommended), or allow it?
 3. HotelMS licence file: add "All rights reserved" (recommended), or none?
 4. Should I write the "What's new" text for the new look for you to publish? (Recommended: yes.)
+
+---
+
+## 7. Re-check after the fixes (8 Nov, evening) – part 1
+
+Tested on `ui/shadcn-admin` @ `78ba589` (#109–#117 merged, migrated, demo reset). Super Admin "log in as hotel", reason *"QA re-check after fixes (owner request)"*.
+
+### Saved once – every money and data action (owner, #116)
+Each action was sent **twice at the same moment with the same key** (double-click / two tabs) and **again 5.5 s later with the same key** (slow network / retry after a timeout).
+
+| Action | Role | Twice at once | Retry after 5.5 s | Result |
+|---|---|---|---|---|
+| New guest | Admin | 201 + 201 (1 replay, same guest) | replay, same | ✓ saved once |
+| Walk-in (telebirr 7475) | Admin | 201 + 201 (same stay) | replay, same | ✓ |
+| Payment on a booking (telebirr 100) | Admin | 201 + 201 (1 replay) | replay, same | ✓ one payment of 100 |
+| Real second payment (new key, 50 + 50) | Admin | – | – | ✓ both saved |
+| Same key, other amount | Admin | 422 `idempotency_mismatch` | – | ✓ refused |
+| Quick charge (Breakfast) | Admin | 201 + 201 (1 replay) | replay, same | ✓ |
+| Bill: extra charge | Admin | 201 + 201 | replay, same | ✓ |
+| Bill: discount 5% | Admin | 201 + 201 | replay, same | ✓ |
+| Refund 50 (telebirr) | Admin | 201 + 201 | replay, same | ✓ |
+| Extend +1 night | Admin | 200 + 200 | replay, same | ✓ |
+| Move room 110 → 106 | Admin | 200 + 200 | replay, same | ✓ |
+| Check-out | Admin | 200 + 200 | replay, same | ✓ |
+| New booking | Admin | 201 + 201 (guest has 1 more booking, not 2) | replay, same | ✓ |
+| Cancel booking | Admin | 200 + 200 | replay, same | ✓ |
+| No-show | Admin | 200 + 200 | replay, same | ✓ |
+| Check-in | Admin | 200 + 200 | replay, same | ✓ |
+| Approve price suggestion | Admin | 200 + 200 (1 replay) | replay | ✓ |
+| Reject price suggestion | Admin | 200 + 200 (1 replay) | replay | ✓ |
+| Cashier: close, open, close | Reception | 200/201 + replay each | – | ✓ one new shift (#148) |
+
+**In the app, with every change delayed 5 s:** a real double-click on "Add guest" sent **one** request (one key) and made **one** guest.
+Business rules still answered first where they apply (cash needs an open shift in the same branch; paying more than owed asks first; extend into a booked night is refused).
+
+**Scheduler / clean-up:** Docker runs it (`scheduler` service, `schedule:work`); Super Admin → System shows the scheduler green. The cPanel cron line is in `docs/hosting.md` (2a step 6) and in the go-live checklist.
+**Rollback:** the migration's `down()` drops the table. Checked locally (migrate → rollback → migrate). CI now runs `migrate`, `migrate:rollback --step=1`, `migrate` before the tests on every PR.
+
+### Still to do when the owner's computer is on (part 2)
+1. **Guide pictures (15)** – plan, screens, demo data and marks: `tools/pictures/guide-pictures.md`.
+2. **QA re-run** on everything fixed, at 375 / 768 / 1024 / 1280 / 1920, light and dark:
+   - bill page 1024 (S1), Super Admin team 768 (M4), staff page 1024 dark (s2);
+   - "You can't open this page" for each role (M1);
+   - tap targets at 375 (M2, M5): front desk mode rows, header icons, breadcrumbs, calendar headers, small links, team checkboxes;
+   - swipe action in dark mode (M3); housekeeping start page with no 403 (s1); no raw keys after the removed texts (s3);
+   - "one open task per room and kind" message and link (rule);
+   - demo approvals approve / reject in the screen;
+   - calendar bar opens the booking on the first tap (#117);
+   - full crawl again (all routes × sizes × modes) for regressions.
+3. Update this report (part 2) with the results.
