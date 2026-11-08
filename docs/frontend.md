@@ -23,6 +23,9 @@
 ## Layout and shortcuts
 
 - **Sidebar** (template, `variant="inset"`, `collapsible="icon"`): 16rem wide, 3rem when collapsed (3.75rem on touch screens so the 44px buttons fit), a drawer below 768px. Collapsed or not is saved on the device (`hms-sidebar-collapsed`); with no saved choice, tablet widths (768–1023px) start collapsed. Collapsed items show their name as a tooltip.
+- **Phones**: tab rows wrap to a second line (CSS in `index.css`, `[data-slot=tabs-list]`); the header search box shrinks instead of covering the menu button.
+- **Forms next to a summary card** (walk-in, new booking): the stay fields use a container query on their card (`@container`, `@sm:grid-cols-2 @2xl:grid-cols-3`), so dates always show in full whatever the screen and sidebar width.
+- **Grey text**: `text-muted` is darker than the template's (≥ 4.5:1 on white, grey boxes and room colours); small text on room cards uses `text-grey-text`.
 - **Shortcuts**: Ctrl/⌘+K or `/` opens the command menu (search, pages, theme); Ctrl/⌘+B opens/closes the sidebar; Tab from the top shows "Skip to main content".
 - **Icons**: Lucide, imported one by one (`import { House } from 'lucide-react'`) so only the used icons are downloaded. Heroicons are still used by screens not restyled yet (MIGRATION_PLAN P3–P16).
 - **Speed**: cmdk and the command menu are loaded only when the menu is first opened (or the search button is hovered).
