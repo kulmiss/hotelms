@@ -16,7 +16,7 @@
 | `pages/<area>/` | Screens: `desk/` (room board, walk-in, front desk mode), `reservations/`, `guests/`, `billing/`, `modules/` (cashier, housekeeping, shifts, attendance), `reports/`, `settings/`, `setup/`, `team/`, `admin/` (Super Admin), `help/`, `security/`, `approvals/`, `subscription/` |
 | `lib/` | Data hooks and helpers per area (below) |
 | `i18n/` | `index.ts`; `locales/en.json` (all screen text), `locales/en.guide.json` (staff guides) |
-| `index.css` | Tailwind v4 theme: colour tokens (light/dark), `.panel`, touch sizes, print rules |
+| `index.css` | Tailwind v4 theme in the **shadcn-admin** look (slate OKLCH tokens, radius 0.625rem; our token names map to shadcn's – see the comment at the top), `.panel` (= shadcn card), touch sizes, focus ring, print rules. Template notice: `THIRD_PARTY_NOTICES`; plan: `MIGRATION_PLAN.md` |
 | `test/` | Vitest + Testing Library; `mockApi.ts` (fake API + `makeMe`), `renderApp.tsx` |
 
 ## Data loading
