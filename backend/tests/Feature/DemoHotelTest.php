@@ -75,7 +75,7 @@ class DemoHotelTest extends TestCase
         $down = $pending->firstWhere('kind', 'price_down');
         $this->postJson("/api/v1/approvals/{$up->id}/approve")->assertOk();
         $this->postJson("/api/v1/approvals/{$down->id}/reject", ['note' => 'Not this week'])->assertOk();
-        $this->postJson("/api/v1/approvals/{$up->id}/approve")->assertStatus(422); // acts once
+        $this->postJson("/api/v1/approvals/{$up->id}/approve")->assertNotFound(); // acts once: no longer waiting
         $this->assertSame(['approved', 'rejected'], app(TenantContext::class)->runAs($hotel, fn () => [$up->fresh()->status, $down->fresh()->status]));
 
         if ($refund = $pending->firstWhere('kind', 'refund')) {
