@@ -135,7 +135,7 @@ export function ForecastReport({ branchId }: { branchId?: number | null }) {
   return (
     <div className="flex flex-col gap-4">
       {d && (
-        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="grid items-start grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
           <Card className="flex flex-col gap-3">
             <h3 className="text-sm font-semibold">{t('insights.next90')}</h3>
             <div className="grid grid-cols-7 gap-1" role="grid" aria-label={t('insights.next90')}>

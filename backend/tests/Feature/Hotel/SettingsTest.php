@@ -118,6 +118,17 @@ class SettingsTest extends TestCase
         $this->putJson('/api/v1/settings/booking-rules', [])->assertForbidden();
     }
 
+    public function test_branch_manager_reads_currencies_to_update_exchange_rates_only(): void
+    {
+        $bm = User::factory()->withRole($this->hotel, 'branch_manager')->create();
+        $this->actingAs($this->admin)->postJson('/api/v1/settings/currencies', ['code' => 'USD', 'symbol' => '$'])->assertCreated();
+
+        $this->actingAs($bm)->getJson('/api/v1/settings/currencies')->assertOk()->assertJsonFragment(['code' => 'USD']);
+        $this->postJson('/api/v1/settings/exchange-rates', ['from_currency' => 'USD', 'rate' => '130'])->assertCreated();
+        $this->postJson('/api/v1/settings/currencies', ['code' => 'EUR', 'symbol' => '€'])->assertForbidden();
+        $this->getJson('/api/v1/settings/taxes')->assertForbidden();
+    }
+
     public function test_settings_of_another_hotel_cannot_be_reached(): void
     {
         $other = Hotel::factory()->create();

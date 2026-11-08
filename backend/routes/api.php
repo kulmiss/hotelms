@@ -331,9 +331,13 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
                     Route::put('/branches/{id}', [BranchSettingsController::class, 'update']);
                     Route::delete('/branches/{id}', [BranchSettingsController::class, 'destroy']);
                 });
+                // A Branch Manager may update exchange rates only, so they can read the currency list too (QA 8 Nov, part 2).
+                Route::get('/currencies', [CurrencyController::class, 'index'])->middleware('permission:settings.money,settings.exchange_rates');
                 Route::middleware('permission:settings.money')->group(function () {
                     foreach (['currencies' => CurrencyController::class, 'taxes' => TaxController::class, 'payment-methods' => PaymentMethodController::class] as $uri => $controller) {
-                        Route::get("/{$uri}", [$controller, 'index']);
+                        if ($uri !== 'currencies') {
+                            Route::get("/{$uri}", [$controller, 'index']);
+                        }
                         Route::post("/{$uri}", [$controller, 'store']);
                         Route::put("/{$uri}/{id}", [$controller, 'update']);
                         Route::delete("/{$uri}/{id}", [$controller, 'destroy']);

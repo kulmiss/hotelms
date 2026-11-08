@@ -28,7 +28,7 @@ const TONES = { open: 'info', closed: 'warn', approved: 'ok' } as const
 export function CashierPage() {
   const { t } = useTranslation()
   const can = useCan()
-  const current = useCurrentShift()
+  const current = useCurrentShift(can('cashier.own_shift'))
   const shift = current.data?.data
   const smart = useSmart('cashier', {}, Boolean(shift) && can('cashier.own_shift'))
 
@@ -81,7 +81,7 @@ function MyShift({ shift }: { shift: CashierSession }) {
   const anyDiff = expected.some(([c, r]) => (diff(c, r.expected) ?? 0) !== 0)
 
   return (
-    <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <div className="grid items-start grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
       <Card className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-semibold">{t('cashier.myShift')}</h2>
@@ -117,7 +117,7 @@ function MyShift({ shift }: { shift: CashierSession }) {
               <span>
                 {localTime(p.paid_at)} · {t(`reservations.paymentTypes.${p.type}`)}
                 {p.reservation && (
-                  <Link to={`/reservations/${p.reservation.id}`} className="text-accent-text">
+                  <Link to={`/reservations/${p.reservation.id}`} className="tap-link text-accent-text">
                     {' '}
                     · {p.reservation.code}
                   </Link>

@@ -106,11 +106,11 @@ export function ReservationPage() {
       {action === 'check_out' && r.status === 'checked_in' && <CheckOutPanel r={r} onClose={() => setAction(null)} />}
       {action === 'change' && r.status === 'checked_in' && <ChangeStayPanel r={r} onClose={() => setAction(null)} />}
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="grid items-start grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="flex flex-col gap-6">
           <Card className="grid gap-4 text-sm sm:grid-cols-3">
             <Info label={t('reservations.guest')}>
-              <Link to={`/guests/${r.guest.id}`} className="font-medium text-accent-text">
+              <Link to={`/guests/${r.guest.id}`} className="tap-link w-fit font-medium text-accent-text">
                 {r.guest.full_name}
               </Link>
               <span className="text-xs text-muted">{r.guest.phone}</span>

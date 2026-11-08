@@ -109,7 +109,7 @@ export function WalkInPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={t('desk.walkIn')} breadcrumbs={[{ label: t('nav.roomBoard'), to: '/rooms' }, { label: t('desk.walkIn') }]} />
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="grid items-start grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="flex flex-col gap-6">
           {/* @container: the fields below go 1, 2 or 3 per row by the card's own width, so dates always show in full. */}
           <Card className="@container flex flex-col gap-4">
@@ -164,7 +164,7 @@ export function WalkInPage() {
             {stayType === 'nightly' && nightDate < today() && <Alert tone="info">{t('desk.lastNight', { night: date(nightDate) })}</Alert>}
             <p className="text-xs text-muted">
               {t('desk.walkInStartsNow')}{' '}
-              <Link to="/reservations/new" className="font-medium text-accent-text underline">
+              <Link to="/reservations/new" className="tap-link font-medium text-accent-text underline">
                 {t('desk.bookForLater')}
               </Link>
             </p>

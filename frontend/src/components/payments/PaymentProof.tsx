@@ -110,7 +110,7 @@ export function ProofLink({ paymentId, proof, canAdd }: { paymentId: number; pro
         type="button"
         disabled={up.isPending || attach.isPending}
         onClick={() => file.current?.click()}
-        className={cn('inline-flex items-center gap-1 text-xs font-medium text-muted hover:text-text disabled:opacity-60')}
+        className={cn('tap-link inline-flex items-center gap-1 text-xs font-medium text-muted hover:text-text disabled:opacity-60')}
       >
         <PaperclipIcon aria-hidden className="size-3.5" />
         {up.isPending || attach.isPending ? t('proof.uploading') : t('proof.add')}
