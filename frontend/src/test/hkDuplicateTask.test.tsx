@@ -26,7 +26,8 @@ describe('housekeeping: no second open task of the same kind', () => {
     })
     renderApp('/housekeeping?tab=assign')
 
-    await userEvent.selectOptions(await screen.findByRole('combobox', { name: 'Room' }), '2')
+    await screen.findByRole('option', { name: /^106/ }) // the rooms have loaded
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Room' }), '2')
     await userEvent.click(screen.getByRole('button', { name: 'Add task' }))
 
     expect(await screen.findByText(message, { exact: false })).toBeInTheDocument()
