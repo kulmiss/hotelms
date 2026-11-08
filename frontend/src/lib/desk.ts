@@ -191,6 +191,7 @@ export const INVOICE_TONES: Record<InvoiceSummary['status'], 'warn' | 'ok' | 'in
   void: 'grey',
 }
 
+/** Room card colours. Small text on these cards uses `text-grey-text` (≥ 4.5:1 on every tint, light and dark), not `text-muted`. */
 export const ROOM_TONES: Record<string, string> = {
   available: 'bg-room-available/15 border-room-available/40',
   occupied: 'bg-room-occupied/15 border-room-occupied/40',

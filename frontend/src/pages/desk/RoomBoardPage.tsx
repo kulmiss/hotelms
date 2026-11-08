@@ -142,11 +142,11 @@ function Board({ branchId }: { branchId: number | null }) {
                       <span className={cn('size-2.5 rounded-full', ROOM_DOTS[r.status])} />
                     </span>
                   </span>
-                  <span className="text-xs text-muted">{r.room_type}</span>
+                  <span className="text-xs text-grey-text">{r.room_type}</span>
                   {r.stay ? (
                     <span className="mt-auto flex flex-col text-xs">
                       <span className="truncate font-medium">{r.stay.guest}</span>
-                      <span className={r.stay.overdue ? 'font-semibold text-danger-text' : 'text-muted'}>
+                      <span className={r.stay.overdue ? 'font-semibold text-danger-text' : 'text-grey-text'}>
                         {r.stay.open_stay ? t('openStay.badge') : localDate(r.stay.check_out_at) === day
                           ? t('desk.leavesAt', { time: localTime(r.stay.check_out_at) })
                           : t('desk.until', { date: date(localDate(r.stay.check_out_at)) })}
@@ -155,7 +155,7 @@ function Board({ branchId }: { branchId: number | null }) {
                   ) : r.arriving ? (
                     <span className="mt-auto text-xs font-medium text-accent-text">{t('desk.arrivingToday', { guest: r.arriving.guest })}</span>
                   ) : (
-                    <span className="mt-auto text-xs text-muted">{t(`roomStatus.${r.status}`)}</span>
+                    <span className="mt-auto text-xs text-grey-text">{t(`roomStatus.${r.status}`)}</span>
                   )}
                   {!r.arriving && r.next_booking && (
                     <span className="text-xs text-accent-text">{t('desk.bookedFrom', { date: date(localDate(r.next_booking.check_in_at)) })}</span>
