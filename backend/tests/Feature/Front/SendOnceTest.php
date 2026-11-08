@@ -11,6 +11,7 @@ use App\Models\Reservation;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\User;
+use App\Services\Billing\InvoiceService;
 use App\Services\HotelDefaults;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -93,7 +94,8 @@ class SendOnceTest extends TestCase
     {
         $id = $this->postJson('/api/v1/reservations', ['branch_id' => $this->branch->id, 'stay_type' => 'nightly', 'check_in' => '2026-11-12', 'check_out' => '2026-11-13',
             'guest_id' => $this->guest->id, 'rooms' => [['room_type_id' => $this->standard->id]]])->assertCreated()->json('data.id');
-        $invoice = app(TenantContext::class)->runAs($this->hotel, fn () => Invoice::where('reservation_id', $id)->value('id'));
+        // The bill is opened the first time something is charged or paid (check-in, payment…).
+        $invoice = app(TenantContext::class)->runAs($this->hotel, fn () => app(InvoiceService::class)->openFor(Reservation::find($id), $this->receptionist)->id);
         $this->assertNotNull($invoice);
         $items = fn () => app(TenantContext::class)->runAs($this->hotel, fn () => Invoice::find($invoice)->items()->count());
         $before = $items();
