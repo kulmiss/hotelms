@@ -68,10 +68,10 @@ class SendOnceTest extends TestCase
         return app(TenantContext::class)->runAs($this->hotel, $fn);
     }
 
-    private function booking(string $key = 'booking-1'): int
+    private function booking(string $key = 'booking-1', string $in = '2026-11-20', string $out = '2026-11-21'): int
     {
         return $this->postJson('/api/v1/reservations', [
-            'branch_id' => $this->branch->id, 'stay_type' => 'nightly', 'check_in' => '2026-11-20', 'check_out' => '2026-11-21',
+            'branch_id' => $this->branch->id, 'stay_type' => 'nightly', 'check_in' => $in, 'check_out' => $out,
             'guest_id' => $this->guest->id, 'rooms' => [['room_type_id' => $this->standard->id]],
         ], ['Idempotency-Key' => $key])->assertCreated()->json('data.id');
     }
@@ -169,7 +169,7 @@ class SendOnceTest extends TestCase
         $this->assertSame($guests + 1, $this->inHotel(fn () => Guest::count()));
 
         // A bill charge.
-        $id = $this->booking('b-bill');
+        $id = $this->booking('b-bill', '2026-11-25', '2026-11-26');
         $invoice = $this->inHotel(fn () => app(InvoiceService::class)->openFor(Reservation::find($id), $this->receptionist)->id);
         $items = fn () => $this->inHotel(fn () => Invoice::find($invoice)->items()->count());
         $start = $items();
