@@ -181,7 +181,7 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [x] Room cards (template card shape: rounded-xl, border, small shadow; room colours kept), status / today filter chips as the template's outline filter buttons, toolbar search + selects in the template look, tabs, room panel, Arriving / Leaving lists, front desk mode tiles, Charge a room, quick charges; Lucide icons
 
 ### P6 – Walk-in
-- [ ] Form pattern: sections as cards, room picker, guest quick check-in, summary card, payment
+- [x] Form pattern: sections as cards, stay-type toggle (template outline buttons), room picker (template card shape, brand outline when chosen), guest match box, quick check-in, summary card, payment; checkboxes in the template look; Lucide
 
 ### P7 – Bookings
 - [ ] List (data-table), calendar, new / change form, booking page, stay panels (check-in, check-out, move, extend, pay), room calendar, registration card **screen** (print stays)
@@ -231,3 +231,4 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P3 Building blocks | open (stacked on #88) | #89 |
 | P4 Dashboard | open (stacked on #89) | #90 |
 | P5 Room board, front desk mode, charge a room | open (stacked on #90) | #91 |
+| P6 Walk-in | open (stacked on #91) | #92 |
