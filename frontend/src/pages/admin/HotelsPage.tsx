@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
-import { PlusIcon } from '@heroicons/react/20/solid'
+import { PlusIcon, SearchIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { buttonClass } from '@/components/ui/Button'
 import { DataTable } from '@/components/ui/DataTable'
@@ -38,8 +37,8 @@ export function HotelsPage() {
       />
 
       <div className="flex flex-wrap items-center gap-3">
-        <label className="flex min-h-touch max-w-sm flex-1 items-center gap-2 rounded-lg bg-surface px-3 shadow-sm ring-1 ring-ring-strong focus-within:ring-2 focus-within:ring-accent">
-          <MagnifyingGlassIcon aria-hidden className="size-5 shrink-0 text-icon" />
+        <label className="flex min-h-touch max-w-sm flex-1 items-center gap-2 rounded-md border border-input bg-transparent px-3 shadow-xs transition-[color,box-shadow] focus-within:border-focus focus-within:ring-[3px] focus-within:ring-focus/50 dark:bg-input/30">
+          <SearchIcon aria-hidden className="size-5 shrink-0 text-icon" />
           <span className="sr-only">{t('admin.hotels.search')}</span>
           <input
             type="search"
@@ -57,8 +56,9 @@ export function HotelsPage() {
               aria-pressed={status === f}
               onClick={() => setStatus(f)}
               className={cn(
-                'min-h-touch rounded-lg px-3 text-sm font-medium transition duration-75',
-                status === f ? 'bg-surface text-accent-text shadow-sm ring-1 ring-ring' : 'text-muted hover:bg-sunken hover:text-text',
+                // The template's filter buttons (outline, dashed until chosen).
+                'flex h-8 items-center rounded-md border px-3 text-sm font-medium shadow-xs transition-colors pointer-coarse:h-11',
+                status === f ? 'border-primary bg-primary/10 text-text' : 'border-dashed bg-background text-muted hover:bg-sunken hover:text-text dark:bg-input/30',
               )}
             >
               {f ? t(`hotelStatus.${f}`) : t('admin.hotels.all')} ({f ? (counts[f] ?? 0) : total})

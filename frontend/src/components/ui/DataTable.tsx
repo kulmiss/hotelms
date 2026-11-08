@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowDownTrayIcon, ChevronDownIcon, ChevronUpDownIcon, ChevronUpIcon, ViewColumnsIcon } from '@heroicons/react/20/solid'
+import { ArrowDown, ArrowUp, ChevronsUpDown, Download, SlidersHorizontal } from 'lucide-react'
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/shadcn/dropdown-menu'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { LoadFailed } from '@/components/ui/LoadFailed'
 import { cn } from '@/lib/cn'
 import { downloadText, toCsv } from '@/lib/csv'
 import { useMediaQuery } from '@/lib/useMediaQuery'
+import { selectClass } from './formStyles'
 
 /**
  * One table for every list (owner, 2026-11-07): sort by a column, 25 / 50 / 100 rows, hide or show
@@ -84,21 +86,6 @@ export function DataTable<T>({
   const [localPage, setLocalPage] = useState(1)
   const [localPer, setLocalPer] = useState(25)
   const server = !!onSort
-  // The Columns menu closes on a click elsewhere or Esc.
-  const menu = useRef<HTMLDetailsElement>(null)
-  useEffect(() => {
-    const close = (e: Event) => {
-      const el = menu.current
-      if (!el?.open) return
-      if (e instanceof KeyboardEvent ? e.key === 'Escape' : !el.contains(e.target as Node)) el.open = false
-    }
-    document.addEventListener('mousedown', close)
-    document.addEventListener('keydown', close)
-    return () => {
-      document.removeEventListener('mousedown', close)
-      document.removeEventListener('keydown', close)
-    }
-  }, [])
   const shown = columns.filter((c) => !hidden.includes(c.key))
   const activeSort = server ? sort : localSort
 
@@ -147,34 +134,38 @@ export function DataTable<T>({
   const tools = (
     <div className="flex flex-wrap items-center gap-2">
       {exportUrl && (
-        <a href={exportUrl} download className={buttonClass('secondary')}>
-          <ArrowDownTrayIcon aria-hidden className="size-4" />
+        <a href={exportUrl} download className={buttonClass('secondary', 'md', 'min-h-8 px-3 pointer-coarse:min-h-11')}>
+          <Download aria-hidden />
           {t('table.excel')}
         </a>
       )}
       {!exportUrl && csvName && canExport && rows.length > 0 && (
-        <Button variant="secondary" onClick={download}>
-          <ArrowDownTrayIcon aria-hidden className="size-4" />
+        <Button variant="secondary" onClick={download} className="min-h-8 px-3 pointer-coarse:min-h-11">
+          <Download aria-hidden />
           {t('table.excel')}
         </Button>
       )}
       {columns.some((c) => c.hideable !== false) && (
-        <details ref={menu} className="relative">
-          <summary className={cn(buttonClass('secondary'), 'list-none [&::-webkit-details-marker]:hidden')}>
-            <ViewColumnsIcon aria-hidden className="size-4" />
-            {t('table.columns')}
-          </summary>
-          <div className="absolute right-0 z-20 mt-1 flex w-56 flex-col gap-1 rounded-lg bg-surface p-2 shadow-lg ring-1 ring-ring">
+        // The template's "View" menu: tick the columns to show; it stays open while ticking.
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="secondary" className="min-h-8 px-3 pointer-coarse:min-h-11">
+              <SlidersHorizontal aria-hidden />
+              {t('table.columns')}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuLabel>{t('table.columns')}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
             {columns
               .filter((c) => c.hideable !== false)
               .map((c) => (
-                <label key={c.key} className="flex min-h-touch cursor-pointer items-center gap-2 rounded px-2 text-[13px] hover:bg-sunken">
-                  <input type="checkbox" className="size-4 accent-accent" checked={!hidden.includes(c.key)} onChange={() => toggle(c.key)} />
+                <DropdownMenuCheckboxItem key={c.key} checked={!hidden.includes(c.key)} onCheckedChange={() => toggle(c.key)} onSelect={(e) => e.preventDefault()}>
                   {c.label}
-                </label>
+                </DropdownMenuCheckboxItem>
               ))}
-          </div>
-        </details>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )}
     </div>
   )
@@ -189,7 +180,7 @@ export function DataTable<T>({
       {phone ? (
         <div className="flex flex-col gap-2">
           {visible.map((r) => (
-            <Card key={rowKey(r)} className={cn('flex flex-col gap-1 p-3 text-[13px]', onRowClick && 'cursor-pointer', rowClassName?.(r))} onClick={onRowClick ? () => onRowClick(r) : undefined}>
+            <Card key={rowKey(r)} className={cn('flex flex-col gap-1 p-4 text-sm', onRowClick && 'cursor-pointer', rowClassName?.(r))} onClick={onRowClick ? () => onRowClick(r) : undefined}>
               {shown.map((c, i) => (
                 <div key={c.key} className={cn('flex justify-between gap-3', i === 0 && 'font-medium')}>
                   {i > 0 && <span className="text-muted">{c.label}</span>}
@@ -200,19 +191,26 @@ export function DataTable<T>({
           ))}
         </div>
       ) : (
-        <Card className="overflow-x-auto p-0">
-          <table className="w-full text-left text-[13px]" style={{ minWidth }}>
-            {/* The header sits on a solid surface: in dark mode the head colour is see-through. */}
-            <thead className="bg-sunken">
-              <tr>
+        // The template's table: rounded border, 40px header, rows that light up on hover.
+        <div data-slot="table-container" className="relative w-full overflow-x-auto rounded-md border bg-surface">
+          <table className="w-full caption-bottom text-left text-sm" style={{ minWidth }}>
+            <thead className="[&_tr]:border-b">
+              <tr className="border-b">
                 {shown.map((c) => {
                   const on = activeSort?.by === (sortable(c) ? sortKey(c) : '')
                   return (
-                    <th key={c.key} scope="col" aria-sort={on ? (activeSort!.dir === 'asc' ? 'ascending' : 'descending') : undefined} className={cn('px-4 py-2.5 font-semibold whitespace-nowrap', c.align === 'right' && 'text-right', c.className)}>
+                    <th key={c.key} scope="col" aria-sort={on ? (activeSort!.dir === 'asc' ? 'ascending' : 'descending') : undefined} className={cn('h-10 px-2 align-middle font-medium whitespace-nowrap text-text first:ps-4 last:pe-4', c.align === 'right' && 'text-right', c.className)}>
                       {sortable(c) ? (
-                        <button type="button" onClick={() => clickSort(c)} className={cn('inline-flex items-center gap-1 rounded hover:text-accent-text', c.align === 'right' && 'flex-row-reverse')}>
+                        <button
+                          type="button"
+                          onClick={() => clickSort(c)}
+                          className={cn(
+                            'inline-flex h-8 items-center gap-2 rounded-md px-3 outline-none transition-colors hover:bg-sunken focus-visible:ring-[3px] focus-visible:ring-focus/50 pointer-coarse:h-11',
+                            c.align === 'right' ? '-me-3 flex-row-reverse' : '-ms-3',
+                          )}
+                        >
                           {c.label}
-                          {on ? activeSort!.dir === 'asc' ? <ChevronUpIcon aria-hidden className="size-4" /> : <ChevronDownIcon aria-hidden className="size-4" /> : <ChevronUpDownIcon aria-hidden className="size-4 text-icon" />}
+                          {on ? activeSort!.dir === 'asc' ? <ArrowUp aria-hidden className="size-4" /> : <ArrowDown aria-hidden className="size-4" /> : <ChevronsUpDown aria-hidden className="size-4 text-muted" />}
                         </button>
                       ) : (
                         c.label
@@ -222,11 +220,11 @@ export function DataTable<T>({
                 })}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="[&_tr:last-child]:border-0">
               {visible.map((r) => (
-                <tr key={rowKey(r)} onClick={onRowClick ? () => onRowClick(r) : undefined} className={cn('border-t border-border', onRowClick && 'cursor-pointer hover:bg-sunken', rowClassName?.(r))}>
+                <tr key={rowKey(r)} onClick={onRowClick ? () => onRowClick(r) : undefined} className={cn('border-b transition-colors hover:bg-sunken/50', onRowClick && 'cursor-pointer', rowClassName?.(r))}>
                   {shown.map((c) => (
-                    <td key={c.key} className={cn('px-4 py-2.5 align-top', c.align === 'right' && 'text-right tabular-nums', c.className)}>
+                    <td key={c.key} className={cn('p-2 align-middle first:ps-4 last:pe-4', c.align === 'right' && 'text-right tabular-nums', c.className)}>
                       {c.render(r)}
                     </td>
                   ))}
@@ -235,16 +233,16 @@ export function DataTable<T>({
             </tbody>
           </table>
           {loading && rows.length === 0 && <p className="p-6 text-center text-muted">{t('common.loading')}</p>}
-          {!loading && rows.length === 0 && (error ? <LoadFailed error={error} onRetry={onRetry} /> : <div className="p-6 text-center text-muted">{empty ?? t('table.empty')}</div>)}
-        </Card>
+          {!loading && rows.length === 0 && (error ? <LoadFailed error={error} onRetry={onRetry} /> : <div className="h-24 p-6 text-center text-muted">{empty ?? t('table.empty')}</div>)}
+        </div>
       )}
       {phone && !loading && rows.length === 0 && (error ? <LoadFailed error={error} onRetry={onRetry} /> : <div className="p-6 text-center text-muted">{empty ?? t('table.empty')}</div>)}
 
       {pager && (pager.last > 1 || (pager.total ?? 0) > 25) && (
-        <div className="flex flex-wrap items-center justify-end gap-2 text-[13px] text-muted">
-          <label className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-x-6 gap-y-2 px-2 text-sm">
+          <label className="flex items-center gap-2 font-medium">
             {t('table.perPage')}
-            <select className="min-h-touch rounded-lg bg-surface px-2 ring-1 ring-ring" value={pager.perPage} onChange={(e) => pager.onPerPage(Number(e.target.value))}>
+            <select className={cn(selectClass, 'min-h-8 w-[4.5rem] ps-2 pe-2 pointer-coarse:min-h-11')} value={pager.perPage} onChange={(e) => pager.onPerPage(Number(e.target.value))}>
               {PER_PAGE.map((n) => (
                 <option key={n} value={n}>
                   {n}
@@ -252,11 +250,11 @@ export function DataTable<T>({
               ))}
             </select>
           </label>
-          <Button variant="secondary" disabled={pager.page <= 1} onClick={() => pager.onPage(pager.page - 1)}>
+          <span className="font-medium">{t('common.pageOf', { page: pager.page, last: pager.last })}</span>
+          <Button variant="secondary" disabled={pager.page <= 1} onClick={() => pager.onPage(pager.page - 1)} className="min-h-8 px-3 pointer-coarse:min-h-11">
             {t('common.previous')}
           </Button>
-          <span>{t('common.pageOf', { page: pager.page, last: pager.last })}</span>
-          <Button variant="secondary" disabled={pager.page >= pager.last} onClick={() => pager.onPage(pager.page + 1)}>
+          <Button variant="secondary" disabled={pager.page >= pager.last} onClick={() => pager.onPage(pager.page + 1)} className="min-h-8 px-3 pointer-coarse:min-h-11">
             {t('common.next')}
           </Button>
         </div>

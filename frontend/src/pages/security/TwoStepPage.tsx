@@ -11,10 +11,10 @@ export function TwoStepPage() {
   const navigate = useNavigate()
   const logout = useLogout()
   return (
-    <div className="flex min-h-full items-center justify-center p-4">
+    <div className="flex min-h-svh items-center justify-center p-4">
       <Card className="flex w-full max-w-lg flex-col gap-y-6 p-8 animate-page-in motion-reduce:animate-none">
-        <div className="flex flex-col gap-2 text-center">
-          <h1 className="text-xl font-bold">{t('security.forcedTitle')}</h1>
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-lg font-semibold tracking-tight">{t('security.forcedTitle')}</h1>
           <p className="text-sm text-muted">{t('security.forcedIntro')}</p>
         </div>
         <TwoFactorSetup onDone={() => navigate('/', { replace: true })} />

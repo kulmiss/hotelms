@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { CheckIcon, MinusIcon, PlusIcon, XMarkIcon } from '@heroicons/react/20/solid'
+import { CheckIcon, MinusIcon, PlusIcon, XIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { inputClass } from '@/components/ui/formStyles'
 import { Field } from '@/components/ui/Field'
 import { LoadFailed } from '@/components/ui/LoadFailed'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -147,8 +148,8 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
                   aria-checked={stayType === s}
                   onClick={() => changeStayType(s)}
                   className={cn(
-                    'min-h-touch rounded-lg px-3 text-[13px] font-medium ring-1 transition duration-75',
-                    stayType === s ? 'bg-accent text-on-accent ring-accent' : 'bg-surface text-muted ring-ring hover:bg-sunken',
+                    'min-h-touch rounded-lg px-3 text-sm font-medium border shadow-xs transition-colors',
+                    stayType === s ? 'border-primary bg-primary text-primary-foreground' : 'bg-background text-muted hover:bg-sunken dark:bg-input/30',
                   )}
                 >
                   {t(`reservations.stayTypes.${s}`)}
@@ -231,17 +232,17 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
                           type="button"
                           aria-pressed={on}
                           onClick={() => (on ? setRooms(rooms.filter((r) => r.room_id !== f.id)) : setRooms([...rooms, { room_type_id: f.type.room_type_id, room_id: f.id, adults: Math.min(2, f.type.base_capacity), children: 0 }]))}
-                          className={cn('relative flex min-h-20 flex-col items-start gap-0.5 rounded-xl p-3 text-left ring-1 transition duration-75', on ? 'bg-accent-soft ring-2 ring-accent' : 'bg-surface ring-ring hover:bg-sunken')}
+                          className={cn('relative flex min-h-20 flex-col items-start gap-0.5 rounded-xl p-3 text-left border shadow-xs transition-colors', on ? 'border-primary bg-accent-soft ring-1 ring-primary' : 'bg-surface hover:bg-sunken')}
                         >
                           <span className="text-base font-semibold">{f.number}</span>
-                          <span className="text-[11px] text-muted">{f.type.name}</span>
-                          {f.type.price && <span className="text-[11px] font-medium tabular-nums">{money(f.type.price, f.type.currency)}</span>}
-                          {on && <CheckIcon aria-hidden className="absolute top-2 right-2 size-4 text-accent-text" />}
+                          <span className="text-xs text-muted">{f.type.name}</span>
+                          {f.type.price && <span className="text-xs font-medium tabular-nums">{money(f.type.price, f.type.currency)}</span>}
+                          {on && <CheckIcon aria-hidden className="absolute top-2 right-2 size-4 text-primary" />}
                         </button>
                       )
                     })}
                 </div>
-                {availability.data && !types.some((type) => type.offered && type.free_rooms.length > 0) && <p className="py-2 text-[13px] text-muted">{t('reservations.noRooms')}</p>}
+                {availability.data && !types.some((type) => type.offered && type.free_rooms.length > 0) && <p className="py-2 text-sm text-muted">{t('reservations.noRooms')}</p>}
               </div>
             )}
             <ul className={cn('flex flex-col divide-y divide-border', pickBy === 'rooms' && 'hidden')}>
@@ -250,13 +251,13 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
                 return (
                   <li key={type.room_type_id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-2.5">
                     <div className="flex flex-col">
-                      <span className="text-[13px] font-medium">{type.name}</span>
+                      <span className="text-sm font-medium">{type.name}</span>
                       <span className="text-xs text-muted">
                         {type.offered ? t('reservations.form.left', { count: Math.max(0, left) }) : t('reservations.form.notOffered')} · {t('reservations.form.upTo', { count: type.max_capacity })}
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
-                      {type.price && <span className="text-[13px] font-semibold tabular-nums">{money(type.price, type.currency)}</span>}
+                      {type.price && <span className="text-sm font-semibold tabular-nums">{money(type.price, type.currency)}</span>}
                       <Button variant="secondary" disabled={!type.offered || left <= 0} onClick={() => addRoom(type.room_type_id, type.base_capacity)}>
                         <PlusIcon aria-hidden className="size-4" />
                         {t('reservations.form.add')}
@@ -265,7 +266,7 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
                   </li>
                 )
               })}
-              {availability.data && types.length === 0 && <li className="px-5 py-4 text-[13px] text-muted">{t('reservations.noRooms')}</li>}
+              {availability.data && types.length === 0 && <li className="px-5 py-4 text-sm text-muted">{t('reservations.noRooms')}</li>}
             </ul>
             {rooms.length > 0 && (
               <div className="flex flex-col gap-2 border-t border-border bg-sunken/50 px-5 py-4">
@@ -276,8 +277,8 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
                   const existingRoom = existing?.rooms.find((x) => x.room_id === r.room_id)
                   const options = [...(type?.free_rooms ?? []), ...(existingRoom?.room_id && !type?.free_rooms.some((f) => f.id === existingRoom.room_id) ? [{ id: existingRoom.room_id, number: existingRoom.room_number ?? '' }] : [])]
                   return (
-                    <div key={i} className="flex flex-wrap items-end gap-3 rounded-lg bg-surface p-3 ring-1 ring-ring">
-                      <span className="min-w-28 self-center text-[13px] font-medium">{type?.name ?? existing?.rooms.find((x) => x.room_type_id === r.room_type_id)?.room_type}</span>
+                    <div key={i} className="flex flex-wrap items-end gap-3 rounded-lg bg-surface p-3 border">
+                      <span className="min-w-28 self-center text-sm font-medium">{type?.name ?? existing?.rooms.find((x) => x.room_type_id === r.room_type_id)?.room_type}</span>
                       <div className="w-36">
                         <Select label={t('reservations.form.roomNumber')} value={String(r.room_id ?? '')} onChange={(e) => setRoom(i, { room_id: e.target.value ? Number(e.target.value) : null })}>
                           <option value="">{t('reservations.form.anyRoom')}</option>
@@ -293,7 +294,7 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
                       <Stepper label={t('reservations.form.adults')} value={r.adults} min={1} max={type?.max_capacity ?? 20} onChange={(v) => setRoom(i, { adults: v })} />
                       <Stepper label={t('reservations.form.children')} value={r.children} min={0} max={Math.max(0, (type?.max_capacity ?? 20) - r.adults)} onChange={(v) => setRoom(i, { children: v })} />
                       <Button variant="ghost" aria-label={t('reservations.form.remove')} onClick={() => setRooms(rooms.filter((_, j) => j !== i))}>
-                        <XMarkIcon aria-hidden className="size-4" />
+                        <XIcon aria-hidden className="size-4" />
                       </Button>
                     </div>
                   )
@@ -344,12 +345,12 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
         {/* Summary */}
         <Card className="flex flex-col gap-3 lg:sticky lg:top-20">
           <h2 className="text-sm font-semibold">{t('reservations.form.summary')}</h2>
-          {!rooms.length && <p className="text-[13px] text-muted">{t('reservations.form.pickRooms')}</p>}
+          {!rooms.length && <p className="text-sm text-muted">{t('reservations.form.pickRooms')}</p>}
           {quoteError && <Alert>{Object.values(quoteError.errors)[0]?.[0] ?? quoteError.message}</Alert>}
           {quote.data && rooms.length > 0 && <QuoteSummary q={payLater ? { ...quote.data.data, deposit_required: '0' } : quote.data.data} />}
           {!existing && lookups.data?.pay_later && (
-            <label className="flex min-h-touch items-start gap-2 text-[13px]">
-              <input type="checkbox" className="mt-0.5 size-4 accent-accent" checked={payLater} onChange={(e) => setPayLater(e.target.checked)} />
+            <label className="flex min-h-touch items-start gap-2 text-sm">
+              <input type="checkbox" className="mt-0.5 size-4" checked={payLater} onChange={(e) => setPayLater(e.target.checked)} />
               <span className="flex flex-col">
                 {t('payLater.option')}
                 <span className="text-xs text-muted">{t('payLater.bookingHint')}</span>
@@ -370,12 +371,12 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
 function Stepper({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (v: number) => void }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-[13px] font-medium">{label}</span>
-      <div className="flex items-center rounded-lg ring-1 ring-ring">
+      <span className="text-sm font-medium">{label}</span>
+      <div className="flex items-center rounded-lg border">
         <button type="button" aria-label={`${label} −`} disabled={value <= min} onClick={() => onChange(value - 1)} className="flex size-touch items-center justify-center text-icon hover:text-text disabled:opacity-40">
           <MinusIcon aria-hidden className="size-4" />
         </button>
-        <span className="w-6 text-center text-[13px] tabular-nums" aria-live="polite">
+        <span className="w-6 text-center text-sm tabular-nums" aria-live="polite">
           {value}
         </span>
         <button type="button" aria-label={`${label} +`} disabled={value >= max} onClick={() => onChange(value + 1)} className="flex size-touch items-center justify-center text-icon hover:text-text disabled:opacity-40">
@@ -390,7 +391,7 @@ export function QuoteSummary({ q }: { q: { currency: string; rooms: { room_type:
   const { t } = useTranslation()
   const c = q.currency
   return (
-    <div className="flex flex-col gap-2 text-[13px]">
+    <div className="flex flex-col gap-2 text-sm">
       {q.rooms.map((r, i) => (
         <details key={i} className="group rounded-lg bg-sunken px-3 py-2">
           <summary className="flex cursor-pointer list-none justify-between gap-2">
@@ -444,7 +445,7 @@ export function GuestPicker({ value, onChange }: { value: Guest | null; onChange
   if (value) {
     return (
       <div className="flex items-center justify-between gap-3 rounded-lg bg-sunken px-3 py-2">
-        <span className="flex flex-col text-[13px]">
+        <span className="flex flex-col text-sm">
           <span className="font-medium">{value.full_name}</span>
           <span className="text-xs text-muted">{[value.phone, value.id_number].filter(Boolean).join(' · ')}</span>
         </span>
@@ -475,7 +476,7 @@ export function GuestPicker({ value, onChange }: { value: Guest | null; onChange
           placeholder={t('guests.search')}
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          className="min-h-touch flex-1 rounded-lg bg-surface px-3 text-[13px] shadow-sm ring-1 ring-ring outline-none focus:ring-2 focus:ring-accent"
+          className={cn(inputClass, 'w-auto flex-1')}
         />
         {can('guests.create_edit') && (
           <Button variant="secondary" onClick={() => setAdding(true)}>
@@ -485,14 +486,14 @@ export function GuestPicker({ value, onChange }: { value: Guest | null; onChange
         )}
       </div>
       {search.length >= 2 && (
-        <ul className="flex flex-col divide-y divide-border rounded-lg ring-1 ring-ring">
+        <ul className="flex flex-col divide-y divide-border rounded-lg border">
           {results.data?.data.map((g) => (
             <li key={g.id}>
               <button
                 type="button"
                 disabled={g.is_blacklisted}
                 onClick={() => onChange(g)}
-                className="flex min-h-touch w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-[13px] hover:bg-sunken disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex min-h-touch w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-sm hover:bg-sunken disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <span className="flex flex-col">
                   <span className="font-medium">{g.full_name}</span>
@@ -502,7 +503,7 @@ export function GuestPicker({ value, onChange }: { value: Guest | null; onChange
               </button>
             </li>
           ))}
-          {results.data?.data.length === 0 && <li className="px-3 py-2 text-[13px] text-muted">{t('guests.noMatch')}</li>}
+          {results.data?.data.length === 0 && <li className="px-3 py-2 text-sm text-muted">{t('guests.noMatch')}</li>}
         </ul>
       )}
     </div>

@@ -12,7 +12,7 @@
 | `app/serviceWorker.ts` | Offline support (read-only copy, see below) |
 | `components/layout/` | App shell (shadcn-admin layout): `AppShell` (SidebarProvider + inset), `AppSidebar` (menu groups from `app/navigation.ts`, `BranchSwitcher` at the top, `NavUser` at the bottom), `Header` (menu button, `Search` → lazy `CommandMenu` with cmdk, `AlertBell`, `ThemeSwitch`, `ProfileDropdown`), `ScreenLock`, banners |
 | `components/shadcn/` | shadcn primitives from the template (Radix UI + cmdk): sidebar, button, dropdown menu, popover, tooltip, dialog, sheet, command, separator. Class names translated to our tokens (see its README) |
-| `components/ui/` | The UI kit: `Button`, `Card`, `Field`, `Select`, `Tabs`, `Alert`, `Badge`, `PageHeader`, `DataTable` (every list: sort, 25/50/100 rows, hide columns, Excel, phone cards; the header scrolls with the rows), `DateRangeFilter`, `LoadFailed` (a screen whose data did not load shows "not found" / "not allowed" / "could not load" + Try again, never an empty page; `DataTable` takes `error` + `onRetry` for the same on lists), `ResourceList`, `SmartHints`, `StatTile`… |
+| `components/ui/` | The UI kit (shadcn-admin look, same props as before): `Button`, `Card`, `Field`, `Select` (+ `SelectBox` for selects without a label), `formStyles.ts` (template input / select / label classes for raw fields), `Tabs`, `Alert`, `Badge`, `PageHeader`, `DataTable` (every list: sort, 25/50/100 rows, hide columns, Excel, phone cards; the header scrolls with the rows), `DateRangeFilter`, `LoadFailed` (a screen whose data did not load shows "not found" / "not allowed" / "could not load" + Try again, never an empty page; `DataTable` takes `error` + `onRetry` for the same on lists), `ResourceList`, `SmartHints`, `StatTile`… |
 | `components/billing`, `payments`, `guests`, `print`, `support` | Pieces shared by several screens (add charge, payment proof, ID photo, print header, support chat) |
 | `pages/<area>/` | Screens: `desk/` (room board, walk-in, front desk mode), `reservations/`, `guests/`, `billing/`, `modules/` (cashier, housekeeping, shifts, attendance), `reports/`, `settings/`, `setup/`, `team/`, `admin/` (Super Admin), `help/`, `security/`, `approvals/`, `subscription/` |
 | `lib/` | Data hooks and helpers per area (below) |
@@ -22,7 +22,7 @@
 
 ## Layout and shortcuts
 
-- **Sidebar** (template, `variant="inset"`, `collapsible="icon"`): 16rem wide, 3rem when collapsed (3.75rem on touch screens so the 44px buttons fit), a drawer below 768px. Collapsed or not is saved on the device (`hms-sidebar-collapsed`). Collapsed items show their name as a tooltip.
+- **Sidebar** (template, `variant="inset"`, `collapsible="icon"`): 16rem wide, 3rem when collapsed (3.75rem on touch screens so the 44px buttons fit), a drawer below 768px. Collapsed or not is saved on the device (`hms-sidebar-collapsed`); with no saved choice, tablet widths (768–1023px) start collapsed. Collapsed items show their name as a tooltip.
 - **Shortcuts**: Ctrl/⌘+K or `/` opens the command menu (search, pages, theme); Ctrl/⌘+B opens/closes the sidebar; Tab from the top shows "Skip to main content".
 - **Icons**: Lucide, imported one by one (`import { House } from 'lucide-react'`) so only the used icons are downloaded. Heroicons are still used by screens not restyled yet (MIGRATION_PLAN P3–P16).
 - **Speed**: cmdk and the command menu are loaded only when the menu is first opened (or the search button is hovered).

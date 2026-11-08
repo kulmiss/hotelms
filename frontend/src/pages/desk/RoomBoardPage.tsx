@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { ArrowRightEndOnRectangleIcon, ArrowRightStartOnRectangleIcon, CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, UserPlusIcon } from '@heroicons/react/24/outline'
+import { CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, LogInIcon, LogOutIcon, PlusIcon, UserPlusIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { QuickCharge } from '@/components/billing/QuickCharge'
 import { Badge } from '@/components/ui/Badge'
@@ -10,7 +10,8 @@ import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { LoadFailed } from '@/components/ui/LoadFailed'
-import { Select } from '@/components/ui/Select'
+import { Select, SelectBox } from '@/components/ui/Select'
+import { inputClass } from '@/components/ui/formStyles'
 import { Tabs } from '@/components/ui/Tabs'
 import { ApiError } from '@/lib/api'
 import { useMe } from '@/lib/auth'
@@ -127,7 +128,7 @@ function Board({ branchId }: { branchId: number | null }) {
                   type="button"
                   onClick={() => setOpen(r)}
                   aria-label={`${t('reservations.room')} ${r.number}, ${t(`roomStatus.${r.status}`)}`}
-                  className={cn('flex min-h-24 flex-col items-start gap-1 rounded-xl p-3 text-left ring-1 transition duration-75 hover:shadow-md', ROOM_TONES[r.status], selected?.id === r.id && 'ring-2 ring-accent')}
+                  className={cn('flex min-h-24 flex-col items-start gap-1 rounded-xl border p-3 text-left shadow-xs transition-shadow hover:shadow-md', ROOM_TONES[r.status], selected?.id === r.id && 'ring-2 ring-primary ring-offset-2 ring-offset-background')}
                 >
                   <span className="flex w-full items-center justify-between gap-2">
                     <span className="text-base font-semibold">{r.number}</span>
@@ -140,9 +141,9 @@ function Board({ branchId }: { branchId: number | null }) {
                       <span className={cn('size-2.5 rounded-full', ROOM_DOTS[r.status])} />
                     </span>
                   </span>
-                  <span className="text-[11px] text-muted">{r.room_type}</span>
+                  <span className="text-xs text-muted">{r.room_type}</span>
                   {r.stay ? (
-                    <span className="mt-auto flex flex-col text-[11px]">
+                    <span className="mt-auto flex flex-col text-xs">
                       <span className="truncate font-medium">{r.stay.guest}</span>
                       <span className={r.stay.overdue ? 'font-semibold text-danger-text' : 'text-muted'}>
                         {r.stay.open_stay ? t('openStay.badge') : localDate(r.stay.check_out_at) === day
@@ -151,12 +152,12 @@ function Board({ branchId }: { branchId: number | null }) {
                       </span>
                     </span>
                   ) : r.arriving ? (
-                    <span className="mt-auto text-[11px] font-medium text-accent-text">{t('desk.arrivingToday', { guest: r.arriving.guest })}</span>
+                    <span className="mt-auto text-xs font-medium text-accent-text">{t('desk.arrivingToday', { guest: r.arriving.guest })}</span>
                   ) : (
-                    <span className="mt-auto text-[11px] text-muted">{t(`roomStatus.${r.status}`)}</span>
+                    <span className="mt-auto text-xs text-muted">{t(`roomStatus.${r.status}`)}</span>
                   )}
                   {!r.arriving && r.next_booking && (
-                    <span className="text-[11px] text-accent-text">{t('desk.bookedFrom', { date: date(localDate(r.next_booking.check_in_at)) })}</span>
+                    <span className="text-xs text-accent-text">{t('desk.bookedFrom', { date: date(localDate(r.next_booking.check_in_at)) })}</span>
                   )}
                 </button>
               ))}
@@ -165,7 +166,7 @@ function Board({ branchId }: { branchId: number | null }) {
       ))}
       {board.data && rooms.length === 0 && <p className="text-muted">{t('reservations.noRooms')}</p>}
       {rooms.length > 0 && shown.length === 0 && (
-        <p className="text-[13px] text-muted">
+        <p className="text-sm text-muted">
           {t('desk.filter.none')}{' '}
           <button type="button" className="font-medium text-accent-text underline" onClick={() => setFilter({ ...NO_FILTER, sort: filter.sort })}>
             {t('desk.filter.clear')}
@@ -183,8 +184,9 @@ function RoomFilterBar({ rooms, counts, day, filter, setFilter }: { rooms: Board
   const floors = [...new Set(rooms.map((r) => r.floor ?? ''))].filter(Boolean)
   const chip = (active: boolean) =>
     cn(
-      'flex min-h-touch items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium ring-1 transition duration-75',
-      active ? 'bg-accent/15 text-accent-text ring-accent' : 'bg-surface text-muted ring-ring hover:bg-sunken hover:text-text',
+      // The template's filter buttons (outline, dashed until chosen).
+      'flex h-8 items-center gap-1.5 rounded-md border px-3 text-sm font-medium shadow-xs transition-colors pointer-coarse:h-11',
+      active ? 'border-primary bg-primary/10 text-text' : 'border-dashed bg-background text-muted hover:bg-sunken hover:text-text dark:bg-input/30',
     )
   const toggleStatus = (s: string) =>
     setFilter({ ...filter, statuses: filter.statuses.includes(s) ? filter.statuses.filter((x) => x !== s) : [...filter.statuses, s] })
@@ -214,37 +216,37 @@ function RoomFilterBar({ rooms, counts, day, filter, setFilter }: { rooms: Board
             onChange={(e) => setFilter({ ...filter, q: e.target.value })}
             placeholder={t('desk.filter.search')}
             aria-label={t('desk.filter.search')}
-            className="min-h-touch w-44 rounded-lg bg-surface px-3 text-[13px] ring-1 ring-ring-strong outline-none focus:ring-2 focus:ring-accent"
+            className={cn(inputClass, 'w-44')}
           />
           {types.length > 1 && (
-            <select aria-label={t('desk.filter.type')} value={filter.typeId ?? ''} onChange={(e) => setFilter({ ...filter, typeId: e.target.value ? Number(e.target.value) : null })} className="min-h-touch rounded-lg bg-surface px-3 text-[13px] ring-1 ring-ring-strong">
+            <SelectBox aria-label={t('desk.filter.type')} value={filter.typeId ?? ''} onChange={(e) => setFilter({ ...filter, typeId: e.target.value ? Number(e.target.value) : null })} className="w-auto">
               <option value="">{t('desk.filter.allTypes')}</option>
               {types.map(([id, name]) => (
                 <option key={id} value={id}>
                   {name}
                 </option>
               ))}
-            </select>
+            </SelectBox>
           )}
           {floors.length > 1 && (
-            <select aria-label={t('desk.filter.floor')} value={filter.floor ?? ''} onChange={(e) => setFilter({ ...filter, floor: e.target.value || null })} className="min-h-touch rounded-lg bg-surface px-3 text-[13px] ring-1 ring-ring-strong">
+            <SelectBox aria-label={t('desk.filter.floor')} value={filter.floor ?? ''} onChange={(e) => setFilter({ ...filter, floor: e.target.value || null })} className="w-auto">
               <option value="">{t('desk.filter.allFloors')}</option>
               {floors.map((f) => (
                 <option key={f} value={f}>
                   {t('desk.floor', { floor: f })}
                 </option>
               ))}
-            </select>
+            </SelectBox>
           )}
-          <select aria-label={t('desk.filter.sort')} value={filter.sort} onChange={(e) => setFilter({ ...filter, sort: e.target.value as RoomFilter['sort'] })} className="min-h-touch rounded-lg bg-surface px-3 text-[13px] ring-1 ring-ring-strong">
+          <SelectBox aria-label={t('desk.filter.sort')} value={filter.sort} onChange={(e) => setFilter({ ...filter, sort: e.target.value as RoomFilter['sort'] })} className="w-auto">
             {ROOM_SORTS.map((k) => (
               <option key={k} value={k}>
                 {t(`desk.filter.sort_${k}`)}
               </option>
             ))}
-          </select>
+          </SelectBox>
           {isFiltered(filter) && (
-            <button type="button" onClick={() => setFilter({ ...NO_FILTER, sort: filter.sort })} className="min-h-touch rounded-lg px-3 text-[13px] font-medium text-accent-text hover:bg-sunken">
+            <button type="button" onClick={() => setFilter({ ...NO_FILTER, sort: filter.sort })} className="min-h-touch rounded-md px-3 text-sm font-medium text-text hover:bg-sunken">
               {t('desk.filter.clear')}
             </button>
           )}
@@ -280,7 +282,7 @@ function RoomPanel({ room, branchId, readOnly = false, onClose }: { room: BoardR
           <h2 className="text-base font-semibold">
             {t('reservations.room')} {room.number}
           </h2>
-          <span className="text-[13px] text-muted">
+          <span className="text-sm text-muted">
             {room.room_type} · {t(`roomStatus.${room.status}`)}
           </span>
         </div>
@@ -297,7 +299,7 @@ function RoomPanel({ room, branchId, readOnly = false, onClose }: { room: BoardR
         </div>
       </div>
       {room.stay && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-sunken px-3 py-2 text-[13px]">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-sunken px-3 py-2 text-sm">
           <span className="flex flex-col">
             <span className="font-medium">{room.stay.guest}</span>
             <span className="text-xs text-muted">
@@ -309,7 +311,7 @@ function RoomPanel({ room, branchId, readOnly = false, onClose }: { room: BoardR
             {!readOnly && <PlusNight id={room.stay.reservation_id} checkOut={room.stay.check_out_at} stayType={room.stay.stay_type} openStay={room.stay.open_stay} />}
             {!readOnly && can('frontdesk.check_out') && (
               <Link to={`/reservations/${room.stay.reservation_id}?action=check-out`} className={buttonClass('secondary')}>
-                <ArrowRightStartOnRectangleIcon aria-hidden className="size-4" />
+                <LogOutIcon aria-hidden className="size-4" />
                 {t('desk.checkOut')}
               </Link>
             )}
@@ -321,16 +323,16 @@ function RoomPanel({ room, branchId, readOnly = false, onClose }: { room: BoardR
       )}
       {room.stay && !readOnly && can('charges.room') && <RoomCharges roomId={room.id} roomNumber={room.number} branchId={branchId} />}
       {!room.stay && room.arriving && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-accent-soft px-3 py-2 text-[13px]">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-accent-soft px-3 py-2 text-sm">
           <span>{t('desk.arrivingToday', { guest: room.arriving.guest })}</span>
           <Link to={`/reservations/${room.arriving.reservation_id}?action=check-in`} className={buttonClass('primary')}>
-            <ArrowRightEndOnRectangleIcon aria-hidden className="size-4" />
+            <LogInIcon aria-hidden className="size-4" />
             {t('desk.checkIn')}
           </Link>
         </div>
       )}
       {room.next_booking && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-sunken px-3 py-2 text-[13px]">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-sunken px-3 py-2 text-sm">
           <span>
             {t('desk.nextBooking', { from: date(localDate(room.next_booking.check_in_at)), to: date(localDate(room.next_booking.check_out_at)), guest: room.next_booking.guest ?? '' })}
           </span>
@@ -339,7 +341,7 @@ function RoomPanel({ room, branchId, readOnly = false, onClose }: { room: BoardR
           </Link>
         </div>
       )}
-      {room.notes && <p className="text-[13px] text-muted">{room.notes}</p>}
+      {room.notes && <p className="text-sm text-muted">{room.notes}</p>}
       {error && <Alert>{error}</Alert>}
       {next.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -360,17 +362,17 @@ function TodayList({ rows, kind, loading }: { rows: TodayRow[]; kind: Exclude<Ta
   const can = useCan()
   return (
     <div className="flex flex-col gap-2">
-      {kind === 'departures' && rows.length > 0 && <p className="text-[13px] text-muted">{t('desk.stillStaying')}</p>}
+      {kind === 'departures' && rows.length > 0 && <p className="text-sm text-muted">{t('desk.stillStaying')}</p>}
       <Card className="overflow-x-auto p-0">
-        <table className="w-full min-w-[760px] text-left text-[13px]">
-          <thead className="bg-sunken">
+        <table className="w-full min-w-[760px] text-left text-sm">
+          <thead>
             <tr>
-              <th className="px-4 py-2.5 font-semibold">{t('reservations.guest')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('reservations.rooms')}</th>
-              <th className="px-4 py-2.5 font-semibold">{kind === 'arrivals' ? t('reservations.form.checkIn') : t('reservations.form.checkOut')}</th>
-              <th className="px-4 py-2.5 font-semibold">{t('reservations.status')}</th>
-              <th className="px-4 py-2.5 text-right font-semibold">{t('reservations.balance')}</th>
-              <th className="px-4 py-2.5" />
+              <th className="px-4 h-10 font-medium">{t('reservations.guest')}</th>
+              <th className="px-4 h-10 font-medium">{t('reservations.rooms')}</th>
+              <th className="px-4 h-10 font-medium">{kind === 'arrivals' ? t('reservations.form.checkIn') : t('reservations.form.checkOut')}</th>
+              <th className="px-4 h-10 font-medium">{t('reservations.status')}</th>
+              <th className="px-4 h-10 text-right font-medium">{t('reservations.balance')}</th>
+              <th className="px-4 h-10" />
             </tr>
           </thead>
           <tbody>
@@ -464,7 +466,7 @@ function RoomCharges({ roomId, roomNumber, branchId }: { roomId: number; roomNum
   const quick = useQuickCharges(branchId)
   return (
     <div className="flex flex-col gap-2 border-t border-border pt-3">
-      <h3 className="text-[13px] font-semibold">{t('quickCharge.onRoom')}</h3>
+      <h3 className="text-sm font-semibold">{t('quickCharge.onRoom')}</h3>
       <QuickCharge key={roomId} roomId={roomId} roomNumber={roomNumber} buttons={quick.data?.buttons ?? []} />
     </div>
   )

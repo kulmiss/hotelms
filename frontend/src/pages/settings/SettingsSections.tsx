@@ -1,6 +1,6 @@
 import { useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { PhotoIcon } from '@heroicons/react/24/outline'
+import { ImageIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
@@ -47,7 +47,7 @@ function SectionForm({
     >
       <div className="flex flex-col gap-1">
         <h2 className="text-base font-semibold">{title}</h2>
-        {description && <p className="max-w-prose text-[13px] text-muted">{description}</p>}
+        {description && <p className="max-w-prose text-sm text-muted">{description}</p>}
       </div>
       <Card className="flex flex-col gap-4">
         {saved && <Alert tone="ok">{t('common.saved')}</Alert>}
@@ -100,8 +100,8 @@ function ProfileForm({ initial }: { initial: Profile }) {
     <div className="flex flex-col gap-6">
       <SectionForm title={t('settings.sections.profile')} description={t('settings.profile.help')} onSubmit={() => save.mutate(f)} saving={save.isPending} saved={save.isSuccess} error={save.error}>
         <div className="flex flex-wrap items-center gap-4">
-          <span className="flex size-16 items-center justify-center overflow-hidden rounded-xl bg-sunken ring-1 ring-ring">
-            {initial.logo_url ? <img src={initial.logo_url} alt="" className="size-full object-contain p-1.5" /> : <PhotoIcon aria-hidden className="size-6 text-icon" />}
+          <span className="flex size-16 items-center justify-center overflow-hidden rounded-xl bg-sunken border">
+            {initial.logo_url ? <img src={initial.logo_url} alt="" className="size-full object-contain p-1.5" /> : <ImageIcon aria-hidden className="size-6 text-icon" />}
           </span>
           <input ref={input} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" aria-label={t('settings.profile.uploadLogo')} onChange={(e) => e.target.files?.[0] && logo.mutate(e.target.files[0])} />
           <Button variant="secondary" disabled={logo.isPending} onClick={() => input.current?.click()}>
@@ -128,7 +128,7 @@ function ProfileForm({ initial }: { initial: Profile }) {
           </Select>
         </div>
         {/* Live invoice header preview */}
-        <div className="flex flex-col gap-1 rounded-lg bg-sunken p-4 text-[13px]">
+        <div className="flex flex-col gap-1 rounded-lg bg-sunken p-4 text-sm">
           <span className="text-xs text-muted">{t('admin.settings.preview')}</span>
           <span className="text-sm font-semibold">{f.legal_name || f.name}</span>
           <span className="text-muted">{[f.address, f.city].filter(Boolean).join(', ')}</span>
@@ -216,7 +216,7 @@ function TaxExample() {
   const base = 100000
   const added = active.filter((x) => !x.is_inclusive).reduce((sum, x) => sum + Math.round((base * Number(x.rate) * 100) / 10000), 0)
   return (
-    <p className="rounded-lg bg-sunken px-4 py-3 text-[13px] text-muted">
+    <p className="rounded-lg bg-sunken px-4 py-3 text-sm text-muted">
       {t('settings.taxes.example', { price: money('1000.00'), total: money(((base + added) / 100).toFixed(2)), names: active.map((x) => x.name).join(', ') })}
     </p>
   )
@@ -402,8 +402,8 @@ function BookingRulesForm({ initial }: { initial: BookingRules }) {
   return (
     <SectionForm title={t('settings.sections.booking-rules')} description={t('settings.rules.help')} onSubmit={() => save.mutate(f)} saving={save.isPending} saved={save.isSuccess} error={save.error}>
       <h3 className="text-sm font-semibold">{t('settings.rules.deposit')}</h3>
-      <label className="flex min-h-touch items-center gap-3 text-[13px]">
-        <input type="checkbox" className="size-4 rounded accent-accent" checked={!!f.deposit_required} onChange={(e) => set('deposit_required', e.target.checked)} />
+      <label className="flex min-h-touch items-center gap-3 text-sm">
+        <input type="checkbox" checked={!!f.deposit_required} onChange={(e) => set('deposit_required', e.target.checked)} />
         {t('settings.rules.depositRequired')}
       </label>
       <div className="grid gap-4 sm:grid-cols-3">
@@ -419,8 +419,8 @@ function BookingRulesForm({ initial }: { initial: BookingRules }) {
         <option value="full">{t('settings.rules.walkInFull')}</option>
         <option value="deposit">{t('settings.rules.walkInDeposit')}</option>
       </Select>
-      <label className="flex min-h-touch items-start gap-3 text-[13px]">
-        <input type="checkbox" className="mt-0.5 size-4 rounded accent-accent" checked={!!f.allow_pay_later} onChange={(e) => set('allow_pay_later', e.target.checked)} />
+      <label className="flex min-h-touch items-start gap-3 text-sm">
+        <input type="checkbox" className="mt-0.5 size-4 rounded" checked={!!f.allow_pay_later} onChange={(e) => set('allow_pay_later', e.target.checked)} />
         <span className="flex flex-col">
           {t('settings.rules.payLater')}
           <span className="text-xs text-muted">{t('settings.rules.payLaterHint')}</span>
@@ -428,8 +428,8 @@ function BookingRulesForm({ initial }: { initial: BookingRules }) {
       </label>
 
       <h3 className="pt-2 text-sm font-semibold">{t('settings.rules.idPhoto')}</h3>
-      <label className="flex min-h-touch items-start gap-3 text-[13px]">
-        <input type="checkbox" className="mt-0.5 size-4 rounded accent-accent" checked={!!f.id_photo_enabled} onChange={(e) => set('id_photo_enabled', e.target.checked)} />
+      <label className="flex min-h-touch items-start gap-3 text-sm">
+        <input type="checkbox" className="mt-0.5 size-4 rounded" checked={!!f.id_photo_enabled} onChange={(e) => set('id_photo_enabled', e.target.checked)} />
         <span className="flex flex-col">
           {t('settings.rules.idPhotoEnabled')}
           <span className="text-xs text-muted">{t('settings.rules.idPhotoHint')}</span>
@@ -437,8 +437,8 @@ function BookingRulesForm({ initial }: { initial: BookingRules }) {
       </label>
       {!!f.id_photo_enabled && (
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="flex min-h-touch items-center gap-3 text-[13px]">
-            <input type="checkbox" className="size-4 rounded accent-accent" checked={!!f.id_photo_required} onChange={(e) => set('id_photo_required', e.target.checked)} />
+          <label className="flex min-h-touch items-center gap-3 text-sm">
+            <input type="checkbox" checked={!!f.id_photo_required} onChange={(e) => set('id_photo_required', e.target.checked)} />
             {t('settings.rules.idPhotoRequired')}
           </label>
           <Select label={t('settings.rules.idPhotoKeep')} value={val('id_photo_keep_months')} onChange={(e) => setF({ ...f, id_photo_keep_months: Number(e.target.value) })}>
@@ -490,14 +490,14 @@ export function ModulesSettings() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <h2 className="text-base font-semibold">{t('settings.sections.modules')}</h2>
-        <p className="max-w-prose text-[13px] text-muted">{t('settings.modules.help')}</p>
+        <p className="max-w-prose text-sm text-muted">{t('settings.modules.help')}</p>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         {q.data?.data.map((m) => (
           <Card key={m.module} className="flex items-start justify-between gap-4">
             <div className="flex flex-col gap-1">
               <span className="text-sm font-semibold">{t(`modules.${m.module}`)}</span>
-              <span className="text-[13px] text-muted">{t(`settings.modules.about.${m.module}`)}</span>
+              <span className="text-sm text-muted">{t(`settings.modules.about.${m.module}`)}</span>
               {!m.available && <span className="text-xs text-warn-text">{t('settings.modules.inPlans', { plans: m.plans.join(', ') || '—' })}</span>}
             </div>
             <label className="flex min-h-touch items-center">
@@ -510,7 +510,8 @@ export function ModulesSettings() {
                 disabled={!m.available || save.isPending}
                 onChange={(e) => save.mutate({ modules: { [m.module]: e.target.checked } })}
               />
-              <span className="relative h-6 w-11 rounded-full bg-icon/40 transition peer-checked:bg-accent peer-disabled:opacity-50 peer-focus-visible:ring-2 peer-focus-visible:ring-accent after:absolute after:top-0.5 after:left-0.5 after:size-5 after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-5" />
+              {/* The template's switch: small track, brand colour when on. */}
+              <span className="relative inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent bg-input shadow-xs transition-all peer-checked:bg-primary peer-disabled:opacity-50 peer-focus-visible:ring-[3px] peer-focus-visible:ring-focus/50 after:absolute after:left-px after:size-4 after:rounded-full after:bg-background after:transition-transform peer-checked:after:translate-x-[calc(100%-2px)] dark:bg-input/80 dark:after:bg-text dark:peer-checked:after:bg-primary-foreground" />
             </label>
           </Card>
         ))}
@@ -532,14 +533,14 @@ export function AttendanceSettings() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <h2 className="text-base font-semibold">{t('settings.sections.attendance')}</h2>
-        <p className="max-w-prose text-[13px] text-muted">{t('settings.attendance.help')}</p>
+        <p className="max-w-prose text-sm text-muted">{t('settings.attendance.help')}</p>
       </div>
       <Card className="flex flex-col gap-2">
         {save.isSuccess && <Alert tone="ok">{t('common.saved')}</Alert>}
         {error && <Alert>{error}</Alert>}
         {['self', 'kiosk_pin', 'manual'].map((m) => (
-          <label key={m} className="flex min-h-touch items-start gap-3 text-[13px]">
-            <input type="checkbox" className="mt-0.5 size-4 rounded accent-accent" checked={methods.includes(m)} disabled={save.isPending} onChange={(e) => toggle(m, e.target.checked)} />
+          <label key={m} className="flex min-h-touch items-start gap-3 text-sm">
+            <input type="checkbox" className="mt-0.5 size-4 rounded" checked={methods.includes(m)} disabled={save.isPending} onChange={(e) => toggle(m, e.target.checked)} />
             <span className="flex flex-col">
               <span className="font-medium">{t(`settings.attendance.${m}`)}</span>
               <span className="text-muted">{t(`settings.attendance.${m}Hint`)}</span>
@@ -567,14 +568,14 @@ export function SecuritySettings() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <h2 className="text-base font-semibold">{t('settings.sections.security')}</h2>
-        <p className="max-w-prose text-[13px] text-muted">{t('settings.security.help')}</p>
+        <p className="max-w-prose text-sm text-muted">{t('settings.security.help')}</p>
       </div>
       <Card className="flex flex-col gap-3">
         {save.isSuccess && <Alert tone="ok">{t('common.saved')}</Alert>}
         {error && <Alert>{error}</Alert>}
         {(['require_two_factor_staff', 'approved_devices_only'] as const).map((k) => (
-          <label key={k} className="flex min-h-touch items-start gap-3 text-[13px]">
-            <input type="checkbox" className="mt-0.5 size-4 rounded accent-accent" checked={v[k]} disabled={save.isPending} onChange={(e) => save.mutate({ ...v, [k]: e.target.checked })} />
+          <label key={k} className="flex min-h-touch items-start gap-3 text-sm">
+            <input type="checkbox" className="mt-0.5 size-4 rounded" checked={v[k]} disabled={save.isPending} onChange={(e) => save.mutate({ ...v, [k]: e.target.checked })} />
             <span className="flex flex-col">
               <span className="font-medium">{t(`settings.security.${k}`)}</span>
               <span className="text-muted">{t(`settings.security.${k}Hint`)}</span>
@@ -595,7 +596,7 @@ export function SecuritySettings() {
         <Card className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-col gap-1">
             <h3 className="font-semibold">{t('settings.security.exportTitle')}</h3>
-            <p className="max-w-prose text-[13px] text-muted">{t('settings.security.exportHelp')}</p>
+            <p className="max-w-prose text-sm text-muted">{t('settings.security.exportHelp')}</p>
           </div>
           <a className={buttonClass('secondary')} href={apiUrl('/settings/export')} download>
             {t('settings.security.export')}
@@ -626,7 +627,7 @@ export function SubscriptionSettings() {
   if (!s) return null
   const meter = (label: string, used: number, max: number | null) => (
     <div className="flex flex-col gap-1.5">
-      <div className="flex justify-between text-[13px]">
+      <div className="flex justify-between text-sm">
         <span className="font-medium">{label}</span>
         <span className="text-muted">{max === null ? t('settings.subscription.unlimited', { used }) : `${used} / ${max}`}</span>
       </div>
@@ -639,10 +640,10 @@ export function SubscriptionSettings() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <h2 className="text-base font-semibold">{t('settings.sections.subscription')}</h2>
-        <p className="text-[13px] text-muted">{t('settings.subscription.help')}</p>
+        <p className="text-sm text-muted">{t('settings.subscription.help')}</p>
       </div>
       <Card className="grid gap-6 md:grid-cols-2">
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[13px]">
+        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
           <dt className="text-muted">{t('admin.hotels.plan')}</dt>
           <dd className="font-medium">{s.plan?.name ?? '—'}</dd>
           <dt className="text-muted">{t('admin.hotels.status')}</dt>

@@ -1,7 +1,7 @@
 import { useState, type ComponentType, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { CheckIcon, ForwardIcon } from '@heroicons/react/20/solid'
+import { CheckIcon, FastForwardIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -115,14 +115,14 @@ function Wizard({ setup }: { setup: Setup }) {
                   onClick={() => go(i)}
                   aria-current={i === index ? 'step' : undefined}
                   className={cn(
-                    'flex min-h-touch w-full items-center gap-3 rounded-lg px-2 text-left text-[13px] transition duration-75',
+                    'flex min-h-touch w-full items-center gap-3 rounded-lg px-2 text-left text-sm transition duration-75',
                     i === index ? 'bg-sunken font-semibold text-text' : 'text-muted hover:bg-sunken hover:text-text',
                     locked && 'cursor-not-allowed opacity-50 hover:bg-transparent',
                   )}
                 >
                   <StepDot state={s} n={i + 1} active={i === index} />
                   <span className="flex-1">{t(`setup.steps.${k}.title`)}</span>
-                  {!setup.steps[i]?.required && <span className="text-[11px] text-muted">{t('setup.optional')}</span>}
+                  {!setup.steps[i]?.required && <span className="text-xs text-muted">{t('setup.optional')}</span>}
                 </button>
               </li>
             )
@@ -192,13 +192,13 @@ function StepDot({ state, n, active }: { state: StepState; n: number; active: bo
   }
   if (state === 'skipped') {
     return (
-      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-sunken text-muted ring-1 ring-ring">
-        <ForwardIcon aria-hidden className="size-3" />
+      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-sunken text-muted border">
+        <FastForwardIcon aria-hidden className="size-3" />
       </span>
     )
   }
   return (
-    <span className={cn('flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ring-1', active ? 'text-accent-text ring-accent' : 'text-muted ring-ring')}>
+    <span className={cn('flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold', active ? 'border-primary text-accent-text' : 'text-muted')}>
       {n}
     </span>
   )
@@ -209,7 +209,7 @@ function StepBody({ k }: { k: SetupStepKey }) {
   const Content = CONTENT[k]
   return (
     <>
-      <p className="max-w-prose text-[13px] text-muted">{t(`setup.steps.${k}.help`)}</p>
+      <p className="max-w-prose text-sm text-muted">{t(`setup.steps.${k}.help`)}</p>
       <Content />
     </>
   )
@@ -239,11 +239,11 @@ function Welcome({ setup, onStart }: { setup: Setup; onStart: () => void }) {
           <Card key={p} className="flex flex-col gap-1.5">
             <span className="text-xs font-semibold text-accent-text">{i + 1}</span>
             <span className="text-sm font-semibold">{t(`setup.parts.${p}.title`)}</span>
-            <span className="text-[13px] text-muted">{t(`setup.parts.${p}.text`)}</span>
+            <span className="text-sm text-muted">{t(`setup.parts.${p}.text`)}</span>
           </Card>
         ))}
       </div>
-      <p className="text-[13px] text-muted">{t('setup.duration')}</p>
+      <p className="text-sm text-muted">{t('setup.duration')}</p>
       <div>
         <Button size="lg" onClick={onStart}>
           {t('setup.start')}
@@ -403,7 +403,7 @@ function TeamStep() {
               </option>
             ))}
           </Select>
-          {role?.description && <p className="text-[13px] text-muted sm:col-span-2">{role.description}</p>}
+          {role?.description && <p className="text-sm text-muted sm:col-span-2">{role.description}</p>}
           <div className="flex justify-end sm:col-span-2">
             <Button type="submit" disabled={save.isPending || !f.name || !f.email}>
               {t('setup.team.invite')}
@@ -414,8 +414,8 @@ function TeamStep() {
       {created && <TempPassword password={created.temporary_password} emailSent={created.email_sent} email={created.data.email} />}
       {others.length > 0 && (
         <Card className="flex flex-col gap-2">
-          <span className="text-[13px] font-medium">{t('setup.team.invited', { count: others.length })}</span>
-          <ul className="flex flex-col divide-y divide-border text-[13px]">
+          <span className="text-sm font-medium">{t('setup.team.invited', { count: others.length })}</span>
+          <ul className="flex flex-col divide-y divide-border text-sm">
             {others.map((s) => (
               <li key={s.id} className="flex justify-between gap-3 py-2">
                 <span>
@@ -438,14 +438,14 @@ function Review({ setup, onEdit }: { setup: Setup; onEdit: (i: number) => void }
   return (
     <div className="flex flex-col gap-4">
       <h2 className="text-base font-semibold">{t('setup.steps.review.title')}</h2>
-      <p className="max-w-prose text-[13px] text-muted">{t('setup.steps.review.help')}</p>
+      <p className="max-w-prose text-sm text-muted">{t('setup.steps.review.help')}</p>
       <div className="grid gap-3 sm:grid-cols-2">
         {setup.steps
           .filter((s) => s.key !== 'review')
           .map((s) => (
             <Card key={s.key} className="flex items-center justify-between gap-3 py-3">
               <div className="flex flex-col gap-1">
-                <span className="text-[13px] font-medium">{t(`setup.steps.${s.key}.title`)}</span>
+                <span className="text-sm font-medium">{t(`setup.steps.${s.key}.title`)}</span>
                 {s.state === 'done' && <Badge tone="ok">{t('setup.state.done')}</Badge>}
                 {s.state === 'skipped' && <Badge tone="grey">{t('setup.state.skipped')}</Badge>}
                 {s.state === 'todo' && <Badge tone={s.required ? 'warn' : 'grey'}>{s.required ? t('setup.state.required') : t('setup.state.defaults')}</Badge>}
@@ -474,13 +474,13 @@ function AllSet({ setup }: { setup: Setup }) {
         </span>
         <div className="flex flex-col gap-1.5">
           <h1 className="text-xl font-bold">{t('setup.allSet.title')}</h1>
-          <p className="text-[13px] text-muted">{t('setup.allSet.text', { hotel: setup.hotel.name })}</p>
+          <p className="text-sm text-muted">{t('setup.allSet.text', { hotel: setup.hotel.name })}</p>
         </div>
         <div className="flex flex-wrap justify-center gap-2">
           <Badge tone="ok">{t('setup.allSet.done', { count: done })}</Badge>
           {setup.skipped > 0 && <Badge tone="grey">{t('setup.allSet.skipped', { count: setup.skipped })}</Badge>}
         </div>
-        <ul className="flex w-full flex-col gap-1.5 text-left text-[13px] text-muted">
+        <ul className="flex w-full flex-col gap-1.5 text-left text-sm text-muted">
           {(['booking', 'board', 'settings'] as const).map((k) => (
             <li key={k} className="flex gap-2">
               <CheckIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-accent-text" />

@@ -47,14 +47,14 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-full flex-col items-center justify-center gap-y-6 px-4 py-12">
-      <span className="flex items-center gap-x-2.5 text-lg font-semibold tracking-tight">
-        <BrandMark className="size-9" />
+    <div className="flex min-h-svh flex-col items-center justify-center gap-y-4 px-4 py-8">
+      <span className="mb-2 flex items-center justify-center gap-x-2 text-xl font-medium">
+        <BrandMark className="size-8" />
         {brand.name}
       </span>
-      <Card className="flex w-full max-w-sm flex-col gap-y-6 p-7 animate-page-in motion-reduce:animate-none">
-        <div className="flex flex-col gap-y-2 text-center">
-          <h1 className="text-xl font-semibold tracking-tight">{t('login.title')}</h1>
+      <Card className="flex w-full max-w-[480px] flex-col gap-y-6 p-6 animate-page-in sm:p-8 motion-reduce:animate-none">
+        <div className="flex flex-col gap-y-1.5">
+          <h1 className="text-lg font-semibold tracking-tight">{t('login.title')}</h1>
           <p className="text-sm text-muted">{brand.loginMessage || t('login.subtitle')}</p>
           {demoOver && <Alert tone="info">{t('demo.over')}</Alert>}
         </div>
@@ -84,7 +84,7 @@ export function LoginPage() {
           <label className="flex min-h-touch items-center gap-3 text-sm text-text">
             <input
               type="checkbox"
-              className="size-5 rounded accent-accent"
+              className="size-5 rounded"
               checked={remember}
               onChange={(e) => setRemember(e.target.checked)}
             />
@@ -93,7 +93,7 @@ export function LoginPage() {
           <Button type="submit" size="lg" disabled={login.isPending || !email || !password}>
             {login.isPending ? t('login.signingIn') : t('login.submit')}
           </Button>
-          <Link to="/forgot-password" className="text-center text-sm text-accent-text hover:underline">
+          <Link to="/forgot-password" className="text-center text-sm font-medium text-muted hover:opacity-75">
             {t('login.forgot')}
           </Link>
         </form>
@@ -161,7 +161,7 @@ function TryDemo({ onDone }: { onDone: () => void }) {
   const demo = useDemoLogin()
   return (
     <div className="flex w-full max-w-sm flex-col items-center gap-3 text-center">
-      <span className="text-[13px] text-muted">{t('demo.tryTitle')}</span>
+      <span className="text-sm text-muted">{t('demo.tryTitle')}</span>
       <div className="flex flex-wrap justify-center gap-2">
         {DEMO_ROLES.map((r) => (
           <Button key={r} variant="secondary" disabled={demo.isPending} onClick={() => demo.mutate(r, { onSuccess: onDone })}>

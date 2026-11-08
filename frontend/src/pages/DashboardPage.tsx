@@ -4,15 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { SmartHints } from '@/components/ui/SmartHints'
 import { useSmart } from '@/lib/smart'
-import {
-  ArrowRightEndOnRectangleIcon,
-  ArrowRightStartOnRectangleIcon,
-  BanknotesIcon,
-  ChartPieIcon,
-  ExclamationTriangleIcon,
-  HomeModernIcon,
-  UsersIcon,
-} from '@heroicons/react/24/outline'
+import { BanknoteIcon, BedDoubleIcon, ChartPieIcon, LogInIcon, LogOutIcon, TriangleAlertIcon, UsersIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { buttonClass } from '@/components/ui/Button'
@@ -45,8 +37,8 @@ export function DashboardPage() {
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold">{t('dashboard.title')}</h1>
-          {d && <p className="text-[13px] text-muted">{date(d.date)}</p>}
+          <h1 className="text-2xl font-bold tracking-tight">{t('dashboard.title')}</h1>
+          {d && <p className="text-muted">{date(d.date)}</p>}
         </div>
         {d && branches.length > 1 && (
           <div className="w-48">
@@ -67,10 +59,10 @@ export function DashboardPage() {
       {d && (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatTile label={t('dashboard.arrivals')} value={d.arrivals} icon={ArrowRightEndOnRectangleIcon} tone="info" footer={t('dashboard.alreadyIn', { count: d.arrived })} />
-            <StatTile label={t('dashboard.departures')} value={d.departures} icon={ArrowRightStartOnRectangleIcon} tone="warn" footer={t('dashboard.alreadyOut', { count: d.departed })} />
+            <StatTile label={t('dashboard.arrivals')} value={d.arrivals} icon={LogInIcon} tone="info" footer={t('dashboard.alreadyIn', { count: d.arrived })} />
+            <StatTile label={t('dashboard.departures')} value={d.departures} icon={LogOutIcon} tone="warn" footer={t('dashboard.alreadyOut', { count: d.departed })} />
             <StatTile label={t('dashboard.inHouse')} value={d.in_house} icon={UsersIcon} tone="accent" />
-            <StatTile label={t('dashboard.occupancy')} value={Math.round(d.occupancy)} icon={ChartPieIcon} tone="ok" footer="%" />
+            <StatTile label={t('dashboard.occupancy')} value={Math.round(d.occupancy)} icon={ChartPieIcon} tone="ok" suffix="%" />
           </div>
 
           {(d.pending_expiring > 0 || d.late_arrivals > 0 || (d.cashier_shortages ?? 0) > 0) && (
@@ -94,17 +86,17 @@ export function DashboardPage() {
           )}
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <Card className="flex flex-col gap-3">
-              <h2 className="flex items-center gap-2 text-sm font-semibold">
-                <HomeModernIcon aria-hidden className="size-4 text-icon" />
+            <Card className="flex flex-col gap-4">
+              <h2 className="flex items-center justify-between gap-2 leading-none font-semibold">
                 {t('dashboard.rooms', { count: d.rooms.total })}
+                <BedDoubleIcon aria-hidden className="size-4 text-muted" />
               </h2>
               <div className="flex h-3 overflow-hidden rounded-full bg-sunken">
                 {Object.entries(d.rooms.by_status).map(([s, n]) => (
                   <span key={s} className={cn('h-full', ROOM_DOTS[s])} style={{ width: `${(n / Math.max(1, d.rooms.total)) * 100}%` }} />
                 ))}
               </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-muted">
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
                 {Object.entries(d.rooms.by_status).map(([s, n]) => (
                   <span key={s} className="flex items-center gap-1.5">
                     <span className={cn('size-2 rounded-full', ROOM_DOTS[s])} />
@@ -120,14 +112,14 @@ export function DashboardPage() {
                 </div>
               )}
             </Card>
-            <Card className="flex flex-col gap-3">
-              <h2 className="text-sm font-semibold">{t('dashboard.nextDays')}</h2>
+            <Card className="flex flex-col gap-4">
+              <h2 className="leading-none font-semibold">{t('dashboard.nextDays')}</h2>
               <div className="flex h-32 items-end gap-2">
                 {d.next_7_days.map((x) => (
                   <div key={x.date} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
-                    <span className="text-[11px] tabular-nums text-muted">{Math.round(x.occupancy)}%</span>
-                    <span className="w-full rounded-t-md bg-accent/60" style={{ height: `${Math.max(3, Math.min(100, x.occupancy))}%` }} />
-                    <span className="text-[11px] text-muted">{t(`common.weekdays.${new Date(`${x.date}T00:00:00`).getDay() || 7}`)}</span>
+                    <span className="text-xs tabular-nums text-muted">{Math.round(x.occupancy)}%</span>
+                    <span className="w-full rounded-t-[4px] bg-primary" style={{ height: `${Math.max(3, Math.min(100, x.occupancy))}%` }} />
+                    <span className="text-xs text-muted">{t(`common.weekdays.${new Date(`${x.date}T00:00:00`).getDay() || 7}`)}</span>
                   </div>
                 ))}
               </div>
@@ -165,11 +157,11 @@ function QuickLinks() {
   return (
     <div className="flex flex-col gap-3">
       {can('housekeeping.own_tasks') && modules.includes('housekeeping') && <RoomsToClean />}
-      <h2 className="text-sm font-semibold">{t('dashboard.yourWork')}</h2>
+      <h2 className="text-lg font-semibold tracking-tight">{t('dashboard.yourWork')}</h2>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (
-          <Link key={item.path} to={item.path} className="panel flex min-h-touch items-center gap-3 p-5 transition duration-150 hover:ring-accent/40">
-            <item.icon aria-hidden className="size-5 text-icon" />
+          <Link key={item.path} to={item.path} className="panel flex min-h-touch items-center gap-3 p-6 transition-colors hover:bg-sunken/50">
+            <item.icon aria-hidden className="size-5 text-muted" />
             <span className="text-sm font-medium">{t(`nav.${item.key}`)}</span>
           </Link>
         ))}
@@ -185,9 +177,9 @@ function RoomsToClean() {
   const list = tasks.data?.data ?? []
   if (!tasks.data) return null
   return (
-    <Link to="/housekeeping" className="panel flex flex-col gap-1 p-5 transition duration-150 hover:ring-accent/40">
-      <span className="text-[13px] font-medium text-muted">{t('dashboard.roomsToClean')}</span>
-      <span className="text-3xl font-semibold tabular-nums">{list.length}</span>
+    <Link to="/housekeeping" className="panel flex flex-col gap-2 p-6 transition-colors hover:bg-sunken/50">
+      <span className="text-sm font-medium">{t('dashboard.roomsToClean')}</span>
+      <span className="text-3xl font-bold tracking-tight tabular-nums">{list.length}</span>
       <span className="text-xs text-muted">{list.length ? list.slice(0, 6).map((x) => x.room?.number).filter(Boolean).join(', ') : t('housekeeping.allDone')}</span>
     </Link>
   )
@@ -212,12 +204,12 @@ function DashboardSkeleton() {
 
 function MoneyTile({ label, value, tone, footer, link }: { label: string; value: string; tone?: 'danger'; footer?: string; link?: string }) {
   const body = (
-    <div className="panel flex h-full flex-col gap-1.5 p-5">
-      <span className="flex items-center gap-2 text-[13px] font-medium text-muted">
-        <BanknotesIcon aria-hidden className="size-4 text-icon" />
+    <div data-slot="card" className={cn('panel flex h-full flex-col gap-2 p-6', link && 'transition-colors hover:bg-sunken/50')}>
+      <span className="flex items-center justify-between gap-2 text-sm font-medium">
         {label}
+        <BanknoteIcon aria-hidden className="size-4 shrink-0 text-muted" />
       </span>
-      <span className={cn('text-xl font-semibold tracking-tight tabular-nums', tone === 'danger' && 'text-danger-text')}>{money(value)}</span>
+      <span className={cn('text-2xl font-bold tracking-tight tabular-nums', tone === 'danger' && 'text-danger-text')}>{money(value)}</span>
       {footer && <span className="text-xs text-muted">{footer}</span>}
     </div>
   )
@@ -238,7 +230,7 @@ function ApiStatus() {
   )
   return (
     <div className="flex flex-wrap items-center justify-end gap-2 text-xs text-muted">
-      {health.isError && <ExclamationTriangleIcon aria-hidden className="size-4 text-danger-text" />}
+      {health.isError && <TriangleAlertIcon aria-hidden className="size-4 text-danger-text" />}
       <span>{t('dashboard.apiStatus')}</span>
       {status}
       {health.data && <span>{t('dashboard.version', { version: health.data.version })}</span>}
@@ -253,10 +245,10 @@ function FinishSetupCard() {
   const setup = me.data?.role?.is_hotel_admin && !me.data.impersonation ? me.data.hotel?.setup : null
   if (!setup || (setup.completed && setup.skipped === 0)) return null
   return (
-    <Card className="flex flex-wrap items-center justify-between gap-3 ring-accent/40">
+    <Card className="flex flex-wrap items-center justify-between gap-3 border-primary/40">
       <div className="flex flex-col gap-1">
-        <h2 className="text-sm font-semibold">{t('setup.card.title')}</h2>
-        <p className="text-[13px] text-muted">
+        <h2 className="leading-none font-semibold">{t('setup.card.title')}</h2>
+        <p className="text-sm text-muted">
           {setup.completed ? t('setup.card.skipped', { count: setup.skipped }) : t('setup.card.unfinished', { count: setup.remaining })}
         </p>
       </div>

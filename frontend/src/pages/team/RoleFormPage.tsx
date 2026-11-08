@@ -100,7 +100,7 @@ function RoleForm({ role }: { role?: Role }) {
                     <label className="flex min-h-touch items-center gap-3 rounded-lg px-1 text-sm hover:bg-sunken">
                       <input
                         type="checkbox"
-                        className="size-5 rounded accent-accent"
+                        className="size-5 rounded"
                         checked={role?.is_locked || perms.has(p.key)}
                         disabled={readOnly || !mine.has(p.key)}
                         onChange={(e) => toggle([p.key], e.target.checked)}

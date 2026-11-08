@@ -5,8 +5,7 @@ import { DataTable, type SortState } from '@/components/ui/DataTable'
 import { DateRangeFilter } from '@/components/ui/DateRangeFilter'
 import type { DateRange } from '@/lib/dateRange'
 import { IdPhoto } from '@/components/guests/IdPhoto'
-import { PlusIcon } from '@heroicons/react/20/solid'
-import { MagnifyingGlassIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, SearchIcon, UsersIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
@@ -21,6 +20,8 @@ import { listFileUrl, localDate, STATUS_TONES, useBlacklist, useGuest, useGuests
 import { useCan } from '@/lib/hotel'
 import { useDebounced } from '@/lib/useDebounced'
 import { GuestForm } from './GuestForm'
+import { inputClass } from '@/components/ui/formStyles'
+import { cn } from '@/lib/cn'
 
 export function GuestsPage() {
   const { t } = useTranslation()
@@ -65,7 +66,7 @@ export function GuestsPage() {
       </div>
       <div className="flex flex-wrap items-end gap-3">
       <div className="relative w-full max-w-md">
-        <MagnifyingGlassIcon aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-icon" />
+        <SearchIcon aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-icon" />
         <input
           type="search"
           aria-label={t('guests.search')}
@@ -75,7 +76,7 @@ export function GuestsPage() {
             setQ(e.target.value)
             setPage(1)
           }}
-          className="min-h-touch w-full rounded-lg bg-surface pr-3 pl-9 text-[13px] shadow-sm ring-1 ring-ring outline-none focus:ring-2 focus:ring-accent"
+          className={cn(inputClass, 'w-full ps-9')}
         />
       </div>
         <DateRangeFilter
@@ -134,7 +135,7 @@ export function GuestsPage() {
 export function Pager({ page, last, onChange }: { page: number; last: number; onChange: (p: number) => void }) {
   const { t } = useTranslation()
   return (
-    <div className="flex items-center justify-end gap-2 text-[13px] text-muted">
+    <div className="flex items-center justify-end gap-2 text-sm text-muted">
       <Button variant="secondary" disabled={page <= 1} onClick={() => onChange(page - 1)}>
         {t('common.previous')}
       </Button>
@@ -196,8 +197,8 @@ export function GuestPage() {
           )}
           <Card className="flex flex-col gap-2">
             <h2 className="text-sm font-semibold">{t('guests.stayHistory')}</h2>
-            {q.data.stays.length === 0 && <p className="text-[13px] text-muted">{t('guests.noStays')}</p>}
-            <ul className="flex flex-col divide-y divide-border text-[13px]">
+            {q.data.stays.length === 0 && <p className="text-sm text-muted">{t('guests.noStays')}</p>}
+            <ul className="flex flex-col divide-y divide-border text-sm">
               {q.data.stays.map((s) => (
                 <li key={s.id}>
                   <Link to={`/reservations/${s.id}`} className="flex min-h-touch items-center justify-between gap-2 py-1.5 hover:text-accent-text">
@@ -232,7 +233,7 @@ export function GuestPage() {
       [t('guests.notes'), g.notes],
     ]
     return (
-      <dl className="grid gap-3 text-[13px] sm:grid-cols-2">
+      <dl className="grid gap-3 text-sm sm:grid-cols-2">
         {rows.map(([k, v]) => (
           <div key={k}>
             <dt className="text-muted">{k}</dt>
@@ -252,7 +253,7 @@ function BlacklistCard({ id, blacklisted }: { id: number; blacklisted: boolean }
   return (
     <Card className="flex flex-col gap-3">
       <h2 className="text-sm font-semibold">{t('guests.blacklist')}</h2>
-      <p className="text-[13px] text-muted">{blacklisted ? t('guests.unblacklistHelp') : t('guests.blacklistHelp')}</p>
+      <p className="text-sm text-muted">{blacklisted ? t('guests.unblacklistHelp') : t('guests.blacklistHelp')}</p>
       {!blacklisted && <Field label={t('guests.reason')} value={reason} onChange={(e) => setReason(e.target.value)} error={error?.field('reason')} />}
       {mutate.error && !error && <Alert>{t('common.serverUnreachable')}</Alert>}
       <div>

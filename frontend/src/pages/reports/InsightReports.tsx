@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { TriangleAlertIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
@@ -25,7 +25,7 @@ function useInsight<T>(path: string, params: Record<string, string | number | nu
 function Tile({ label, value, sub, tone }: { label: string; value: string; sub?: ReactNode; tone?: 'danger' | 'ok' }) {
   return (
     <Card className="flex flex-col gap-1 p-4">
-      <span className="text-[13px] text-muted">{label}</span>
+      <span className="text-sm text-muted">{label}</span>
       <span className={cn('text-xl font-semibold tabular-nums', tone === 'danger' && 'text-danger-text', tone === 'ok' && 'text-ok-text')}>{value}</span>
       {sub && <span className="text-xs text-muted">{sub}</span>}
     </Card>
@@ -70,7 +70,7 @@ export function DailyReport({ branchId }: { branchId?: number | null }) {
           </div>
           <p className="text-xs text-muted">{t('insights.vsLastWeek')}</p>
           <div className="grid gap-4 lg:grid-cols-3">
-            <Card className="flex flex-col gap-1 text-[13px]">
+            <Card className="flex flex-col gap-1 text-sm">
               <h4 className="text-sm font-semibold">{t('insights.rooms')}</h4>
               <Row label={t('insights.arrived')} value={d.arrivals} />
               <Row label={t('insights.left')} value={d.departures} />
@@ -78,7 +78,7 @@ export function DailyReport({ branchId }: { branchId?: number | null }) {
               <Row label={t('reports.cancel.no_show')} value={d.no_shows} />
               <Row label={t('reports.kpis.room_nights')} value={d.kpis.room_nights} />
             </Card>
-            <Card className="flex flex-col gap-1 text-[13px]">
+            <Card className="flex flex-col gap-1 text-sm">
               <h4 className="text-sm font-semibold">{t('insights.moneyIn')}</h4>
               {d.payments.length === 0 && <span className="text-muted">{t('reports.nothing')}</span>}
               {d.payments.map((p) => (
@@ -88,7 +88,7 @@ export function DailyReport({ branchId }: { branchId?: number | null }) {
                 <Row key={i} label={t('insights.shiftOf', { name: c.user ?? '—' })} value={c.differences.map((x) => money(x.difference, x.currency)).join(' · ') || t(`cashier.statuses.${c.status}`)} />
               ))}
             </Card>
-            <Card className="flex flex-col gap-1 text-[13px]">
+            <Card className="flex flex-col gap-1 text-sm">
               <h4 className="text-sm font-semibold">{t('insights.watch')}</h4>
               <Row label={t('billing.discounts')} value={money(d.watch.discounts, d.currency)} />
               <Row label={t('insights.waivedFees')} value={d.watch.waived} />
@@ -97,7 +97,7 @@ export function DailyReport({ branchId }: { branchId?: number | null }) {
               <Row label={t('dashboard.unpaid')} value={money(d.watch.unpaid, d.currency)} />
             </Card>
           </div>
-          <Card className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px]">
+          <Card className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
             <span className="font-semibold">{t('insights.tomorrow', { date: date(d.tomorrow.date) })}</span>
             <span>{t('insights.tomorrowLine', { arrivals: d.tomorrow.arrivals, departures: d.tomorrow.departures, occ: d.tomorrow.occupancy })}</span>
           </Card>
@@ -145,14 +145,14 @@ export function ForecastReport({ branchId }: { branchId?: number | null }) {
                   type="button"
                   aria-label={`${date(x.date)}: ${x.occupancy}%`}
                   onClick={() => setPicked(x.date)}
-                  className={cn('relative flex aspect-square min-h-9 flex-col items-center justify-center rounded-md text-[11px] tabular-nums transition duration-75', heat(x.occupancy), sel?.date === x.date && 'ring-2 ring-text')}
+                  className={cn('relative flex aspect-square min-h-9 flex-col items-center justify-center rounded-md text-xs tabular-nums transition duration-75', heat(x.occupancy), sel?.date === x.date && 'ring-2 ring-text')}
                 >
                   <span>{Number(x.date.slice(8, 10))}</span>
                   {x.season && <span className="absolute top-0.5 right-1 size-1.5 rounded-full bg-warn-text" />}
                 </button>
               ))}
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted">
+            <div className="flex flex-wrap items-center gap-3 text-xs text-muted">
               {[0, 25, 50, 70, 90].map((v) => (
                 <span key={v} className="flex items-center gap-1">
                   <span className={cn('size-3 rounded-sm', heat(v === 0 ? 1 : v))} />
@@ -166,7 +166,7 @@ export function ForecastReport({ branchId }: { branchId?: number | null }) {
             </div>
           </Card>
           {sel && (
-            <Card className="flex flex-col gap-1 text-[13px]">
+            <Card className="flex flex-col gap-1 text-sm">
               <h3 className="text-sm font-semibold">{date(sel.date)}</h3>
               <Row label={t('reports.kpis.occupancy')} value={`${sel.occupancy}%`} />
               <Row label={t('insights.usuallyByNow')} value={`${sel.usual_occupancy}%`} />
@@ -222,14 +222,14 @@ function Targets({ branchId }: { branchId?: number | null }) {
         const pct = r.revenue_progress
         const e = edit[r.branch_id]
         return (
-          <div key={r.branch_id} className="flex flex-col gap-2 rounded-lg bg-sunken p-3 text-[13px]">
+          <div key={r.branch_id} className="flex flex-col gap-2 rounded-lg bg-sunken p-3 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-semibold">{r.branch}</span>
               <span className="text-muted">{t('insights.projectionLine', { earned: money(r.earned, d.currency), booked: money(r.booked, d.currency), projection: money(r.projection, d.currency) })}</span>
             </div>
             {pct !== null && (
               <div className="flex items-center gap-2">
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface ring-1 ring-ring">
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface border">
                   <div className={cn('h-full rounded-full', pct >= 100 ? 'bg-ok-text' : pct >= 85 ? 'bg-accent' : 'bg-danger')} style={{ width: `${Math.min(100, pct)}%` }} />
                 </div>
                 <span className={cn('w-14 text-right font-semibold tabular-nums', pct < 85 && 'text-danger-text')}>{pct}%</span>
@@ -285,16 +285,16 @@ export function AuditReport({ f }: { f: ReportFilters }) {
     <div className="flex flex-col gap-4">
       {d.rows.some((r) => r.flags.length) && <Alert>{t('insights.flagged', { count: d.rows.filter((r) => r.flags.length).length })}</Alert>}
       <Card className="overflow-x-auto p-0">
-        <table className="w-full min-w-[820px] text-left text-[13px]">
-          <thead className="bg-sunken">
+        <table className="w-full min-w-[820px] text-left text-sm">
+          <thead>
             <tr>
-              <th className="px-4 py-2.5 font-semibold">{t('cashier.person')}</th>
-              <th className="px-4 py-2.5 text-right font-semibold">{t('billing.discounts')}</th>
-              <th className="px-4 py-2.5 text-right font-semibold">{t('insights.waivedFees')}</th>
-              <th className="px-4 py-2.5 text-right font-semibold">{t('insights.voids')}</th>
-              <th className="px-4 py-2.5 text-right font-semibold">{t('insights.refunds')}</th>
-              <th className="px-4 py-2.5 text-right font-semibold">{t('insights.cashDiff')}</th>
-              <th className="px-4 py-2.5" />
+              <th className="px-4 h-10 font-medium">{t('cashier.person')}</th>
+              <th className="px-4 h-10 text-right font-medium">{t('billing.discounts')}</th>
+              <th className="px-4 h-10 text-right font-medium">{t('insights.waivedFees')}</th>
+              <th className="px-4 h-10 text-right font-medium">{t('insights.voids')}</th>
+              <th className="px-4 h-10 text-right font-medium">{t('insights.refunds')}</th>
+              <th className="px-4 h-10 text-right font-medium">{t('insights.cashDiff')}</th>
+              <th className="px-4 h-10" />
             </tr>
           </thead>
           <tbody>
@@ -302,7 +302,7 @@ export function AuditReport({ f }: { f: ReportFilters }) {
               <tr key={r.user_id} className={cn('border-t border-border', r.flags.length > 0 && 'bg-danger-bg/30')}>
                 <td className="px-4 py-2 font-medium">
                   <span className="flex items-center gap-1.5">
-                    {r.flags.length > 0 && <ExclamationTriangleIcon aria-hidden className="size-4 text-danger-text" />}
+                    {r.flags.length > 0 && <TriangleAlertIcon aria-hidden className="size-4 text-danger-text" />}
                     {r.name}
                   </span>
                   {r.flags.map((fl) => (
@@ -351,9 +351,9 @@ function Timeline({ userId, f }: { userId: number; f: ReportFilters }) {
 
 function TimelineList({ rows }: { rows: { id: number; event: string; description: string; time: string }[] }) {
   const { t } = useTranslation()
-  if (!rows.length) return <p className="text-[13px] text-muted">{t('reports.nothing')}</p>
+  if (!rows.length) return <p className="text-sm text-muted">{t('reports.nothing')}</p>
   return (
-    <ol className="flex max-h-96 flex-col gap-1 overflow-y-auto text-[13px]">
+    <ol className="flex max-h-96 flex-col gap-1 overflow-y-auto text-sm">
       {rows.map((r) => (
         <li key={r.id} className="flex gap-3 border-l-2 border-border py-1 pl-3">
           <span className="w-24 shrink-0 text-xs text-muted tabular-nums">
@@ -397,13 +397,13 @@ export function MyShiftReport() {
       {d.sessions.length > 0 && (
         <div className="flex flex-wrap gap-1.5 print:hidden">
           {d.sessions.slice(0, 10).map((s) => (
-            <button key={s.id} type="button" aria-pressed={(session ?? d.session?.id) === s.id} onClick={() => setSession(s.id)} className={cn('min-h-touch rounded-full px-3 text-[13px] ring-1', (session ?? d.session?.id) === s.id ? 'bg-accent text-on-accent ring-accent' : 'bg-surface text-muted ring-ring')}>
+            <button key={s.id} type="button" aria-pressed={(session ?? d.session?.id) === s.id} onClick={() => setSession(s.id)} className={cn('min-h-touch rounded-full border px-3 text-sm shadow-xs transition-colors', (session ?? d.session?.id) === s.id ? 'border-primary bg-primary text-primary-foreground' : 'bg-background text-muted hover:bg-sunken dark:bg-input/30')}>
               {date(localDate(s.opened_at))} {localTime(s.opened_at)}
             </button>
           ))}
         </div>
       )}
-      <p className="text-[13px] text-muted">{t('insights.shiftWindow', { from: `${date(localDate(d.from))} ${localTime(d.from)}`, to: localTime(d.to) })}</p>
+      <p className="text-sm text-muted">{t('insights.shiftWindow', { from: `${date(localDate(d.from))} ${localTime(d.from)}`, to: localTime(d.to) })}</p>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Tile label={t('insights.checkIns')} value={String(d.check_ins)} />
         <Tile label={t('insights.checkOuts')} value={String(d.check_outs)} />
@@ -411,14 +411,14 @@ export function MyShiftReport() {
         <Tile label={t('insights.bookingsMade')} value={String(d.bookings)} />
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="flex flex-col gap-1 text-[13px]">
+        <Card className="flex flex-col gap-1 text-sm">
           <h4 className="text-sm font-semibold">{t('insights.paymentsTaken')}</h4>
           {d.payments.map((p) => (
             <Row key={`${p.method}${p.currency}`} label={`${p.method} (${p.count})`} value={money(p.amount, p.currency)} />
           ))}
           <Row label={t('reservations.total')} value={money(d.payments_total, d.currency)} />
         </Card>
-        <Card className="flex flex-col gap-1 text-[13px]">
+        <Card className="flex flex-col gap-1 text-sm">
           <h4 className="text-sm font-semibold">{t('insights.myDrawer')}</h4>
           {!d.session && <span className="text-muted">{t('insights.noDrawer')}</span>}
           {d.session?.expected &&
@@ -430,7 +430,7 @@ export function MyShiftReport() {
             ))}
           {d.session && <Row label={t('reservations.status')} value={t(`cashier.statuses.${d.session.status}`)} />}
         </Card>
-        <Card className="flex flex-col gap-1 text-[13px]">
+        <Card className="flex flex-col gap-1 text-sm">
           <h4 className="text-sm font-semibold">{t('insights.discountsAndFees')}</h4>
           <Row label={t('billing.discounts')} value={money(d.discounts, d.currency)} />
           <Row label={t('insights.myLimit')} value={`${Number(d.max_discount_percent)}%`} />
@@ -457,7 +457,7 @@ export function MyWorkReport() {
     <div className="flex flex-col gap-4">
       <div className="flex gap-1.5">
         {(['today', 'week', 'month'] as const).map((p) => (
-          <button key={p} type="button" aria-pressed={period === p} onClick={() => setPeriod(p)} className={cn('min-h-touch rounded-full px-4 text-sm font-medium ring-1', period === p ? 'bg-accent text-on-accent ring-accent' : 'bg-surface text-muted ring-ring')}>
+          <button key={p} type="button" aria-pressed={period === p} onClick={() => setPeriod(p)} className={cn('min-h-touch rounded-full border px-4 text-sm font-medium shadow-xs transition-colors', period === p ? 'border-primary bg-primary text-primary-foreground' : 'bg-background text-muted hover:bg-sunken dark:bg-input/30')}>
             {t(`insights.periods.${p}`)}
           </button>
         ))}
@@ -477,12 +477,12 @@ export function MyWorkReport() {
                 <div key={x.date} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
                   <span className="text-xs tabular-nums">{x.rooms}</span>
                   <span className="w-full rounded-t-md bg-accent/60" style={{ height: `${Math.max(3, (x.rooms / max) * 100)}%` }} />
-                  <span className="text-[11px] text-muted">{t(`common.weekdays.${new Date(`${x.date}T00:00:00`).getDay() || 7}`)}</span>
+                  <span className="text-xs text-muted">{t(`common.weekdays.${new Date(`${x.date}T00:00:00`).getDay() || 7}`)}</span>
                 </div>
               ))}
             </div>
           </Card>
-          <Card className="flex flex-col gap-1 text-[13px]">
+          <Card className="flex flex-col gap-1 text-sm">
             <h4 className="text-sm font-semibold">{t('insights.todaysRooms')}</h4>
             {d.today.length === 0 && <span className="text-muted">{t('reports.nothing')}</span>}
             {d.today.map((r) => (
@@ -519,14 +519,14 @@ export function AccountingReport({ f }: { f: ReportFilters }) {
           CSV
         </a>
       </div>
-      <p className="max-w-prose text-[13px] text-muted">{t('insights.journalHelp')}</p>
+      <p className="max-w-prose text-sm text-muted">{t('insights.journalHelp')}</p>
       <Card className="p-0">
-        <table className="w-full text-left text-[13px]">
-          <thead className="bg-sunken">
+        <table className="w-full text-left text-sm">
+          <thead>
             <tr>
-              <th className="px-4 py-2.5 font-semibold">{t('insights.account')}</th>
-              <th className="px-4 py-2.5 text-right font-semibold">{t('insights.debit')}</th>
-              <th className="px-4 py-2.5 text-right font-semibold">{t('insights.credit')}</th>
+              <th className="px-4 h-10 font-medium">{t('insights.account')}</th>
+              <th className="px-4 h-10 text-right font-medium">{t('insights.debit')}</th>
+              <th className="px-4 h-10 text-right font-medium">{t('insights.credit')}</th>
             </tr>
           </thead>
           <tbody>

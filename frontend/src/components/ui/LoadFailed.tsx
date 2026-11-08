@@ -22,7 +22,7 @@ export function LoadFailed({ error, back, onRetry }: { error: unknown; back?: { 
           </Button>
         )}
         {back && (
-          <Link to={back.to} className="flex min-h-touch items-center px-1 font-medium text-accent-text underline">
+          <Link to={back.to} className="flex min-h-touch items-center px-1 font-medium text-primary underline-offset-4 hover:underline">
             {back.label}
           </Link>
         )}

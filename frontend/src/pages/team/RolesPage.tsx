@@ -1,7 +1,6 @@
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { PlusIcon } from '@heroicons/react/20/solid'
-import { LockClosedIcon } from '@heroicons/react/24/outline'
+import { LockIcon, PlusIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { buttonClass } from '@/components/ui/Button'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -30,7 +29,7 @@ export function RolesPage() {
               <h2 className="text-base font-semibold">{r.name}</h2>
               {r.is_locked ? (
                 <Badge tone="accent">
-                  <LockClosedIcon aria-hidden className="mr-1 size-3.5" />
+                  <LockIcon aria-hidden className="mr-1 size-3.5" />
                   {t('team.roles.locked')}
                 </Badge>
               ) : r.is_default ? (

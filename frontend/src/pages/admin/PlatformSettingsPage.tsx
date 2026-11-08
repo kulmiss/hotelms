@@ -1,6 +1,6 @@
 import { useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { PhotoIcon } from '@heroicons/react/24/outline'
+import { ImageIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -12,6 +12,8 @@ import { usePlans, usePlatformSettings, useSaveSettings, useTestEmail, useUpload
 import { useMe } from '@/lib/auth'
 import { ApiError } from '@/lib/api'
 import { onColor } from '@/lib/brand'
+import { inputClass } from '@/components/ui/formStyles'
+import { cn } from '@/lib/cn'
 
 const TABS = ['general', 'billing', 'branding', 'emails', 'telegram'] as const
 type Tab = (typeof TABS)[number]
@@ -82,7 +84,7 @@ function SettingsForm({
       <Card className="grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-1">
           <h2 className="text-sm font-semibold">{title}</h2>
-          <p className="text-[13px] text-muted">{description}</p>
+          <p className="text-sm text-muted">{description}</p>
         </div>
         <div className="flex flex-col gap-4 lg:col-span-2">
           {save.isSuccess && <Alert tone="ok">{t('common.saved')}</Alert>}
@@ -109,7 +111,7 @@ function OwnerOnly({ title }: { title: string }) {
   return (
     <Card className="flex flex-col gap-1">
       <h2 className="text-sm font-semibold">{title}</h2>
-      <p className="text-[13px] text-muted">{t('admin.settings.ownerOnly')}</p>
+      <p className="text-sm text-muted">{t('admin.settings.ownerOnly')}</p>
     </Card>
   )
 }
@@ -136,8 +138,8 @@ function GeneralTab({ initial }: { initial: PlatformSettings }) {
             <Field label={t('admin.settings.supportEmail')} type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={error?.field('support_email')} />
             <Field label={t('admin.settings.supportPhone')} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} error={error?.field('support_phone')} />
           </div>
-          <label className="flex min-h-touch items-start gap-3 text-[13px]">
-            <input type="checkbox" className="mt-0.5 size-4 rounded accent-accent" checked={demo} onChange={(e) => setDemo(e.target.checked)} />
+          <label className="flex min-h-touch items-start gap-3 text-sm">
+            <input type="checkbox" className="mt-0.5 size-4 rounded" checked={demo} onChange={(e) => setDemo(e.target.checked)} />
             <span className="flex flex-col">
               <span className="font-medium">{t('admin.settings.demoPublic')}</span>
               <span className="text-muted">{t('admin.settings.demoPublicHint')}</span>
@@ -148,8 +150,8 @@ function GeneralTab({ initial }: { initial: PlatformSettings }) {
               <Field label={t('admin.settings.demoMinutes')} type="number" min={5} max={480} value={demoMinutes} onChange={(e) => setDemoMinutes(e.target.value)} hint={t('admin.settings.demoMinutesHint')} error={error?.field('demo_minutes')} />
             </div>
           )}
-          <label className="flex min-h-touch items-start gap-3 text-[13px]">
-            <input type="checkbox" className="mt-0.5 size-4 rounded accent-accent" checked={twoStep} disabled={!owner} onChange={(e) => setTwoStep(e.target.checked)} />
+          <label className="flex min-h-touch items-start gap-3 text-sm">
+            <input type="checkbox" className="mt-0.5 size-4 rounded" checked={twoStep} disabled={!owner} onChange={(e) => setTwoStep(e.target.checked)} />
             <span className="flex flex-col">
               <span className="font-medium">{t('admin.settings.twoFactorAdmins')}</span>
               <span className="text-muted">{t('admin.settings.twoFactorAdminsHint')}</span>
@@ -216,7 +218,7 @@ function BrandingTab({ initial }: { initial: PlatformSettings }) {
           <>
             <Field label={t('admin.settings.platformName')} value={name} onChange={(e) => setName(e.target.value)} error={error?.field('platform_name')} />
             <fieldset className="flex flex-col gap-2">
-              <legend className="mb-1 text-[13px] font-medium text-text">{t('admin.settings.brandColor')}</legend>
+              <legend className="mb-1 text-sm font-medium text-text">{t('admin.settings.brandColor')}</legend>
               <div className="flex flex-wrap items-center gap-2">
                 {SWATCHES.map((c) => (
                   <button
@@ -240,7 +242,7 @@ function BrandingTab({ initial }: { initial: PlatformSettings }) {
                     value={color}
                     onChange={(e) => setColor(e.target.value)}
                     aria-label={t('admin.settings.hex')}
-                    className="min-h-touch w-28 rounded-lg bg-surface px-3 font-mono text-[13px] shadow-sm ring-1 ring-ring-strong focus:ring-2 focus:ring-accent focus:outline-none"
+                    className={cn(inputClass, 'w-28 font-mono')}
                   />
                 </label>
               </div>
@@ -250,13 +252,13 @@ function BrandingTab({ initial }: { initial: PlatformSettings }) {
 
             {/* Live preview of how the brand looks */}
             <div className="flex flex-col gap-2">
-              <span className="text-[13px] font-medium">{t('admin.settings.preview')}</span>
+              <span className="text-sm font-medium">{t('admin.settings.preview')}</span>
               <div className="flex flex-wrap items-center gap-3 rounded-lg bg-sunken p-4">
                 <span className="flex size-8 items-center justify-center rounded-lg text-sm font-bold" style={{ background: validColor ? color : undefined, color: validColor ? onColor(color) : undefined }}>
                   {(name || 'H').slice(0, 1).toUpperCase()}
                 </span>
                 <span className="font-semibold">{name}</span>
-                <span className="ml-auto rounded-lg px-3 py-1.5 text-[13px] font-semibold" style={{ background: validColor ? color : undefined, color: validColor ? onColor(color) : undefined }}>
+                <span className="ml-auto rounded-lg px-3 py-1.5 text-sm font-semibold" style={{ background: validColor ? color : undefined, color: validColor ? onColor(color) : undefined }}>
                   {t('login.submit')}
                 </span>
               </div>
@@ -278,11 +280,11 @@ function LogoCard({ current }: { current: string | null }) {
     <Card className="grid gap-6 lg:grid-cols-3">
       <div className="flex flex-col gap-1">
         <h2 className="text-sm font-semibold">{t('admin.settings.logo')}</h2>
-        <p className="text-[13px] text-muted">{t('admin.settings.logoHelp')}</p>
+        <p className="text-sm text-muted">{t('admin.settings.logoHelp')}</p>
       </div>
       <div className="flex flex-wrap items-center gap-4 lg:col-span-2">
-        <span className="flex size-16 items-center justify-center overflow-hidden rounded-xl bg-sunken ring-1 ring-ring">
-          {current ? <img src={current} alt="" className="size-full object-contain p-1.5" /> : <PhotoIcon aria-hidden className="size-6 text-icon" />}
+        <span className="flex size-16 items-center justify-center overflow-hidden rounded-xl bg-sunken border">
+          {current ? <img src={current} alt="" className="size-full object-contain p-1.5" /> : <ImageIcon aria-hidden className="size-6 text-icon" />}
         </span>
         <input
           ref={input}
@@ -369,7 +371,7 @@ function MailServerTab({ initial }: { initial: PlatformSettings }) {
     return (
       <Card className="flex flex-col gap-1">
         <h2 className="text-sm font-semibold">{t('admin.settings.mailServer')}</h2>
-        <p className="text-[13px] text-muted">{t('admin.settings.mailOwnerOnly')}</p>
+        <p className="text-sm text-muted">{t('admin.settings.mailOwnerOnly')}</p>
       </Card>
     )
   }

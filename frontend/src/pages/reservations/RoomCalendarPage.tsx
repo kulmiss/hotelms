@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -62,13 +62,13 @@ export function RoomCalendarPage() {
           </Button>
         </div>
         <h2 className="text-base font-semibold">{monthName(month)}</h2>
-        {cal.data && <span className="text-[13px] text-muted">{t('roomCal.booked', { count: booked, days })}</span>}
+        {cal.data && <span className="text-sm text-muted">{t('roomCal.booked', { count: booked, days })}</span>}
       </div>
 
       {cal.isError && !cal.data && <LoadFailed error={cal.error} onRetry={() => cal.refetch()} />}
       {cal.data && !room && <Alert tone="info">{t('roomCal.otherBranch')}</Alert>}
       <Card className={cn('overflow-x-auto p-0', cal.data && !room && 'hidden')}>
-        <div className="grid min-w-[640px] grid-cols-7 text-[11px] font-semibold text-muted">
+        <div className="grid min-w-[640px] grid-cols-7 text-xs font-semibold text-muted">
           {[1, 2, 3, 4, 5, 6, 7].map((wd) => (
             <div key={wd} className="border-b border-border bg-sunken px-2 py-2 text-center">
               {t(`common.weekdays.${wd}`)}
@@ -80,15 +80,15 @@ export function RoomCalendarPage() {
             const leaving = bookings.find((b) => localDate(b.check_out_at) === d && b !== night)
             const arriving = night && localDate(night.check_in_at) === d
             return (
-              <div key={d} className={cn('flex min-h-24 flex-col gap-1 border-b border-r border-border p-1.5', d === today() && 'ring-2 ring-accent ring-inset')}>
+              <div key={d} className={cn('flex min-h-24 flex-col gap-1 border-b border-r border-border p-1.5', d === today() && 'ring-2 ring-primary ring-inset')}>
                 <span className={cn('text-xs font-semibold', d === today() ? 'text-accent-text' : 'text-text')}>{Number(d.slice(8, 10))}</span>
                 {leaving && (
-                  <Link to={`/reservations/${leaving.reservation_id}`} className="truncate text-[11px] text-muted hover:underline">
+                  <Link to={`/reservations/${leaving.reservation_id}`} className="truncate text-xs text-muted hover:underline">
                     ← {t('roomCal.leaves', { guest: leaving.guest ?? leaving.code })}
                   </Link>
                 )}
                 {night ? (
-                  <Link to={`/reservations/${night.reservation_id}`} className={cn('flex flex-col rounded-md px-1.5 py-1 text-[11px] font-medium transition duration-75 hover:brightness-95', CELL[night.status])}>
+                  <Link to={`/reservations/${night.reservation_id}`} className={cn('flex flex-col rounded-md px-1.5 py-1 text-xs font-medium transition duration-75 hover:brightness-95', CELL[night.status])}>
                     <span className="truncate">
                       {arriving && '→ '}
                       {night.guest ?? night.code}
@@ -96,7 +96,7 @@ export function RoomCalendarPage() {
                     {arriving && <span className="font-normal opacity-80">{t('roomCal.arrives', { time: localTime(night.check_in_at) })}</span>}
                   </Link>
                 ) : (
-                  <span className="mt-auto text-[11px] text-muted">{t('roomCal.free')}</span>
+                  <span className="mt-auto text-xs text-muted">{t('roomCal.free')}</span>
                 )}
               </div>
             )
@@ -107,7 +107,7 @@ export function RoomCalendarPage() {
       {bookings.length > 0 && (
         <Card className="flex flex-col gap-2">
           <h2 className="text-sm font-semibold">{t('roomCal.list')}</h2>
-          <ul className="flex flex-col divide-y divide-border text-[13px]">
+          <ul className="flex flex-col divide-y divide-border text-sm">
             {[...bookings]
               .sort((a, b) => a.check_in_at.localeCompare(b.check_in_at))
               .map((b) => (

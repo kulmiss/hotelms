@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { LockClosedIcon } from '@heroicons/react/24/outline'
+import { LockIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Field } from '@/components/ui/Field'
@@ -9,6 +9,9 @@ import { useLogout, useMe } from '@/lib/auth'
 import { errorText, usePinSwitch, useUnlock } from '@/lib/security'
 
 const KEY = 'hms_locked'
+
+/** "Lock screen" in the account menu: lock now, without waiting. */
+export const LOCK_NOW_EVENT = 'hms:lock-screen'
 
 function stored(): string | null {
   try {
@@ -36,6 +39,16 @@ export function ScreenLock() {
   const userId = me.data ? String(me.data.user.id) : null
   const [locked, setLocked] = useState(() => userId !== null && stored() === userId)
   const last = useRef(Date.now())
+
+  useEffect(() => {
+    if (!userId) return
+    const lockNow = () => {
+      store(userId)
+      setLocked(true)
+    }
+    window.addEventListener(LOCK_NOW_EVENT, lockNow)
+    return () => window.removeEventListener(LOCK_NOW_EVENT, lockNow)
+  }, [userId])
 
   useEffect(() => {
     if (!minutes || !userId) return
@@ -97,9 +110,9 @@ function LockScreen({ name, canUsePin, onUnlocked }: { name: string; canUsePin: 
 
   return (
     <div role="dialog" aria-modal="true" aria-labelledby="lock-title" className="fixed inset-0 z-50 flex items-center justify-center bg-bg/95 p-4 backdrop-blur-xl">
-      <form onSubmit={submit} noValidate className="panel flex w-full max-w-sm flex-col gap-5 p-7">
+      <form onSubmit={submit} noValidate className="panel flex w-full max-w-[480px] flex-col gap-5 p-6 sm:p-8">
         <div className="flex flex-col items-center gap-2 text-center">
-          <LockClosedIcon aria-hidden className="size-8 text-icon" />
+          <LockIcon aria-hidden className="size-8 text-icon" />
           <h1 id="lock-title" className="text-lg font-semibold">
             {t('lock.title')}
           </h1>

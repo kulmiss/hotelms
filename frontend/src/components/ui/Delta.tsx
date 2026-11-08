@@ -1,11 +1,11 @@
-import { ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/16/solid'
+import { ArrowDown, ArrowUp } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
 /** ▲/▼ change vs the compared period: green when it is good (for "lower is better" pass invert). */
 export function Delta({ value, invert = false }: { value: number | null; invert?: boolean }) {
   if (value === null) return <span className="text-xs text-muted">—</span>
   const good = invert ? value < 0 : value > 0
-  const Icon = value >= 0 ? ArrowUpIcon : ArrowDownIcon
+  const Icon = value >= 0 ? ArrowUp : ArrowDown
   return (
     <span className={cn('inline-flex items-center gap-0.5 text-xs font-medium tabular-nums', value === 0 ? 'text-muted' : good ? 'text-ok-text' : 'text-danger-text')}>
       <Icon aria-hidden className="size-3" />
@@ -42,7 +42,7 @@ export function Bars({
           className="group flex h-full min-w-0 flex-1 flex-col justify-end"
         >
           <span
-            className={cn('block w-full rounded-t-sm transition-all duration-150', selected === i.key ? 'bg-accent' : 'bg-accent/45 group-hover:bg-accent/70')}
+            className={cn('block w-full rounded-t-[4px] transition-all duration-150', selected === i.key ? 'bg-primary' : 'bg-primary/45 group-hover:bg-primary/70')}
             style={{ height: `${Math.max(2, (i.value / max) * 100)}%` }}
           />
         </button>

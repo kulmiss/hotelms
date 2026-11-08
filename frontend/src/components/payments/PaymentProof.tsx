@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { PaperClipIcon, XMarkIcon } from '@heroicons/react/20/solid'
+import { PaperclipIcon, XIcon } from 'lucide-react'
 import { PhotoPickers as Pickers } from '@/components/ui/PhotoPickers'
 import { shrink } from '@/lib/photos'
 import { Button } from '@/components/ui/Button'
@@ -28,7 +28,7 @@ export function ProofField({ value, onChange }: { value: Proof | null; onChange:
 
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-[13px] font-medium">
+      <span className="text-sm font-medium">
         {t('proof.label')} <span className="font-normal text-muted">{t('proof.optional')}</span>
       </span>
       {value ? (
@@ -36,9 +36,9 @@ export function ProofField({ value, onChange }: { value: Proof | null; onChange:
           {preview && value.mime.startsWith('image/') ? (
             <img src={preview} alt={t('proof.label')} className="size-12 rounded-md object-cover" />
           ) : (
-            <PaperClipIcon aria-hidden className="size-5 text-icon" />
+            <PaperclipIcon aria-hidden className="size-5 text-icon" />
           )}
-          <span className="flex-1 text-[13px]">{t('proof.added')}</span>
+          <span className="flex-1 text-sm">{t('proof.added')}</span>
           <Button
             type="button"
             variant="ghost"
@@ -48,7 +48,7 @@ export function ProofField({ value, onChange }: { value: Proof | null; onChange:
               setPreview(null)
             }}
           >
-            <XMarkIcon aria-hidden className="size-4" />
+            <XIcon aria-hidden className="size-4" />
           </Button>
         </div>
       ) : (
@@ -86,7 +86,7 @@ export function ProofLink({ paymentId, proof, canAdd }: { paymentId: number; pro
     // Not "noreferrer": the sign-in cookie only counts when the browser says the request comes from the app.
     return (
       <a href={proofUrl(proof.id)} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-xs font-medium text-accent-text hover:underline">
-        <PaperClipIcon aria-hidden className="size-3.5" />
+        <PaperclipIcon aria-hidden className="size-3.5" />
         {t('proof.view')}
       </a>
     )
@@ -112,7 +112,7 @@ export function ProofLink({ paymentId, proof, canAdd }: { paymentId: number; pro
         onClick={() => file.current?.click()}
         className={cn('inline-flex items-center gap-1 text-xs font-medium text-muted hover:text-text disabled:opacity-60')}
       >
-        <PaperClipIcon aria-hidden className="size-3.5" />
+        <PaperclipIcon aria-hidden className="size-3.5" />
         {up.isPending || attach.isPending ? t('proof.uploading') : t('proof.add')}
       </button>
     </>

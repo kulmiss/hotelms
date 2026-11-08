@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Tabs } from '@/components/ui/Tabs'
 import { IdPhoto } from '@/components/guests/IdPhoto'
 import { ProofField, type Proof } from '@/components/payments/PaymentProof'
-import { CheckIcon, MinusIcon, PlusIcon } from '@heroicons/react/20/solid'
+import { CheckIcon, MinusIcon, PlusIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -124,7 +124,7 @@ export function WalkInPage() {
                     setPicked([])
                     walkIn.reset() // an old error is about the old choice
                   }}
-                  className={cn('min-h-touch rounded-lg px-4 text-sm font-medium ring-1 transition duration-75', stayType === s ? 'bg-accent text-on-accent ring-accent' : 'bg-surface text-muted ring-ring hover:bg-sunken')}
+                  className={cn('min-h-touch rounded-md border px-4 text-sm font-medium shadow-xs transition-colors', stayType === s ? 'border-primary bg-primary text-primary-foreground' : 'bg-background text-muted hover:bg-sunken hover:text-text dark:bg-input/30')}
                 >
                   {t(`reservations.stayTypes.${s}`)}
                 </button>
@@ -151,8 +151,8 @@ export function WalkInPage() {
               {stayType === 'nightly' && (
                 <div className="flex flex-col gap-1.5">
                   <Field label={t('reservations.form.checkOut')} type="date" min={addDays(nightDate, 1)} value={checkOut} disabled={openStay} onChange={(e) => setChosenOut(e.target.value)} />
-                  <label className="flex min-h-touch cursor-pointer items-center gap-2 text-[13px]">
-                    <input type="checkbox" className="size-4 accent-accent" checked={openStay} onChange={(e) => setOpenStay(e.target.checked)} />
+                  <label className="flex min-h-touch cursor-pointer items-center gap-2 text-sm">
+                    <input type="checkbox" checked={openStay} onChange={(e) => setOpenStay(e.target.checked)} />
                     {t('openStay.option')}
                   </label>
                 </div>
@@ -185,14 +185,14 @@ export function WalkInPage() {
                   return (
                     <li key={g.id} className="flex flex-wrap items-center justify-between gap-3 py-2.5">
                       <div className="flex flex-col">
-                        <span className="text-[13px] font-medium">{g.name}</span>
+                        <span className="text-sm font-medium">{g.name}</span>
                         <span className="text-xs text-muted">
                           {t('reservations.form.left', { count: g.rooms.length - chosen.length })}
                           {chosen.length > 0 && ` · ${t('pickBy.chosenRooms', { rooms: chosen.map((r) => r.number).join(', ') })}`}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        {price && <span className="text-[13px] font-semibold tabular-nums">{money(price, g.rooms[0].currency ?? undefined)}</span>}
+                        {price && <span className="text-sm font-semibold tabular-nums">{money(price, g.rooms[0].currency ?? undefined)}</span>}
                         {chosen.length > 0 && (
                           <Button variant="secondary" aria-label={t('pickBy.removeOne', { type: g.name })} onClick={() => setPicked(picked.filter((x) => x !== chosen[chosen.length - 1].id))}>
                             <MinusIcon aria-hidden className="size-4" />
@@ -217,11 +217,11 @@ export function WalkInPage() {
                     type="button"
                     aria-pressed={on}
                     onClick={() => setPicked(on ? picked.filter((x) => x !== r.id) : [...picked, r.id])}
-                    className={cn('relative flex min-h-20 flex-col items-start gap-0.5 rounded-xl p-3 text-left ring-1 transition duration-75', on ? 'bg-accent-soft ring-2 ring-accent' : 'bg-surface ring-ring hover:bg-sunken')}
+                    className={cn('relative flex min-h-20 flex-col items-start gap-0.5 rounded-xl border p-3 text-left shadow-xs transition-colors', on ? 'border-primary bg-accent-soft ring-1 ring-primary' : 'bg-surface hover:bg-sunken')}
                   >
                     <span className="text-base font-semibold">{r.number}</span>
-                    <span className="text-[11px] text-muted">{r.room_type}</span>
-                    {on && <CheckIcon aria-hidden className="absolute top-2 right-2 size-4 text-accent-text" />}
+                    <span className="text-xs text-muted">{r.room_type}</span>
+                    {on && <CheckIcon aria-hidden className="absolute top-2 right-2 size-4 text-primary" />}
                   </button>
                 )
               })}
@@ -234,8 +234,8 @@ export function WalkInPage() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-sm font-semibold">{t('reservations.form.guest')}</h2>
               {canQuick && (
-                <label className="flex min-h-touch cursor-pointer items-center gap-2 text-[13px]">
-                  <input type="checkbox" className="size-4 accent-accent" checked={quick} onChange={(e) => setQuick(e.target.checked)} />
+                <label className="flex min-h-touch cursor-pointer items-center gap-2 text-sm">
+                  <input type="checkbox" checked={quick} onChange={(e) => setQuick(e.target.checked)} />
                   {t('desk.quick.toggle')}
                 </label>
               )}
@@ -260,7 +260,7 @@ export function WalkInPage() {
                 <GuestPicker value={guest} onChange={setGuest} />
                 {guest && lookups.data?.id_photo?.enabled && (
                   <div className="flex flex-col gap-1.5 border-t border-border pt-3">
-                    <span className="text-[13px] font-medium">
+                    <span className="text-sm font-medium">
                       {t('idPhoto.title')} {!lookups.data.id_photo.required && <span className="font-normal text-muted">{t('idPhoto.optional')}</span>}
                     </span>
                     <IdPhoto compact guestId={guest.id} photo={guestDetail.data?.id_photo ?? null} canEdit={can('guests.create_edit')} />
@@ -273,12 +273,12 @@ export function WalkInPage() {
 
         <Card className="flex flex-col gap-3 lg:sticky lg:top-20">
           <h2 className="text-sm font-semibold">{t('reservations.form.summary')}</h2>
-          {!chosen.length && <p className="text-[13px] text-muted">{t('desk.pickRoomFirst')}</p>}
+          {!chosen.length && <p className="text-sm text-muted">{t('desk.pickRoomFirst')}</p>}
           {quoteError && <Alert>{Object.values(quoteError.errors)[0]?.[0] ?? quoteError.message}</Alert>}
           {q && chosen.length > 0 && <QuoteSummary q={{ ...q, deposit_required: '0' }} />}
           {q && lookups.data?.pay_later && (
-            <label className="flex min-h-touch items-start gap-2 border-t border-border pt-3 text-[13px]">
-              <input type="checkbox" className="mt-0.5 size-4 accent-accent" checked={payLater} onChange={(e) => setPayLater(e.target.checked)} />
+            <label className="flex min-h-touch items-start gap-2 border-t border-border pt-3 text-sm">
+              <input type="checkbox" className="mt-0.5" checked={payLater} onChange={(e) => setPayLater(e.target.checked)} />
               <span className="flex flex-col">
                 {t('payLater.option')}
                 <span className="text-xs text-muted">{t('payLater.walkInHint')}</span>
@@ -319,8 +319,8 @@ function PhoneMatch({ phone, onUse }: { phone: string; onUse: (g: Guest) => void
   const match = (found.data?.data ?? []).find((g) => samePhone(g.phone, digits))
   if (digits.length < 6 || !match) return null
   return (
-    <div className={cn('flex flex-wrap items-center justify-between gap-3 rounded-lg px-3 py-2 ring-1', match.is_blacklisted ? 'bg-danger-bg ring-danger/40' : 'bg-accent-soft ring-accent/40')}>
-      <span className="flex flex-col text-[13px]">
+    <div className={cn('flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2', match.is_blacklisted ? 'border-danger/40 bg-danger-bg' : 'border-primary/40 bg-accent-soft')}>
+      <span className="flex flex-col text-sm">
         <span className="font-medium">{t('desk.quick.found', { name: match.full_name })}</span>
         <span className="text-xs text-muted">
           {match.is_blacklisted ? t('desk.quick.foundBlacklisted') : t('desk.quick.foundStays', { count: match.reservations_count ?? 0 })}

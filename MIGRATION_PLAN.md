@@ -128,7 +128,18 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [ ] **Offline check:** the app shell, fonts and icons work with the network off (offline banner, cached screens); nothing loaded from outside sites
 - [ ] **Every new text goes through `t()`** (`en.json`); no hard-coded words
 - [ ] **Before / after screenshots** of the changed screens in the report
-- [ ] First-download size (≤ 60 KB) noted in the report
+- [ ] First-download size noted in the report: **running total of what the restyle adds** (budget 60 KB gzip, owner 8 Nov) and the full first download
+
+**Report template (owner, 8 Nov):** every partition report ends with: *merge PR #… into `ui/shadcn-admin`, then* `git checkout ui/shadcn-admin && git pull && docker compose up -d --build`. Never "checkout main" for restyle PRs (only the final PR goes to `main`).
+
+**Size log (gzip, from the CI run summary):**
+| After | First download | Added by the restyle | Notes |
+|---|---:|---:|---|
+| P1 (#86) | ≈ 218.5 KB | ≈ 0 | estimate from the raw build sizes (CI did not measure yet) |
+| P2 (#87) | 251.6 KB | ≈ 33 KB | Radix menus / tooltip / dialog, Lucide nav icons, tw-animate CSS; cmdk is lazy (CommandMenu chunk, not counted) |
+| P2 fixes (#88) | 252.2 KB | ≈ 33.7 KB | lock screen / security items |
+| P3 (#89) | 252.9 KB | ≈ 34.4 KB | building blocks, checkbox CSS |
+| P17 (#103, all partitions) | 252.5 KB | **≈ 34 KB** | screens are lazy, so P4–P16 add nothing to the first download |
 
 ### P1 – Foundation (tokens, fonts, theme, notices)
 - [x] Packages: owner chose real packages; he runs the pinned install once (command in the P1 report) before P2. P1 itself needs no new package
@@ -154,65 +165,86 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [x] Super Admin uses the same shell with its own nav
 - [x] Skip-to-main link; keyboard: Ctrl/⌘K, `/`, Ctrl/⌘B, Esc; touch: 44px targets (collapsed sidebar 3.75rem wide on touch screens)
 - [x] CI prints the first-download size (`frontend/scripts/first-download.mjs`, run summary)
-- [ ] Browser check on the owner's machine (light / dark, 375 / 768 / desktop, keyboard)
+- [x] Tablet widths (768–1023px) start with the sidebar collapsed to icons unless the person chose otherwise on that device (owner, 8 Nov)
+- [x] "/" typed in a box never opens the search (test)
+- [ ] Browser check on the owner's machine (light / dark, 375 / 768 / 1024 / desktop, keyboard, room board at 768 and 1024)
 
 ### P3 – The 21 building blocks + Lucide
-- [ ] Button, Card, Badge, StatusBadge, Alert, Field, Select, Tabs, PageHeader, StatTile, Delta
-- [ ] DataTable + ResourceList (table look, toolbar, column-toggle dropdown, pagination, phone cards)
-- [ ] DateRangeFilter (popover), Toaster (sonner look), SmartHints, LoadFailed, SwipeRow, PhotoPickers, QrCode, TempPassword
-- [ ] Heroicons → Lucide inside the building blocks and the navigation
-- [ ] List of screens that still look different → the page partitions below
+- [x] Button, Card, Badge, StatusBadge, Alert, Field, Select, Tabs, PageHeader, StatTile, Delta (same props; template classes; `components/ui/formStyles.ts` holds the input / select / label classes for raw fields on screens)
+- [x] DataTable + ResourceList (template table, toolbar, Radix "Columns" menu that stays open while ticking, pagination, phone cards)
+- [x] DateRangeFilter (kept preset + dates, restyled – QUESTIONS P3-5), Toaster (sonner look), SmartHints, LoadFailed, SwipeRow, PhotoPickers, QrCode, TempPassword
+- [x] Native checkboxes / radios look like the template's (CSS only, no form code changed)
+- [x] Heroicons → Lucide inside the building blocks and the navigation
+- [x] Screens that still look different: raw inputs / selects / tables and Heroicons inside pages → P4–P16
 
 ### P4 – Dashboard (hotel)
-- [ ] Template dashboard pattern (as on the approved canvas): stat cards, "next 7 days" chart card, rooms card, money cards, smart hint alert
+- [x] Template dashboard pattern (as on the approved canvas): stat cards (title + icon, big number, small line), "next 7 days" chart card, rooms card, money cards in the same card style, smart hint alert; occupancy shows "85%" on one line (was "85" with "%" below)
 
 ### P5 – Room board, front desk mode, charge a room
-- [ ] Room cards, status filter chips, tabs (Arriving / Leaving / In house) as data-table toolbar + tabs; room panel; front desk mode tiles
+- [x] Room cards (template card shape: rounded-xl, border, small shadow; room colours kept), status / today filter chips as the template's outline filter buttons, toolbar search + selects in the template look, tabs, room panel, Arriving / Leaving lists, front desk mode tiles, Charge a room, quick charges; Lucide icons
 
 ### P6 – Walk-in
-- [ ] Form pattern: sections as cards, room picker, guest quick check-in, summary card, payment
+- [x] Form pattern: sections as cards, stay-type toggle (template outline buttons), room picker (template card shape, brand outline when chosen), guest match box, quick check-in, summary card, payment; checkboxes in the template look; Lucide
 
 ### P7 – Bookings
-- [ ] List (data-table), calendar, new / change form, booking page, stay panels (check-in, check-out, move, extend, pay), room calendar, registration card **screen** (print stays)
+- [x] List (data-table, search with icon, status filter chips), calendar (bars with borders, today column), new / change form (stay-type toggle, room picker, guest search), booking page, stay panels (check-in, check-out, move, extend, pay), room calendar; Lucide. **Registration card page not touched** (it is the print page)
 
 ### P8 – Bills
-- [ ] Billing list (bills, payments), bill page, charge / discount / payment panels. **Invoice print untouched**
+- [x] Billing list (bills, payments; search with icon, filter chips), bill page (lines, delete buttons, void card), charge / discount / payment panels, payment proof; Lucide. **Invoice print untouched** (no diff in `InvoicePrintPage.tsx` / `components/print`)
 
 ### P9 – Guests
-- [ ] Guest list, guest page, guest form, ID photo
 
+- [x] Guest list (search with icon), guest page (details, stays, blacklist), guest form, ID photo; Lucide
 ### P10 – Modules
-- [ ] Cashier, housekeeping, shifts / roster, attendance, kiosk
 
+- [x] Cashier, housekeeping (room cards, task list selects), shifts / roster (select boxes), attendance, kiosk keypad; Lucide
 ### P11 – Reports and approvals
-- [ ] Reports library + every report, insights, automation reports, approvals
 
+- [x] Reports library (template side menu), every report (KPI cards, tables, heat map, pickup, targets), insights, automation reports, approvals; filter chips; Lucide
 ### P12 – Settings and setup
-- [ ] Settings layout (template Settings pattern) + all sections, import, automations, setup walkthrough
 
+- [x] Settings layout (template settings side menu + search box), all sections, switches in the template look, import preview, automations, setup walkthrough; checkboxes incl. switch-role ones styled; Lucide
 ### P13 – Team, profile, security
-- [ ] Staff, staff form, roles, role form, devices, activity log, profile, security pages
 
+- [x] Staff list and form (role choice cards), roles and role form, devices, activity log (search box), My profile, security cards (two-step choice cards); Lucide
 ### P14 – Sign-in pages
-- [ ] Login, forgot / reset password, change password, two-step, screen lock (template Auth pattern)
 
+- [x] Login, forgot / reset password, change password, two-step, screen lock: template auth layout (brand row, 480px card, left-aligned title + description), Lucide
 ### P15 – Super Admin
-- [ ] Command center, hotels, hotel page (tabs), new hotel, plans, switches, support inbox, releases, content, watchdog, docs, system, activity, team, platform settings, platform reports
 
+- [x] Command center, hotels (filter buttons), hotel page + tabs, new hotel, plans, switches, support inbox + conversation, releases, content, watchdog (severity borders), docs, system, activity, team, platform settings, platform reports; Lucide
 ### P16 – The rest
-- [ ] Help, what's new, subscription, 404, error page, maintenance (template Errors pattern)
 
+- [x] Help (guides), what's new, 404 and screen-error pages (template Errors pattern: big number, short line, buttons), placeholder, design-system page; Lucide. Subscription invoice page not touched (print page)
 ### P17 – Cleanup and final check
-- [ ] Remove Heroicons and dead CSS/components only after a whole-codebase search (ask before removing any package)
-- [ ] Second-pass review of the whole branch against `main`
-- [ ] All checks + every route in light / dark, phone / desktop
-- [ ] Redo the 15 staff-guide pictures (`tools/pictures/`)
+- [x] Dead CSS removed after a codebase search (`menu-in` animation); old layout files removed in P2. **Heroicons kept**: the 3 print pages still use it (QUESTIONS P17-1); no package removed (QUESTIONS P17-2/3)
+- [x] Second-pass review of the whole branch against `main`: every changed screen file compared for handlers, mutations, navigation, `t()` texts, roles and labels – nothing lost (the only drops are explained: bell / columns menus now open through Radix, `disabled:` CSS classes moved into `formStyles`); print pages: no diff
+- [x] Leftover ring class fixed (new hotel plan cards); dev pre-bundling lists lucide-react; docs; QUESTIONS.md complete
+- [x] All checks green on every PR (#88–#103): lint (0 errors; the 8 warnings are old), typecheck, 161 tests, build
+- [ ] Every route in light / dark, phone / tablet / desktop in a browser – **not done: the owner's machine was still on `main`** (see the final report)
+- [ ] Redo the 15 staff-guide pictures (`tools/pictures/`) – needs the running app
 - [ ] **Staging test** before the final PR: deploy `ui/shadcn-admin` to a staging copy (shared-hosting style build), click through as every role
-- [ ] Final report; PR `ui/shadcn-admin → main`
+- [ ] Final PR `ui/shadcn-admin → main` (after the staging test)
 
 ## 6. Status
 | Partition | Status | PR |
 |---|---|---|
 | P0 Plan | approved 8 Nov | – |
 | P1 Foundation | merged 8 Nov | #86 |
-| P2 Layout shell | done, waiting for browser check + OK | (this PR) |
+| P2 Layout shell | merged 8 Nov | #87 |
+| P2 fixes | open | #88 |
+| P3 Building blocks | open (stacked on #88) | #89 |
+| P4 Dashboard | open (stacked on #89) | #90 |
+| P5 Room board, front desk mode, charge a room | open (stacked on #90) | #91 |
+| P6 Walk-in | open (stacked on #91) | #92 |
+| P7 Bookings | open (stacked on #92) | #93 |
+| P8 Bills | open (stacked on #93) | #94 |
+| P9 | open (stacked) | #95 |
+| P10 | open (stacked) | #96 |
+| P11 | open (stacked) | #97 |
+| P12 | open (stacked) | #98 |
+| P13 | open (stacked) | #99 |
+| P14 | open (stacked) | #100 |
+| P15 | open (stacked) | #101 |
+| P16 | open (stacked) | #102 |
+| P17 | open (stacked) | #103 |

@@ -1,7 +1,7 @@
-import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router'
+import { useEffect, useState, type FormEvent } from 'react'
+import { Link, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { KeyIcon } from '@heroicons/react/24/outline'
+import { KeyRoundIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -16,6 +16,12 @@ import { SecurityCards } from './security/SecurityParts'
 export function ProfilePage() {
   const { t } = useTranslation()
   const me = useMe()
+  const { hash } = useLocation()
+  // "Sign-in security" in the account menu opens this page at the security cards.
+  const ready = Boolean(me.data)
+  useEffect(() => {
+    if (hash === '#security' && ready) document.getElementById('security')?.scrollIntoView({ block: 'start' })
+  }, [hash, ready])
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
       <PageHeader title={t('profile.title')} subtitle={t('profile.subtitle')} />
@@ -29,11 +35,15 @@ export function ProfilePage() {
           to="/change-password"
           className={buttonClass('secondary')}
         >
-          <KeyIcon aria-hidden className="size-4 text-icon" />
+          <KeyRoundIcon aria-hidden className="size-4 text-icon" />
           {t('topbar.changePassword')}
         </Link>
       </Card>
-      {!me.data?.impersonation && <SecurityCards />}
+      {!me.data?.impersonation && (
+        <div id="security" className="flex scroll-mt-20 flex-col gap-6">
+          <SecurityCards />
+        </div>
+      )}
       {(me.data?.hotel || me.data?.user.is_super_admin) && !me.data?.impersonation && <TelegramCard />}
     </div>
   )

@@ -48,7 +48,7 @@ export function SwitchesPage() {
                   <li key={def.key} className="flex flex-col gap-3 px-5 py-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="text-[13px] font-medium">{t(`switches.keys.${def.key}`)}</p>
+                        <p className="text-sm font-medium">{t(`switches.keys.${def.key}`)}</p>
                         <p className="text-xs text-muted">
                           {t('switches.default')}: {show(def, def.default, t)}
                         </p>
@@ -83,7 +83,7 @@ function SwitchRows({ def, rows }: { def: SwitchDef; rows: SwitchRow[] }) {
   return (
     <ul className="flex flex-col gap-1.5">
       {rows.map((r) => (
-        <li key={r.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-sunken px-3 py-2 text-[13px]">
+        <li key={r.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-sunken px-3 py-2 text-sm">
           <Badge tone={r.level === 'everyone' ? 'info' : r.level === 'plan' ? 'accent' : 'grey'}>
             {r.level === 'everyone' ? t('switches.levels.everyone') : `${t(`switches.levels.${r.level}`)}: ${r.target_name ?? `#${r.target_id}`}`}
           </Badge>
@@ -155,7 +155,7 @@ function SwitchForm({ def, plans, onDone }: { def: SwitchDef; plans: { id: numbe
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-3 rounded-lg p-3 ring-1 ring-border sm:grid-cols-2 lg:grid-cols-3">
+    <form onSubmit={submit} className="grid gap-3 rounded-lg border p-3 sm:grid-cols-2 lg:grid-cols-3">
       {save.error && (
         <div className="sm:col-span-2 lg:col-span-3">
           <Alert>{errorOf(save.error)}</Alert>
@@ -211,11 +211,11 @@ function Banners({ banners, plans }: { banners: BannerRow[]; plans: { id: number
         <p className="text-xs text-muted">{t('switches.banners.hint')}</p>
       </div>
       {banners.length === 0 ? (
-        <p className="text-[13px] text-muted">{t('switches.banners.none')}</p>
+        <p className="text-sm text-muted">{t('switches.banners.none')}</p>
       ) : (
         <ul className="flex flex-col gap-1.5">
           {banners.map((b) => (
-            <li key={b.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-sunken px-3 py-2 text-[13px]">
+            <li key={b.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-sunken px-3 py-2 text-sm">
               <Badge tone={b.tone === 'danger' ? 'danger' : b.tone === 'warn' ? 'warn' : 'info'}>{t(`switches.banners.tones.${b.tone}`)}</Badge>
               <span className="min-w-0 flex-1">{b.message}</span>
               <span className="text-xs text-muted">

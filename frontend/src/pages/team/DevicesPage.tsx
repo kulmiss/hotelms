@@ -20,7 +20,7 @@ export function DevicesPage() {
       {pending > 0 && <Alert tone="info">{t('devices.waiting', { count: pending })}</Alert>}
       {act.error && <Alert>{errorText(act.error)}</Alert>}
       <Card className="overflow-x-auto p-0">
-        <table className="w-full min-w-[720px] text-left text-[13px]">
+        <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="text-muted">
             <tr>
               <th className="px-4 py-2 font-medium">{t('devices.person')}</th>

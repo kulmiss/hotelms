@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowUturnLeftIcon, CheckCircleIcon, PlusIcon } from '@heroicons/react/20/solid'
+import { CircleCheckIcon, PlusIcon, Undo2Icon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Field } from '@/components/ui/Field'
@@ -74,7 +74,7 @@ export function QuickCharge({ roomId, roomNumber, buttons }: { roomId: number; r
           {asking === 'other' ? (
             <Field label={t('quickCharge.what')} placeholder={t('quickCharge.whatHint')} value={name} onChange={(e) => setName(e.target.value)} autoFocus />
           ) : (
-            <span className="min-h-touch self-center text-[13px] font-medium">{asking.name}</span>
+            <span className="min-h-touch self-center text-sm font-medium">{asking.name}</span>
           )}
           <Field label={t('reservations.amount')} inputMode="decimal" value={amount} autoFocus={asking !== 'other'} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ''))} />
           <Button type="submit" disabled={!amount || Number(amount) <= 0 || (asking === 'other' && !name.trim()) || charge.isPending}>
@@ -88,9 +88,9 @@ export function QuickCharge({ roomId, roomNumber, buttons }: { roomId: number; r
 
       {charge.error && <Alert>{err(charge.error)}</Alert>}
       {last && (
-        <div role="status" className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-ok-bg px-3 py-2 text-[13px] text-ok-text">
+        <div role="status" className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-ok-bg px-3 py-2 text-sm text-ok-text">
           <span className="flex items-center gap-1.5">
-            <CheckCircleIcon aria-hidden className="size-4" />
+            <CircleCheckIcon aria-hidden className="size-4" />
             {t('quickCharge.added', { name: last.description, amount: money(last.amount, last.currency), room: last.room })}
           </span>
           <Button
@@ -98,7 +98,7 @@ export function QuickCharge({ roomId, roomNumber, buttons }: { roomId: number; r
             disabled={undo.isPending}
             onClick={() => undo.mutate(last.id, { onSuccess: () => setAdded((list) => list.slice(0, -1)) })}
           >
-            <ArrowUturnLeftIcon aria-hidden className="size-4" />
+            <Undo2Icon aria-hidden className="size-4" />
             {t('quickCharge.undo')}
           </Button>
         </div>

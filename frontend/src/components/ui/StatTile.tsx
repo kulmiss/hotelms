@@ -13,31 +13,35 @@ const tones: Record<Tone, string> = {
   danger: 'text-danger-text',
 }
 
-/** Filament "stats overview" card; the number counts up when it changes. */
+/** The template's stat card: title and icon on top, a big number, a small line under it. The number counts up when it changes. */
 export function StatTile({
   label,
   value,
   icon: Icon,
   tone = 'accent',
   footer,
+  suffix,
 }: {
   label: string
   value: number | undefined
   icon: IconType
   tone?: Tone
   footer?: ReactNode
+  /** Shown right after the number, e.g. "%". */
+  suffix?: string
 }) {
   const shown = useCountUp(value)
   return (
-    <div className="panel flex flex-col gap-y-1.5 p-5">
-      <div className="flex items-center gap-x-2">
-        <Icon aria-hidden className={cn('size-4', tones[tone])} />
-        <span className="text-[13px] font-medium text-muted">{label}</span>
+    <div data-slot="card" className="panel flex flex-col gap-2 p-6">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm font-medium">{label}</span>
+        <Icon aria-hidden className={cn('size-4 shrink-0', tones[tone])} />
       </div>
-      <span className="text-2xl font-semibold tracking-tight" aria-live="polite">
+      <span className="text-2xl font-bold tracking-tight tabular-nums" aria-live="polite">
         {shown ?? '—'}
+        {shown !== undefined && suffix}
       </span>
-      {footer && <div className={cn('text-sm', tones[tone])}>{footer}</div>}
+      {footer && <div className={cn('text-xs', tones[tone])}>{footer}</div>}
     </div>
   )
 }

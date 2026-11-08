@@ -21,7 +21,7 @@ export function ContentPage() {
   useEffect(() => {
     if (q.data) setF(q.data.data)
   }, [q.data])
-  if (!f) return <p className="text-[13px] text-muted">{t('common.loading')}</p>
+  if (!f) return <p className="text-sm text-muted">{t('common.loading')}</p>
   const d = f.new_hotel_defaults
   const setD = (k: keyof typeof d, v: string) => setF({ ...f, new_hotel_defaults: { ...d, [k]: v } })
   const submit = (e: FormEvent) => {

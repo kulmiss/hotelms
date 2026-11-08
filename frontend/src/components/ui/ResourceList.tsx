@@ -1,7 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline'
-import { PlusIcon } from '@heroicons/react/20/solid'
+import { Plus, SquarePen, Trash2 } from 'lucide-react'
 import { ApiError } from '@/lib/api'
 import { useSettingsDelete, useSettingsList, useSettingsSave } from '@/lib/settings'
 import { Alert } from './Alert'
@@ -68,12 +67,12 @@ export function ResourceList({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <h2 className="text-base font-semibold">{title}</h2>
-          {description && <p className="max-w-prose text-[13px] text-muted">{description}</p>}
+          <h2 className="text-lg font-medium">{title}</h2>
+          {description && <p className="max-w-prose text-sm text-muted">{description}</p>}
         </div>
         {!editing && (
           <Button onClick={() => setEditing({ ...defaults })}>
-            <PlusIcon aria-hidden className="size-4" />
+            <Plus aria-hidden />
             {addLabel}
           </Button>
         )}
@@ -110,9 +109,9 @@ export function ResourceList({
                   type="button"
                   aria-label={t('common.edit')}
                   onClick={() => setEditing(row)}
-                  className="flex size-touch items-center justify-center rounded-lg text-icon hover:bg-sunken hover:text-text"
+                  className="flex size-touch items-center justify-center rounded-md text-muted transition-colors hover:bg-sunken hover:text-text"
                 >
-                  <PencilSquareIcon aria-hidden className="size-4" />
+                  <SquarePen aria-hidden className="size-4" />
                 </button>
                 {canDelete(row) && (
                   <button
@@ -120,9 +119,9 @@ export function ResourceList({
                     aria-label={t('common.delete')}
                     disabled={remove.isPending}
                     onClick={() => row.id && remove.mutate(row.id)}
-                    className="flex size-touch items-center justify-center rounded-lg text-icon hover:bg-danger-bg hover:text-danger-text"
+                    className="flex size-touch items-center justify-center rounded-md text-muted transition-colors hover:bg-danger-bg hover:text-danger-text"
                   >
-                    <TrashIcon aria-hidden className="size-4" />
+                    <Trash2 aria-hidden className="size-4" />
                   </button>
                 )}
               </div>
@@ -173,7 +172,7 @@ function RecordForm({ endpoint, fields, record, onDone }: { endpoint: string; fi
             const picked = (values[f.name] as number[] | '') || []
             return (
               <fieldset key={f.name} className={`flex flex-col gap-1.5 ${cls}`}>
-                <legend className="mb-1.5 text-[13px] font-medium">{f.label}</legend>
+                <legend className="mb-2 text-sm leading-none font-medium">{f.label}</legend>
                 <div className="flex flex-wrap gap-1.5">
                   {[1, 2, 3, 4, 5, 6, 7].map((d) => {
                     const on = picked.includes(d)
@@ -183,21 +182,21 @@ function RecordForm({ endpoint, fields, record, onDone }: { endpoint: string; fi
                         type="button"
                         aria-pressed={on}
                         onClick={() => set(f.name, on ? picked.filter((x) => x !== d) : [...picked, d].sort())}
-                        className={`min-h-touch min-w-12 rounded-lg px-2 text-[13px] font-medium ring-1 transition duration-75 ${on ? 'bg-accent text-on-accent ring-accent' : 'bg-surface text-muted ring-ring hover:bg-sunken'}`}
+                        className={`min-h-touch min-w-12 rounded-md border px-2 text-sm font-medium shadow-xs transition-colors ${on ? 'border-primary bg-primary text-primary-foreground' : 'bg-background text-muted hover:bg-sunken hover:text-text dark:bg-input/30'}`}
                       >
                         {t(`common.weekdays.${d}`)}
                       </button>
                     )
                   })}
                 </div>
-                {err && <p className="text-[13px] text-danger-text">{err}</p>}
+                {err && <p className="text-sm text-danger-text">{err}</p>}
               </fieldset>
             )
           }
           if (f.type === 'checkbox') {
             return (
-              <label key={f.name} className={`flex min-h-touch items-start gap-3 text-[13px] ${cls}`}>
-                <input type="checkbox" className="mt-0.5 size-4 rounded accent-accent" checked={!!values[f.name]} onChange={(e) => set(f.name, e.target.checked)} />
+              <label key={f.name} className={`flex min-h-touch items-start gap-3 text-sm ${cls}`}>
+                <input type="checkbox" className="mt-0.5" checked={!!values[f.name]} onChange={(e) => set(f.name, e.target.checked)} />
                 <span className="flex flex-col">
                   <span className="font-medium">{f.label}</span>
                   {f.hint && <span className="text-muted">{f.hint}</span>}

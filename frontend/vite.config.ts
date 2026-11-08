@@ -28,7 +28,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-dom/client', 'react-router', '@tanstack/react-query', 'i18next', 'react-i18next', '@heroicons/react/24/outline', '@heroicons/react/24/solid', '@heroicons/react/20/solid', '@heroicons/react/16/solid'],
+    include: ['react', 'react-dom', 'react-dom/client', 'react-router', '@tanstack/react-query', 'i18next', 'react-i18next', '@heroicons/react/24/outline', 'lucide-react'],
   },
   build: {
     target: 'es2022',

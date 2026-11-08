@@ -5,7 +5,7 @@ import { SmartHints } from '@/components/ui/SmartHints'
 import { useSmart } from '@/lib/smart'
 import { useMe } from '@/lib/auth'
 import { useCurrentBranch } from '@/lib/branch'
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -17,6 +17,7 @@ import { date } from '@/lib/format'
 import { addDays, today } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { useAssignShift, useMyShifts, useRoster, useUnassignShift } from '@/lib/modules'
+import { SelectBox } from '@/components/ui/Select'
 
 /** Monday of the week of a date. */
 function monday(d: string): string {
@@ -52,8 +53,8 @@ function MyShifts() {
   const mine = useMyShifts()
   return (
     <Card className="flex flex-col gap-2">
-      {mine.data?.data.length === 0 && <p className="text-[13px] text-muted">{t('shifts.noneMine')}</p>}
-      <ul className="flex flex-col divide-y divide-border text-[13px]">
+      {mine.data?.data.length === 0 && <p className="text-sm text-muted">{t('shifts.noneMine')}</p>}
+      <ul className="flex flex-col divide-y divide-border text-sm">
         {mine.data?.data.map((a) => (
           <li key={a.id} className="flex min-h-touch items-center justify-between gap-3 py-1.5">
             <span className="font-medium">{date(a.date)}</span>
@@ -90,19 +91,19 @@ function RosterGrid() {
         <Button variant="secondary" aria-label={t('reservations.later')} onClick={() => setFrom(addDays(from, 7))}>
           <ChevronRightIcon aria-hidden className="size-4" />
         </Button>
-        <span className="text-[13px] text-muted">
+        <span className="text-sm text-muted">
           {date(from)} – {date(addDays(from, 6))}
         </span>
       </div>
       {error instanceof ApiError && <Alert>{Object.values(error.errors)[0]?.[0] ?? error.message}</Alert>}
       {data && data.shifts.length === 0 && <Alert tone="info">{t('shifts.addTemplatesFirst')}</Alert>}
       <Card className="overflow-x-auto p-0">
-        <table className="w-full min-w-[900px] text-left text-[13px]">
-          <thead className="bg-sunken">
+        <table className="w-full min-w-[900px] text-left text-sm">
+          <thead>
             <tr>
-              <th className="px-3 py-2 font-semibold">{t('shifts.person')}</th>
+              <th className="px-3 py-2 font-medium">{t('shifts.person')}</th>
               {days.map((d) => (
-                <th key={d} className="px-2 py-2 font-semibold">
+                <th key={d} className="px-2 py-2 font-medium">
                   {date(d)}
                 </th>
               ))}
@@ -116,9 +117,9 @@ function RosterGrid() {
                   const a = data.assignments.find((x) => x.user_id === s.id && x.date === d)
                   return (
                     <td key={d} className="px-1 py-1">
-                      <select
+                      <SelectBox
                         aria-label={`${s.name} ${d}`}
-                        className="min-h-touch w-full rounded-lg bg-surface px-1.5 text-xs ring-1 ring-ring"
+                        className="w-full ps-1.5 pe-6 text-xs md:text-xs"
                         value={String(a?.shift_id ?? '')}
                         onChange={(e) => {
                           const v = Number(e.target.value)
@@ -132,7 +133,7 @@ function RosterGrid() {
                             {sh.name}
                           </option>
                         ))}
-                      </select>
+                      </SelectBox>
                     </td>
                   )
                 })}

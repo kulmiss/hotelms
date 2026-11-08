@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { PlusIcon } from '@heroicons/react/20/solid'
-import { CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, SearchIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { inputClass } from '@/components/ui/formStyles'
 import { LoadFailed } from '@/components/ui/LoadFailed'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
@@ -85,7 +85,7 @@ function ReservationList() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end gap-3">
         <div className="relative w-full max-w-xs">
-          <MagnifyingGlassIcon aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-icon" />
+          <SearchIcon aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted" />
           <input
             type="search"
             aria-label={t('reservations.search')}
@@ -95,7 +95,7 @@ function ReservationList() {
               setQ(e.target.value)
               setPage(1)
             }}
-            className="min-h-touch w-full rounded-lg bg-surface pr-3 pl-9 text-[13px] shadow-sm ring-1 ring-ring outline-none focus:ring-2 focus:ring-accent"
+            className={cn(inputClass, 'ps-9')}
           />
         </div>
         {branches.length > 1 && (
@@ -122,8 +122,8 @@ function ReservationList() {
               setPage(1)
             }}
             className={cn(
-              'min-h-touch rounded-full px-3 text-[13px] font-medium ring-1 transition duration-75',
-              filter === x.key ? 'bg-accent text-on-accent ring-accent' : 'bg-surface text-muted ring-ring hover:bg-sunken hover:text-text',
+              'min-h-touch rounded-full px-3 text-sm font-medium border shadow-xs transition-colors',
+              filter === x.key ? 'border-primary bg-primary text-primary-foreground' : 'bg-background text-muted hover:bg-sunken dark:bg-input/30 hover:text-text',
             )}
           >
             {t(`reservations.filters.${x.key}`)}
@@ -178,7 +178,7 @@ function ReservationList() {
             render: (r) => (
               <span className="flex flex-col items-start gap-0.5">
                 <Badge tone={STATUS_TONES[r.status]}>{t(`reservations.statuses.${r.status}`)}</Badge>
-                {r.status === 'pending' && r.expires_at && <span className="text-[11px] text-warn-text">{t('reservations.expiresAt', { time: `${date(localDate(r.expires_at))} ${localTime(r.expires_at)}` })}</span>}
+                {r.status === 'pending' && r.expires_at && <span className="text-xs text-warn-text">{t('reservations.expiresAt', { time: `${date(localDate(r.expires_at))} ${localTime(r.expires_at)}` })}</span>}
               </span>
             ),
           },
@@ -213,12 +213,12 @@ export function StayText({ checkIn, checkOut, stayType }: { checkIn: string; che
 const DAYS = 14
 
 const BAR: Record<ReservationStatus, string> = {
-  pending: 'bg-warn-bg text-warn-text ring-warn-text/30',
-  confirmed: 'bg-accent/15 text-accent-text ring-accent/40',
-  checked_in: 'bg-info-bg text-info-text ring-info-text/30',
-  checked_out: 'bg-sunken text-muted ring-ring',
-  cancelled: 'bg-sunken text-muted ring-ring',
-  no_show: 'bg-sunken text-muted ring-ring',
+  pending: 'bg-warn-bg text-warn-text border-warn-text/30',
+  confirmed: 'bg-accent/15 text-accent-text border-accent/40',
+  checked_in: 'bg-info-bg text-info-text border-info-text/30',
+  checked_out: 'bg-sunken text-muted border-border',
+  cancelled: 'bg-sunken text-muted border-border',
+  no_show: 'bg-sunken text-muted border-border',
 }
 
 /** Rooms × days. Bookings without a room number yet sit on a row per room type. */
@@ -301,7 +301,7 @@ function ReservationCalendar() {
             <ChevronRightIcon aria-hidden className="size-4" />
           </Button>
         </div>
-        <span className="text-[13px] text-muted">
+        <span className="text-sm text-muted">
           {date(from)} – {date(addDays(from, DAYS - 1))}
         </span>
       </div>
@@ -310,7 +310,7 @@ function ReservationCalendar() {
       {day && data && <DayRooms day={day} data={data} branchId={current} onClose={() => setDay(null)} />}
       <Card className="overflow-x-auto p-0">
         <div className="min-w-[960px]">
-          <div className="grid border-b border-border bg-sunken text-[11px] font-semibold text-muted" style={{ gridTemplateColumns: `7rem repeat(${DAYS}, minmax(0, 1fr))` }}>
+          <div className="grid border-b border-border bg-sunken text-xs font-semibold text-muted" style={{ gridTemplateColumns: `7rem repeat(${DAYS}, minmax(0, 1fr))` }}>
             <div className="px-3 py-2">{t('reservations.room')}</div>
             {days.map((d) => {
               const wd = new Date(`${d}T00:00:00`).getDay()
@@ -334,13 +334,13 @@ function ReservationCalendar() {
               <div key={row.key} className="relative grid border-b border-border last:border-b-0" style={{ gridTemplateColumns: `7rem repeat(${DAYS}, minmax(0, 1fr))` }}>
                 <div className="flex flex-col justify-center px-3 py-1.5">
                   {row.roomId ? (
-                    <Link to={`/rooms/${row.roomId}/calendar?branch=${current}`} title={t('roomCal.open')} className="text-[13px] font-medium hover:text-accent-text hover:underline">
+                    <Link to={`/rooms/${row.roomId}/calendar?branch=${current}`} title={t('roomCal.open')} className="text-sm font-medium hover:text-accent-text hover:underline">
                       {row.label}
                     </Link>
                   ) : (
-                    <span className="text-[13px] font-medium text-muted italic">{row.label}</span>
+                    <span className="text-sm font-medium text-muted italic">{row.label}</span>
                   )}
-                  <span className="text-[11px] text-muted">{row.sub}</span>
+                  <span className="text-xs text-muted">{row.sub}</span>
                 </div>
                 {days.map((d) => (
                   <div key={d} className={cn('border-l border-border', d === today() && 'bg-accent/5')} style={{ minHeight: `${Math.max(44, lines * 32 + 12)}px` }} />
@@ -355,7 +355,7 @@ function ReservationCalendar() {
                       onFocus={(e) => showTip(b, e.currentTarget)}
                       onMouseLeave={() => setTip(null)}
                       onBlur={() => setTip(null)}
-                      className={cn('pointer-events-auto absolute flex h-7 items-center overflow-hidden rounded-md px-2 text-[11px] font-medium whitespace-nowrap ring-1 transition duration-75 hover:brightness-95', BAR[b.status])}
+                      className={cn('pointer-events-auto absolute flex h-7 items-center overflow-hidden rounded-md px-2 text-xs font-medium whitespace-nowrap border shadow-xs transition-colors hover:brightness-95', BAR[b.status])}
                       style={{ left: `${(start / DAYS) * 100}%`, width: `${((end - start) / DAYS) * 100}%`, top: 8 + line * 32 }}
                     >
                       {b.guest ?? b.code}
@@ -400,12 +400,12 @@ function DayRooms({ day, data, branchId, onClose }: { day: string; data: Calenda
         </Button>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[560px] text-left text-[13px]">
+        <table className="w-full min-w-[560px] text-left text-sm">
           <thead className="bg-sunken text-xs text-muted">
             <tr>
-              <th className="px-3 py-2 font-semibold">{t('reservations.room')}</th>
-              <th className="px-3 py-2 font-semibold">{t('roomCal.thatNight')}</th>
-              <th className="px-3 py-2 font-semibold">{t('roomCal.leavingCol')}</th>
+              <th className="px-3 py-2 font-medium">{t('reservations.room')}</th>
+              <th className="px-3 py-2 font-medium">{t('roomCal.thatNight')}</th>
+              <th className="px-3 py-2 font-medium">{t('roomCal.leavingCol')}</th>
             </tr>
           </thead>
           <tbody>
@@ -457,7 +457,7 @@ function BookingTip({ b, x, y }: { b: CalendarBooking; x: number; y: number }) {
       style={{ left: Math.max(8, Math.min(x, window.innerWidth - 136)), top: below ? y + 36 : y - 8 }}
       className={cn('pointer-events-none fixed z-50 flex w-64 -translate-x-1/2 flex-col gap-1 rounded-lg bg-text px-3 py-2 text-xs text-bg shadow-lg animate-page-in', !below && '-translate-y-full')}
     >
-      <span className="text-[13px] font-semibold">{b.guest ?? b.code}</span>
+      <span className="text-sm font-semibold">{b.guest ?? b.code}</span>
       <span className="opacity-80">
         {b.code} · {t(`reservations.statuses.${b.status}`)}
       </span>

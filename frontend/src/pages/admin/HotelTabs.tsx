@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowDownTrayIcon, ArrowUpTrayIcon, EyeIcon, HomeModernIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { BedDoubleIcon, DownloadIcon, EyeIcon, UploadIcon, UsersIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -30,7 +30,7 @@ export function PlanUsage({ hotelId }: { hotelId: number }) {
           const { used, limit } = o.data.data.usage[k]
           const pct = limit ? Math.min(100, Math.round((used * 100) / limit)) : 0
           return (
-            <li key={k} className="flex flex-col gap-1.5 text-[13px]">
+            <li key={k} className="flex flex-col gap-1.5 text-sm">
               <span className="flex justify-between">
                 <span>{t(`switches.keys.limit.${k}`)}</span>
                 <span className="font-medium">{limit ? `${used} / ${limit}` : `${used} · ${t('admin.plans.unlimited')}`}</span>
@@ -61,7 +61,7 @@ export function LiveData({ hotelId, currency }: { hotelId: number; currency: str
     return (
       <Card>
         <form onSubmit={load} className="flex max-w-lg flex-col gap-3">
-          <p className="text-[13px] text-muted">{t('hotelTabs.liveWhy')}</p>
+          <p className="text-sm text-muted">{t('hotelTabs.liveWhy')}</p>
           {live.error && <Alert>{errorOf(live.error)}</Alert>}
           <Field label={t('hotelTabs.reason')} value={reason} minLength={3} maxLength={200} required onChange={(e) => setReason(e.target.value)} />
           <div>
@@ -79,12 +79,12 @@ export function LiveData({ hotelId, currency }: { hotelId: number; currency: str
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatTile label={t('hotelTabs.occupancy')} value={d.occupancy} icon={HomeModernIcon} footer={t('hotelTabs.roomsLine', { occupied: d.occupied, rooms: d.rooms })} />
-        <StatTile label={t('hotelTabs.arrivals')} value={d.arrivals} icon={ArrowDownTrayIcon} tone="info" />
-        <StatTile label={t('hotelTabs.departures')} value={d.departures} icon={ArrowUpTrayIcon} tone="warn" />
+        <StatTile label={t('hotelTabs.occupancy')} value={d.occupancy} icon={BedDoubleIcon} footer={t('hotelTabs.roomsLine', { occupied: d.occupied, rooms: d.rooms })} />
+        <StatTile label={t('hotelTabs.arrivals')} value={d.arrivals} icon={DownloadIcon} tone="info" />
+        <StatTile label={t('hotelTabs.departures')} value={d.departures} icon={UploadIcon} tone="warn" />
         <StatTile label={t('hotelTabs.staffOnline')} value={d.staff_online} icon={UsersIcon} tone="ok" />
       </div>
-      <Card className="flex flex-wrap items-center gap-x-6 gap-y-1 text-[13px]">
+      <Card className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
         <span>
           {t('hotelTabs.bookingsMade')}: <strong>{d.bookings_made}</strong>
         </span>
@@ -98,9 +98,9 @@ export function LiveData({ hotelId, currency }: { hotelId: number; currency: str
       <Card className="flex flex-col gap-2">
         <h2 className="text-sm font-semibold">{t('hotelTabs.latestActivity')}</h2>
         {data.activity.length === 0 ? (
-          <p className="text-[13px] text-muted">{t('common.nothingYet')}</p>
+          <p className="text-sm text-muted">{t('common.nothingYet')}</p>
         ) : (
-          <ul className="flex flex-col divide-y divide-border text-[13px]">
+          <ul className="flex flex-col divide-y divide-border text-sm">
             {data.activity.map((a) => (
               <li key={a.id} className="flex flex-wrap justify-between gap-2 py-2">
                 <span>
@@ -120,14 +120,14 @@ export function LiveData({ hotelId, currency }: { hotelId: number; currency: str
 export function StaffAndDevices({ hotelId }: { hotelId: number }) {
   const { t } = useTranslation()
   const o = useHotelOverview(hotelId)
-  if (o.isPending) return <p className="text-[13px] text-muted">{t('common.loading')}</p>
+  if (o.isPending) return <p className="text-sm text-muted">{t('common.loading')}</p>
   if (!o.data) return <Alert>{errorOf(o.error)}</Alert>
   const { staff, devices } = o.data.data
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <Card className="flex flex-col gap-2">
         <h2 className="text-sm font-semibold">{t('hotelTabs.staff', { count: staff.length })}</h2>
-        <ul className="flex flex-col divide-y divide-border text-[13px]">
+        <ul className="flex flex-col divide-y divide-border text-sm">
           {staff.map((s) => (
             <li key={s.id} className="flex items-center justify-between gap-2 py-2">
               <span className="min-w-0">
@@ -147,9 +147,9 @@ export function StaffAndDevices({ hotelId }: { hotelId: number }) {
       <Card className="flex flex-col gap-2">
         <h2 className="text-sm font-semibold">{t('hotelTabs.devices', { count: devices.length })}</h2>
         {devices.length === 0 ? (
-          <p className="text-[13px] text-muted">{t('common.nothingYet')}</p>
+          <p className="text-sm text-muted">{t('common.nothingYet')}</p>
         ) : (
-          <ul className="flex flex-col divide-y divide-border text-[13px]">
+          <ul className="flex flex-col divide-y divide-border text-sm">
             {devices.map((d) => (
               <li key={d.id} className="flex items-center justify-between gap-2 py-2">
                 <span className="min-w-0">
@@ -175,7 +175,7 @@ export function NotesAndAccess({ hotelId }: { hotelId: number }) {
   const remove = useRemoveNote(hotelId)
   const me = useMe()
   const [f, setF] = useState({ body: '', channel: '' })
-  if (o.isPending) return <p className="text-[13px] text-muted">{t('common.loading')}</p>
+  if (o.isPending) return <p className="text-sm text-muted">{t('common.loading')}</p>
   if (!o.data) return <Alert>{errorOf(o.error)}</Alert>
   const { notes, access } = o.data.data
   const myName = me.data?.user.name
@@ -210,7 +210,7 @@ export function NotesAndAccess({ hotelId }: { hotelId: number }) {
         </form>
         <ul className="flex flex-col gap-2">
           {notes.map((n) => (
-            <li key={n.id} className="rounded-lg bg-sunken px-3 py-2 text-[13px]">
+            <li key={n.id} className="rounded-lg bg-sunken px-3 py-2 text-sm">
               <p className="whitespace-pre-wrap">{n.body}</p>
               <p className="mt-1 flex items-center justify-between gap-2 text-xs text-muted">
                 <span>
@@ -231,9 +231,9 @@ export function NotesAndAccess({ hotelId }: { hotelId: number }) {
         <h2 className="text-sm font-semibold">{t('hotelTabs.access')}</h2>
         <p className="text-xs text-muted">{t('hotelTabs.accessHint')}</p>
         {access.length === 0 ? (
-          <p className="text-[13px] text-muted">{t('common.nothingYet')}</p>
+          <p className="text-sm text-muted">{t('common.nothingYet')}</p>
         ) : (
-          <ul className="flex flex-col divide-y divide-border text-[13px]">
+          <ul className="flex flex-col divide-y divide-border text-sm">
             {access.map((a) => (
               <li key={a.id} className="flex flex-col py-2">
                 <span>
