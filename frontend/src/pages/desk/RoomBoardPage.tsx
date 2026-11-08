@@ -57,7 +57,8 @@ export function RoomBoardPage() {
         }
       />
       <div className="flex flex-wrap items-end gap-3">
-        <div className="min-w-0 flex-1">
+        {/* Phones: the tabs get the whole row (the branch box goes below), so all four tabs show. */}
+        <div className="w-full sm:w-auto sm:min-w-0 sm:flex-1">
           <Tabs
             label={t('nav.roomBoard')}
             active={tab}

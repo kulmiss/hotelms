@@ -342,6 +342,21 @@
   }
 }
 
+/* Phones: tab rows wrap onto a second line, so every tab is visible (owner, 8 Nov), each 44px tall to tap. */
+@media (max-width: 639px) {
+  [data-slot='tabs-list'] {
+    display: flex !important;
+    flex-wrap: wrap;
+    width: 100% !important;
+    height: auto !important;
+    gap: 3px;
+    overflow: visible !important;
+  }
+  [data-slot='tabs-list'] > [role='tab'] {
+    height: 2.75rem !important;
+  }
+}
+
 /* Swipeable tab rows: scroll sideways without a visible bar. */
 @utility no-scrollbar {
   scrollbar-width: none;
