@@ -211,8 +211,8 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 
 - [x] Command center, hotels (filter buttons), hotel page + tabs, new hotel, plans, switches, support inbox + conversation, releases, content, watchdog (severity borders), docs, system, activity, team, platform settings, platform reports; Lucide
 ### P16 – The rest
-- [ ] Help, what's new, subscription, 404, error page, maintenance (template Errors pattern)
 
+- [x] Help (guides), what's new, 404 and screen-error pages (template Errors pattern: big number, short line, buttons), placeholder, design-system page; Lucide. Subscription invoice page not touched (print page)
 ### P17 – Cleanup and final check
 - [ ] Remove Heroicons and dead CSS/components only after a whole-codebase search (ask before removing any package)
 - [ ] Second-pass review of the whole branch against `main`
@@ -241,3 +241,4 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P13 | open (stacked) | #99 |
 | P14 | open (stacked) | #100 |
 | P15 | open (stacked) | #101 |
+| P16 | open (stacked on the previous PR) | (this PR) |
