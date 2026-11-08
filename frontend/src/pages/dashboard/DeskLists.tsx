@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import { useQueries } from '@tanstack/react-query'
+import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { ChartCard, widgetState } from '@/components/charts/kit'
 import { Badge } from '@/components/ui/Badge'
@@ -83,7 +84,7 @@ export function DeskLists({ f, tab: wanted, setTab, onStay, onInvoice }: { f: Da
   )
 }
 
-function stayBadge(r: TodayRow, t: (k: string) => string) {
+function stayBadge(r: TodayRow, t: TFunction) {
   if (r.overdue) return <Badge tone="danger">{t('dash.desk.overdue')}</Badge>
   if (r.late) return <Badge tone="warn">{t('dash.desk.late')}</Badge>
   if (r.open_stay) return <Badge tone="info">{t('dash.desk.noEndDate')}</Badge>
