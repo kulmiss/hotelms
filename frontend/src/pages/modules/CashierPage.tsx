@@ -28,7 +28,7 @@ const TONES = { open: 'info', closed: 'warn', approved: 'ok' } as const
 export function CashierPage() {
   const { t } = useTranslation()
   const can = useCan()
-  const current = useCurrentShift()
+  const current = useCurrentShift(can('cashier.own_shift'))
   const shift = current.data?.data
   const smart = useSmart('cashier', {}, Boolean(shift) && can('cashier.own_shift'))
 
