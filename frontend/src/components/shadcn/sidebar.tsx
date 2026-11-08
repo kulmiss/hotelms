@@ -21,12 +21,18 @@ const SIDEBAR_WIDTH_MOBILE = '18rem'
 const SIDEBAR_WIDTH_ICON = '3rem'
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b'
 
+/** Tablet widths (owner, 8 Nov): the sidebar starts as icons only, so the page has room. */
+const TABLET_QUERY = '(min-width: 768px) and (max-width: 1023px)'
+
+/** Open or collapsed when the app starts: the person's own choice on this device wins; otherwise collapsed on tablets. */
 export function readSidebarOpen(): boolean {
   try {
-    return localStorage.getItem(STORAGE_KEY) !== '1'
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved !== null) return saved !== '1'
   } catch {
-    return true
+    // private mode: no saved choice
   }
+  return !window.matchMedia?.(TABLET_QUERY).matches
 }
 
 type SidebarContextProps = {
