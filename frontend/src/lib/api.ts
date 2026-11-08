@@ -43,7 +43,25 @@ export async function prepareSession(): Promise<void> {
   await fetch(ROOT + '/sanctum/csrf-cookie', { credentials: 'include' })
 }
 
-export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+/**
+ * A change sent twice while the first is still on its way (double-click / double tap, often on a slow network) is
+ * sent once: the second caller gets the first answer (QA 8 Nov: a double-click on "Add guest" made two guests).
+ * Only exactly the same change (method, address and data) at the same time; one after the other is sent again.
+ */
+const inFlight = new Map<string, Promise<unknown>>()
+
+export function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const method = (init.method ?? 'GET').toUpperCase()
+  if (method === 'GET' || (init.body !== undefined && typeof init.body !== 'string')) return send<T>(path, init)
+  const key = `${method} ${path} ${init.body ?? ''}`
+  const running = inFlight.get(key)
+  if (running) return running as Promise<T>
+  const p = send<T>(path, init).finally(() => inFlight.delete(key))
+  inFlight.set(key, p)
+  return p
+}
+
+async function send<T>(path: string, init: RequestInit = {}): Promise<T> {
   // Offline: nothing can be changed (read-only copy). The form keeps what was typed.
   if ((init.method ?? 'GET') !== 'GET' && typeof navigator !== 'undefined' && navigator.onLine === false) {
     throw new ApiError(0, i18n.t('offline.cannotChange'), { code: 'offline' })
