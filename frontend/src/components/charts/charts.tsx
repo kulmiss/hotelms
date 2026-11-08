@@ -161,7 +161,10 @@ export function Donut({ slices, center, label, onSelect, size = 132 }: { slices:
             stroke="none"
             isAnimationActive={!reduced}
             animationDuration={250}
-            onClick={(_, i) => onSelect?.(shown[i]?.key)}
+            onClick={(_, i) => {
+              const key = shown[i]?.key
+              if (key) onSelect?.(key)
+            }}
           >
             {shown.map((s) => (
               <Cell key={s.key} fill={s.color} style={{ cursor: onSelect ? 'pointer' : undefined }} />
