@@ -5,20 +5,29 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * HotelMS design tokens – Filament-style panel (zinc greys, teal primary).
- * Same names in light and dark, so components never hard-code colours.
+ * HotelMS design tokens – shadcn-admin look (template satnaing/shadcn-admin @ e16c87f, MIT:
+ * see THIRD_PARTY_NOTICES). Values are the template's "slate" theme (OKLCH); the primary colour
+ * is the hotel brand colour from Super Admin (lib/brand.tsx writes --accent at run time).
+ *
+ * Our token names stay, so every screen keeps working. How they map to shadcn's names:
+ *   bg = background · surface = card / popover · sunken = muted / accent (hover, active nav)
+ *   text = foreground · muted = muted-foreground · accent = primary · on-accent = primary-foreground
+ *   border = border · ring = card outline (= border) · ring-strong = input · focus = ring (focus)
  */
 :root {
   --touch: 2.25rem;
-  --bg: #f8f8f9; /* page */
-  --surface: #ffffff;
-  --sunken: #f4f4f5; /* zinc-100: hover, active nav, table head */
-  --border: #e4e4e7; /* zinc-200 */
-  --ring: rgb(9 9 11 / 0.05); /* ring-zinc-950/5 around cards */
-  --ring-strong: rgb(9 9 11 / 0.1); /* inputs, secondary buttons */
-  --text: #09090b; /* zinc-950 */
-  --muted: #71717a; /* zinc-500 */
-  --icon: #a1a1aa; /* zinc-400 nav icons */
+  --radius: 0.625rem;
+  --bg: oklch(1 0 0);
+  --surface: oklch(1 0 0);
+  --sunken: oklch(0.968 0.007 247.896);
+  --border: oklch(0.929 0.013 255.508);
+  --ring: oklch(0.929 0.013 255.508);
+  --ring-strong: oklch(0.929 0.013 255.508);
+  --focus: oklch(0.704 0.04 256.788);
+  --text: oklch(0.129 0.042 264.695);
+  --muted: oklch(0.554 0.046 257.417);
+  --icon: oklch(0.554 0.046 257.417);
+  --sidebar: oklch(1 0 0);
   --accent: #0f766e;
   --accent-hover: #115e59;
   --accent-soft: #f0fdfa;
@@ -32,27 +41,34 @@
   --info-text: #1d4ed8;
   --danger-bg: #fef2f2;
   --danger-text: #b91c1c;
-  --danger: #dc2626;
-  --grey-bg: #f4f4f5;
-  --grey-text: #52525b;
+  --danger: oklch(0.577 0.245 27.325);
+  --grey-bg: oklch(0.968 0.007 247.896);
+  --grey-text: oklch(0.446 0.043 257.281);
   --room-occupied: #0f766e;
   --room-available: #16a34a;
   --room-dirty: #d97706;
   --room-clean: #2563eb;
   --room-maintenance: #a1a1aa;
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
   color-scheme: light;
 }
 
 .dark {
-  --bg: #09090b; /* zinc-950 */
-  --surface: #18181b; /* zinc-900 */
-  --sunken: rgb(255 255 255 / 0.05);
-  --border: rgb(255 255 255 / 0.1);
-  --ring: rgb(255 255 255 / 0.1);
-  --ring-strong: rgb(255 255 255 / 0.2);
-  --text: #ffffff;
-  --muted: #a1a1aa;
-  --icon: #71717a;
+  --bg: oklch(0.129 0.042 264.695);
+  --surface: oklch(0.14 0.04 259.21);
+  --sunken: oklch(0.279 0.041 260.031);
+  --border: oklch(1 0 0 / 10%);
+  --ring: oklch(1 0 0 / 10%);
+  --ring-strong: oklch(1 0 0 / 15%);
+  --focus: oklch(0.551 0.027 264.364);
+  --text: oklch(0.984 0.003 247.858);
+  --muted: oklch(0.704 0.04 256.788);
+  --icon: oklch(0.704 0.04 256.788);
+  --sidebar: oklch(0.129 0.042 264.695);
   --accent: #14b8a6;
   --accent-hover: #2dd4bf;
   --accent-soft: rgb(20 184 166 / 0.1);
@@ -66,14 +82,19 @@
   --info-text: #60a5fa;
   --danger-bg: rgb(239 68 68 / 0.1);
   --danger-text: #f87171;
-  --danger: #ef4444;
-  --grey-bg: rgb(255 255 255 / 0.05);
-  --grey-text: #d4d4d8;
+  --danger: oklch(0.704 0.191 22.216);
+  --grey-bg: oklch(0.279 0.041 260.031);
+  --grey-text: oklch(0.869 0.022 252.894);
   --room-occupied: #2dd4bf;
   --room-available: #4ade80;
   --room-dirty: #fbbf24;
   --room-clean: #60a5fa;
   --room-maintenance: #71717a;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
   color-scheme: dark;
 }
 
@@ -108,6 +129,28 @@
   --color-room-dirty: var(--room-dirty);
   --color-room-clean: var(--room-clean);
   --color-room-maintenance: var(--room-maintenance);
+  --color-focus: var(--focus);
+  --color-sidebar: var(--sidebar);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  /* shadcn names for new code (no clash with ours): */
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-card: var(--surface);
+  --color-popover: var(--surface);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--on-accent);
+  --color-muted-foreground: var(--muted);
+  --color-destructive: var(--danger);
+  --color-input: var(--ring-strong);
+  /* the template's corner sizes (radius 0.625rem): sm 6px, md 8px, lg 10px, xl 14px */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   /* Controls: 36px with a mouse, 44px on touch screens (see :root below). */
   --spacing-touch: var(--touch);
@@ -161,19 +204,34 @@
   #root {
     height: 100%;
   }
-  /* Slim, quiet scrollbars everywhere (no old-style arrows on Windows). */
-  * {
+  /* Like the template: border colour everywhere, slim quiet scrollbars. */
+  *,
+  ::before,
+  ::after {
+    border-color: var(--border);
     scrollbar-width: thin;
-    scrollbar-color: color-mix(in oklab, var(--muted) 45%, transparent) transparent;
+    scrollbar-color: var(--border) transparent;
   }
   body {
     @apply bg-bg font-sans text-sm text-text antialiased;
-    font-feature-settings: 'cv11', 'ss01'; /* Inter: cleaner shapes */
     -webkit-tap-highlight-color: transparent;
   }
+  /* The template's focus ring: 3px, focus colour at 50%. */
   :focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
+    outline: 3px solid color-mix(in oklab, var(--focus) 50%, transparent);
+    outline-offset: 1px;
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+  /* Phones: 16px text in fields so iOS does not zoom in. */
+  @media screen and (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
   }
   @media (prefers-reduced-motion: reduce) {
     *,
@@ -186,9 +244,9 @@
 }
 
 @layer components {
-  /* Filament "section": white card with a fine ring and small shadow. */
+  /* The template's card: rounded-xl, border, card colour, small shadow. */
   .panel {
-    @apply rounded-xl bg-surface shadow-[0_1px_2px_rgb(0_0_0/0.04)] ring-1 ring-ring;
+    @apply rounded-xl border border-border bg-surface shadow-sm;
   }
 
   /* Developer docs (Markdown made into HTML by the server). */
