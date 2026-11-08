@@ -29,7 +29,7 @@ export function DashboardPage() {
   const branches = me.data?.branches ?? []
   const [branchId, setBranchId] = useState<number | null>(null)
   const isHotelUser = !!me.data?.hotel
-  const dash = useDashboard(branchId)
+  const dash = useDashboard(branchId, isHotelUser && can('dashboard.view'))
   const d = isHotelUser && can('dashboard.view') ? dash.data?.data : undefined
   const smart = useSmart('dashboard', { branch_id: branchId }, isHotelUser && can('dashboard.view'))
 

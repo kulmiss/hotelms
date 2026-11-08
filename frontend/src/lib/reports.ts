@@ -46,8 +46,9 @@ export type ReportFilters = { from: string; to: string; compare?: 'prev' | 'ly' 
 const qs = (f: Record<string, string | number | null | undefined>) =>
   new URLSearchParams(Object.entries(f).filter(([, v]) => v !== undefined && v !== null && v !== '').map(([k, v]) => [k, String(v)])).toString()
 
-export const useDashboard = (branchId: number | null) =>
-  useQuery({ queryKey: ['dashboard', branchId], queryFn: () => api<{ data: Dashboard }>(`/dashboard${branchId ? `?branch_id=${branchId}` : ''}`), refetchInterval: 60_000, placeholderData: keepPreviousData })
+/** Only for people with dashboard.view (others would get 403 every minute – QA s1). */
+export const useDashboard = (branchId: number | null, enabled = true) =>
+  useQuery({ queryKey: ['dashboard', branchId], queryFn: () => api<{ data: Dashboard }>(`/dashboard${branchId ? `?branch_id=${branchId}` : ''}`), refetchInterval: 60_000, placeholderData: keepPreviousData, enabled })
 
 export function useReport<T>(key: string, f: ReportFilters, enabled = true) {
   return useQuery({ queryKey: ['reports', key, f], queryFn: () => api<{ data: T & { from: string; to: string; currency: string; compare_range: [string, string] | null } }>(`/reports/${key}?${qs(f)}`), placeholderData: keepPreviousData, enabled })

@@ -8,6 +8,7 @@ use App\Models\Approval;
 use App\Models\Branch;
 use App\Models\Guest;
 use App\Models\Hotel;
+use App\Models\HousekeepingTask;
 use App\Models\PaymentMethod;
 use App\Models\Plan;
 use App\Models\RateRule;
@@ -142,6 +143,21 @@ class AutomationsTest extends TestCase
         // Room actions only with room events.
         $this->postJson('/api/v1/settings/automation-rules', ['name' => 'x', 'trigger' => 'booking_created', 'actions' => [['type' => 'room_status', 'status' => 'dirty']]])
             ->assertJsonValidationErrors('actions.0.type');
+    }
+
+    /** Owner (QA 8 Nov): a rule never adds a second open task of the same kind for one room. */
+    public function test_a_rule_adds_no_second_open_task_of_the_same_kind(): void
+    {
+        $this->actingAs($this->admin)->postJson('/api/v1/settings/automation-rules', [
+            'name' => 'Check the room', 'trigger' => 'room_status_changed',
+            'actions' => [['type' => 'housekeeping_task', 'task' => 'inspection', 'message' => 'Check the room']],
+        ])->assertCreated();
+        $room = $this->inHotel(fn () => Room::first());
+
+        $this->postJson("/api/v1/rooms/{$room->id}/status", ['status' => 'maintenance'])->assertOk();
+        $this->postJson("/api/v1/rooms/{$room->id}/status", ['status' => 'available'])->assertOk();
+
+        $this->assertSame(1, $this->inHotel(fn () => HousekeepingTask::where('room_id', $room->id)->where('type', 'inspection')->where('status', '!=', 'done')->count()));
     }
 
     public function test_a_cancelled_paid_booking_prepares_a_refund_for_approval(): void
