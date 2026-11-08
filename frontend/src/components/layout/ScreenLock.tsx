@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { LockClosedIcon } from '@heroicons/react/24/outline'
+import { LockIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Field } from '@/components/ui/Field'
@@ -110,9 +110,9 @@ function LockScreen({ name, canUsePin, onUnlocked }: { name: string; canUsePin: 
 
   return (
     <div role="dialog" aria-modal="true" aria-labelledby="lock-title" className="fixed inset-0 z-50 flex items-center justify-center bg-bg/95 p-4 backdrop-blur-xl">
-      <form onSubmit={submit} noValidate className="panel flex w-full max-w-sm flex-col gap-5 p-7">
+      <form onSubmit={submit} noValidate className="panel flex w-full max-w-[480px] flex-col gap-5 p-6 sm:p-8">
         <div className="flex flex-col items-center gap-2 text-center">
-          <LockClosedIcon aria-hidden className="size-8 text-icon" />
+          <LockIcon aria-hidden className="size-8 text-icon" />
           <h1 id="lock-title" className="text-lg font-semibold">
             {t('lock.title')}
           </h1>

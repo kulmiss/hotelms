@@ -13,14 +13,14 @@ import { BrandMark, useBrand } from '@/lib/brand'
 function Frame({ title, intro, children }: { title: string; intro: string; children: ReactNode }) {
   const brand = useBrand()
   return (
-    <div className="flex min-h-full flex-col items-center justify-center gap-y-6 px-4 py-12">
-      <span className="flex items-center gap-x-2.5 text-lg font-semibold tracking-tight">
-        <BrandMark className="size-9" />
+    <div className="flex min-h-svh flex-col items-center justify-center gap-y-4 px-4 py-8">
+      <span className="mb-2 flex items-center justify-center gap-x-2 text-xl font-medium">
+        <BrandMark className="size-8" />
         {brand.name}
       </span>
-      <Card className="flex w-full max-w-sm flex-col gap-y-6 p-7 animate-page-in motion-reduce:animate-none">
-        <div className="flex flex-col gap-y-2 text-center">
-          <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
+      <Card className="flex w-full max-w-[480px] flex-col gap-y-6 p-6 animate-page-in sm:p-8 motion-reduce:animate-none">
+        <div className="flex flex-col gap-y-1.5">
+          <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
           <p className="text-sm text-muted">{intro}</p>
         </div>
         {children}
@@ -61,7 +61,7 @@ export function ForgotPasswordPage() {
           </Button>
         </form>
       )}
-      <Link to="/login" className="text-center text-sm text-accent-text hover:underline">
+      <Link to="/login" className="text-center text-sm font-medium text-muted hover:opacity-75">
         {t('reset.backToSignIn')}
       </Link>
     </Frame>

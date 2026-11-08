@@ -205,8 +205,8 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 
 - [x] Staff list and form (role choice cards), roles and role form, devices, activity log (search box), My profile, security cards (two-step choice cards); Lucide
 ### P14 – Sign-in pages
-- [ ] Login, forgot / reset password, change password, two-step, screen lock (template Auth pattern)
 
+- [x] Login, forgot / reset password, change password, two-step, screen lock: template auth layout (brand row, 480px card, left-aligned title + description), Lucide
 ### P15 – Super Admin
 - [ ] Command center, hotels, hotel page (tabs), new hotel, plans, switches, support inbox, releases, content, watchdog, docs, system, activity, team, platform settings, platform reports
 
@@ -239,3 +239,4 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P11 | open (stacked) | #97 |
 | P12 | open (stacked) | #98 |
 | P13 | open (stacked) | #99 |
+| P14 | open (stacked on the previous PR) | (this PR) |
