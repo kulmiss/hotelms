@@ -219,8 +219,13 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 ### P17 – Cleanup and final check
 - [x] Dead CSS removed after a codebase search (`menu-in` animation); old layout files removed in P2. **Heroicons kept**: the 3 print pages still use it (QUESTIONS P17-1); no package removed (QUESTIONS P17-2/3)
 - [x] Second-pass review of the whole branch against `main`: every changed screen file compared for handlers, mutations, navigation, `t()` texts, roles and labels – nothing lost (the only drops are explained: bell / columns menus now open through Radix, `disabled:` CSS classes moved into `formStyles`); print pages: no diff
-
 - [x] Leftover ring class fixed (new hotel plan cards); dev pre-bundling lists lucide-react; docs; QUESTIONS.md complete
+- [x] All checks green on every PR (#88–#103): lint (0 errors; the 8 warnings are old), typecheck, 161 tests, build
+- [ ] Every route in light / dark, phone / tablet / desktop in a browser – **not done: the owner's machine was still on `main`** (see the final report)
+- [ ] Redo the 15 staff-guide pictures (`tools/pictures/`) – needs the running app
+- [ ] **Staging test** before the final PR: deploy `ui/shadcn-admin` to a staging copy (shared-hosting style build), click through as every role
+- [ ] Final PR `ui/shadcn-admin → main` (after the staging test)
+
 ## 6. Status
 | Partition | Status | PR |
 |---|---|---|
