@@ -240,4 +240,4 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P12 | open (stacked) | #98 |
 | P13 | open (stacked) | #99 |
 | P14 | open (stacked) | #100 |
-| P15 | open (stacked on the previous PR) | (this PR) |
+| P15 | open (stacked) | #101 |
