@@ -205,7 +205,8 @@ function StaffActions({ member }: { member: StaffMember }) {
             <p className="text-xs text-muted">{t('admin.hotel.resetHelp', { name: member.name })}</p>
             <label className="flex min-h-touch items-center gap-3 text-sm">
               <input type="checkbox" className="size-5 rounded" checked={sendEmail} onChange={(e) => setSendEmail(e.target.checked)} />
-              {t('admin.hotel.emailIt', { email: member.email })}
+              {/* A long email address wraps instead of pushing the page sideways. */}
+              <span className="min-w-0 [overflow-wrap:anywhere]">{t('admin.hotel.emailIt', { email: member.email })}</span>
             </label>
             <Button variant="secondary" disabled={reset.isPending} onClick={() => reset.mutate(sendEmail)}>
               <KeyRoundIcon aria-hidden className="size-4 text-icon" />

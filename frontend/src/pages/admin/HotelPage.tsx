@@ -365,7 +365,7 @@ function ResetPassword({ hotelId, user }: { hotelId: number; user: { id: number;
       <p className="text-xs text-muted">{t('admin.hotel.resetHelp', { name: user.name })}</p>
       <label className="flex min-h-touch items-center gap-3 text-sm">
         <input type="checkbox" className="size-5" checked={sendEmail} onChange={(e) => setSendEmail(e.target.checked)} />
-        {t('admin.hotel.emailIt', { email: user.email })}
+        <span className="min-w-0 [overflow-wrap:anywhere]">{t('admin.hotel.emailIt', { email: user.email })}</span>
       </label>
       {reset.isError && <Alert>{t('common.serverUnreachable')}</Alert>}
       <div className="flex justify-end gap-2">

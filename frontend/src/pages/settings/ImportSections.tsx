@@ -260,7 +260,7 @@ export function ImportSettings() {
       <div className="flex flex-col gap-2">
         <h3 className="text-sm font-semibold">{t('import.history')}</h3>
         {undo.error instanceof ApiError && <Alert>{undo.error.field('import') ?? undo.error.message}</Alert>}
-        <Card className="overflow-x-auto p-0">
+        <Card className="relative overflow-x-auto p-0">
           <table className="w-full min-w-[520px] text-left text-sm">
             <tbody>
               {list.data?.data.map((i) => (

@@ -43,7 +43,7 @@ export function TeamPage() {
       {adding && <AddMember roles={roles} onDone={() => setAdding(false)} />}
       {update.error && <Alert>{errorOf(update.error)}</Alert>}
 
-      <Card className="overflow-x-auto p-0">
+      <Card className="relative overflow-x-auto p-0">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead>
             <tr>
@@ -170,7 +170,7 @@ function PermissionGrid({ roles, permissions }: { roles: string[]; permissions: 
         <p className="text-xs text-muted">{t('platformTeam.gridHint')}</p>
       </div>
       {save.error && <Alert>{errorOf(save.error)}</Alert>}
-      <div className="overflow-x-auto">
+      <div className="relative overflow-x-auto">
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead>
             <tr className="border-b border-border">
