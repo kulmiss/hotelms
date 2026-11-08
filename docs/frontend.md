@@ -45,6 +45,8 @@
 - **Money actions** use `useMoneyAction` (`lib/desk.ts`): the same `Idempotency-Key` until the server says yes (no double payment on a bad network).
 - **Live screens** poll (`refetchInterval: 30_000`); no WebSockets (hosting limit).
 
+- **Double submit** (QA 8 Nov): `api()` sends a change (POST / PUT / PATCH / DELETE) that is exactly the same as one still on its way only once – the second caller gets the first answer (double-click on a slow network). Money routes also send an `Idempotency-Key`, which the server checks.
+
 ## Who sees what
 
 - `useMe()` (`lib/auth.ts`): the signed-in person, hotel, branches, role, `permissions`, modules, switches, impersonation.
