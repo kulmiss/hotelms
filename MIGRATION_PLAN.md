@@ -222,7 +222,8 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [x] Leftover ring class fixed (new hotel plan cards); dev pre-bundling lists lucide-react; docs; QUESTIONS.md complete
 - [x] All checks green on every PR (#88–#103): lint (0 errors; the 8 warnings are old), typecheck, 161 tests, build
 - [ ] Every route in light / dark, phone / tablet / desktop in a browser – **not done: the owner's machine was still on `main`** (see the final report)
-- [ ] Redo the 15 staff-guide pictures (`tools/pictures/`) – needs the running app
+- [x] Unused packages removed (owner, 8 Nov): `sonner` and 9 unused Radix parts (#104); Heroicons kept for the print pages
+- [ ] Redo the 15 staff-guide pictures (owner: after the browser check passes) (`tools/pictures/`) – needs the running app
 - [ ] **Staging test** before the final PR: deploy `ui/shadcn-admin` to a staging copy (shared-hosting style build), click through as every role
 - [ ] Final PR `ui/shadcn-admin → main` (after the staging test)
 
