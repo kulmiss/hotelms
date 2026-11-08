@@ -190,8 +190,8 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [x] Billing list (bills, payments; search with icon, filter chips), bill page (lines, delete buttons, void card), charge / discount / payment panels, payment proof; Lucide. **Invoice print untouched** (no diff in `InvoicePrintPage.tsx` / `components/print`)
 
 ### P9 – Guests
-- [ ] Guest list, guest page, guest form, ID photo
 
+- [x] Guest list (search with icon), guest page (details, stays, blacklist), guest form, ID photo; Lucide
 ### P10 – Modules
 - [ ] Cashier, housekeeping, shifts / roster, attendance, kiosk
 
@@ -234,3 +234,4 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P6 Walk-in | open (stacked on #91) | #92 |
 | P7 Bookings | open (stacked on #92) | #93 |
 | P8 Bills | open (stacked on #93) | #94 |
+| P9 | open (stacked on the previous PR) | (this PR) |
