@@ -153,7 +153,7 @@ describe('module overviews (P18)', () => {
     renderApp('/reports')
     expect(await screen.findByText('Bookings made')).toBeInTheDocument()
     expect(screen.getByText('100%')).toBeInTheDocument() // 20 bookings, up from 10
-    await userEvent.click(screen.getAllByRole('button', { name: /performance/i })[0])
-    expect(window.location.search).toContain('report=performance')
+    await userEvent.click(screen.getAllByRole('button', { name: /Revenue and performance/ })[0])
+    expect(screen.getByRole('button', { name: 'Revenue and performance', current: 'page' })).toBeInTheDocument()
   })
 })
