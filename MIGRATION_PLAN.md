@@ -234,4 +234,4 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P6 Walk-in | open (stacked on #91) | #92 |
 | P7 Bookings | open (stacked on #92) | #93 |
 | P8 Bills | open (stacked on #93) | #94 |
-| P9 | open (stacked on the previous PR) | (this PR) |
+| P9 | open (stacked) | #95 |
