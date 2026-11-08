@@ -235,6 +235,19 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [x] Tests (collapsed below 1024px, desktop as before, count and chips, Clear all, session memory, keyboard, room board on a phone)
 - [x] Browser check at 375 / 768 / 1024 / 1280, light and dark, before/after pictures (8 Nov: first room at 637px instead of 1105px on a phone)
 
+### QA fixes (owner, 8 Nov – from `QA_REPORT.md`)
+- [x] Layout overflow: bill page at 1024px, Super Admin team at 768px, long emails (#109)
+- [x] "You can't open this page" instead of a silent redirect (#110)
+- [x] Touch targets (44px), dark-mode swipe contrast, translated labels (#111)
+- [x] One open housekeeping task per room and kind (rule); clean-up: extra 403, 14 unused texts, easy role errors (#112)
+- [x] Docs, THIRD_PARTY_NOTICES, LICENSE (placeholders), What's new draft (#113)
+- [x] Demo approvals on every reset (#114); double-click on a slow network sends once (#115)
+- [ ] Saved once with idempotency keys on every money / data action; calendar tap on touch (#116 + #117, needs `migrate`)
+- [ ] Redo the 15 staff-guide pictures; re-run the QA checks on everything fixed and update `QA_REPORT.md`
+- [ ] **Owner: fill in the `LICENSE` placeholders – must be done before the final PR to `main`**
+
+## 6. Status
+
 | Partition | Status | PR |
 |---|---|---|
 | P0 Plan | approved 8 Nov | – |
@@ -260,4 +273,5 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | Browser-check fixes | merged 8 Nov | #105 |
 | P19 Collapsible filters | merged 8 Nov | #106 → #107 |
 | Full QA pass | report | #108 |
-| QA fixes 1–5 | open | #109–#113 |
+| QA fixes | merged 8 Nov | #109–#115 |
+| Saved once + calendar tap | open | #116 (+ #117) |

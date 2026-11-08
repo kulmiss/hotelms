@@ -72,8 +72,8 @@ No change (nothing to fold): Staff, Roles, Devices, Shifts, Housekeeping, Approv
 
 ## QA fixes (8 Nov)
 
-1. **Licence holder** – `LICENSE` has placeholders `[OWNER FULL NAME / COMPANY NAME]` and `[OWNER EMAIL]`. *Recommend:* your registered company name (or your full name until the company exists) and a contact email. – Easy.
-2. **Room-calendar booking bars** (16–24px high on phones) stay as they are: they are drawn to the length of each stay. Tapping a day header (44px now) opens the same bookings. *Recommend:* keep. – Easy.
-3. **Approvals** in the demo are made only by automations (refund after cancelling a paid booking, price suggestions, new devices). *Recommend:* the demo reset makes 2–3 waiting approvals so they can be tried (changes `demo:reset`, needs your OK). – Easy.
+1. **[OPEN – must be done before the final PR to `main`] Licence holder** – `LICENSE` has placeholders `[OWNER FULL NAME / COMPANY NAME]` and `[OWNER EMAIL]`. Owner (8 Nov): leave them for now, fill in later. – Easy.
+2. **[Answered 8 Nov: keep, if a tap opens the booking]** **Room-calendar booking bars** stay as they are; the hover card now opens only with a mouse, so a tap opens the booking (#117). – Easy.
+3. **[Answered 8 Nov: yes, on every reset]** **Demo approvals** – every demo reset makes price suggestions and a refund to try (#114). – Easy.
 4. **"What's new" draft** is in `docs/drafts/whats-new-new-look.md`. You publish it in Super Admin → Releases after review. – Easy.
 
