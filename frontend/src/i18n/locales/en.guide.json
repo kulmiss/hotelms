@@ -41,9 +41,9 @@
     "search": {
       "title": "Find anything fast",
       "steps": [
-        "Use the search box at the top. Press Ctrl and K together to go there.",
+        "Tap the search box at the top. A search window opens. You can also press Ctrl and K together.",
         "Type a guest name, a phone number, a room number or a booking code.",
-        "Tap the result to open it.",
+        "Tap the result to open it, or press Enter.",
         "You can also ask simple questions, like \"free rooms\" or \"who is in room 105\"."
       ]
     },
@@ -71,13 +71,13 @@
         "Tap your picture at the top right → My profile.",
         "Change your name or phone, then tap Save.",
         "Tap Change password to choose a new password.",
-        "Link Telegram if you want to get reports and alerts on your phone."
+        "Link Telegram if you want to get reports and alerts on your phone.", "Light or dark screen: tap the sun button at the top right."
       ]
     },
     "branch": {
       "title": "Choose your branch",
       "steps": [
-        "If your hotel has more than one branch, choose your branch at the top of the page.",
+        "If your hotel has more than one branch, tap the name at the top of the menu (left side) and choose your branch.",
         "All pages then show that branch: rooms, bookings, cleaning.",
         "The app remembers your choice on this computer."
       ]
