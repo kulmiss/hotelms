@@ -137,21 +137,24 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [x] Our old token names (`bg-surface`, `text-muted`, `bg-accent`…) point at the new values, so **every screen changes colour at once** and nothing breaks
 - [x] Brand colour → primary: `lib/brand.tsx` already writes it into `--accent` / `--on-accent` (= shadcn primary / primary-foreground); the sidebar uses it in P2
 - [x] Base styles from the template (border colour, focus ring `ring/50`, cursor pointer, thin scrollbars, 16 px inputs on phones)
-- [ ] `cn()` uses `clsx` + `tailwind-merge` → moved to P2 (needs the packages)
+- [x] `cn()` uses `clsx` + `tailwind-merge` → done in P2
 - [x] `THIRD_PARTY_NOTICES` with the template's MIT licence
 - [x] `CLAUDE.md` design rules → shadcn-admin style (Lucide, slate tokens, brand primary, touch rule)
 - [x] Check (owner's machine, 8 Nov): dashboard, room board, walk-in, bookings, bills render in light / dark, phone / desktop; invoice print unchanged; no new errors
 
 ### P2 – Layout shell
-- [ ] Owner's package install committed (`package.json` + `package-lock.json`); `cn()` with `clsx` + `tailwind-merge`
-- [ ] Sidebar (inset, collapsible to icons, rail, tooltips when collapsed, mobile sheet, state remembered), groups / items / collapsible Settings / badges from `app/navigation.ts`
-- [ ] Branch switcher in the team-switcher slot; brand logo + name from Super Admin branding
-- [ ] `NavUser` footer and `ProfileDropdown` with all current user-menu items
-- [ ] Header: trigger, separator, search button (⌘K), alert bell, theme switch (Light / Dark / System), profile; blur + shadow when scrolled
-- [ ] Command menu (cmdk): current global search + settings search + navigation + theme, same permissions
-- [ ] Banners (demo countdown, support, session, offline, maintenance) in alert style above the header; navigation progress bar
-- [ ] Super Admin uses the same shell with its own nav
-- [ ] Skip-to-main link; keyboard and focus checks
+- [x] Owner's package install committed (`package.json` + `package-lock.json`, 90b0068); `cn()` with `clsx` + `tailwind-merge`
+- [x] shadcn primitives from the template in `components/shadcn/` (sidebar, button, dropdown menu, popover, tooltip, dialog, sheet, command, separator); class names translated to our tokens (README there)
+- [x] Sidebar (inset, collapsible to icons, rail, tooltips when collapsed, phone drawer below 768px, state remembered with the old key), groups / items from `app/navigation.ts` (Lucide icons). *No Settings sub-menu: Settings keeps its own page menu.*
+- [x] Branch switcher in the team-switcher slot; brand logo + name from Super Admin branding, branch as the second line
+- [x] `NavUser` footer and `ProfileDropdown` with all current user-menu items (profile, password, front desk mode, what's new, help, sign out)
+- [x] Header: trigger, separator, search button (Ctrl/⌘K), alert bell (Radix popover), theme switch (Light / Dark / Same as device – moved out of the account menu, like the template), profile; blur + shadow when scrolled
+- [x] Command menu (cmdk, **lazy**): server search + settings search + pages + theme, same permissions; Enter opens the first result
+- [x] Banners (demo countdown, support, offline, new version, read-only, HotelMS messages) as strips above the header (Lucide icons); progress bar 2px grey
+- [x] Super Admin uses the same shell with its own nav
+- [x] Skip-to-main link; keyboard: Ctrl/⌘K, `/`, Ctrl/⌘B, Esc; touch: 44px targets (collapsed sidebar 3.75rem wide on touch screens)
+- [x] CI prints the first-download size (`frontend/scripts/first-download.mjs`, run summary)
+- [ ] Browser check on the owner's machine (light / dark, 375 / 768 / desktop, keyboard)
 
 ### P3 – The 21 building blocks + Lucide
 - [ ] Button, Card, Badge, StatusBadge, Alert, Field, Select, Tabs, PageHeader, StatTile, Delta
@@ -211,4 +214,5 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | Partition | Status | PR |
 |---|---|---|
 | P0 Plan | approved 8 Nov | – |
-| P1 Foundation | done, waiting for OK | (this PR) |
+| P1 Foundation | merged 8 Nov | #86 |
+| P2 Layout shell | done, waiting for browser check + OK | (this PR) |

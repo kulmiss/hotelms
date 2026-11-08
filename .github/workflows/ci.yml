@@ -104,6 +104,8 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+      - name: First download size (gzip, shown in the run summary)
+        run: node scripts/first-download.mjs
       - name: Save package-lock.json if it was missing
         if: github.event_name == 'pull_request'
         run: |
