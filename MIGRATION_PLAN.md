@@ -123,15 +123,15 @@ Light primary is near-black slate; dark primary is near-white. We swap primary f
 Each partition: list files → change → compare old/new for lost buttons, handlers, fields, messages, loading / empty / error states and permission checks → CI green (typecheck, lint, tests, build) → browser check (light, dark, 375 px, 768 px, desktop) → commit(s) → tick here → short report → **stop for OK**.
 
 ### P1 – Foundation (tokens, fonts, theme, notices)
-- [ ] Add packages: `lucide-react`, `clsx`, `tailwind-merge`, `class-variance-authority`, `tw-animate-css`, Radix `slot`, `dropdown-menu`, `dialog`, `tooltip`, `collapsible`, `popover`, `separator`, `scroll-area`, and `cmdk` (only what P1–P3 use)
-- [ ] `components.json` (template's, aliases adapted to our folders)
-- [ ] shadcn tokens (slate, OKLCH, radius) in `index.css`, light + dark
-- [ ] Our old token names (`bg-surface`, `text-muted`, `bg-accent`…) point at the new values, so **every screen changes colour at once** and nothing breaks
-- [ ] Brand colour → `--primary`, `--primary-foreground`, `--ring`, `--sidebar-primary` (light + dark)
-- [ ] Base styles from the template (border colour, focus ring `ring/50`, cursor pointer, thin scrollbars, 16 px inputs on phones)
-- [ ] `cn()` uses `clsx` + `tailwind-merge`
-- [ ] `THIRD_PARTY_NOTICES` with the template's MIT licence
-- [ ] `CLAUDE.md` design rules → shadcn-admin style (Lucide, slate tokens, brand primary, touch rule)
+- [ ] ~~Add packages~~ **Not possible from Claude's workspace (npm registry blocked); see the P1 report – question to the owner.** P1 needs no new package
+- [x] `components.json` (template's, aliases adapted to our folders)
+- [x] shadcn tokens (slate, OKLCH, radius) in `index.css`, light + dark
+- [x] Our old token names (`bg-surface`, `text-muted`, `bg-accent`…) point at the new values, so **every screen changes colour at once** and nothing breaks
+- [x] Brand colour → primary: `lib/brand.tsx` already writes it into `--accent` / `--on-accent` (= shadcn primary / primary-foreground); the sidebar uses it in P2
+- [x] Base styles from the template (border colour, focus ring `ring/50`, cursor pointer, thin scrollbars, 16 px inputs on phones)
+- [ ] `cn()` uses `clsx` + `tailwind-merge` (waits for the package question)
+- [x] `THIRD_PARTY_NOTICES` with the template's MIT licence
+- [x] `CLAUDE.md` design rules → shadcn-admin style (Lucide, slate tokens, brand primary, touch rule)
 - [ ] Check: every page renders; print pages unchanged
 
 ### P2 – Layout shell
@@ -200,4 +200,5 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 ## 6. Status
 | Partition | Status | PR |
 |---|---|---|
-| P0 Plan | waiting for approval | – |
+| P0 Plan | approved 8 Nov | – |
+| P1 Foundation | done, waiting for OK | (this PR) |
