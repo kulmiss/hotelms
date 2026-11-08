@@ -371,9 +371,11 @@ function ReservationCalendar() {
                       key={b.id}
                       to={`/reservations/${b.reservation_id}`}
                       aria-label={`${b.guest ?? b.code}, ${date(localDate(b.check_in_at))} – ${date(localDate(b.check_out_at))}`}
-                      onMouseEnter={(e) => showTip(b, e.currentTarget)}
+                      // The hover card only for a mouse: on a touch screen the first tap must open the booking
+                      // (a card appearing on touch makes some tablets treat the tap as hover only).
+                      onPointerEnter={(e) => e.pointerType === 'mouse' && showTip(b, e.currentTarget)}
                       onFocus={(e) => showTip(b, e.currentTarget)}
-                      onMouseLeave={() => setTip(null)}
+                      onPointerLeave={() => setTip(null)}
                       onBlur={() => setTip(null)}
                       className={cn('pointer-events-auto absolute flex h-7 items-center overflow-hidden rounded-md px-2 text-xs font-medium whitespace-nowrap border shadow-xs transition-colors hover:brightness-95', BAR[b.status])}
                       style={{ left: `${(start / DAYS) * 100}%`, width: `${((end - start) / DAYS) * 100}%`, top: 8 + line * 32 }}
