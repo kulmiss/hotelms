@@ -54,7 +54,7 @@ Format: **question** – options – *chosen* and why – how easy to change lat
 1. **[Answered 8 Nov: keep for the print pages]** **Heroicons package stays** – only the three print pages still use it (the on-screen Print / paper-size buttons). You said print pages stay exactly as they are, so I did not touch them; removing the package would need those pages changed and your OK. *Recommend:* keep it until you allow a small icon change on the print pages' toolbar (not the paper). – Easy later.
 2. **[Answered 8 Nov: remove – PR #104]** **`sonner` is installed but not used** (P3 kept our own toasts). *Recommend:* remove it in a later PR with your OK (removing a package needs your OK). – Easy.
 3. **[Answered 8 Nov: remove – PR #104]** **`@radix-ui/react-avatar`, `-checkbox`, `-radio-group`, `-switch`, `-tabs`, `-label`, `-alert-dialog`, `-scroll-area`, `-collapsible`** are installed but not used (CSS / own components did the job without changing form code). They are not in the download (unused code is dropped by the build). *Recommend:* keep for now, or remove together with sonner. – Easy.
-4. **Staff guide pictures** (15 screenshots in `frontend/public/guide/`) still show the old look. They are made by `tools/pictures/` against a running app; I cannot run the app in my workspace. *Recommend:* after the staging test, I redo them in your browser. – Medium.
+4. **[Done 8 Nov – PR #119]** **Staff guide pictures** (15 screenshots in `frontend/public/guide/`) still show the old look. They are made by `tools/pictures/` against a running app; I cannot run the app in my workspace. *Recommend:* after the staging test, I redo them in your browser. – Medium.
 5. **Final PR `ui/shadcn-admin → main` is not opened yet** – your plan asks for a staging test first. *Recommend:* merge #88 → #103 in order into `ui/shadcn-admin`, test on staging (or locally), then I open the final PR. – —
 
 ## P19 – Collapsible filters on phones and tablets
@@ -77,3 +77,9 @@ No change (nothing to fold): Staff, Roles, Devices, Shifts, Housekeeping, Approv
 3. **[Answered 8 Nov: yes, on every reset]** **Demo approvals** – every demo reset makes price suggestions and a refund to try (#114). – Easy.
 4. **"What's new" draft** is in `docs/drafts/whats-new-new-look.md`. You publish it in Super Admin → Releases after review. – Easy.
 
+
+## QA part 2 (8 Nov, evening)
+
+1. **Branch Manager and the currency list** – Settings → Currencies opened for a Branch Manager but the list gave 403, so the exchange-rate form never showed. `permissions.md` gives Branch Managers `settings.exchange_rates` ("update exchange rates only"). *Chose:* reading the currency list also works with `settings.exchange_rates`; adding / changing / removing currencies still needs `settings.money` (test added, #119). – Easy (one route).
+2. **Restaurant / Bar can open Reports by its address** (not in the menu). It shows "Your role has no reports", no data. *Recommend:* show the "You can't open this page" screen instead, like other blocked screens. Not changed yet – your call. – Easy.
+3. **I reset the demo hotel once** during the re-check (the two demo approvals had already been decided in part 1, so there was nothing to approve). My earlier QA test data is gone; the demo hotel id is now 16. – —

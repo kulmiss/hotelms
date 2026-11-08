@@ -299,7 +299,7 @@ Business rules still answered first where they apply (cash needs an open shift i
 **Scheduler / clean-up:** Docker runs it (`scheduler` service, `schedule:work`); Super Admin → System shows the scheduler green. The cPanel cron line is in `docs/hosting.md` (2a step 6) and in the go-live checklist.
 **Rollback:** the migration's `down()` drops the table. Checked locally (migrate → rollback → migrate). CI now runs `migrate`, `migrate:rollback --step=1`, `migrate` before the tests on every PR.
 
-### Still to do when the owner's computer is on (part 2)
+### Part 2 to-do list (done – results in §8)
 1. **Guide pictures (15)** – plan, screens, demo data and marks: `tools/pictures/guide-pictures.md`.
 2. **QA re-run** on everything fixed, at 375 / 768 / 1024 / 1280 / 1920, light and dark:
    - bill page 1024 (S1), Super Admin team 768 (M4), staff page 1024 dark (s2);
@@ -311,3 +311,55 @@ Business rules still answered first where they apply (cash needs an open shift i
    - calendar bar opens the booking on the first tap (#117);
    - full crawl again (all routes × sizes × modes) for regressions.
 3. Update this report (part 2) with the results.
+
+
+## 8. Re-check after the fixes – part 2 (8 Nov, night)
+
+- **Branch / commit:** `ui/shadcn-admin` @ `edd5eab` (everything up to #118), in the owner's browser at `localhost:5173`. Fixes found tonight are in **#119** (not merged, so not in the browser yet; each was tried in the page first).
+- **Hotel:** only Sheger Demo Hotel (id 15, then **16** after one demo reset – see below). Roles used through Super Admin "log in as hotel" with a reason. No passwords typed.
+
+### How it was checked
+The same script as part 1 opened every screen and recorded sideways scroll, text contrast, raw translation keys, tap targets under 44px (touch, 375px), console errors, failed or slow API calls, and where the browser was sent.
+- **Hotel screens:** 53 addresses (every page, detail page, settings section and the two print pages), as Hotel Admin, at **375 / 768 / 1024 / 1280 / 1920px, light and dark** (10 runs).
+- **Super Admin:** 22 addresses (every Super Admin page, a hotel page, the new-hotel form – opened, not sent – docs, profile, help, what's new, and two hotel addresses), 10 runs.
+- **Roles:** every role (Manager, Reception, Housekeeping, Accountant, Restaurant / Bar) opened all 53 addresses + `/admin` at 1280px.
+- Scenario checks by hand (below).
+
+### Fixed items – result
+
+| Item | Result |
+|---|---|
+| S1 bill page at 1024px | ✓ no sideways scroll (light and dark) |
+| **New:** bill page at **768px** scrolled sideways 66px | ✗ → fixed in #119 (one-column grid, all 7 two-column screens) |
+| M4 Super Admin → Team at 768px | ✓ |
+| s2 staff page at 1024px dark | ✓ |
+| M1 "You can't open this page" | ✓ for every role and every blocked address (also Super Admin on hotel addresses). No silent redirects; Restaurant's start page still goes to Charge a room, as designed |
+| M2 front desk mode rows, M5 header icons, breadcrumbs, calendar day headers, kiosk link, Team checkboxes | ✓ 44px on touch |
+| **New:** small links still under 44px on touch: Smart hint "Open", cashier booking links, walk-in "Make a reservation", bill → booking, booking → guest, "Add proof", Super Admin activity hotel links, developer-docs file links | ✗ → fixed in #119 (`tap-link`) |
+| Booking and room calendar bars (16–28px) | kept, as you decided; a tap opens the booking (see #117 below) |
+| M3 swipe action in dark mode | ✓ dark text on the brand colour (about 6:1) |
+| s1 housekeeping start page 403 | ✓ no error |
+| **New:** Accountant's Cashier page asked for "my shift" → 403 on every load | ✗ → fixed in #119 (test added) |
+| **New:** Branch Manager → Settings → Currencies: list gave 403 | ✗ → fixed in #119 (server, test added; QUESTIONS.md "QA part 2" 1) |
+| s3 / s4 raw translation keys | ✓ none on any screen, label or tooltip |
+| Text contrast | ✓ nothing under 4.5:1 in any run (light and dark) |
+| Rule "one open task per room and kind" | ✓ Manager adding a second cleaning task for room 110: clear message + **Show the open task** link, which jumps to that task. Still one open task |
+| Demo approvals | ✓ approved one and rejected one in the screen; both show the manager's name in Approved / Rejected |
+| #117 calendar bar on touch | ✓ a touch tap opens the booking, no hover card; a mouse still shows the hover card |
+| Guide pictures | ✓ all 15 redone in the new look (#119) |
+| Console errors, crashes, failed calls | ✓ none, except the ones fixed above. A one-branch person opening a booking of the other branch gets the friendly "Not found … branch you do not work in" page (correct) |
+
+### Role × screen – re-check
+Same as §2, now with the "You can't open this page" screen instead of a redirect. Sidebars show exactly the allowed screens.
+Differences from §2: Restaurant / Bar still opens `/reports` by address ("Your role has no reports", no data) – QUESTIONS.md "QA part 2" 2.
+
+### Notes
+- **Demo reset:** the two demo approvals had already been decided in part 1, so I reset the demo hotel once (Super Admin, demo only). The demo is now hotel 16; my part-1 test data is gone.
+- **Speed:** on the first load of the dashboard, `/dashboard` and `/smart/dashboard` sometimes took 2.5–5 s in the dev setup (Docker on your laptop, many requests at once). Alone they take about 0.3 s. Worth a look on the live server; not a code problem found.
+- The test announcement "hi the hi the…" is still live on the demo (§4 s9, your to-do).
+- "What's new" is still empty until you publish the draft (go-live checklist).
+
+### Still open
+- LICENSE placeholders – must be filled before the final PR to `main`.
+- Restaurant / Bar → `/reports` by address (your call).
+- Things I cannot test (you check in person): password change, kiosk PIN, two-step sign-in, screen-lock unlock, session timeout, sign out / in. See the final report.
