@@ -96,6 +96,17 @@ class RoleController extends Controller
             'max_discount_percent' => ['required', 'decimal:0,2', 'between:0,100'],
             'permissions' => ['present', 'array'],
             'permissions.*' => ['string', Rule::in(Permissions::all())],
+        ], [
+            // Easy words (QA s5): never "permissions.2" or "max discount percent field".
+            'name.required' => 'Type a name for the role.',
+            'name.unique' => 'A role with this name already exists.',
+            'max_discount_percent.required' => 'Type the highest discount this role may give, from 0 to 100.',
+            'max_discount_percent.decimal' => 'Type the discount as a number, like 10 or 12.5.',
+            'max_discount_percent.between' => 'The discount must be from 0 to 100.',
+            'permissions.present' => 'Choose what this role may do.',
+            'permissions.array' => 'Choose what this role may do.',
+            'permissions.*.in' => 'One of the chosen permissions does not exist. Reload the page and try again.',
+            'permissions.*.string' => 'One of the chosen permissions does not exist. Reload the page and try again.',
         ]);
     }
 

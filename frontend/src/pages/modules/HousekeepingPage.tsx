@@ -21,6 +21,7 @@ import { localTime } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { useDoneTask, useHkBoard, useHkStaff, useSaveTask, useStartTask, useTasks, type Task } from '@/lib/modules'
 
+const openTaskId = (e: unknown) => (e instanceof ApiError ? Number((e.body as { existing_task_id?: number } | null)?.existing_task_id ?? 0) : 0)
 const err = (e: unknown) => (e instanceof ApiError ? (Object.values(e.errors)[0]?.[0] ?? e.message) : null)
 const PRIORITY = { high: 'danger', normal: 'grey', low: 'grey' } as const
 
@@ -167,7 +168,19 @@ function AssignTasks({ branchId }: { branchId: number | null }) {
           ))}
         </Select>
         <Field label={t('guests.notes')} value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} />
-        {save.error && <div className="sm:col-span-5"><Alert>{err(save.error)}</Alert></div>}
+        {save.error && (
+          <div className="sm:col-span-5">
+            <Alert>
+              {err(save.error)}{' '}
+              {/* Owner (QA 8 Nov): one open task per room and kind – show the one that is open. */}
+              {openTaskId(save.error) > 0 && (
+                <a href={`#task-${openTaskId(save.error)}`} className="font-medium underline">
+                  {t('housekeeping.showOpenTask')}
+                </a>
+              )}
+            </Alert>
+          </div>
+        )}
         <div className="flex justify-end sm:col-span-5">
           <Button disabled={!f.room_id || save.isPending} onClick={() => save.mutate({ ...f, assigned_to: f.assigned_to || null, notes: f.notes || null }, { onSuccess: () => setF({ ...f, room_id: 0, notes: '' }) })}>
             {t('housekeeping.addTask')}
@@ -187,7 +200,7 @@ function AssignTasks({ branchId }: { branchId: number | null }) {
           </thead>
           <tbody>
             {tasks.data?.data.map((task: Task) => (
-              <tr key={task.id} className="border-t border-border">
+              <tr key={task.id} id={`task-${task.id}`} className="scroll-mt-24 border-t border-border target:bg-warn-bg">
                 <td className="px-4 py-2 font-medium">{task.room?.number}</td>
                 <td className="px-4 py-2">{t(`housekeeping.types.${task.type}`)}</td>
                 <td className="px-4 py-2">

@@ -1,7 +1,4 @@
 {
-  "app": {
-    "name": "HotelMS"
-  },
   "common": {
     "loading": "Loading…",
     "serverUnreachable": "Can't reach the server. Check the internet and try again.",
@@ -87,14 +84,9 @@
   "topbar": {
     "search": "Search guests, rooms, bookings, bills",
     "openMenu": "Open menu",
-    "closeMenu": "Close menu",
     "notifications": "Notifications",
-    "lightMode": "Light mode",
-    "darkMode": "Dark mode",
     "branch": "Branch",
-    "mainBranch": "Main branch",
     "signOut": "Sign out",
-    "superAdmin": "Super Admin",
     "hotelmsTeam": "HotelMS team",
     "accountMenu": "Account menu",
     "profile": "My profile",
@@ -143,8 +135,6 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "welcome": "Welcome to HotelMS",
-    "intro": "This is the Phase 0 foundation. Hotel features arrive phase by phase.",
     "apiStatus": "API status",
     "yourWork": "Your work",
     "roomsToClean": "Rooms to clean",
@@ -251,9 +241,6 @@
     },
     "newHotel": {
       "subtitle": "Creates the hotel, its main branch and its Hotel Admin account.",
-      "hotelSection": "Hotel",
-      "planSection": "Plan and free trial",
-      "adminSection": "Hotel Admin",
       "name": "Hotel name",
       "city": "City",
       "email": "Hotel email",
@@ -528,8 +515,7 @@
       "who": "Who",
       "what": "What happened",
       "system": "HotelMS",
-      "empty": "Nothing recorded yet.",
-      "page": "Page {{page}} of {{of}}"
+      "empty": "Nothing recorded yet."
     }
   },
   "permissionGroups": {
@@ -632,7 +618,6 @@
     "loginAs": "Log in as hotel",
     "loginAsTitle": "Log in to {{hotel}}",
     "loginAsHelp": "You'll see the hotel exactly as this user does. No password is needed. The visit, with your reason, is recorded in your log and in the hotel's own activity log.",
-    "reason_label": "Reason",
     "reasonPlaceholder": "e.g. Help with setting up rooms",
     "as": "Sign in as",
     "hotelAdmin": "The Hotel Admin",
@@ -1543,7 +1528,8 @@
     "type": "Task",
     "priority": "Priority",
     "person": "Person",
-    "addTask": "Add task"
+    "addTask": "Add task",
+    "showOpenTask": "Show the open task"
   },
   "shifts": {
     "subtitle": "Who works when.",
@@ -1891,7 +1877,6 @@
     "newCodes": "New recovery codes",
     "app": {
       "step1": "Install an authenticator app on your phone (Google Authenticator or Microsoft Authenticator).",
-      "step2": "In the app, add an account and type this key:",
       "openOnPhone": "On this phone? Open it in the app",
       "step3": "Type the 6-digit code the app shows.",
       "scan": "In the app, tap \"+\" and scan this code:",

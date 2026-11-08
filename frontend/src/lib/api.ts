@@ -14,11 +14,14 @@ export class ApiError extends Error {
   readonly status: number
   readonly code?: string
   readonly errors: Record<string, string[]>
+  /** The whole answer (e.g. `existing_task_id` when a room already has that open task). */
+  readonly body: unknown
 
   constructor(status: number, message: string, body: unknown) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    this.body = body
     const b = (body ?? {}) as { code?: string; errors?: Record<string, string[]> }
     this.code = b.code
     this.errors = b.errors ?? {}
