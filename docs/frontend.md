@@ -51,6 +51,7 @@
 - `useCan()` (`lib/hotel.ts`): `can('x.y')` or `can(['a', 'b'])` (any). Menu items and buttons hide when not allowed; the server checks again.
 - **Branch**: `useCurrentBranch(me)` (`lib/branch.ts`) – one shared choice for the whole app (sidebar branch switcher, room board, calendar, walk-in, housekeeping…), saved on the device.
 - Optional modules: `me.hotel.modules`; switches: `me.switches`.
+- **No access**: a screen the role may not open (opened by URL) shows `pages/NoAccessPage.tsx` ("You can't open this page" + Go to the start page) – from `RequirePermission`, `RequireSuperAdmin` (`app/router.tsx`) and a settings section the role may not use (`SettingsLayout`). A wrong settings name still opens the first allowed section.
 
 ## Main helpers
 
