@@ -114,7 +114,7 @@ Light primary is near-black slate; dark primary is near-white. We swap primary f
 6. **Tests** find things by role and text. Restyling keeps roles and texts, but Radix menus (user menu, column toggle) behave differently in jsdom; some tests need small updates (same assertions, new way to open the menu).
 7. **Bundle size (speed):** first download stays **≤ 60 KB** (owner). Lucide icons are imported **one by one** (`import { House } from 'lucide-react'`, never the whole set or dynamic names); **cmdk and other heavy parts are lazy-loaded** (the command menu loads on first ⌘K / click); Radix parts load with the screen that uses them where possible. Screens stay lazy-loaded. The first-download size is measured from the build output in every report.
 8. **Fonts:** the template loads Inter from Google Fonts; we keep the **self-hosted** Inter (`@fontsource-variable/inter`) so it works offline and on cPanel without Google.
-9. **No top nav links:** the template's Overview / Customers / Products links have no equivalent in HotelMS; the header has the search on the left of the icons instead.
+9. **No top nav links:** the template's Overview / Customers / Products links have no equivalent in HotelMS; so, like the template's pages without top links, the search sits on the left next to the menu button (owner, 8 Nov).
 10. **Print pages** use their own black-on-white styles; token changes must not reach them (checked in every partition).
 11. **Staff-guide pictures** (15) will be out of date until the last partition.
 
