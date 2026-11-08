@@ -3,8 +3,7 @@ import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { SmartHints } from '@/components/ui/SmartHints'
 import { useSmart } from '@/lib/smart'
-import { BuildingOffice2Icon, CalendarDaysIcon, CheckCircleIcon, ClockIcon, ExclamationTriangleIcon, HomeModernIcon, LifebuoyIcon, UsersIcon } from '@heroicons/react/24/outline'
-import { PlusIcon } from '@heroicons/react/20/solid'
+import { BedDoubleIcon, Building2Icon, CalendarDaysIcon, CircleCheckIcon, ClockIcon, LifeBuoyIcon, PlusIcon, TriangleAlertIcon, UsersIcon } from 'lucide-react'
 import { buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -43,25 +42,25 @@ export function AdminDashboardPage() {
       />
 
       {serious > 0 && (
-        <Link to="/admin/watchdog" className="rounded-lg bg-danger-bg px-4 py-3 text-sm font-medium text-danger-text ring-1 ring-danger-text/20 hover:brightness-95">
+        <Link to="/admin/watchdog" className="rounded-lg border border-danger-text/20 bg-danger-bg px-4 py-3 text-sm font-medium text-danger-text hover:brightness-95">
           {t('watchdog.alert', { count: serious })}
         </Link>
       )}
       <SmartHints hints={smart.data?.data} />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatTile label={t('admin.dash.totalHotels')} value={d?.hotels.total} icon={BuildingOffice2Icon} />
-        <StatTile label={t('hotelStatus.active')} value={d?.hotels.by_status.active} icon={CheckCircleIcon} tone="ok" />
+        <StatTile label={t('admin.dash.totalHotels')} value={d?.hotels.total} icon={Building2Icon} />
+        <StatTile label={t('hotelStatus.active')} value={d?.hotels.by_status.active} icon={CircleCheckIcon} tone="ok" />
         <StatTile label={t('hotelStatus.trial')} value={d?.hotels.by_status.trial} icon={ClockIcon} tone="info" />
-        <StatTile label={t('admin.dash.unpaid')} value={unpaid} icon={ExclamationTriangleIcon} tone={unpaid ? 'warn' : 'ok'} />
+        <StatTile label={t('admin.dash.unpaid')} value={unpaid} icon={TriangleAlertIcon} tone={unpaid ? 'warn' : 'ok'} />
       </div>
 
       {d?.today && (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatTile label={t('admin.dash.bookingsToday')} value={d.today.bookings} icon={CalendarDaysIcon} />
-          <StatTile label={t('admin.dash.occupancyTonight')} value={d.today.occupancy} icon={HomeModernIcon} tone="info" footer={t('hotelTabs.roomsLine', { occupied: d.today.occupied, rooms: d.today.rooms })} />
+          <StatTile label={t('admin.dash.occupancyTonight')} value={d.today.occupancy} icon={BedDoubleIcon} tone="info" footer={t('hotelTabs.roomsLine', { occupied: d.today.occupied, rooms: d.today.rooms })} />
           <StatTile label={t('admin.dash.staffOnline')} value={d.today.staff_online} icon={UsersIcon} tone="ok" />
-          <StatTile label={t('admin.dash.openSupport')} value={d.today.open_support} icon={LifebuoyIcon} tone={d.today.open_support ? 'warn' : 'ok'} />
+          <StatTile label={t('admin.dash.openSupport')} value={d.today.open_support} icon={LifeBuoyIcon} tone={d.today.open_support ? 'warn' : 'ok'} />
         </div>
       )}
 
@@ -119,7 +118,7 @@ export function AdminDashboardPage() {
           <Card className="flex flex-col gap-3">
             <h2 className="text-sm font-medium text-muted">{t('admin.dash.liveActivity')}</h2>
             {d?.activity?.length ? (
-              <ul className="flex flex-col gap-2 text-[13px]">
+              <ul className="flex flex-col gap-2 text-sm">
                 {d.activity.map((a) => (
                   <li key={a.id} className="flex flex-col">
                     <span className="line-clamp-2">{a.description}</span>

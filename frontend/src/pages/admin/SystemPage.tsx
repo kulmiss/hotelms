@@ -1,6 +1,6 @@
 import { dateTime, megabytes } from '@/lib/format'
 import { useTranslation } from 'react-i18next'
-import { CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/20/solid'
+import { CircleCheckIcon, TriangleAlertIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -14,7 +14,7 @@ const when = (v: string | null | undefined) => dateTime(v)
 export function SystemPage() {
   const { t } = useTranslation()
   const health = useSystemHealth()
-  if (health.isPending) return <p className="text-[13px] text-muted">{t('common.loading')}</p>
+  if (health.isPending) return <p className="text-sm text-muted">{t('common.loading')}</p>
   if (health.isError) return <Alert>{health.error instanceof ApiError ? health.error.message : t('common.serverUnreachable')}</Alert>
   const { checks: c, errors, versions, checked_at } = health.data.data
 
@@ -41,9 +41,9 @@ export function SystemPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {rows.map((r) => (
           <Card key={r.key} className="flex items-start gap-3">
-            {r.ok ? <CheckCircleIcon aria-hidden className="size-5 shrink-0 text-ok-text" /> : <ExclamationTriangleIcon aria-hidden className="size-5 shrink-0 text-danger-text" />}
+            {r.ok ? <CircleCheckIcon aria-hidden className="size-5 shrink-0 text-ok-text" /> : <TriangleAlertIcon aria-hidden className="size-5 shrink-0 text-danger-text" />}
             <div className="min-w-0">
-              <h2 className="text-[13px] font-semibold">{t(`system.checks.${r.key}`)}</h2>
+              <h2 className="text-sm font-semibold">{t(`system.checks.${r.key}`)}</h2>
               <p className="text-xs text-muted">{r.ok ? t('system.ok') : t('system.problem')}</p>
               {r.detail && <p className="mt-1 text-xs text-muted">{r.detail}</p>}
               {!r.ok && r.problem && <p className="mt-1 text-xs text-danger-text">{r.problem}</p>}
@@ -71,7 +71,7 @@ export function SystemPage() {
       <Card className="flex flex-col gap-2">
         <h2 className="text-sm font-semibold">{t('system.errors')}</h2>
         {errors.length === 0 ? (
-          <p className="text-[13px] text-muted">{t('system.noErrors')}</p>
+          <p className="text-sm text-muted">{t('system.noErrors')}</p>
         ) : (
           <ul className="flex flex-col gap-1.5 text-xs">
             {errors.map((e, i) => (

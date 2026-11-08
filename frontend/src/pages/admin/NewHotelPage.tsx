@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
-import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/20/solid'
+import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Alert } from '@/components/ui/Alert'
 import { Button, buttonClass } from '@/components/ui/Button'
@@ -163,12 +163,12 @@ export function NewHotelPage() {
                     <label
                       key={p.id}
                       className={cn(
-                        'flex cursor-pointer flex-col gap-1 rounded-lg p-4 shadow-sm ring-1 transition duration-75',
-                        String(p.id) === planId ? 'bg-accent-soft ring-2 ring-accent' : 'ring-ring-strong hover:bg-sunken',
+                        'flex cursor-pointer flex-col gap-1 rounded-lg p-4 border shadow-xs transition-colors',
+                        String(p.id) === planId ? 'border-primary bg-accent-soft ring-1 ring-primary' : 'ring-ring-strong hover:bg-sunken',
                       )}
                     >
                       <span className="flex items-center gap-3">
-                        <input type="radio" name="plan" aria-label={p.name} className="size-5 accent-accent" value={p.id} checked={String(p.id) === planId} onChange={set('plan_id')} />
+                        <input type="radio" name="plan" aria-label={p.name} className="size-5" value={p.id} checked={String(p.id) === planId} onChange={set('plan_id')} />
                         <span className="font-semibold">{p.name}</span>
                       </span>
                       <span className="pl-8 text-sm text-muted">

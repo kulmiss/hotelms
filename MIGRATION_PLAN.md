@@ -208,8 +208,8 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 
 - [x] Login, forgot / reset password, change password, two-step, screen lock: template auth layout (brand row, 480px card, left-aligned title + description), Lucide
 ### P15 – Super Admin
-- [ ] Command center, hotels, hotel page (tabs), new hotel, plans, switches, support inbox, releases, content, watchdog, docs, system, activity, team, platform settings, platform reports
 
+- [x] Command center, hotels (filter buttons), hotel page + tabs, new hotel, plans, switches, support inbox + conversation, releases, content, watchdog (severity borders), docs, system, activity, team, platform settings, platform reports; Lucide
 ### P16 – The rest
 - [ ] Help, what's new, subscription, 404, error page, maintenance (template Errors pattern)
 
@@ -240,3 +240,4 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P12 | open (stacked) | #98 |
 | P13 | open (stacked) | #99 |
 | P14 | open (stacked) | #100 |
+| P15 | open (stacked on the previous PR) | (this PR) |

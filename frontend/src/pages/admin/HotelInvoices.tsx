@@ -39,9 +39,9 @@ export function HotelInvoices({ hotelId, canBill }: { hotelId: number; canBill: 
       </div>
       {error && <Alert>{errorOf(error)}</Alert>}
       {rows.length === 0 ? (
-        <p className="text-[13px] text-muted">{t('hotelInvoices.none')}</p>
+        <p className="text-sm text-muted">{t('hotelInvoices.none')}</p>
       ) : (
-        <ul className="flex flex-col divide-y divide-border text-[13px]">
+        <ul className="flex flex-col divide-y divide-border text-sm">
           {rows.map((i: HotelInvoice) => (
             <li key={i.id} className="flex flex-wrap items-center gap-2 py-2">
               <span className="min-w-0 flex-1">
@@ -79,7 +79,7 @@ export function MyInvoices({ rows }: { rows: HotelInvoice[] }) {
   return (
     <Card className="flex flex-col gap-2">
       <h3 className="text-sm font-semibold">{t('hotelInvoices.listTitle')}</h3>
-      <ul className="flex flex-col divide-y divide-border text-[13px]">
+      <ul className="flex flex-col divide-y divide-border text-sm">
         {rows.map((i) => (
           <li key={i.id} className="flex flex-wrap items-center gap-2 py-2">
             <Link to={`/subscription-invoices/${i.id}`} className="min-w-0 flex-1 font-medium text-accent-text hover:underline">

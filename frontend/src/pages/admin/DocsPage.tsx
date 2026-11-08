@@ -51,18 +51,18 @@ export function DocsPage() {
                 key={d.name}
                 to={`/admin/docs/${d.name}`}
                 aria-current={d.name === name ? 'page' : undefined}
-                className={cn('flex min-h-touch flex-col justify-center rounded-lg px-3 py-1.5 text-[13px] transition duration-75 hover:bg-sunken', d.name === name && 'bg-sunken font-semibold')}
+                className={cn('flex min-h-touch flex-col justify-center rounded-lg px-3 py-1.5 text-sm transition duration-75 hover:bg-sunken', d.name === name && 'bg-sunken font-semibold')}
               >
                 <span>{d.title}</span>
                 {d.snippet && <span className="line-clamp-2 text-xs font-normal text-muted">…{d.snippet}…</span>}
               </Link>
             ))}
-            {list.data && list.data.data.length === 0 && <p className="px-3 py-2 text-[13px] text-muted">{list.data.available ? t('docs.noHits') : t('docs.missing')}</p>}
+            {list.data && list.data.data.length === 0 && <p className="px-3 py-2 text-sm text-muted">{list.data.available ? t('docs.noHits') : t('docs.missing')}</p>}
           </nav>
         </aside>
         <Card className="min-w-0">
-          {doc.isPending && <p className="text-[13px] text-muted">{t('common.loading')}</p>}
-          {doc.isError && <p className="text-[13px] text-muted">{t('docs.notFound')}</p>}
+          {doc.isPending && <p className="text-sm text-muted">{t('common.loading')}</p>}
+          {doc.isError && <p className="text-sm text-muted">{t('docs.notFound')}</p>}
           {doc.data && (
             <article className="flex flex-col gap-2">
               <p className="text-xs text-muted">{t('docs.updated', { date: dateTime(doc.data.data.updated_at) })}</p>
