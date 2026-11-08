@@ -221,7 +221,7 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [x] Second-pass review of the whole branch against `main`: every changed screen file compared for handlers, mutations, navigation, `t()` texts, roles and labels – nothing lost (the only drops are explained: bell / columns menus now open through Radix, `disabled:` CSS classes moved into `formStyles`); print pages: no diff
 - [x] Leftover ring class fixed (new hotel plan cards); dev pre-bundling lists lucide-react; docs; QUESTIONS.md complete
 - [x] All checks green on every PR (#88–#103): lint (0 errors; the 8 warnings are old), typecheck, 161 tests, build
-- [ ] Every route in light / dark, phone / tablet / desktop in a browser – **not done: the owner's machine was still on `main`** (see the final report)
+- [x] Every route in light / dark at 375 / 768 / 1024 / 1280 / 1920 – full QA pass 8 Nov (`QA_REPORT.md`, #108); problems fixed in the QA fix PRs below
 - [x] Unused packages removed (owner, 8 Nov): `sonner` and 9 unused Radix parts (#104); Heroicons kept for the print pages
 - [ ] Redo the 15 staff-guide pictures (owner: after the browser check passes) (`tools/pictures/`) – needs the running app
 - [ ] **Staging test** before the final PR: deploy `ui/shadcn-admin` to a staging copy (shared-hosting style build), click through as every role
@@ -233,29 +233,31 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [x] Search stays; count badge; removable chips; Clear all; open/closed per page for the session only
 - [x] Keyboard and screen readers: `aria-expanded`, `aria-controls`, closed part `inert`, Enter opens and goes to the first control, Escape closes and goes back, focus never lost after × / Clear all
 - [x] Tests (collapsed below 1024px, desktop as before, count and chips, Clear all, session memory, keyboard, room board on a phone)
-- [ ] Browser check at 375 / 768 / 1024 / 1280, light and dark, before/after pictures – needs the owner's machine on this branch
+- [x] Browser check at 375 / 768 / 1024 / 1280, light and dark, before/after pictures (8 Nov: first room at 637px instead of 1105px on a phone)
 
 | Partition | Status | PR |
 |---|---|---|
 | P0 Plan | approved 8 Nov | – |
 | P1 Foundation | merged 8 Nov | #86 |
 | P2 Layout shell | merged 8 Nov | #87 |
-| P2 fixes | open | #88 |
-| P3 Building blocks | open (stacked on #88) | #89 |
-| P4 Dashboard | open (stacked on #89) | #90 |
-| P5 Room board, front desk mode, charge a room | open (stacked on #90) | #91 |
-| P6 Walk-in | open (stacked on #91) | #92 |
-| P7 Bookings | open (stacked on #92) | #93 |
-| P8 Bills | open (stacked on #93) | #94 |
-| P9 | open (stacked) | #95 |
-| P10 | open (stacked) | #96 |
-| P11 | open (stacked) | #97 |
-| P12 | open (stacked) | #98 |
-| P13 | open (stacked) | #99 |
-| P14 | open (stacked) | #100 |
-| P15 | open (stacked) | #101 |
-| P16 | open (stacked) | #102 |
-| P17 | open (stacked) | #103 |
-| P17 package cleanup | open (stacked) | #104 |
-| Browser-check fixes | open (stacked) | #105 |
-| P19 Collapsible filters | open (stacked on #105) | (this PR) |
+| P2 fixes | merged 8 Nov | #88 |
+| P3 Building blocks | merged 8 Nov (with #103) | #89 |
+| P4 Dashboard | merged 8 Nov (with #103) | #90 |
+| P5 Room board, front desk mode, charge a room | merged 8 Nov (with #103) | #91 |
+| P6 Walk-in | merged 8 Nov (with #103) | #92 |
+| P7 Bookings | merged 8 Nov (with #103) | #93 |
+| P8 Bills | merged 8 Nov (with #103) | #94 |
+| P9 | merged 8 Nov (with #103) | #95 |
+| P10 | merged 8 Nov (with #103) | #96 |
+| P11 | merged 8 Nov (with #103) | #97 |
+| P12 | merged 8 Nov (with #103) | #98 |
+| P13 | merged 8 Nov (with #103) | #99 |
+| P14 | merged 8 Nov (with #103) | #100 |
+| P15 | merged 8 Nov (with #103) | #101 |
+| P16 | merged 8 Nov (with #103) | #102 |
+| P17 | merged 8 Nov | #103 |
+| P17 package cleanup | merged 8 Nov | #104 |
+| Browser-check fixes | merged 8 Nov | #105 |
+| P19 Collapsible filters | merged 8 Nov | #106 → #107 |
+| Full QA pass | report | #108 |
+| QA fixes 1–5 | open | #109–#113 |

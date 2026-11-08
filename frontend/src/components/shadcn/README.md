@@ -15,3 +15,6 @@ built on Radix UI and cmdk. Our colour names differ from shadcn's, so the classe
 Touch screens get 44px targets with `pointer-coarse:` (decision W5).
 
 The page-level building blocks (`components/ui`) are restyled on top of these in P3.
+
+`collapsible.tsx` has the template's Collapsible API (`Collapsible`, `CollapsibleTrigger`, `CollapsibleContent`, `data-state`)
+but is our own small copy: `@radix-ui/react-collapsible` was removed in #104 (owner). Used by `components/ui/CollapsibleToolbar.tsx`.

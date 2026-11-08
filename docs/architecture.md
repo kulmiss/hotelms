@@ -100,11 +100,28 @@ Other rules:
 
 ## Design rules (owner)
 
-Filament-style panel UI: zinc greys, teal primary, Inter, Heroicons (outline; solid when active), `.panel` cards,
-75–200 ms CSS transitions. Use the colour tokens in `frontend/src/index.css` (`bg-surface`, `text-muted`, `bg-accent`, `ring-ring`…),
-never raw hex. Light and dark mode. 13 px UI text, 16–20 px icons. Touch targets ≥ 44 px on touch screens
-(`min-h-touch`, `size-touch`; 36 px with a mouse); main reception actions `size="lg"` (52 px).
-The accent colour, name and logo come from Super Admin branding (`/api/v1/branding`, `lib/brand.tsx`) – never hard-code "HotelMS".
+The look and feel of the **shadcn-admin** template (`satnaing/shadcn-admin` @ `e16c87f`, MIT – see `THIRD_PARTY_NOTICES`;
+plan and progress in `MIGRATION_PLAN.md`):
+
+- **Colours:** slate greys in OKLCH, light and dark mode. Use the tokens in `frontend/src/index.css`, never raw hex.
+  Our names map to shadcn's: `bg` = background, `surface` = card, `sunken` = muted / accent (hover, active),
+  `text` = foreground, `muted` = muted-foreground (darker than the template: ≥ 4.5:1 everywhere), `grey-text` (stronger grey
+  for small text on coloured boxes), `accent` = primary (**the Super Admin brand colour**), `ring` = card outline,
+  `ring-strong` = input, `focus` = focus ring.
+- **Type and icons:** Inter (self-hosted), 14px UI text, **Lucide** icons (16px, imported one by one). Heroicons are only
+  left in the toolbar of the three print pages.
+- **Shell:** sidebar inset, collapsible to icons with tooltips, a drawer below **768px**; tablets (768–1023px) start with
+  icons only. Branch switcher at the top of the sidebar, account menu at the bottom and in the header. Header: menu
+  button, search (⌘K / Ctrl+K / `/`, lazy cmdk) on the left, then bell, theme switch (sun) and account.
+- **Cards:** shadcn cards (`.panel` = rounded-xl, border, small shadow). Two-column screens use `minmax(0,1fr)` for the
+  main column so wide tables scroll inside their card.
+- **Below 1024px:** filter, sort and toolbar controls fold behind one **Filters** button (`CollapsibleToolbar`).
+- **Touch:** every tap target ≥ 44px on touch screens (`min-h-touch`, `size-touch`, `pointer-coarse:`; 36px with a
+  mouse); main reception actions `size="lg"` (52px).
+- **Motion:** CSS only, 150–200 ms, nothing with reduced motion.
+- **Branding:** the brand colour, name and logo come from Super Admin branding (`/api/v1/branding`, `lib/brand.tsx`) –
+  never hard-code "HotelMS". Printed invoices and registration cards keep their own black-on-white look.
+- **No access:** a screen the role may not open shows "You can't open this page" with a way back (`NoAccessPage`).
 
 ## Speed (owner priority)
 
