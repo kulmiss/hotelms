@@ -6,6 +6,7 @@ import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { CollapsibleToolbar } from '@/components/ui/CollapsibleToolbar'
 import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
@@ -141,16 +142,29 @@ function Report() {
   const [from, setFrom] = useState(addDays(today(), -6))
   const [to, setTo] = useState(today())
   const report = useAttendanceReport(from, to, true)
+  const isDefault = from === addDays(today(), -6) && to === today()
+  const reset = () => {
+    setFrom(addDays(today(), -6))
+    setTo(today())
+  }
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end gap-3">
         <h2 className="mr-auto text-sm font-semibold">{t('attendance.report')}</h2>
-        <div className="w-40">
-          <Field label={t('settings.rates.from')} type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-        </div>
-        <div className="w-40">
-          <Field label={t('settings.rates.to')} type="date" value={to} onChange={(e) => setTo(e.target.value)} />
-        </div>
+        {/* Phones and tablets (P19): the dates fold behind "Filters"; the period stays in view as a chip. */}
+        <CollapsibleToolbar
+          id="attendance-report"
+          active={[{ key: 'period', label: `${date(from)} – ${date(to)}`, onRemove: isDefault ? undefined : reset }]}
+          onClearAll={reset}
+          className="w-full"
+        >
+          <div className="w-40">
+            <Field label={t('settings.rates.from')} type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+          </div>
+          <div className="w-40">
+            <Field label={t('settings.rates.to')} type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          </div>
+        </CollapsibleToolbar>
       </div>
       <Card className="overflow-x-auto p-0">
         <table className="w-full min-w-[560px] text-left text-sm">

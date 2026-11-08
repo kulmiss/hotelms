@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, LogInIcon, LogOutIcon, PlusIcon, UserPlusIcon } from 'lucide-react'
@@ -7,6 +7,8 @@ import { QuickCharge } from '@/components/billing/QuickCharge'
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { CollapsibleToolbar, ToolbarSearch, type ActiveFilter } from '@/components/ui/CollapsibleToolbar'
+import { useCompactToolbar } from '@/lib/compactToolbar'
 import { Field } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { LoadFailed } from '@/components/ui/LoadFailed'
@@ -41,6 +43,19 @@ export function RoomBoardPage() {
   const today = useToday(current)
 
   const count = (k: Tab) => (k === 'board' ? undefined : today.data?.[k].length)
+  // Phones and tablets: on the room board the branch box folds away with the filters (P19).
+  const compact = useCompactToolbar()
+  const branchBox = branches.length > 1 && (
+    <div className="w-48">
+      <Select label={t('settings.rooms.branch')} value={String(current ?? '')} onChange={(e) => select(Number(e.target.value))}>
+        {branches.map((b) => (
+          <option key={b.id} value={b.id}>
+            {b.name}
+          </option>
+        ))}
+      </Select>
+    </div>
+  )
 
   return (
     <div className="flex flex-col gap-6">
@@ -66,24 +81,14 @@ export function RoomBoardPage() {
             items={TABS.map((k) => ({ key: k, label: count(k) !== undefined ? `${t(`desk.tabs.${k}`)} (${count(k)})` : t(`desk.tabs.${k}`) }))}
           />
         </div>
-        {branches.length > 1 && (
-          <div className="w-48">
-            <Select label={t('settings.rooms.branch')} value={String(current ?? '')} onChange={(e) => select(Number(e.target.value))}>
-              {branches.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </Select>
-          </div>
-        )}
+        {!(compact && tab === 'board') && branchBox}
       </div>
-      {tab === 'board' ? <Board branchId={current} /> : <TodayList rows={today.data?.[tab] ?? []} kind={tab} loading={today.isPending} />}
+      {tab === 'board' ? <Board branchId={current} branchBox={compact ? branchBox : null} /> : <TodayList rows={today.data?.[tab] ?? []} kind={tab} loading={today.isPending} />}
     </div>
   )
 }
 
-function Board({ branchId }: { branchId: number | null }) {
+function Board({ branchId, branchBox }: { branchId: number | null; branchBox: ReactNode }) {
   const { t } = useTranslation()
   // Another day (owner, 2026-11-07): who stays in each room that night. Today = live.
   const [viewDay, setViewDay] = useState<string | null>(null)
@@ -110,12 +115,52 @@ function Board({ branchId }: { branchId: number | null }) {
   const floors = grouped ? [...new Set(shown.map((r) => r.floor ?? ''))] : ['']
   const selected = open ? (rooms.find((r) => r.id === open.id) ?? open) : null
 
-  return (
-    <div className="flex flex-col gap-4">
-      <DayPicker day={viewDay} onChange={(d) => setViewDay(d && d !== todayDate() ? d : null)} />
+  // Phones and tablets (P19): the day, status, type, floor and sort controls fold behind "Filters"; the search
+  // stays, and what is on shows as chips. Same filters as before, only the look changes.
+  const compact = useCompactToolbar()
+  const clear = { ...NO_FILTER, sort: filter.sort }
+  const typeName = rooms.find((r) => r.room_type_id === filter.typeId)?.room_type
+  const active: ActiveFilter[] = [
+    ...(viewDay ? [{ key: 'day', label: date(viewDay), onRemove: () => setViewDay(null) }] : []),
+    ...filter.statuses.map((s) => ({ key: `status-${s}`, label: t(`roomStatus.${s}`), onRemove: () => setFilter({ ...filter, statuses: filter.statuses.filter((x) => x !== s) }) })),
+    ...(filter.today ? [{ key: 'today', label: t(`desk.filter.${filter.today}`), onRemove: () => setFilter({ ...filter, today: null }) }] : []),
+    ...(filter.typeId !== null ? [{ key: 'type', label: typeName ?? t('desk.filter.type'), onRemove: () => setFilter({ ...filter, typeId: null }) }] : []),
+    ...(filter.floor !== null ? [{ key: 'floor', label: t('desk.floor', { floor: filter.floor }), onRemove: () => setFilter({ ...filter, floor: null }) }] : []),
+  ]
+  const notices = (
+    <>
       {viewDay && <Alert tone="info">{t('desk.otherDay', { date: date(viewDay) })}</Alert>}
       {board.isError && !board.data && <LoadFailed error={board.error} onRetry={() => board.refetch()} />}
-      <RoomFilterBar rooms={rooms} counts={board.data?.counts ?? {}} day={day} filter={filter} setFilter={setFilter} />
+    </>
+  )
+  const search = (
+    <input
+      type="search"
+      value={filter.q}
+      onChange={(e) => setFilter({ ...filter, q: e.target.value })}
+      placeholder={t('desk.filter.search')}
+      aria-label={t('desk.filter.search')}
+      className={cn(inputClass, 'w-full lg:w-44')}
+    />
+  )
+
+  return (
+    <div className="flex flex-col gap-4">
+      <CollapsibleToolbar
+        id="room-board"
+        search={search}
+        active={active}
+        onClearAll={() => {
+          setFilter(clear)
+          setViewDay(null)
+        }}
+      >
+        {branchBox}
+        <DayPicker day={viewDay} onChange={(d) => setViewDay(d && d !== todayDate() ? d : null)} />
+        {!compact && notices}
+        <RoomFilterBar rooms={rooms} counts={board.data?.counts ?? {}} day={day} filter={filter} setFilter={setFilter} />
+      </CollapsibleToolbar>
+      {compact && notices}
       {selected && <RoomPanel room={selected} branchId={branchId} readOnly={!!viewDay} onClose={() => setOpen(null)} />}
       {floors.map((f) => (
         <div key={f} className="flex flex-col gap-2">
@@ -181,6 +226,7 @@ function Board({ branchId }: { branchId: number | null }) {
 /** Filters above the room board: tap a status count, a "today" chip, a type or floor; search; sort. */
 function RoomFilterBar({ rooms, counts, day, filter, setFilter }: { rooms: BoardRoom[]; counts: Record<string, number>; day: string; filter: RoomFilter; setFilter: (f: RoomFilter) => void }) {
   const { t } = useTranslation()
+  const compact = useCompactToolbar()
   const types = [...new Map(rooms.map((r) => [r.room_type_id, r.room_type ?? ''])).entries()]
   const floors = [...new Set(rooms.map((r) => r.floor ?? ''))].filter(Boolean)
   const chip = (active: boolean) =>
@@ -211,14 +257,7 @@ function RoomFilterBar({ rooms, counts, day, filter, setFilter }: { rooms: Board
           ))}
         </div>
         <div className="ml-auto flex flex-wrap items-end gap-2">
-          <input
-            type="search"
-            value={filter.q}
-            onChange={(e) => setFilter({ ...filter, q: e.target.value })}
-            placeholder={t('desk.filter.search')}
-            aria-label={t('desk.filter.search')}
-            className={cn(inputClass, 'w-44')}
-          />
+          <ToolbarSearch />
           {types.length > 1 && (
             <SelectBox aria-label={t('desk.filter.type')} value={filter.typeId ?? ''} onChange={(e) => setFilter({ ...filter, typeId: e.target.value ? Number(e.target.value) : null })} className="w-auto">
               <option value="">{t('desk.filter.allTypes')}</option>
@@ -246,7 +285,8 @@ function RoomFilterBar({ rooms, counts, day, filter, setFilter }: { rooms: Board
               </option>
             ))}
           </SelectBox>
-          {isFiltered(filter) && (
+          {/* Phones and tablets have "Clear all" by the chips instead. */}
+          {isFiltered(filter) && !compact && (
             <button type="button" onClick={() => setFilter({ ...NO_FILTER, sort: filter.sort })} className="min-h-touch rounded-md px-3 text-sm font-medium text-text hover:bg-sunken">
               {t('desk.filter.clear')}
             </button>

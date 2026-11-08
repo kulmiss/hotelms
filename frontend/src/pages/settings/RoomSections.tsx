@@ -46,6 +46,12 @@ function BranchSelect({ branches, value, onChange }: { branches: { id: number; n
   )
 }
 
+/** Phones and tablets: which branch the list is for, while the branch box is folded away (information only). */
+function branchChip(branches: { id: number; name: string }[], id: number | null) {
+  const name = branches.find((b) => b.id === id)?.name
+  return branches.length > 1 && name ? [{ key: 'branch', label: name }] : []
+}
+
 /* ------------------------------------------------------------- room types */
 
 export function RoomTypesSettings() {
@@ -59,7 +65,8 @@ export function RoomTypesSettings() {
       title={t('settings.sections.room-types')}
       description={t('settings.roomTypes.help')}
       addLabel={t('settings.roomTypes.add')}
-      header={<BranchSelect branches={branches} value={branchId} onChange={setBranchId} />}
+      filters={branches.length > 1 ? <BranchSelect branches={branches} value={branchId} onChange={setBranchId} /> : undefined}
+      activeFilters={branchChip(branches, branchId)}
       defaults={{ branch_id: branchId, name: '', description: '', base_capacity: 2, max_capacity: 2, nightly_price: '', day_use_price: '', hourly_price: '', currency: 'ETB', amenities: '' }}
       canDelete={(r) => !r.rooms_count}
       columns={[
@@ -116,10 +123,11 @@ export function RoomsSettings() {
       title={t('settings.sections.rooms')}
       description={t('settings.rooms.help')}
       addLabel={t('settings.rooms.addOne')}
+      filters={branches.length > 1 ? <BranchSelect branches={branches} value={branchId} onChange={setBranchId} /> : undefined}
+      activeFilters={branchChip(branches, branchId)}
       header={
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-end gap-4">
-            <BranchSelect branches={branches} value={branchId} onChange={setBranchId} />
             {limit && (
               <Badge tone={limit.max !== null && limit.used >= limit.max ? 'warn' : 'grey'}>
                 {limit.max === null ? t('settings.rooms.usedUnlimited', { used: limit.used }) : t('settings.rooms.used', { used: limit.used, max: limit.max })}
