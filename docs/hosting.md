@@ -36,7 +36,10 @@ Another place: set `DOCS_PATH` in `.env`.
    ```
    * * * * * cd /home/USER/hotelms && php artisan schedule:run >> /dev/null 2>&1
    ```
-   This runs everything in the background: expiring bookings, reports, alerts, Telegram, backups.
+   This runs everything in the background: expiring bookings, reports, alerts, Telegram, backups, and the clean-up of
+   saved-once keys (`idempotency_keys`: kept 24 h, removed after 48 h). Without it those keys pile up (harmless, but the
+   table grows). Super Admin → System shows the scheduler green when it runs. (Docker for development runs it in the
+   `scheduler` service.)
 7. **SSL/TLS** → AutoSSL on. Open `https://your-domain/` and sign in as the Super Admin.
 
 ## 2b. VPS (Ubuntu 24.04)
@@ -100,3 +103,18 @@ A backup is taken every hour, so you can always go back (see below).
 ## Rescue
 - Super Admin lost the phone for two-step sign-in: `php artisan hotelms:reset-two-factor owner@example.et`
 - Super Admin password: `php artisan tinker` → `App\Models\User::where('email','owner@example.et')->first()->forceFill(['password'=>'New-Pass-123','must_change_password'=>true])->save();`
+
+## Go-live checklist (first launch and every big update)
+
+1. **Backup first:** `php artisan hotelms:backup` (and check it: `php artisan hotelms:backup --check`). Keep a copy of `APP_KEY`.
+2. **Put the new code on the server** (section 2a / 2b), then **migrate:** `php artisan migrate --force`, then `php artisan optimize`.
+3. **Cron:** the `schedule:run` line runs every minute (cPanel: section 2a step 6; VPS: `www-data` crontab). Check Super Admin → System: Scheduler green.
+4. **LICENSE:** the owner's name / company and email are filled in (no `[OWNER …]` placeholders).
+5. **What's new:** publish the note for staff (Super Admin → Releases; draft in `docs/drafts/`).
+6. **Code:** the final PR `ui/shadcn-admin → main` is merged; the server runs `main`.
+7. **Smoke test:** sign in as each role on a phone and a computer; take a test payment in the demo hotel.
+
+### Rollback plan
+- **Code:** put the previous package back (keep the last `hotelms.zip`), `php artisan optimize`.
+- **Database:** only if the new version added tables: `php artisan migrate:rollback --step=1 --force` undoes the last migration (CI checks that every new migration can go back and forward). The saved-once table (`idempotency_keys`) can be dropped safely: it only holds answers for 24 h.
+- **Data problem:** restore the backup from step 1: `php artisan hotelms:backup --restore=/path/file.sql.gz`.

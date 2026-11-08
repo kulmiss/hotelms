@@ -63,6 +63,12 @@ jobs:
             fi
           fi
           vendor/bin/pint --test
+      - name: Migrations go back and forward (rollback plan)
+        run: |
+          php artisan migrate --force
+          php artisan migrate:rollback --step=1 --force
+          php artisan migrate --force
+          php artisan migrate:status | tail -3
       - name: Tests
         run: php artisan test
       - name: Speed test (big hotel, 160 rooms, a year of bookings)
