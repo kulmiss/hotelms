@@ -68,7 +68,7 @@ export function KioskPage() {
           {t('kiosk.ok')}
         </button>
       </div>
-      <Link to="/attendance" className="text-sm text-muted hover:text-text">
+      <Link to="/attendance" className="inline-flex min-h-touch items-center px-3 text-sm text-muted hover:text-text">
         {t('kiosk.exit')}
       </Link>
     </div>

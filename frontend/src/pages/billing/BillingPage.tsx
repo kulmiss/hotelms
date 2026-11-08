@@ -223,7 +223,7 @@ function PaymentList() {
           key: 'guest', label: t('reservations.guest'),
           render: (p) =>
             p.reservation ? (
-              <Link to={`/reservations/${p.reservation.id}`} className="text-accent-text">
+              <Link to={`/reservations/${p.reservation.id}`} className="text-accent-text pointer-coarse:-my-3 pointer-coarse:inline-block pointer-coarse:py-3">
                 {p.reservation.guest} · {p.reservation.code}
               </Link>
             ) : (
