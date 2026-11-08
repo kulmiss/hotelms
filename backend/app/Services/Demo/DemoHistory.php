@@ -132,7 +132,7 @@ class DemoHistory
                 'payload' => ['reservation_id' => $paid->reservation_id, 'amount' => $amount, 'currency' => $paid->currency, 'fee' => '0.00'],
             ]);
         }
-        foreach ([[0, 5, 10, 88.0, 61.0], [1, 9, 10, 22.0, 47.0], [0, 12, 15, 91.0, 64.0]] as [$b, $days, $percent, $booked, $usual]) {
+        foreach ([[0, 5, 10, 88.0, 61.0], [0, 9, 10, 22.0, 47.0], [1, 12, 15, 91.0, 64.0]] as [$b, $days, $percent, $booked, $usual]) {
             $branch = $branches[$b] ?? $branches[0];
             $date = $this->today->copy()->addDays($days);
             $way = $booked >= 85 ? 'up' : 'down';
