@@ -354,7 +354,8 @@
         "All cash you take is added to your shift.",
         "At the end of work: count the drawer again and type it.",
         "The app shows if it matches. If it is short or over, write why.",
-        "Tap Close shift. A manager checks it."
+        "Tap Close shift. A manager checks it.",
+        "At the top of the page you see the cash that should be in your drawer now, and if the last shifts were short or over."
       ]
     },
     "approveShift": {
@@ -387,7 +388,8 @@
         "Open Housekeeping → My tasks. You see the rooms to clean, the most urgent first.",
         "Tap Start when you begin a room.",
         "Tap Done when the room is clean. You can write a note, for example \"broken lamp\".",
-        "The room becomes ready, and reception sees it at once."
+        "The room becomes ready, and reception sees it at once.",
+        "At the top of the page you see how many rooms are dirty, and how many tasks are to do, in progress and done."
       ]
     },
     "assignCleaning": {
@@ -436,7 +438,8 @@
     "reports": {
       "title": "Reports",
       "steps": [
-        "Open Reports. Choose a report on the left, for example Daily report.",
+        "Open Reports. Managers first see an Overview: the main numbers and a card for each report. Tap a card to open its report.",
+        "Or choose a report on the left, for example Daily report.",
         "Choose the dates at the top: today, this week, this month…",
         "Tap a bar in a chart to see the bookings behind it.",
         "Tap Print, or download Excel, to share it."
