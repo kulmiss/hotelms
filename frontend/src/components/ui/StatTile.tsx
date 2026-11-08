@@ -20,12 +20,15 @@ export function StatTile({
   icon: Icon,
   tone = 'accent',
   footer,
+  suffix,
 }: {
   label: string
   value: number | undefined
   icon: IconType
   tone?: Tone
   footer?: ReactNode
+  /** Shown right after the number, e.g. "%". */
+  suffix?: string
 }) {
   const shown = useCountUp(value)
   return (
@@ -36,6 +39,7 @@ export function StatTile({
       </div>
       <span className="text-2xl font-bold tracking-tight tabular-nums" aria-live="polite">
         {shown ?? '—'}
+        {shown !== undefined && suffix}
       </span>
       {footer && <div className={cn('text-xs', tones[tone])}>{footer}</div>}
     </div>

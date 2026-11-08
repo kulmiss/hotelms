@@ -175,7 +175,7 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [x] Screens that still look different: raw inputs / selects / tables and Heroicons inside pages → P4–P16
 
 ### P4 – Dashboard (hotel)
-- [ ] Template dashboard pattern (as on the approved canvas): stat cards, "next 7 days" chart card, rooms card, money cards, smart hint alert
+- [x] Template dashboard pattern (as on the approved canvas): stat cards (title + icon, big number, small line), "next 7 days" chart card, rooms card, money cards in the same card style, smart hint alert; occupancy shows "85%" on one line (was "85" with "%" below)
 
 ### P5 – Room board, front desk mode, charge a room
 - [ ] Room cards, status filter chips, tabs (Arriving / Leaving / In house) as data-table toolbar + tabs; room panel; front desk mode tiles
@@ -229,3 +229,4 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P2 Layout shell | merged 8 Nov | #87 |
 | P2 fixes | open | #88 |
 | P3 Building blocks | open (stacked on #88) | #89 |
+| P4 Dashboard | open (stacked on #89) | #90 |
