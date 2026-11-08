@@ -164,7 +164,6 @@
   /* Controls: 36px with a mouse, 44px on touch screens (see :root below). */
   --spacing-touch: var(--touch);
   --animate-page-in: page-in 200ms ease-out both;
-  --animate-menu-in: menu-in 100ms ease-out both;
   --animate-progress: progress 1.2s ease-in-out infinite;
 }
 
@@ -174,17 +173,6 @@
   }
   to {
     opacity: 1;
-  }
-}
-
-@keyframes menu-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: none;
   }
 }
 

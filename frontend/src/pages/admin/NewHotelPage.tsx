@@ -164,7 +164,7 @@ export function NewHotelPage() {
                       key={p.id}
                       className={cn(
                         'flex cursor-pointer flex-col gap-1 rounded-lg p-4 border shadow-xs transition-colors',
-                        String(p.id) === planId ? 'border-primary bg-accent-soft ring-1 ring-primary' : 'ring-ring-strong hover:bg-sunken',
+                        String(p.id) === planId ? 'border-primary bg-accent-soft ring-1 ring-primary' : 'hover:bg-sunken',
                       )}
                     >
                       <span className="flex items-center gap-3">

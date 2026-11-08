@@ -29,3 +29,30 @@ Format: **question** – options – *chosen* and why – how easy to change lat
 1. **Room card colours** – kept the soft room-status colours (green free, teal occupied, amber dirty, blue cleaning, grey maintenance) inside the template's card shape (rounded-xl, border, small shadow). A fully grey template card would hide the status at a glance. – Easy (`ROOM_TONES` in `lib/desk.ts`).
 2. **Filter chips** – shown like the template's table filter buttons (outline, dashed until chosen, brand tint when on), 32px with a mouse / 44px on touch. – Easy.
 3. **Text size** – 13px texts on screens become the template's 14px (11px → 12px). Rooms and lists are a little taller. – Easy (but touches every screen).
+
+## P6–P11 – Walk-in, bookings, bills, guests, modules, reports
+
+1. **Toggle buttons** (Nights / Day use / Hourly, filters, periods) – template outline buttons, filled with the brand colour when chosen. – Easy.
+2. **Pickers** (room cards in walk-in / new booking, charge a room) – template card shape; the chosen one gets a brand outline and a soft tint. – Easy.
+3. **Reports library** – shown like the template's settings side menu (grey = open report). – Easy.
+
+## P12 – Settings and setup
+
+1. **Switches** (modules, automations) – the template's small switch (18px track) in the brand colour; the tap area stays 44px on touch screens. – Easy.
+2. **Settings side menu** – template settings pattern (ghost buttons, grey = open section) with the search box on top. – Easy.
+
+## P14 – Sign-in pages
+
+1. **Sign-in card** – template auth layout: brand row above a 480px card, title and description left-aligned (before: centred). – Easy.
+
+## P16 – The rest
+
+1. **404 page / screen error** – template error pages: a big "404" / "500", a short line, buttons. The "new version" error has no big number. – Easy.
+
+## P17 – Cleanup (most of these need your decision)
+
+1. **Heroicons package stays** – only the three print pages still use it (the on-screen Print / paper-size buttons). You said print pages stay exactly as they are, so I did not touch them; removing the package would need those pages changed and your OK. *Recommend:* keep it until you allow a small icon change on the print pages' toolbar (not the paper). – Easy later.
+2. **`sonner` is installed but not used** (P3 kept our own toasts). *Recommend:* remove it in a later PR with your OK (removing a package needs your OK). – Easy.
+3. **`@radix-ui/react-avatar`, `-checkbox`, `-radio-group`, `-switch`, `-tabs`, `-label`, `-alert-dialog`, `-scroll-area`, `-collapsible`** are installed but not used (CSS / own components did the job without changing form code). They are not in the download (unused code is dropped by the build). *Recommend:* keep for now, or remove together with sonner. – Easy.
+4. **Staff guide pictures** (15 screenshots in `frontend/public/guide/`) still show the old look. They are made by `tools/pictures/` against a running app; I cannot run the app in my workspace. *Recommend:* after the staging test, I redo them in your browser. – Medium.
+5. **Final PR `ui/shadcn-admin → main` is not opened yet** – your plan asks for a staging test first. *Recommend:* merge #88 → #103 in order into `ui/shadcn-admin`, test on staging (or locally), then I open the final PR. – —

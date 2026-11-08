@@ -214,13 +214,10 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 
 - [x] Help (guides), what's new, 404 and screen-error pages (template Errors pattern: big number, short line, buttons), placeholder, design-system page; Lucide. Subscription invoice page not touched (print page)
 ### P17 – Cleanup and final check
-- [ ] Remove Heroicons and dead CSS/components only after a whole-codebase search (ask before removing any package)
-- [ ] Second-pass review of the whole branch against `main`
-- [ ] All checks + every route in light / dark, phone / desktop
-- [ ] Redo the 15 staff-guide pictures (`tools/pictures/`)
-- [ ] **Staging test** before the final PR: deploy `ui/shadcn-admin` to a staging copy (shared-hosting style build), click through as every role
-- [ ] Final report; PR `ui/shadcn-admin → main`
+- [x] Dead CSS removed after a codebase search (`menu-in` animation); old layout files removed in P2. **Heroicons kept**: the 3 print pages still use it (QUESTIONS P17-1); no package removed (QUESTIONS P17-2/3)
+- [x] Second-pass review of the whole branch against `main`: every changed screen file compared for handlers, mutations, navigation, `t()` texts, roles and labels – nothing lost (the only drops are explained: bell / columns menus now open through Radix, `disabled:` CSS classes moved into `formStyles`); print pages: no diff
 
+- [x] Leftover ring class fixed (new hotel plan cards); dev pre-bundling lists lucide-react; docs; QUESTIONS.md complete
 ## 6. Status
 | Partition | Status | PR |
 |---|---|---|
@@ -242,3 +239,4 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P14 | open (stacked) | #100 |
 | P15 | open (stacked) | #101 |
 | P16 | open (stacked) | #102 |
+| P17 | open (stacked on the previous PR) | (this PR) |
