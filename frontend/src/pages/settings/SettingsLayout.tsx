@@ -22,7 +22,8 @@ export function SettingsLayout() {
     <div className="flex flex-col gap-6">
       <PageHeader title={t('nav.settings')} subtitle={t('settings.subtitle')} />
       <div className="flex flex-col gap-6 lg:flex-row">
-        <nav aria-label={t('nav.settings')} className="flex flex-col gap-3 lg:w-56 lg:shrink-0">
+        {/* 15rem: wide enough for the whole search hint ("Search settings, e.g. VAT"). */}
+        <nav aria-label={t('nav.settings')} className="flex flex-col gap-3 lg:w-60 lg:shrink-0">
           <SettingsSearch allowed={sections.map((s) => s.key)} />
           <ul className="no-scrollbar flex gap-1 overflow-x-auto lg:flex-col">
             {sections.map((s) => (

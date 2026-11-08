@@ -112,7 +112,7 @@ function HkBoard({ branchId }: { branchId: number | null }) {
             <span className="text-base font-semibold">{r.number}</span>
             <span className={cn('size-2.5 rounded-full', ROOM_DOTS[r.status])} />
           </span>
-          <span className="text-xs text-muted">{t(`roomStatus.${r.status}`)}</span>
+          <span className="text-xs text-grey-text">{t(`roomStatus.${r.status}`)}</span>
           {r.tasks.map((task) => (
             <span key={task.id} className="text-xs">
               {t(`housekeeping.types.${task.type}`)} · {task.assigned_to?.name ?? t('housekeeping.nobody')}
