@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { BackspaceIcon } from '@heroicons/react/24/outline'
+import { DeleteIcon } from 'lucide-react'
 import { ApiError } from '@/lib/api'
 import { BrandMark } from '@/lib/brand'
 import { cn } from '@/lib/cn'
@@ -46,7 +46,7 @@ export function KioskPage() {
       </div>
       <div className="flex h-6 gap-3" aria-label={t('kiosk.pin')} aria-live="polite">
         {Array.from({ length: 6 }, (_, i) => (
-          <span key={i} className={cn('size-4 rounded-full ring-1 ring-ring', i < pin.length ? 'bg-accent' : 'bg-surface')} />
+          <span key={i} className={cn('size-4 rounded-full border', i < pin.length ? 'bg-primary' : 'bg-surface')} />
         ))}
       </div>
       <div role="status" className={cn('min-h-7 text-base font-medium', message?.tone === 'ok' ? 'text-ok-text' : 'text-danger-text')}>
@@ -54,21 +54,21 @@ export function KioskPage() {
       </div>
       <div className="grid grid-cols-3 gap-3">
         {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((d) => (
-          <button key={d} type="button" onClick={() => press(d)} className="size-20 rounded-2xl bg-surface text-2xl font-semibold shadow-sm ring-1 ring-ring transition duration-75 active:scale-95">
+          <button key={d} type="button" onClick={() => press(d)} className="size-20 rounded-2xl border bg-surface text-2xl font-semibold shadow-xs transition-colors hover:bg-sunken active:scale-95">
             {d}
           </button>
         ))}
         <button type="button" aria-label={t('kiosk.delete')} onClick={() => setPin(pin.slice(0, -1))} className="flex size-20 items-center justify-center rounded-2xl text-icon">
-          <BackspaceIcon aria-hidden className="size-7" />
+          <DeleteIcon aria-hidden className="size-7" />
         </button>
-        <button type="button" onClick={() => press('0')} className="size-20 rounded-2xl bg-surface text-2xl font-semibold shadow-sm ring-1 ring-ring transition duration-75 active:scale-95">
+        <button type="button" onClick={() => press('0')} className="size-20 rounded-2xl border bg-surface text-2xl font-semibold shadow-xs transition-colors hover:bg-sunken active:scale-95">
           0
         </button>
-        <button type="button" disabled={pin.length < 4 || kiosk.isPending} onClick={() => submit(pin)} className="size-20 rounded-2xl bg-accent text-base font-semibold text-on-accent shadow-sm transition duration-75 active:scale-95 disabled:opacity-40">
+        <button type="button" disabled={pin.length < 4 || kiosk.isPending} onClick={() => submit(pin)} className="size-20 rounded-2xl bg-primary text-base font-semibold text-primary-foreground shadow-xs transition duration-75 active:scale-95 disabled:opacity-40">
           {t('kiosk.ok')}
         </button>
       </div>
-      <Link to="/attendance" className="text-[13px] text-muted hover:text-text">
+      <Link to="/attendance" className="text-sm text-muted hover:text-text">
         {t('kiosk.exit')}
       </Link>
     </div>

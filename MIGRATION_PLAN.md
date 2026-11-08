@@ -193,8 +193,8 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 
 - [x] Guest list (search with icon), guest page (details, stays, blacklist), guest form, ID photo; Lucide
 ### P10 – Modules
-- [ ] Cashier, housekeeping, shifts / roster, attendance, kiosk
 
+- [x] Cashier, housekeeping (room cards, task list selects), shifts / roster (select boxes), attendance, kiosk keypad; Lucide
 ### P11 – Reports and approvals
 - [ ] Reports library + every report, insights, automation reports, approvals
 
@@ -235,3 +235,4 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P7 Bookings | open (stacked on #92) | #93 |
 | P8 Bills | open (stacked on #93) | #94 |
 | P9 | open (stacked) | #95 |
+| P10 | open (stacked on the previous PR) | (this PR) |
