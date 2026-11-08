@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from 'react'
 import { NavLink, Navigate, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router'
-import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
+import { SearchIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { cn } from '@/lib/cn'
@@ -31,8 +31,9 @@ export function SettingsLayout() {
                   to={`/settings/${s.key}`}
                   className={({ isActive }) =>
                     cn(
-                      'flex min-h-touch items-center rounded-lg px-3 text-[13px] font-medium whitespace-nowrap transition duration-75',
-                      isActive ? 'bg-surface text-accent-text shadow-sm ring-1 ring-ring' : 'text-muted hover:bg-sunken hover:text-text',
+                      // The template's settings side menu: ghost buttons, the open one grey.
+                      'flex min-h-touch items-center justify-start rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors',
+                      isActive ? 'bg-sunken text-text' : 'text-muted hover:bg-sunken hover:text-text',
                     )
                   }
                 >
@@ -67,8 +68,8 @@ function SettingsSearch({ allowed }: { allowed: string[] }) {
 
   return (
     <div className="relative">
-      <label className="flex min-h-touch items-center gap-2 rounded-lg bg-surface px-3 shadow-sm ring-1 ring-ring focus-within:ring-2 focus-within:ring-accent">
-        <MagnifyingGlassIcon aria-hidden className="size-4 shrink-0 text-icon" />
+      <label className="flex min-h-touch items-center gap-2 rounded-md border border-input bg-transparent px-3 shadow-xs transition-[color,box-shadow] focus-within:border-focus focus-within:ring-[3px] focus-within:ring-focus/50 dark:bg-input/30">
+        <SearchIcon aria-hidden className="size-4 shrink-0 opacity-50" />
         <input
           type="search"
           role="combobox"
@@ -93,7 +94,7 @@ function SettingsSearch({ allowed }: { allowed: string[] }) {
               go(hits[active])
             } else if (e.key === 'Escape') setQ('')
           }}
-          className="min-w-0 flex-1 bg-transparent text-[13px] outline-none"
+          className="min-w-0 flex-1 bg-transparent text-sm outline-none"
         />
       </label>
       {q.trim().length >= 2 && (
@@ -109,13 +110,13 @@ function SettingsSearch({ allowed }: { allowed: string[] }) {
                   onClick={() => go(h)}
                   className={cn('flex min-h-touch cursor-pointer flex-col justify-center rounded-md px-2 py-1', i === active && 'bg-sunken')}
                 >
-                  <span className="truncate text-[13px] font-medium">{h.label}</span>
+                  <span className="truncate text-sm font-medium">{h.label}</span>
                   {h.find && <span className="truncate text-xs text-muted">{t(`settings.sections.${h.section}`)}</span>}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="px-2 py-3 text-center text-[13px] text-muted">{t('settings.search.none')}</p>
+            <p className="px-2 py-3 text-center text-sm text-muted">{t('settings.search.none')}</p>
           )}
         </div>
       )}

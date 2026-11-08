@@ -248,9 +248,9 @@
   }
   /*
    * Checkboxes and radio buttons look like the template's (shadcn Checkbox / RadioGroup) without changing
-   * any screen's code: a 16px box, brand colour when ticked. Switches (role=switch) keep their own look.
+   * any screen's code: a 16px box, brand colour when ticked (hidden switch inputs are sr-only, so no effect there).
    */
-  input[type='checkbox']:not([role='switch']),
+  input[type='checkbox'],
   input[type='radio'] {
     appearance: none;
     display: inline-grid;
@@ -268,17 +268,17 @@
   input[type='radio'] {
     border-radius: 9999px;
   }
-  .dark input[type='checkbox']:not([role='switch']),
+  .dark input[type='checkbox'],
   .dark input[type='radio'] {
     background-color: color-mix(in oklab, var(--color-input) 30%, transparent);
   }
-  input[type='checkbox']:not([role='switch'])::before,
+  input[type='checkbox']::before,
   input[type='radio']::before {
     content: '';
     transform: scale(0);
     transition: transform 120ms ease-in-out;
   }
-  input[type='checkbox']:not([role='switch'])::before {
+  input[type='checkbox']::before {
     width: 0.625rem;
     height: 0.625rem;
     background-color: var(--on-accent);
@@ -290,20 +290,20 @@
     border-radius: 9999px;
     background-color: var(--accent);
   }
-  input[type='checkbox']:not([role='switch']):checked {
+  input[type='checkbox']:checked {
     background-color: var(--accent);
     border-color: var(--accent);
   }
-  input[type='checkbox']:not([role='switch']):checked::before,
+  input[type='checkbox']:checked::before,
   input[type='radio']:checked::before {
     transform: scale(1);
   }
-  input[type='checkbox']:not([role='switch']):disabled,
+  input[type='checkbox']:disabled,
   input[type='radio']:disabled {
     cursor: not-allowed;
     opacity: 0.5;
   }
-  input[type='checkbox']:not([role='switch'])[aria-invalid='true'],
+  input[type='checkbox'][aria-invalid='true'],
   input[type='radio'][aria-invalid='true'] {
     border-color: var(--danger);
   }

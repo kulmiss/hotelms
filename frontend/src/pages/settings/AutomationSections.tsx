@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { PlusIcon, TrashIcon } from '@heroicons/react/20/solid'
+import { PlusIcon, Trash2Icon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -31,7 +31,7 @@ const errorOf = (e: unknown) => (e instanceof ApiError ? (Object.values(e.errors
 export function AutomationsSettings() {
   const { t } = useTranslation()
   const q = useAutomations()
-  if (q.isPending) return <p className="text-[13px] text-muted">{t('common.loading')}</p>
+  if (q.isPending) return <p className="text-sm text-muted">{t('common.loading')}</p>
   if (q.isError) return <Alert>{errorOf(q.error)}</Alert>
   const { data, quiet, rules, builder } = q.data
 
@@ -39,7 +39,7 @@ export function AutomationsSettings() {
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-base font-semibold">{t('settings.sections.automations')}</h2>
-        <p className="text-[13px] text-muted">{t('automations.help')}</p>
+        <p className="text-sm text-muted">{t('automations.help')}</p>
       </div>
       <QuietHours initial={quiet} />
       {GROUPS.map((g) => (
@@ -68,8 +68,9 @@ function Toggle({ on, label, disabled, onChange }: { on: boolean; label: string;
       onClick={() => onChange(!on)}
       className="flex min-h-touch shrink-0 items-center px-1 disabled:opacity-50"
     >
-      <span className={cn('flex h-6 w-10 items-center rounded-full p-0.5 transition duration-150', on ? 'bg-accent' : 'bg-ring-strong')}>
-        <span className={cn('size-5 rounded-full bg-white shadow-sm transition duration-150', on && 'translate-x-4')} />
+      {/* The template's switch: small track, brand colour when on. */}
+      <span className={cn('inline-flex h-[1.15rem] w-8 items-center rounded-full border border-transparent shadow-xs transition-all', on ? 'bg-primary' : 'bg-input dark:bg-input/80')}>
+        <span className={cn('size-4 rounded-full transition-transform', on ? 'translate-x-[calc(100%-2px)] bg-background dark:bg-primary-foreground' : 'translate-x-0 bg-background dark:bg-text')} />
       </span>
     </button>
   )
@@ -88,7 +89,7 @@ function AutomationRow({ a }: { a: AutomationItem }) {
     <li className="flex flex-col gap-2 px-5 py-3">
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <p className="flex flex-wrap items-center gap-2 text-[13px] font-medium">
+          <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
             {name}
             {a.urgent && <Badge tone="danger">{t('inbox.urgent')}</Badge>}
             {a.blocked && <Badge tone="grey">{t(`automations.blocked.${a.blocked}`, { module: a.module ? t(`modules.${a.module}`) : '' })}</Badge>}
@@ -179,10 +180,10 @@ function Rules({ rules, builder }: { rules: AutomationRule[]; builder: Builder }
         )}
       </div>
       {editing && <RuleForm rule={editing === 'new' ? null : editing} builder={builder} onDone={() => setEditing(null)} />}
-      {rules.length === 0 && !editing && <p className="text-[13px] text-muted">{t('automations.rules.none')}</p>}
+      {rules.length === 0 && !editing && <p className="text-sm text-muted">{t('automations.rules.none')}</p>}
       <ul className="flex flex-col gap-2">
         {rules.map((r) => (
-          <li key={r.id} className="flex flex-wrap items-center gap-3 rounded-lg bg-sunken px-3 py-2 text-[13px]">
+          <li key={r.id} className="flex flex-wrap items-center gap-3 rounded-lg bg-sunken px-3 py-2 text-sm">
             <Toggle on={r.enabled} label={r.name} disabled={save.isPending} onChange={(enabled) => save.mutate({ ...r, enabled, conditions: r.conditions ?? [] })} />
             <div className="min-w-0 flex-1">
               <p className="font-medium">{r.name}</p>
@@ -193,8 +194,8 @@ function Rules({ rules, builder }: { rules: AutomationRule[]; builder: Builder }
             <Button variant="ghost" onClick={() => setEditing(r)}>
               {t('common.edit')}
             </Button>
-            <button type="button" aria-label={t('common.delete')} disabled={remove.isPending} onClick={() => window.confirm(t('automations.rules.deleteConfirm', { name: r.name })) && remove.mutate(r.id)} className="flex size-touch items-center justify-center rounded-lg text-icon hover:bg-danger-bg hover:text-danger-text">
-              <TrashIcon aria-hidden className="size-4" />
+            <button type="button" aria-label={t('common.delete')} disabled={remove.isPending} onClick={() => window.confirm(t('automations.rules.deleteConfirm', { name: r.name })) && remove.mutate(r.id)} className="flex size-touch items-center justify-center rounded-md text-muted hover:bg-danger-bg hover:text-danger-text">
+              <Trash2Icon aria-hidden className="size-4" />
             </button>
           </li>
         ))}
@@ -263,7 +264,7 @@ function RuleForm({ rule, builder, onDone }: { rule: AutomationRule | null; buil
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4 rounded-lg p-4 ring-1 ring-border">
+    <form onSubmit={submit} className="flex flex-col gap-4 rounded-lg border p-4">
       {save.error && <Alert>{errorOf(save.error)}</Alert>}
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label={t('automations.rules.name')} value={name} required maxLength={120} onChange={(e) => setName(e.target.value)} />
@@ -287,7 +288,7 @@ function RuleForm({ rule, builder, onDone }: { rule: AutomationRule | null; buil
       </div>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 text-[13px] font-semibold">{t('automations.rules.if')}</legend>
+        <legend className="mb-1 text-sm font-semibold">{t('automations.rules.if')}</legend>
         {shown.length === 0 && <p className="text-xs text-muted">{t('automations.rules.always')}</p>}
         {shown.map((c, i) => (
           <div key={i} className="grid items-end gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">
@@ -306,8 +307,8 @@ function RuleForm({ rule, builder, onDone }: { rule: AutomationRule | null; buil
               ))}
             </Select>
             <ValueInput field={c.field} value={c.value} builder={builder} label={t('automations.rules.value')} onChange={(v) => setShown(shown.map((x, j) => (j === i ? { ...x, value: v } : x)))} />
-            <button type="button" aria-label={t('common.delete')} onClick={() => setShown(shown.filter((_, j) => j !== i))} className="flex size-touch items-center justify-center rounded-lg text-icon hover:bg-danger-bg hover:text-danger-text">
-              <TrashIcon aria-hidden className="size-4" />
+            <button type="button" aria-label={t('common.delete')} onClick={() => setShown(shown.filter((_, j) => j !== i))} className="flex size-touch items-center justify-center rounded-md text-muted hover:bg-danger-bg hover:text-danger-text">
+              <Trash2Icon aria-hidden className="size-4" />
             </button>
           </div>
         ))}
@@ -322,7 +323,7 @@ function RuleForm({ rule, builder, onDone }: { rule: AutomationRule | null; buil
       </fieldset>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 text-[13px] font-semibold">{t('automations.rules.then')}</legend>
+        <legend className="mb-1 text-sm font-semibold">{t('automations.rules.then')}</legend>
         {actions.map((a, i) => (
           <div key={i} className="grid items-end gap-2 rounded-lg bg-sunken p-3 sm:grid-cols-[1fr_2fr_auto]">
             <Select label={t('automations.rules.action')} value={a.type} onChange={(e) => setActions(actions.map((x, j) => (j === i ? { type: e.target.value, message: x.message } : x)))}>
@@ -363,8 +364,8 @@ function RuleForm({ rule, builder, onDone }: { rule: AutomationRule | null; buil
                 </Select>
               )}
             </div>
-            <button type="button" aria-label={t('common.delete')} disabled={actions.length === 1} onClick={() => setActions(actions.filter((_, j) => j !== i))} className="flex size-touch items-center justify-center rounded-lg text-icon hover:bg-danger-bg hover:text-danger-text disabled:opacity-40">
-              <TrashIcon aria-hidden className="size-4" />
+            <button type="button" aria-label={t('common.delete')} disabled={actions.length === 1} onClick={() => setActions(actions.filter((_, j) => j !== i))} className="flex size-touch items-center justify-center rounded-md text-muted hover:bg-danger-bg hover:text-danger-text disabled:opacity-40">
+              <Trash2Icon aria-hidden className="size-4" />
             </button>
           </div>
         ))}
@@ -389,8 +390,8 @@ function RuleForm({ rule, builder, onDone }: { rule: AutomationRule | null; buil
         <Button variant="ghost" onClick={onDone}>
           {t('common.cancel')}
         </Button>
-        {test.data && <span className="text-[13px] font-medium">{t('automations.rules.testResult', { count: test.data.count })}</span>}
-        {test.error && <span className="text-[13px] text-danger-text">{errorOf(test.error)}</span>}
+        {test.data && <span className="text-sm font-medium">{t('automations.rules.testResult', { count: test.data.count })}</span>}
+        {test.error && <span className="text-sm text-danger-text">{errorOf(test.error)}</span>}
       </div>
     </form>
   )
