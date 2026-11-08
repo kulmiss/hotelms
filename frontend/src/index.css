@@ -364,6 +364,16 @@
   }
 }
 
+/* A small text link or button: a 44px tap area on touch screens, without moving the text around it. */
+@utility tap-link {
+  @media (pointer: coarse) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-block: calc((1lh - 44px) / 2);
+  }
+}
+
 /* Swipeable tab rows: scroll sideways without a visible bar. */
 @utility no-scrollbar {
   scrollbar-width: none;

@@ -114,7 +114,7 @@ plan and progress in `MIGRATION_PLAN.md`):
   icons only. Branch switcher at the top of the sidebar, account menu at the bottom and in the header. Header: menu
   button, search (⌘K / Ctrl+K / `/`, lazy cmdk) on the left, then bell, theme switch (sun) and account.
 - **Cards:** shadcn cards (`.panel` = rounded-xl, border, small shadow). Two-column screens use `minmax(0,1fr)` for the
-  main column so wide tables scroll inside their card.
+  main column (also at the one-column size) so wide tables scroll inside their card.
 - **Below 1024px:** filter, sort and toolbar controls fold behind one **Filters** button (`CollapsibleToolbar`).
 - **Touch:** every tap target ≥ 44px on touch screens (`min-h-touch`, `size-touch`, `pointer-coarse:`; 36px with a
   mouse); main reception actions `size="lg"` (52px).

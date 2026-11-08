@@ -134,7 +134,7 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={title} breadcrumbs={[{ label: t('nav.reservations'), to: '/reservations' }, { label: existing?.code ?? t('reservations.new') }]} />
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="grid items-start grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="flex flex-col gap-6">
           {/* 1. Stay – @container: the fields go 1, 2 or 3 per row by the card's own width, so dates always show in full. */}
           <Card className="@container flex flex-col gap-4">
