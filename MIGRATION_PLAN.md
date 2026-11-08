@@ -237,4 +237,4 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P9 | open (stacked) | #95 |
 | P10 | open (stacked) | #96 |
 | P11 | open (stacked) | #97 |
-| P12 | open (stacked on the previous PR) | (this PR) |
+| P12 | open (stacked) | #98 |
