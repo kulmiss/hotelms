@@ -176,7 +176,7 @@
         "Choose a clean room for each booked room.",
         "Check the guest's ID. If the hotel asks, take a photo of the ID.",
         "If money is still needed, take the payment.",
-        "Before the check-in time, the app may add an early check-in fee. You can choose Don't charge if you are allowed.",
+        "Before the check-in time, the app may add an early check-in fee. A guest who comes after midnight (before 6:00) pays last night as a full night. You can choose Don't charge if you are allowed.",
         "Tap Check in. The bill opens by itself."
       ]
     },
@@ -293,7 +293,8 @@
         "Tap Add charge.",
         "Choose the charge (for example Laundry), or choose Other and write what it is.",
         "Type how many and the price each. Tap Add charge.",
-        "It goes on the bill. The guest pays it with the rest."
+        "It goes on the bill. The guest pays it with the rest.",
+        "After the guest has left, only a manager can add or remove charges on the bill. You can still take a payment."
       ]
     },
     "discount": {

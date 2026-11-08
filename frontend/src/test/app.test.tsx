@@ -7,16 +7,25 @@ import { renderApp } from './renderApp'
 afterEach(() => vi.unstubAllGlobals())
 
 describe('app shell (signed in)', () => {
-  it('shows the dashboard with a connected API', async () => {
-    mockApi({ 'GET /me': { body: makeMe() }, 'GET /health': healthOk })
+  const support = () => ({ ...makeMe(), impersonation: { by: 'Owner', reason: 'Help', started_at: '2026-11-05T10:00:00Z' } })
+
+  it('shows HotelMS support a connected API on the dashboard', async () => {
+    mockApi({ 'GET /me': { body: support() }, 'GET /health': healthOk })
     renderApp('/')
     expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
     expect(await screen.findByText('Connected')).toBeInTheDocument()
     expect(screen.getByText('Version 0.1.0')).toBeInTheDocument()
   })
 
+  it('does not show the technical API status to hotel staff', async () => {
+    mockApi({ 'GET /me': { body: makeMe() }, 'GET /health': healthOk })
+    renderApp('/')
+    expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
+    expect(screen.queryByText('API status')).not.toBeInTheDocument()
+  })
+
   it('reports when the API is not reachable', async () => {
-    mockApi({ 'GET /me': { body: makeMe() }, 'GET /health': { status: 503, body: {} } })
+    mockApi({ 'GET /me': { body: support() }, 'GET /health': { status: 503, body: {} } })
     renderApp('/')
     expect(await screen.findByText('API not reachable', {}, { timeout: 4000 })).toBeInTheDocument()
   })

@@ -344,6 +344,11 @@ class ReservationsTest extends TestCase
 
         $this->postJson('/api/v1/reservations', $this->booking())->assertCreated();
         $this->getJson("/api/v1/guests/{$this->guest->id}")->assertJsonPath('stays.0.code', 'BL-26-00001');
+        // A booking shows only the end of the guest's ID number; the guest's own page shows all of it.
+        $this->putJson("/api/v1/guests/{$this->guest->id}", ['first_name' => 'Abebe', 'last_name' => 'Kebede', 'id_type' => 'passport', 'id_number' => 'EP9876543'])->assertOk();
+        $booking = $this->getJson('/api/v1/reservations?per_page=25')->json('data.0.id');
+        $this->getJson("/api/v1/reservations/$booking")->assertJsonPath('data.guest.id_number', 'EP•••6543');
+        $this->getJson("/api/v1/guests/{$this->guest->id}")->assertJsonPath('data.id_number', 'EP9876543');
 
         // A receptionist of another branch sees the guest, but not the Bole booking.
         $piassa = Branch::factory()->for($this->hotel)->create(['name' => 'Piassa', 'code' => 'PS']);

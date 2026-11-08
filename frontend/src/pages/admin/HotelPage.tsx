@@ -155,7 +155,7 @@ export function HotelPage() {
           </dl>
           <h3 className="mt-2 text-sm font-semibold">{t('admin.hotel.staff')}</h3>
           <ul className="flex flex-col gap-1 text-sm">
-            {hotel.data.admins.map((a) => (
+            {hotel.data.admins.slice(0, 5).map((a) => (
               <li key={a.id} className="flex flex-col gap-2">
                 <div className="flex flex-col">
                   <span className="font-medium">
@@ -170,6 +170,11 @@ export function HotelPage() {
               </li>
             ))}
           </ul>
+          {hotel.data.admins.length > 5 && (
+            <button type="button" className="flex min-h-touch items-center self-start text-[13px] font-medium text-accent-text hover:underline" onClick={() => setTab('staff')}>
+              {t('admin.hotel.seeAllStaff', { count: hotel.data.admins.length })}
+            </button>
+          )}
         </Card>
 
         <Card className="flex flex-col gap-3">

@@ -18,7 +18,7 @@ Each section says the rule, the code and the tests. Backend paths are under `bac
 | Walk-in: full or deposit up front (Q6); **quick check-in** (name + phone, "Details missing"); a phone that matches an old guest offers **Use this guest** (no second copy) | `Booking/FrontDesk::walkIn`, `Front/FrontDeskController::walkIn`; `WalkInPage` `PhoneMatch`, `lib/phone.ts` | `FrontDeskTest`, `test/openStay.test.tsx` |
 | **No end date / open stay** (Q16): a nightly walk-in pays the first night; `reservations.open_stay`; every 5 min `stays:roll-open` adds one night when the guest is still in 30 min after the check-out time (like Extend, so a booked room is never double-booked); no early check-out fee; leaving after today's check-out time = late fee (`FrontDesk::dueOut`), not a night. Listed in Leaving every day. Messages (automations): `open_stay_room_booked` (a day before the room is booked, and when no night could be added), `open_stay_check` (every N nights, default 14) | `FrontDesk::walkIn`, `rollOpenStay`, `freeOneMoreNight`, `dueOut`; `Console/Commands/RollOpenStays` | `FrontDeskTest::test_an_open_stay…` |
 | **After-midnight walk-in** (Q13): before the hotel's `night_cutoff` (default 06:00) the walk-in pays for last night | `FrontDesk::nightDate`; `ReservationService` prices from the night date | `FrontDeskTest::test_a_walk_in_after_midnight…` |
-| Check-in: clean rooms only; early check-in fee (Q7, waivable); ID photo if required; possible until the check-out time | `FrontDesk::checkIn`, `earlyFee` | `FrontDeskTest` |
+| Check-in: clean rooms only; early check-in fee (Q7, waivable; percent fees at most 100%); a booked guest arriving after midnight, before the night cut-off, on the check-in day pays **last night as a full night** (Q17, line "Last night (arrived after midnight)"); ID photo if required; possible until the check-out time | `FrontDesk::checkIn`, `earlyFee` | `FrontDeskTest::test_a_booked_guest_arriving_after_midnight…` |
 | Room move: old room dirty; nights from today at the new type's price | `FrontDesk::moveRoom`, `repriceFromToday` | `FrontDeskTest` |
 | Extend stay (later date only, max 90 nights; room must be free); **+1 night** in one tap on the room panel and on the Leaving list ("Still staying?": Staying / Leaving) | `FrontDesk::extend`; `RoomBoardPage` `PlusNight` | `FrontDeskTest`, `test/openStay.test.tsx` |
 | Check-out: late fee after check-out time + 30 min (Q7, waivable) | `FrontDesk::checkOut`, `lateFee` | `FrontDeskTest` |
@@ -57,6 +57,13 @@ Each section says the rule, the code and the tests. Backend paths are under `bac
 - Price rules: a Branch Manager only sees and changes rules of their own branch's room types; "All room types" is for the Hotel Admin (`RateRuleController`). Settings lists can give plain-word messages (`ResourceController::messages`).
 - Support ("log in as hotel") is not sent to "Set a new password" for a person with a temporary password (server and app).
 - The design-system page exists only in development builds.
+
+## Bills after check-out (Q18)
+
+Once the guest has left (or the booking was cancelled / no-show), only people with `invoices.void` (managers) can add or remove bill lines,
+also the quick-charge Undo (`InvoiceService::assertMayChangeLines`). Payments and refunds stay possible. The bill screen hides Add charge / Add discount for others.
+Bookings show only the end of the guest's ID number (`ReservationPresenter`); the full number is on the guest's page and the registration card.
+The technical "API status" card on the dashboard is only for the HotelMS team. The Super Admin hotel overview shows 5 staff with "See all staff"; Log in as hotel can choose any of them.
 
 ## Guests
 

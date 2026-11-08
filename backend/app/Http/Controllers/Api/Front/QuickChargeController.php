@@ -100,6 +100,7 @@ class QuickChargeController extends Controller
     {
         $item = InvoiceItem::where('type', 'extra')->where('created_by', $request->user()->id)
             ->where('created_at', '>=', now()->subMinutes(self::UNDO_MINUTES))->findOrFail($itemId);
+        $this->invoices->assertMayChangeLines($item->invoice, $request->user()); // the guest checked out meanwhile: a manager
         $this->invoices->removeLine($item->invoice, $item);
 
         return response()->json(['ok' => true]);

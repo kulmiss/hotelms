@@ -162,6 +162,8 @@ class FrontDeskController extends Controller
                 'id' => $rr->id, 'room_type' => $rr->roomType?->name, 'room_id' => $rr->room_id, 'room_number' => $rr->room?->number, 'room_status' => $rr->room?->status,
                 'free_rooms' => $free->map(fn (Room $r) => ['id' => $r->id, 'number' => $r->number, 'floor' => $r->floor]),
                 'early_fee' => $early ? ($early['type'] === 'fixed' ? Money::round($early['value']) : Money::percentOf($night, $early['value'])) : null,
+                // true: arrived after midnight, so the "fee" is a full night (last night)
+                'early_is_night' => ($early['type'] ?? null) === 'night',
             ];
         });
 

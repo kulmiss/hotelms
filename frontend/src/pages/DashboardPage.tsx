@@ -148,7 +148,8 @@ export function DashboardPage() {
       {isHotelUser && !can('dashboard.view') && <QuickLinks />}
       {isHotelUser && can('dashboard.view') && dash.isPending && <DashboardSkeleton />}
 
-      <ApiStatus />
+      {/* Technical: only for the HotelMS team (also while they support a hotel), not for hotel staff (owner, 2026-11-08). */}
+      {(me.data?.user.is_super_admin || me.data?.impersonation) && <ApiStatus />}
     </div>
   )
 }

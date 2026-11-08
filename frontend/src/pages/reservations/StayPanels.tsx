@@ -106,7 +106,7 @@ export function CheckInPanel({ r, onClose }: { r: ReservationDetail; onClose: ()
       })}
       {isPositive(early) && (
         <label className="flex items-center gap-3 rounded-lg bg-warn-bg/50 px-3 py-2 text-[13px]">
-          <span className="flex-1">{t('desk.earlyFee', { amount: money(early, r.currency) })}</span>
+          <span className="flex-1">{t((d?.rooms ?? []).some((x) => x.early_is_night) ? 'desk.lastNightFee' : 'desk.earlyFee', { amount: money(early, r.currency) })}</span>
           {can('fees.waive') && (
             <span className="flex items-center gap-2">
               <input type="checkbox" className="size-4 accent-accent" checked={waive} onChange={(e) => setWaive(e.target.checked)} />
