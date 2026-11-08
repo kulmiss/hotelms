@@ -58,7 +58,8 @@ export function Search({ className }: { className?: string }) {
         onPointerEnter={() => void loadMenu()}
         onFocus={() => void loadMenu()}
         className={cn(
-          'group relative h-8 w-full flex-1 justify-start rounded-md bg-sunken/25 text-sm font-normal text-muted shadow-none hover:bg-sunken sm:w-40 sm:pe-12 md:flex-none lg:w-52 xl:w-64 pointer-coarse:h-11',
+          // min-w-0 + shrink: on phones the box gets narrower instead of covering the menu button.
+          'group relative h-8 w-full min-w-0 flex-1 shrink justify-start rounded-md bg-sunken/25 text-sm font-normal text-muted shadow-none hover:bg-sunken sm:w-40 sm:pe-12 md:flex-none lg:w-52 xl:w-64 pointer-coarse:h-11',
           className,
         )}
       >
