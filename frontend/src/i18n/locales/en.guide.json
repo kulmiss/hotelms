@@ -167,7 +167,7 @@
       "title": "Is a room free on a date?",
       "steps": [
         "Reservations → Calendar. Each line is a room, each column is a day.",
-        "A colored bar is a booking. Move your mouse on it (or tap it) to see the guest and the dates.",
+        "A colored bar is a booking. Move your mouse on it to see the guest and the dates. Tap it to open the booking.",
         "An empty place means the room is free that day.",
         "Tap a day at the top to see all rooms for that day."
       ]

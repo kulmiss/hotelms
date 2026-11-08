@@ -84,6 +84,8 @@ php artisan migrate --force && php artisan optimize
 php artisan up
 ```
 A backup is taken every hour, so you can always go back (see below).
+When a new version adds tables, the `migrate` step is **required** (for example the saved-once update adds `idempotency_keys`).
+Development (Docker): `docker compose exec backend php artisan migrate`.
 
 ## Speed
 - **PHP OPcache on** (cPanel → *Select PHP Version* → *Extensions*: tick `opcache`; *Options*: `opcache.memory_consumption` 128 or more, `opcache.max_accelerated_files` 20000). On a VPS it is on by default with `php8.3-fpm`.
