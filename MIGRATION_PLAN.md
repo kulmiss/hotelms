@@ -1,0 +1,203 @@
+# MIGRATION_PLAN – shadcn-admin look and feel
+
+Goal (owner, 8 Nov 2026): when someone opens HotelMS it should **look and feel like shadcn-admin**
+(layout, sidebar, header, Cmd+K, spacing, type, colours, dark mode, animations, interactions).
+Code structure stays ours. Approved approach: the **smaller option**, pushed as close to the template as possible.
+
+- Template: https://github.com/satnaing/shadcn-admin, **pinned to `e16c87f`** (MIT; notice kept in `THIRD_PARTY_NOTICES`).
+- Copy **style and patterns only**: no demo pages (tasks, apps, chats, Clerk), no TanStack Router, no zod/react-hook-form.
+- Comparison the owner approved: Design canvas "HotelMS dashboard – shadcn-admin look (comparison)".
+
+## Owner decisions (8 Nov)
+| # | Decision |
+|---|---|
+| 1 | Smaller option: tokens, dark mode, typography, layout shell (sidebar, header, Cmd+K) and all 21 shared building blocks; then fix screens that still look different, in later partitions |
+| 2 | `CLAUDE.md` design rules change to the shadcn-admin style |
+| 3 | Lucide icons instead of Heroicons (done once in the building blocks, then screen by screen) |
+| 4 | Template sizes on desktop; **44 px tap targets on touch screens only** (`pointer: coarse`) |
+| 5 | Template's neutral (slate) look; **Super Admin brand colour = primary / accent** |
+| 6 | Keep React Router; the navigation must *feel* the same (active states, collapsible sidebar, transitions) |
+| 7 | Work on `ui/shadcn-admin`, one PR per partition, never push to `main` |
+| 8 | Stop after each partition and wait for the owner's OK |
+| 9 | Priority screens: room board, walk-in, bookings, bills, dashboard |
+| 10 | Deploy from `main` only |
+| 11 | Staff-guide pictures: redo at the end |
+| 12 | **Printed invoices and registration cards stay exactly as they are** |
+| – | Every text stays in `t()` |
+
+## 1. What the template is (study of `e16c87f`)
+
+**Theme tokens** (`src/styles/theme.css`, shadcn "new-york", base colour **slate**, OKLCH):
+`--background --foreground --card --popover --primary --secondary --muted --muted-foreground --accent --destructive --border --input --ring --chart-1..5 --sidebar-*`, `--radius: 0.625rem` (sm/md/lg/xl = r−4/r−2/r/r+4).
+Light primary is near-black slate; dark primary is near-white. We swap primary for the brand colour.
+
+**Fonts:** Inter (also Manrope / system as user choices). Body `text-sm` (14 px), page title `text-2xl font-bold tracking-tight`, card title `font-semibold`, stat `text-2xl font-bold`, hints `text-xs text-muted-foreground`.
+
+**Layout:**
+- `SidebarProvider` → `AppSidebar` (variant **inset**, collapsible **icon**, `SidebarRail`), width 16rem / 3rem icons / 18rem mobile sheet, 200 ms linear width transition, remembers state in a cookie.
+- Sidebar: `TeamSwitcher` (logo square + name + plan, dropdown) · `NavGroup`s (label `text-xs`, items `h-8 text-sm`, active = `bg-sidebar-accent font-medium`, collapsible sub-items with chevron, badges, tooltips when collapsed, dropdown for sub-items when collapsed) · `NavUser` footer (avatar, name, email, dropdown: account, billing, notifications, sign out).
+- `SidebarInset`: the content panel with `m-2 rounded-xl shadow-sm`.
+- `Header` (h-16, sticky option, blur + shadow after scrolling 10 px): `SidebarTrigger` (outline, size-7) · vertical separator · (top nav) · `Search` (outline button `h-8 w-64`, ⌘K badge) · `ThemeSwitch` (ghost round, sun/moon, dropdown Light/Dark/System) · `ConfigDrawer` · `ProfileDropdown` (round avatar).
+- `Main`: `px-4 py-6`, max-width 7xl on wide screens.
+- `CommandMenu` (cmdk in a dialog): groups from the sidebar data + theme commands, ⌘K / Ctrl K.
+- `NavigationProgress` (top loading bar), `sonner` toasts, `SkipToMain` link.
+
+**Building blocks used:** button, card, badge, alert, input, textarea, label, select (Radix), checkbox, switch, radio-group, tabs, table + data-table (toolbar, faceted filter, column toggle, pagination), dialog, alert-dialog, sheet, dropdown-menu, popover, tooltip, collapsible, separator, scroll-area, avatar, skeleton, command, calendar, sonner.
+
+## 2. What HotelMS has today (audit, `main` at 744d67c)
+
+- Vite + React 19 + TypeScript, **Tailwind v4 already**, React Router 7, TanStack Query, react-i18next. No UI library; own building blocks.
+- Icons: Heroicons in **67 files** (71 different icons; outline + solid for active nav).
+- Styles: `src/index.css` – our tokens (`bg-bg`, `bg-surface`, `bg-sunken`, `text-text`, `text-muted`, `bg-accent`, `text-accent-text`, `ring-ring`, status colours `ok/warn/info/danger/grey`, room colours), `.panel`, `.doc`, keyframes, touch size `--touch` (36 px / 44 px on touch).
+- Brand: `lib/brand.tsx` writes the Super Admin colour into `--accent*` at run time (light + dark).
+- Theme: `lib/theme.tsx` light / dark / system with `.dark` on `<html>` (same idea as the template).
+- Screens: **62 routes, 71 page files (~14,800 lines)**; layout 14 files; 21 building blocks; 34 test files.
+- Building-block use: Button 67 files, Card 56, Alert 48, Field 45, PageHeader 43, Badge 41, Select 29, Tabs 15, DataTable 8 (+ ResourceList 3).
+- Markup outside the building blocks (to restyle screen by screen): 51 raw `<input>` (mostly checkboxes / radios), 8 raw `<select>`, 26 raw `<table>`, 15 files with `.panel`, 1 dialog.
+
+## 3. Inventory: ours → template equivalent
+
+### Layout (`components/layout`)
+| Ours | Template equivalent | Note |
+|---|---|---|
+| `AppShell` | `AuthenticatedLayout` (`SidebarProvider` + `AppSidebar` + `SidebarInset`) | keep our banners, screen lock, offline bar |
+| `Sidebar` | `AppSidebar` + `NavGroup` + `TeamSwitcher` + `NavUser` | data from `app/navigation.ts` (permissions, modules, groups unchanged); branch switcher in the team-switcher slot; brand logo/name from `lib/brand.tsx` |
+| `Topbar` | `Header` | trigger, separator, search, bell, theme, profile |
+| `GlobalSearch` (Ctrl K) | `Search` button + `CommandMenu` (cmdk) | same search API, settings search and permissions; adds nav + theme commands |
+| `UserMenu` | `NavUser` + `ProfileDropdown` | same items (profile, security, front desk mode, help, sign out…) |
+| `AlertBell` | (none) → ghost round icon button + dropdown in header | |
+| `ProgressBar` | `NavigationProgress` | look only |
+| `HotelBanners`, `SessionBanner`, `ConnectionBanner`, `Maintenance` | (none) → shadcn `Alert` style, above the header | demo countdown, support banner, offline |
+| `ScreenLock`, `RequireAuth`, `RouteError` | (none) → card / auth-page style | logic unchanged |
+
+### Building blocks (`components/ui`) – all 21
+| Ours | Template equivalent |
+|---|---|
+| Button | `button` (default, outline, secondary, ghost, destructive, link; sizes sm/default/lg/icon). Our `size="lg"` 52 px reception buttons stay for touch |
+| Card | `card` (Card, Header, Title, Description, Content, Footer) |
+| Badge, StatusBadge | `badge` (default/secondary/outline/destructive) + our status colours as soft badges |
+| Alert | `alert` (default, destructive) + our info/warn/ok tones |
+| Field | `label` + `input` / `textarea` + form message style |
+| Select | `select` look on the native `<select>` (keeps phone pickers and tests); Radix only if a screen needs it |
+| Tabs | `tabs` (muted pill list) |
+| DataTable, ResourceList | `table` + data-table toolbar, column toggle (dropdown), pagination; phone cards stay |
+| DateRangeFilter | popover + preset list (calendar look) |
+| PageHeader | page title row (`text-2xl font-bold tracking-tight` + description + actions) |
+| StatTile, Delta | dashboard stat `Card` |
+| Toaster | `sonner` look (our own toaster restyled; no new library unless needed) |
+| SmartHints | `alert` with icon + "Why?" link |
+| LoadFailed | `alert` (destructive) + outline "Try again" |
+| SwipeRow, PhotoPickers, QrCode, TempPassword | restyled with the tokens (no template equivalent) |
+
+### Screens → template pattern
+| Screens | Pattern |
+|---|---|
+| Dashboard, Super Admin dashboard | template **Dashboard** (stat cards, chart card, list card) |
+| Room board, front desk mode, charge a room | cards grid + tabs + filters (data-table toolbar look); front desk mode stays full screen |
+| Walk-in, new / change booking, guest form, staff form, role form, new hotel | **form** patterns (label above input, muted descriptions, card sections) |
+| Bookings list, guests, bills, payments, cashier shifts, activity log, staff, hotels, support inbox | **Users / Tasks data-table** pattern |
+| Booking page, bill page, guest page, hotel page | detail page: cards + tabs (Settings-like) |
+| Calendars (bookings, room calendar) | cards + table look (no template equivalent) |
+| Settings (all sections), profile, security, platform settings | template **Settings** layout (left sub-nav, `h3` + muted description, separator, forms) |
+| Login, password reset, change password, two-step, screen lock | template **Auth** pages (centred card) |
+| 404, error page, maintenance | template **Errors** pages |
+| Reports, insights, approvals, help, what's new | cards + tabs + tables |
+| **Invoice print, registration card print** | **not touched** (owner #12) |
+
+## 4. Risks and what cannot match 100%
+
+1. **I cannot run npm in my workspace** (package downloads are blocked). Typecheck, lint, tests and build run on **GitHub CI** after each push. For the visual check in the browser, the owner switches his local copy to the branch (commands in each report), then I check light/dark, phone and tablet in the browser pane.
+2. **Deploy safety:** PRs go into `ui/shadcn-admin` (not `main`), so `main` is never half-restyled. A last PR `ui/shadcn-admin → main` when everything is done. *(Needs the owner's OK – question 1.)*
+3. **Brand colour as primary:** some brand colours are light (e.g. yellow). `lib/brand.tsx` already picks dark or white text on the colour; it will feed `--primary` / `--primary-foreground` / `--ring` too.
+4. **Touch sizes:** template buttons are 32–36 px; on touch screens they become 44 px (decision 4). Slightly taller rows on tablets than the template.
+5. **Native `<select>`** keeps the phone's own picker (better on tablets and for tests); it is styled like the shadcn select trigger, but the open list is the device's, not a Radix popover.
+6. **Tests** find things by role and text. Restyling keeps roles and texts, but Radix menus (user menu, column toggle) behave differently in jsdom; some tests need small updates (same assertions, new way to open the menu).
+7. **Bundle size (speed):** Radix parts, cmdk and lucide add about 40–60 KB gzipped, loaded with the shell; icons are tree-shaken. Screens stay lazy-loaded. Measured in each report.
+8. **Fonts:** the template loads Inter from Google Fonts; we keep the **self-hosted** Inter (`@fontsource-variable/inter`) so it works offline and on cPanel without Google.
+9. **No top nav links:** the template's Overview / Customers / Products links have no equivalent in HotelMS; the header has the search on the left of the icons instead.
+10. **Print pages** use their own black-on-white styles; token changes must not reach them (checked in every partition).
+11. **Staff-guide pictures** (15) will be out of date until the last partition.
+
+## 5. Partitions
+
+Each partition: list files → change → compare old/new for lost buttons, handlers, fields, messages, loading / empty / error states and permission checks → CI green (typecheck, lint, tests, build) → browser check (light, dark, 375 px, 768 px, desktop) → commit(s) → tick here → short report → **stop for OK**.
+
+### P1 – Foundation (tokens, fonts, theme, notices)
+- [ ] Add packages: `lucide-react`, `clsx`, `tailwind-merge`, `class-variance-authority`, `tw-animate-css`, Radix `slot`, `dropdown-menu`, `dialog`, `tooltip`, `collapsible`, `popover`, `separator`, `scroll-area`, and `cmdk` (only what P1–P3 use)
+- [ ] `components.json` (template's, aliases adapted to our folders)
+- [ ] shadcn tokens (slate, OKLCH, radius) in `index.css`, light + dark
+- [ ] Our old token names (`bg-surface`, `text-muted`, `bg-accent`…) point at the new values, so **every screen changes colour at once** and nothing breaks
+- [ ] Brand colour → `--primary`, `--primary-foreground`, `--ring`, `--sidebar-primary` (light + dark)
+- [ ] Base styles from the template (border colour, focus ring `ring/50`, cursor pointer, thin scrollbars, 16 px inputs on phones)
+- [ ] `cn()` uses `clsx` + `tailwind-merge`
+- [ ] `THIRD_PARTY_NOTICES` with the template's MIT licence
+- [ ] `CLAUDE.md` design rules → shadcn-admin style (Lucide, slate tokens, brand primary, touch rule)
+- [ ] Check: every page renders; print pages unchanged
+
+### P2 – Layout shell
+- [ ] Sidebar (inset, collapsible to icons, rail, tooltips when collapsed, mobile sheet, state remembered), groups / items / collapsible Settings / badges from `app/navigation.ts`
+- [ ] Branch switcher in the team-switcher slot; brand logo + name from Super Admin branding
+- [ ] `NavUser` footer and `ProfileDropdown` with all current user-menu items
+- [ ] Header: trigger, separator, search button (⌘K), alert bell, theme switch (Light / Dark / System), profile; blur + shadow when scrolled
+- [ ] Command menu (cmdk): current global search + settings search + navigation + theme, same permissions
+- [ ] Banners (demo countdown, support, session, offline, maintenance) in alert style above the header; navigation progress bar
+- [ ] Super Admin uses the same shell with its own nav
+- [ ] Skip-to-main link; keyboard and focus checks
+
+### P3 – The 21 building blocks + Lucide
+- [ ] Button, Card, Badge, StatusBadge, Alert, Field, Select, Tabs, PageHeader, StatTile, Delta
+- [ ] DataTable + ResourceList (table look, toolbar, column-toggle dropdown, pagination, phone cards)
+- [ ] DateRangeFilter (popover), Toaster (sonner look), SmartHints, LoadFailed, SwipeRow, PhotoPickers, QrCode, TempPassword
+- [ ] Heroicons → Lucide inside the building blocks and the navigation
+- [ ] List of screens that still look different → the page partitions below
+
+### P4 – Dashboard (hotel)
+- [ ] Template dashboard pattern (as on the approved canvas): stat cards, "next 7 days" chart card, rooms card, money cards, smart hint alert
+
+### P5 – Room board, front desk mode, charge a room
+- [ ] Room cards, status filter chips, tabs (Arriving / Leaving / In house) as data-table toolbar + tabs; room panel; front desk mode tiles
+
+### P6 – Walk-in
+- [ ] Form pattern: sections as cards, room picker, guest quick check-in, summary card, payment
+
+### P7 – Bookings
+- [ ] List (data-table), calendar, new / change form, booking page, stay panels (check-in, check-out, move, extend, pay), room calendar, registration card **screen** (print stays)
+
+### P8 – Bills
+- [ ] Billing list (bills, payments), bill page, charge / discount / payment panels. **Invoice print untouched**
+
+### P9 – Guests
+- [ ] Guest list, guest page, guest form, ID photo
+
+### P10 – Modules
+- [ ] Cashier, housekeeping, shifts / roster, attendance, kiosk
+
+### P11 – Reports and approvals
+- [ ] Reports library + every report, insights, automation reports, approvals
+
+### P12 – Settings and setup
+- [ ] Settings layout (template Settings pattern) + all sections, import, automations, setup walkthrough
+
+### P13 – Team, profile, security
+- [ ] Staff, staff form, roles, role form, devices, activity log, profile, security pages
+
+### P14 – Sign-in pages
+- [ ] Login, forgot / reset password, change password, two-step, screen lock (template Auth pattern)
+
+### P15 – Super Admin
+- [ ] Command center, hotels, hotel page (tabs), new hotel, plans, switches, support inbox, releases, content, watchdog, docs, system, activity, team, platform settings, platform reports
+
+### P16 – The rest
+- [ ] Help, what's new, subscription, 404, error page, maintenance (template Errors pattern)
+
+### P17 – Cleanup and final check
+- [ ] Remove Heroicons and dead CSS/components only after a whole-codebase search (ask before removing any package)
+- [ ] Second-pass review of the whole branch against `main`
+- [ ] All checks + every route in light / dark, phone / desktop
+- [ ] Redo the 15 staff-guide pictures (`tools/pictures/`)
+- [ ] Final report; PR `ui/shadcn-admin → main`
+
+## 6. Status
+| Partition | Status | PR |
+|---|---|---|
+| P0 Plan | waiting for approval | – |
