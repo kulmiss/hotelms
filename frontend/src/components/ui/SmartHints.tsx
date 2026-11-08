@@ -37,7 +37,7 @@ function SmartHintRow({ h }: { h: SmartHint }) {
         <p>
           {h.text}{' '}
           {h.link && (
-            <Link to={h.link} className="font-medium text-accent-text underline-offset-4 hover:underline">
+            <Link to={h.link} className="tap-link font-medium text-accent-text underline-offset-4 hover:underline">
               {t('smart.open')}
             </Link>
           )}

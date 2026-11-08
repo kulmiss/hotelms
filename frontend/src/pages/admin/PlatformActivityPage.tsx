@@ -55,7 +55,7 @@ export function PlatformActivityPage() {
                   <td className="px-5 py-3">{a.description}</td>
                   <td className="px-5 py-3">
                     {a.hotel ? (
-                      <Link to={`/admin/hotels/${a.hotel.id}`} className="text-accent-text hover:underline">
+                      <Link to={`/admin/hotels/${a.hotel.id}`} className="tap-link text-accent-text hover:underline">
                         {a.hotel.name}
                       </Link>
                     ) : (

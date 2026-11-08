@@ -48,7 +48,7 @@ export function InvoicePage() {
           <span className="flex flex-wrap items-center gap-2">
             <Badge tone={INVOICE_TONES[inv.status]}>{t(`billing.statuses.${inv.status}`)}</Badge>
             {inv.reservation && (
-              <Link to={`/reservations/${inv.reservation.id}`} className="text-accent-text">
+              <Link to={`/reservations/${inv.reservation.id}`} className="tap-link text-accent-text">
                 {inv.reservation.code}
               </Link>
             )}
@@ -82,7 +82,7 @@ export function InvoicePage() {
       {split.isSuccess && <Alert tone="ok">{t('billing.splitDone', { count: split.data.data.length })}</Alert>}
       {panel === 'void' && <VoidPanel inv={inv} onClose={() => setPanel(null)} />}
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="grid items-start grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="flex flex-col gap-6">
           <Card className="overflow-x-auto p-0">
             <table className="w-full min-w-[560px] text-left text-sm">
