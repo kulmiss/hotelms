@@ -66,7 +66,9 @@ class ReportController extends Controller
             'rooms' => ['total' => array_sum($rooms->all()), 'by_status' => $rooms],
             'pending_expiring' => $res()->where('status', 'pending')->where('expires_at', '<=', now()->addHours(3))->count(),
             'late_arrivals' => $res()->whereIn('status', ['pending', 'confirmed'])->where('check_in_at', '<', now())->where('check_in_at', '>=', $start)->count(),
-            'next_7_days' => $this->onTheBooks($hotel, $branchIds, $today, Carbon::parse($today)->addDays(6)->toDateString(), $sellable),
+            // Booking pace for the next 14 days (P18); next_7_days stays for older screens.
+            'next_days' => $pace = $this->onTheBooks($hotel, $branchIds, $today, Carbon::parse($today)->addDays(13)->toDateString(), $sellable),
+            'next_7_days' => array_slice($pace, 0, 7),
         ];
         if ($money) {
             $data['revenue_today'] = $metrics->revenueParts($today, $today)['revenue'];
@@ -80,6 +82,37 @@ class ReportController extends Controller
         }
 
         return response()->json(['data' => $data]);
+    }
+
+    /**
+     * Dashboard trend (P18): per day arrivals, departures, rooms sold and occupancy for every dashboard role;
+     * revenue, room revenue, ADR, RevPAR and money taken ONLY with dashboard.view_revenue (never sent otherwise).
+     */
+    public function trend(Request $request): JsonResponse
+    {
+        $data = $request->validate(['from' => ['required', 'date'], 'to' => ['required', 'date', 'after_or_equal:from'], 'branch_id' => ['nullable', 'integer']]);
+        if (Carbon::parse($data['from'])->diffInDays(Carbon::parse($data['to'])) > 400) {
+            abort(422, 'Choose at most 400 days.');
+        }
+        $user = $request->user();
+        $hotel = $user->hotel;
+        $m = Metrics::for($hotel, $this->branchIds($request));
+        $from = Carbon::parse($data['from'])->toDateString();
+        $to = Carbon::parse($data['to'])->toDateString();
+        $rows = $m->movements($from, $to);
+        $rooms = $m->roomCount();
+        if ($user->hasPermission('dashboard.view_revenue')) {
+            $money = collect($m->daily($from, $to))->keyBy('date');
+            $rows = array_map(fn (array $r) => $r + [
+                'revenue' => $money[$r['date']]['revenue'],
+                'room_revenue' => $money[$r['date']]['room_revenue'],
+                'adr' => $money[$r['date']]['adr'],
+                'revpar' => $rooms > 0 ? Money::round(bcdiv($money[$r['date']]['room_revenue'], (string) $rooms, 4)) : '0.00',
+                'payments' => $money[$r['date']]['payments'],
+            ], $rows);
+        }
+
+        return response()->json(['data' => $rows, 'rooms' => $rooms, 'from' => $from, 'to' => $to, 'currency' => $hotel->default_currency ?? 'ETB']);
     }
 
     public function show(Request $request, string $key): JsonResponse|Response

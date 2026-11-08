@@ -73,6 +73,21 @@
 | `lib/useIsMobile.ts` | Below 768px the sidebar is a drawer |
 | `lib/photos.ts` | Shrinks photos before upload |
 
+## Dashboards (P18)
+
+- **Hotel dashboard** `pages/DashboardPage.tsx` + `pages/dashboard/` (Overview, Revenue, Operations tabs; `DeskLists`, `Sheets`).
+  The period and branch live in the address (`?range=30&branch=2&tab=revenue`, `useDashFilters` in `lib/dashboard.ts`), so every widget
+  updates at once; every dashboard question's key starts with `'dash'`, so the refresh button reloads them all.
+- **Charts** `components/charts/` (Recharts, the template's library): `kit.tsx` (card with loading / empty / error states, `WidgetBoundary`
+  so one broken widget never breaks the page, `Legend`, `BarList`), `charts.tsx` (`OccRevenueChart`, `RevenuePaymentsChart`, `Donut`,
+  `PaceChart`, `Sparkline`), `KpiCard.tsx`. Colours: `--chart-1` = brand colour, `--chart-2…5`, `--chart-soft`, `--chart-grid`, and the room
+  status colours (`ROOM_COLORS`). Animations are off with "reduce motion". Recharts is only imported by dashboard screens (lazy routes).
+- **Details in place**: a KPI, a chart day, a room status or a list row opens a side sheet (`pages/dashboard/Sheets.tsx`). Check in,
+  check out and take payment use the SAME panels as the booking and bill pages (`CheckInPanel`, `CheckOutPanel`, `PaymentForm`, `PayPanel`,
+  loaded only when a sheet opens), so the rules and the "saved once" keys are the same. No new business logic on the dashboard.
+- **Who sees what**: money widgets need `dashboard.view_revenue` (the server never sends money to other roles, `/dashboard/trend` included);
+  report widgets also need the report permission; desk lists need `frontdesk.view`; approvals `approvals.decide`.
+
 ## Offline (decisions.md W6)
 
 Internet drops about weekly at some hotels. Reception keeps a **read-only** copy on the device (who you are, today's

@@ -280,6 +280,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
 
             // Dashboard and reports.
             Route::get('/dashboard', [ReportController::class, 'dashboard'])->middleware('permission:dashboard.view');
+            Route::get('/dashboard/trend', [ReportController::class, 'trend'])->middleware('permission:dashboard.view');
             Route::get('/reports/drilldown', [ReportController::class, 'drilldown']);
             Route::get('/reports/daily', [InsightController::class, 'daily'])->middleware('permission:reports.revenue');
             Route::get('/reports/forecast', [InsightController::class, 'forecast'])->middleware('permission:reports.forecast');

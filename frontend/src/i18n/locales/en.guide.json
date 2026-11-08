@@ -88,9 +88,12 @@
     "dashboard": {
       "title": "Dashboard",
       "steps": [
-        "The Dashboard is the first page. It shows today: guests arriving, guests leaving, free rooms.",
+        "The Dashboard is the first page. It shows today and the last days: guests arriving and leaving, rooms, and (for managers) money.",
+        "At the top, choose the days (Today, 7, 30 or 90 days) and the branch. Every box changes at once. The round arrow loads the newest numbers.",
         "The ✨ Smart box gives tips. Tap \"Why?\" to see how the app knows it.",
-        "Tap a number to open the list behind it."
+        "Tap a number, a bar or a line to see the details on the right side. \"View all\" opens the full page.",
+        "In \"Today at the desk\", tap Check in, Check out or Take payment. It opens the same form as on the booking page.",
+        "Managers also see the Revenue and Operations tabs."
       ]
     },
     "roomBoard": {
