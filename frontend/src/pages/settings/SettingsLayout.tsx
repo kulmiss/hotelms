@@ -1,10 +1,11 @@
 import { useEffect, useId, useState } from 'react'
+import { NoAccessPage } from '@/pages/NoAccessPage'
 import { NavLink, Navigate, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router'
 import { SearchIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { cn } from '@/lib/cn'
-import { searchSettings, settingsLink, useSettingsSections, type SettingsHit } from '@/lib/settingsSearch'
+import { searchSettings, settingsLink, useSettingsSections, type SettingsHit, SETTINGS_SECTIONS } from '@/lib/settingsSearch'
 
 /** Hotel settings: sections on the left (with a search box), the open section on the right. */
 export function SettingsLayout() {
@@ -15,7 +16,10 @@ export function SettingsLayout() {
   // Open the first allowed section; never show a section the role may not use.
   const current = pathname.replace(/\/$/, '').split('/')[2]
   if (!current || !sections.some((s) => s.key === current)) {
-    return sections[0] ? <Navigate to={`/settings/${sections[0].key}`} replace /> : <Navigate to="/" replace />
+    // A real section this role may not use (or no section at all): say so (owner, QA 8 Nov). A wrong name: first section.
+    const known = SETTINGS_SECTIONS.some((s) => s.key === current)
+    if ((current && known) || !sections[0]) return <NoAccessPage />
+    return <Navigate to={`/settings/${sections[0].key}`} replace />
   }
 
   return (

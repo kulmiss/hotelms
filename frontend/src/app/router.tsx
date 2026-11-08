@@ -9,6 +9,7 @@ import { useFrontDeskMode } from '@/lib/frontDeskMode'
 import { RouteError } from '@/components/layout/RouteError'
 import { ChangePasswordPage } from '@/pages/ChangePasswordPage'
 import { LoginPage } from '@/pages/LoginPage'
+import { NoAccessPage } from '@/pages/NoAccessPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
 import { mainNav } from './navigation'
@@ -110,13 +111,13 @@ function HomeRedirect() {
 /** Hotel screens: only for users whose role has the permission. */
 function RequirePermission({ permission }: { permission: string | string[] }) {
   const can = useCan()
-  return can(permission) ? <Outlet /> : <Navigate to="/" replace />
+  return can(permission) ? <Outlet /> : <NoAccessPage />
 }
 
 /** Only HotelMS team members may open /admin. */
 function RequireSuperAdmin() {
   const me = useMe()
-  return me.data?.user.is_super_admin ? <Outlet /> : <Navigate to="/" replace />
+  return me.data?.user.is_super_admin ? <Outlet /> : <NoAccessPage />
 }
 
 export const routes = [

@@ -175,6 +175,11 @@
     "title": "Page not found",
     "back": "Back to dashboard"
   },
+  "noAccess": {
+    "title": "You can't open this page",
+    "text": "Your role does not allow it. Ask your manager if you need it.",
+    "back": "Go to the start page"
+  },
   "routeError": {
     "title": "Something went wrong on this screen",
     "text": "Nothing was lost. Reload the page, or go back to the start. If it happens again, tell HotelMS support what you tapped.",
