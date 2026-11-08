@@ -7,7 +7,7 @@ import { AlertBell } from './AlertBell'
 import { Search } from './Search'
 import { ThemeSwitch } from './ThemeSwitch'
 
-/** The template's header: menu button, then search, bell, theme and account on the right. Sticky, with a shadow once scrolled. */
+/** The template's header: menu button, search next to it, then bell, theme and account on the right. Sticky, with a shadow once scrolled. */
 export function Header() {
   const [offset, setOffset] = useState(0)
 
@@ -23,9 +23,10 @@ export function Header() {
       <div className={cn('relative flex h-full items-center gap-3 p-4 sm:gap-4', scrolled && 'after:absolute after:inset-0 after:-z-10 after:bg-background/20 after:backdrop-blur-lg')}>
         <SidebarTrigger variant="outline" className="max-md:scale-125 pointer-coarse:max-md:scale-100" />
         <Separator orientation="vertical" className="h-6" />
-        <div className="ms-auto flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-4">
+        {/* Like the template's pages without top links: search on the left, next to the menu button; icons on the right. */}
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
           <Search />
-          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <div className="ms-auto flex shrink-0 items-center gap-1 sm:gap-2">
             <AlertBell />
             <ThemeSwitch />
             <ProfileDropdown />
