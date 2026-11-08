@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { KeyIcon, NoSymbolIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { BanIcon, KeyRoundIcon, RefreshCwIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -104,8 +104,8 @@ function StaffForm({ member }: { member?: StaffMember }) {
               <label
                 key={r.id}
                 className={cn(
-                  'flex cursor-pointer flex-col gap-1 rounded-lg p-4 shadow-sm ring-1 transition duration-75',
-                  String(r.id) === f.role_id ? 'bg-accent-soft ring-2 ring-accent' : 'ring-ring-strong hover:bg-sunken',
+                  'flex cursor-pointer flex-col gap-1 rounded-lg p-4 border shadow-xs transition-colors',
+                  String(r.id) === f.role_id ? 'border-primary bg-accent-soft ring-1 ring-primary' : 'hover:bg-sunken',
                   (!editable || isSelf) && 'pointer-events-none opacity-70',
                 )}
               >
@@ -114,7 +114,7 @@ function StaffForm({ member }: { member?: StaffMember }) {
                     type="radio"
                     name="role"
                     aria-label={r.name}
-                    className="size-5 accent-accent"
+                    className="size-5"
                     value={r.id}
                     checked={String(r.id) === f.role_id}
                     onChange={(e) => setF({ ...f, role_id: e.target.value })}
@@ -137,7 +137,7 @@ function StaffForm({ member }: { member?: StaffMember }) {
               <label key={b.id} className="flex min-h-touch items-center gap-3 text-sm">
                 <input
                   type="checkbox"
-                  className="size-5 rounded accent-accent"
+                  className="size-5 rounded"
                   disabled={!editable}
                   checked={f.branch_ids.includes(b.id)}
                   onChange={(e) =>
@@ -184,12 +184,12 @@ function StaffActions({ member }: { member: StaffMember }) {
         {firstError && <Alert>{firstError}</Alert>}
         {member.status === 'active' ? (
           <Button variant="secondary" disabled={setActive.isPending} onClick={() => setActive.mutate(false)}>
-            <NoSymbolIcon aria-hidden className="size-5 text-danger-text" />
+            <BanIcon aria-hidden className="size-5 text-danger-text" />
             {t('team.staff.disable')}
           </Button>
         ) : (
           <Button variant="secondary" disabled={setActive.isPending} onClick={() => setActive.mutate(true)}>
-            <ArrowPathIcon aria-hidden className="size-4 text-icon" />
+            <RefreshCwIcon aria-hidden className="size-4 text-icon" />
             {t('team.staff.enable')}
           </Button>
         )}
@@ -204,11 +204,11 @@ function StaffActions({ member }: { member: StaffMember }) {
           <>
             <p className="text-xs text-muted">{t('admin.hotel.resetHelp', { name: member.name })}</p>
             <label className="flex min-h-touch items-center gap-3 text-sm">
-              <input type="checkbox" className="size-5 rounded accent-accent" checked={sendEmail} onChange={(e) => setSendEmail(e.target.checked)} />
+              <input type="checkbox" className="size-5 rounded" checked={sendEmail} onChange={(e) => setSendEmail(e.target.checked)} />
               {t('admin.hotel.emailIt', { email: member.email })}
             </label>
             <Button variant="secondary" disabled={reset.isPending} onClick={() => reset.mutate(sendEmail)}>
-              <KeyIcon aria-hidden className="size-4 text-icon" />
+              <KeyRoundIcon aria-hidden className="size-4 text-icon" />
               {t('admin.hotel.createPassword')}
             </Button>
           </>

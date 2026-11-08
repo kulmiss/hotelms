@@ -202,8 +202,8 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 
 - [x] Settings layout (template settings side menu + search box), all sections, switches in the template look, import preview, automations, setup walkthrough; checkboxes incl. switch-role ones styled; Lucide
 ### P13 – Team, profile, security
-- [ ] Staff, staff form, roles, role form, devices, activity log, profile, security pages
 
+- [x] Staff list and form (role choice cards), roles and role form, devices, activity log (search box), My profile, security cards (two-step choice cards); Lucide
 ### P14 – Sign-in pages
 - [ ] Login, forgot / reset password, change password, two-step, screen lock (template Auth pattern)
 
@@ -238,3 +238,4 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P10 | open (stacked) | #96 |
 | P11 | open (stacked) | #97 |
 | P12 | open (stacked) | #98 |
+| P13 | open (stacked on the previous PR) | (this PR) |

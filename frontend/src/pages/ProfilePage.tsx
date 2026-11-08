@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { KeyIcon } from '@heroicons/react/24/outline'
+import { KeyRoundIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -35,7 +35,7 @@ export function ProfilePage() {
           to="/change-password"
           className={buttonClass('secondary')}
         >
-          <KeyIcon aria-hidden className="size-4 text-icon" />
+          <KeyRoundIcon aria-hidden className="size-4 text-icon" />
           {t('topbar.changePassword')}
         </Link>
       </Card>

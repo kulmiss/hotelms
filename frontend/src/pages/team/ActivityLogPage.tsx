@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { SearchIcon } from 'lucide-react'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { useActivityLog, type ActivityEntry } from '@/lib/hotel'
 import { DataTable, type SortState } from '@/components/ui/DataTable'
@@ -39,8 +39,8 @@ export function ActivityLogPage() {
     <div className="flex flex-col gap-8">
       <PageHeader title={t('nav.activityLog')} subtitle={t('team.activity.subtitle')} />
       <div className="flex flex-wrap items-end gap-3">
-      <label className="flex min-h-touch w-full max-w-sm items-center gap-2 rounded-lg bg-surface px-3 shadow-sm ring-1 ring-ring-strong focus-within:ring-2 focus-within:ring-accent">
-        <MagnifyingGlassIcon aria-hidden className="size-5 shrink-0 text-icon" />
+      <label className="flex min-h-touch w-full max-w-sm items-center gap-2 rounded-md border border-input bg-transparent px-3 shadow-xs transition-[color,box-shadow] focus-within:border-focus focus-within:ring-[3px] focus-within:ring-focus/50 dark:bg-input/30">
+        <SearchIcon aria-hidden className="size-5 shrink-0 text-icon" />
         <span className="sr-only">{t('team.activity.search')}</span>
         <input
           type="search"
