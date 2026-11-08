@@ -184,7 +184,7 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [x] Form pattern: sections as cards, stay-type toggle (template outline buttons), room picker (template card shape, brand outline when chosen), guest match box, quick check-in, summary card, payment; checkboxes in the template look; Lucide
 
 ### P7 – Bookings
-- [ ] List (data-table), calendar, new / change form, booking page, stay panels (check-in, check-out, move, extend, pay), room calendar, registration card **screen** (print stays)
+- [x] List (data-table, search with icon, status filter chips), calendar (bars with borders, today column), new / change form (stay-type toggle, room picker, guest search), booking page, stay panels (check-in, check-out, move, extend, pay), room calendar; Lucide. **Registration card page not touched** (it is the print page)
 
 ### P8 – Bills
 - [ ] Billing list (bills, payments), bill page, charge / discount / payment panels. **Invoice print untouched**
@@ -232,3 +232,4 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P4 Dashboard | open (stacked on #89) | #90 |
 | P5 Room board, front desk mode, charge a room | open (stacked on #90) | #91 |
 | P6 Walk-in | open (stacked on #91) | #92 |
+| P7 Bookings | open (stacked on #92) | #93 |
