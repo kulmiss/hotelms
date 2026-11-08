@@ -194,7 +194,6 @@
     "dash": {
       "subtitle": "Every hotel on HotelMS, at a glance.",
       "totalHotels": "Hotels",
-      "unpaid": "Unpaid",
       "incomeThisMonth": "Income this month",
       "trialsEnding": "Trials ending in 7 days",
       "needsAttention": "Needs attention",
@@ -211,6 +210,40 @@
       "moneyTodayHint": "All hotels, payments minus refunds.",
       "topHotels": "Top hotels today",
       "liveActivity": "Live activity"
+    },
+    "cc": {
+      "periods": {
+        "1": "This month",
+        "3": "3 months",
+        "12": "12 months"
+      },
+      "hotelsSub": "{{trial}} on trial · {{active}} paying",
+      "noIncome": "No payments yet",
+      "incomeHelp": "Per plan; each currency kept apart",
+      "noIncomeYet": "No subscription payments yet. Bars appear when a hotel pays.",
+      "incomeAria": "Subscription income for the last {{months}} months",
+      "lostSub": "suspended or closed",
+      "last15": "last 15 minutes",
+      "hotels_one": "hotel",
+      "hotels_other": "hotels",
+      "byPlan": "By plan",
+      "signups": "New and lost hotels",
+      "signupsAria": "New and lost hotels for the last {{months}} months",
+      "new": "New",
+      "lostShort": "Lost",
+      "setup": "set-up {{percent}}%",
+      "system": "System health",
+      "allOk": "All OK",
+      "problem": "Problem",
+      "support": "Support tickets",
+      "inbox": "Inbox",
+      "noTickets": "No open tickets.",
+      "urgent": "Urgent",
+      "healthLabel": "Health",
+      "setupLabel": "Set-up",
+      "lastActivity": "Last activity",
+      "bookings30": "Bookings (30 days)",
+      "openHotel": "Open the hotel page"
     },
     "hotels": {
       "new": "New hotel",

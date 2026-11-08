@@ -90,3 +90,23 @@ describe('hotel dashboard (P18)', () => {
     expect(screen.getByRole('img', { name: 'Room status of 12 rooms' })).toBeInTheDocument()
   })
 })
+
+describe('Super Admin command center (P18)', () => {
+  const superAdmin = () => ({ ...makeMe({ is_super_admin: true, name: 'Owner' }, []), role: null, hotel: null, branches: [], platform: { role: 'owner', permissions: ['hotels.view', 'system.view'] } })
+  it('shows hotels by plan, health and the system, and opens a hotel in place', async () => {
+    mockApi({
+      'GET /me': { body: superAdmin() },
+      'GET /admin/dashboard': { body: { hotels: { total: 1, by_status: { trial: 1, active: 0, grace: 0, suspended: 0 } }, income_this_month: {}, trials_ending_soon: [], needs_attention: [], today: { bookings: 0, money: {}, occupancy: 0, occupied: 0, rooms: 0, staff_online: 0, open_support: 0 }, top_hotels: [], activity: [] } },
+      'GET /admin/reports/platform': { body: { data: { income: [{ month: '2026-11', totals: [], by_plan: [] }], hotels: { trial: 1 }, trials_ending: [], lost: 0, new_this_month: 1, rooms: 0, signups: [{ month: '2026-11', count: 1 }], churned: [{ month: '2026-11', count: 0 }], by_plan: [{ plan: 'Basic', hotels: 1 }] } } },
+      'GET /admin/reports/hotel-health': { body: { data: [{ id: 2, name: 'Safari', status: 'trial', plan: 'Basic', setup_percent: 8, setup_completed: false, last_activity: null, quiet_days: null, bookings_30_days: 0, subscription_ends_at: null, health: 'watch' }], counts: { watch: 1 } } },
+      'GET /admin/system': { body: { data: { checks: { database: { ok: true }, cache: { ok: true, driver: 'redis' }, scheduler: { ok: true, last_run: null }, jobs: { ok: true, waiting: 0, failed: 0, recent_failures: [] }, backups: { ok: true, daily: null, small: null }, disk: { ok: true, free_mb: 1000 } }, errors: [], versions: { app: '1', php: '8.3', laravel: '13', database: null }, checked_at: '' } } },
+    })
+    renderApp('/admin')
+    expect(await screen.findByText('No subscription payments yet. Bars appear when a hotel pays.')).toBeInTheDocument()
+    expect(screen.getByText('Basic')).toBeInTheDocument()
+    expect(await screen.findByText('All OK')).toBeInTheDocument()
+    await userEvent.click(await screen.findByRole('button', { name: /Safari/ }))
+    const sheet = await screen.findByRole('dialog')
+    expect(within(sheet).getByRole('link', { name: /Open the hotel page/ })).toHaveAttribute('href', '/admin/hotels/2')
+  })
+})
