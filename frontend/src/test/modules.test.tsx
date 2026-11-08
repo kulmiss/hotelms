@@ -39,6 +39,16 @@ describe('optional modules', () => {
     })
   })
 
+  it('does not ask for an own shift when the role only sees all shifts (accountant, QA 8 Nov)', async () => {
+    const fetchMock = mockApi({
+      'GET /me': { body: meWith(['cashier.view_all']) },
+      'GET /cashier/sessions': { body: { data: [], current_page: 1, last_page: 1, total: 0, per_page: 25 } },
+    })
+    renderApp('/cashier')
+    expect(await screen.findByText('All cashier shifts')).toBeInTheDocument()
+    expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith('/cashier/current'))).toBe(false)
+  })
+
   it('lets housekeeping start and finish a task', async () => {
     const task = { id: 8, type: 'cleaning', priority: 'high', status: 'pending', notes: null, room: { id: 2, number: '102', floor: '1', status: 'dirty' }, assigned_to: null, due_at: null, started_at: null, completed_at: null }
     const fetchMock = mockApi({
