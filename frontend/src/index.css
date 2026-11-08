@@ -337,6 +337,10 @@
     & ol { @apply list-decimal pl-5; }
     & li { @apply my-0.5; }
     & a { @apply font-medium text-accent-text underline underline-offset-2; }
+    /* Touch: links in lists and tables (file lists) get a 44px tap area, like tap-link. */
+    @media (pointer: coarse) {
+      & li > a, & td > a { display: inline-flex; align-items: center; min-height: 44px; margin-block: calc((1lh - 44px) / 2); }
+    }
     & code { @apply rounded bg-sunken px-1 py-0.5 font-mono text-[12px]; }
     & pre { @apply overflow-x-auto rounded-lg bg-sunken p-3; }
     & pre code { @apply bg-transparent p-0; }
