@@ -33,19 +33,40 @@ describe('double submit', () => {
   })
 })
 
-describe('Idempotency-Key on every change', () => {
-  it('reuses the key for the same change within 3 seconds, then makes a new one', async () => {
-    const { autoIdempotencyKey } = await import('@/lib/api')
-    const a = autoIdempotencyKey('POST', '/front-desk/rooms/2/charges', '{"charge_type_id":4}', 1_000)
-    expect(autoIdempotencyKey('POST', '/front-desk/rooms/2/charges', '{"charge_type_id":4}', 3_500)).toBe(a)
-    expect(autoIdempotencyKey('POST', '/front-desk/rooms/2/charges', '{"charge_type_id":5}', 3_500)).not.toBe(a)
-    expect(autoIdempotencyKey('POST', '/front-desk/rooms/2/charges', '{"charge_type_id":4}', 4_100)).not.toBe(a) // a second breakfast later
+describe('Idempotency-Key: one per submission, the same for its retries (owner, QA 8 Nov)', () => {
+  const keyOf = (call: unknown) => ((call as [string, RequestInit])[1].headers as Record<string, string>)['Idempotency-Key']
+  const ok = () => new Response(JSON.stringify({ data: { id: 1 } }), { status: 201, headers: { 'Content-Type': 'application/json' } })
+
+  it('gives every submission its own key – a real second action is a new one', async () => {
+    const fetchMock = vi.fn(async () => ok())
+    vi.stubGlobal('fetch', fetchMock)
+    await post('/front-desk/rooms/2/charges', { charge_type_id: 4 })
+    await post('/front-desk/rooms/2/charges', { charge_type_id: 4 }) // a second breakfast, right after
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(keyOf(fetchMock.mock.calls[0])).toBeTruthy()
+    expect(keyOf(fetchMock.mock.calls[0])).not.toBe(keyOf(fetchMock.mock.calls[1]))
   })
 
-  it('sends the key with every change, never with reading', async () => {
-    const fetchMock = slowServer()
-    await post('/guests', { first_name: 'QA' })
-    const headers = (fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].headers as Record<string, string>
-    expect(headers['Idempotency-Key']).toBeTruthy()
+  it('retries a dropped or timed-out request with the SAME key', async () => {
+    const fetchMock = vi.fn().mockRejectedValueOnce(new TypeError('Failed to fetch')).mockResolvedValueOnce(ok())
+    vi.stubGlobal('fetch', fetchMock)
+    await post('/reservations/9/payments', { amount: '100' })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(keyOf(fetchMock.mock.calls[1])).toBe(keyOf(fetchMock.mock.calls[0]))
+  })
+
+  it('waits and asks again with the SAME key while the server says "still being saved"', async () => {
+    const busy = new Response(JSON.stringify({ message: 'This is still being saved.', code: 'busy' }), { status: 409, headers: { 'Content-Type': 'application/json' } })
+    const fetchMock = vi.fn().mockResolvedValueOnce(busy).mockResolvedValueOnce(ok())
+    vi.stubGlobal('fetch', fetchMock)
+    await expect(post('/cashier/close', { counted: { ETB: '500' } })).resolves.toEqual({ data: { id: 1 } })
+    expect(keyOf(fetchMock.mock.calls[1])).toBe(keyOf(fetchMock.mock.calls[0]))
+  })
+
+  it('keeps a key the form passes (money forms) and sends none when reading', async () => {
+    const fetchMock = vi.fn(async () => ok())
+    vi.stubGlobal('fetch', fetchMock)
+    await post('/invoices/4/payments', { amount: '50' }, { 'Idempotency-Key': 'form-key-1' })
+    expect(keyOf(fetchMock.mock.calls[0])).toBe('form-key-1')
   })
 })

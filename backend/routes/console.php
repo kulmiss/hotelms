@@ -6,6 +6,7 @@ use App\Models\PaymentProof;
 use App\Services\GuestIdPhotos;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Facades\Storage;
 
@@ -45,6 +46,10 @@ Schedule::call(function () {
             $p->delete();
         }));
 })->name('payment-proofs:cleanup')->dailyAt('03:20')->withoutOverlapping();
+
+// Saved-once keys (Idempotent middleware): kept 24 hours, removed after 48.
+Schedule::call(fn () => DB::table('idempotency_keys')->where('created_at', '<', now()->subHours(48))->delete())
+    ->name('idempotency-keys:cleanup')->hourlyAt(25)->withoutOverlapping();
 
 // Guest ID photos past the time each hotel keeps them (Booking rules): removed at night.
 Schedule::call(function () {

@@ -46,7 +46,7 @@
 - **Money actions** use `useMoneyAction` (`lib/desk.ts`): the same `Idempotency-Key` until the server says yes (no double payment on a bad network).
 - **Live screens** poll (`refetchInterval: 30_000`); no WebSockets (hosting limit).
 
-- **Send once** (owner, QA 8 Nov): `api()` sends a change (POST / PUT / PATCH / DELETE) that is exactly the same as one still on its way only once – the second caller gets the first answer (double-click on a slow network). Every change also carries an `Idempotency-Key`; the same change within 3 seconds reuses it (`autoIdempotencyKey`), money forms keep their own key until saved (`useMoneyAction`). The server (`Idempotent` middleware) answers a repeated key with the first result on every money / booking / bill / charge / cashier / guest / approval route. Buttons stay disabled while sending (`isPending`).
+- **Send once** (owner, QA 8 Nov): every change is one submission with its own `Idempotency-Key` (a new UUID per `api()` call; money forms may pass their own, `useMoneyAction`). If the network drops or times out, or the server answers 409 `busy`, `api()` sends the same submission again with the **same key** (twice / three times, with short waits), so the server answers with the first result. A change exactly the same as one still on its way is sent only once (double-click on a slow network). Buttons stay disabled while sending (`isPending`). There is no offline queue: offline, changes are refused (read-only copy).
 
 ## Who sees what
 

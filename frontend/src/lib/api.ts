@@ -62,41 +62,57 @@ export function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 /**
- * Every change carries an Idempotency-Key (owner, QA 8 Nov). The same change sent again within 3 seconds (a
- * double-click that lands after the first answer, a second tab) reuses the key, so the server answers with the first
- * result instead of saving it twice. After 3 seconds the same change is a new one (e.g. a second breakfast).
- * Money forms pass their own key (`useMoneyAction`), kept until the payment is saved.
+ * Saved once (owner, QA 8 Nov): every change is one submission with its own Idempotency-Key (a new UUID per call
+ * of `api()` – a form submit, a tap). When the network fails or the server says "still being saved", the SAME
+ * submission is sent again with the SAME key, so the server returns the first answer instead of saving twice.
+ * Money forms may pass their own key (`useMoneyAction`), kept until the payment is saved.
  */
-const REPEAT_MS = 3000
-const recentKeys = new Map<string, { key: string; at: number }>()
-
-export function autoIdempotencyKey(method: string, path: string, body: unknown, now = Date.now()): string {
-  const sig = `${method} ${path} ${typeof body === 'string' ? body : ''}`
-  const recent = recentKeys.get(sig)
-  if (recent && now - recent.at < REPEAT_MS) return recent.key
-  for (const [k, v] of recentKeys) if (now - v.at >= REPEAT_MS) recentKeys.delete(k)
-  const key = newIdempotencyKey()
-  recentKeys.set(sig, { key, at: now })
-  return key
-}
+const RETRY_NETWORK_MS = [1000, 3000]
+const RETRY_BUSY_MS = [1500, 3000, 5000]
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 async function send<T>(path: string, init: RequestInit = {}): Promise<T> {
   // Offline: nothing can be changed (read-only copy). The form keeps what was typed.
   if ((init.method ?? 'GET') !== 'GET' && typeof navigator !== 'undefined' && navigator.onLine === false) {
     throw new ApiError(0, i18n.t('offline.cannotChange'), { code: 'offline' })
   }
-  const token = xsrfToken()
-  const res = await fetch(BASE + path, {
-    ...init,
-    credentials: 'include',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      ...(token ? { 'X-XSRF-TOKEN': token } : {}),
-      ...((init.method ?? 'GET').toUpperCase() !== 'GET' ? { 'Idempotency-Key': autoIdempotencyKey((init.method ?? 'GET').toUpperCase(), path, init.body) } : {}),
-      ...init.headers,
-    },
-  })
+  const method = (init.method ?? 'GET').toUpperCase()
+  const given = new Headers(init.headers).get('Idempotency-Key')
+  const key = method !== 'GET' ? (given ?? newIdempotencyKey()) : null
+  const attempt = () => {
+    const token = xsrfToken()
+    return fetch(BASE + path, {
+      ...init,
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        ...(token ? { 'X-XSRF-TOKEN': token } : {}),
+        ...init.headers,
+        ...(key ? { 'Idempotency-Key': key } : {}),
+      },
+    })
+  }
+  let res!: Response
+  for (let i = 0; ; i++) {
+    try {
+      res = await attempt()
+    } catch (e) {
+      // Network dropped or timed out: send the same submission again (same key), never a new one.
+      if (!key || i >= RETRY_NETWORK_MS.length || (typeof navigator !== 'undefined' && navigator.onLine === false)) throw e
+      await wait(RETRY_NETWORK_MS[i])
+      continue
+    }
+    // The first try is still being saved on the server (a retry or a second tab with the same key): wait for it.
+    if (key && res.status === 409 && i < RETRY_BUSY_MS.length) {
+      const peek = (await res.clone().json().catch(() => null)) as { code?: string } | null
+      if (peek?.code === 'busy') {
+        await wait(RETRY_BUSY_MS[i])
+        continue
+      }
+    }
+    break
+  }
   const body: unknown = await res.json().catch(() => null)
   // More than the guest owes (often a typing mistake): ask, then send again with "yes" (owner, 2026-11-07).
   const overpay = res.status === 422 ? (body as { errors?: Record<string, string[]> } | null)?.errors?.confirm_overpay?.[0] : undefined

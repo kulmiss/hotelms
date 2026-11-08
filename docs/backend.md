@@ -44,7 +44,7 @@ Order for hotel routes: `auth:sanctum` → `active` → `device` → `tenant` �
 | `module:x` | `EnsureModuleEnabled` | The hotel has this optional module on |
 | `switch:x` | `EnsureSwitchOn` | A Super Admin switch is on for this hotel |
 | `not.impersonating` | `BlockDuringImpersonation` | Not allowed in a "log in as hotel" support session |
-| `idempotent` | `Idempotent` | Every action that takes money or creates / changes a booking, bill, charge, cashier shift, guest or approval (owner, QA 8 Nov): the same `Idempotency-Key` header gives the first answer again – nothing is saved twice |
+| `idempotent` | `Idempotent` | Saved once (owner, QA 8 Nov) on every action that takes money or creates / changes a booking, bill, charge, cashier shift, guest or approval: the `Idempotency-Key` + user + endpoint + request hash + answer are kept 24 h in `idempotency_keys` (unique per user and key). Same key → the first answer again; same key with other details → 422 `idempotency_mismatch`; same key still running → waits, then 409 `busy`; a failed answer frees the key |
 | `one.at.a.time:kind` | `OneAtATime` | One change at a time per booking/bill (a lock in the cache) |
 | (global) | `SecurityHeaders` | nosniff, frame deny, referrer policy, HSTS on HTTPS |
 | (global) | `RecordProblems` | Notes refused requests and errors for the watchdog |
