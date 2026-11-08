@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { ChevronRight } from 'lucide-react'
 
 type Crumb = { label: string; to?: string }
@@ -16,16 +17,17 @@ export function PageHeader({
   actions?: ReactNode
   breadcrumbs?: Crumb[]
 }) {
+  const { t } = useTranslation()
   return (
     <div className="flex flex-col gap-y-2">
       {breadcrumbs && (
-        <nav aria-label="Breadcrumb">
+        <nav aria-label={t('common.breadcrumb')}>
           <ol className="flex flex-wrap items-center gap-1.5 text-sm break-words text-muted sm:gap-2.5">
             {breadcrumbs.map((c, i) => (
               <li key={i} className="inline-flex items-center gap-1.5 sm:gap-2.5">
                 {i > 0 && <ChevronRight aria-hidden className="size-3.5" />}
                 {c.to ? (
-                  <Link to={c.to} className="transition-colors hover:text-text">
+                  <Link to={c.to} className="transition-colors hover:text-text pointer-coarse:-my-3 pointer-coarse:inline-block pointer-coarse:py-3">
                     {c.label}
                   </Link>
                 ) : (

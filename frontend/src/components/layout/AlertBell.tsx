@@ -27,7 +27,7 @@ export function AlertBell() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={unread ? t('alerts.bellUnread', { count: unread }) : t('topbar.notifications')} className="relative scale-95 rounded-full">
+        <Button variant="ghost" size="icon" aria-label={unread ? t('alerts.bellUnread', { count: unread }) : t('topbar.notifications')} className="relative scale-95 rounded-full pointer-coarse:scale-100">
           <Bell aria-hidden className="size-[1.2rem]" />
           {unread > 0 && (
             <span aria-hidden className="absolute top-1 right-1 flex min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] leading-4 font-semibold text-white">

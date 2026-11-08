@@ -18,7 +18,7 @@ export function ThemeSwitch() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t('topbar.theme')} title={t('topbar.theme')} className="scale-95 rounded-full">
+        <Button variant="ghost" size="icon" aria-label={t('topbar.theme')} title={t('topbar.theme')} className="scale-95 rounded-full pointer-coarse:scale-100">
           <Sun aria-hidden className="size-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
           <Moon aria-hidden className="absolute size-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
         </Button>
