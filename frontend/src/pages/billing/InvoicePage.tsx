@@ -82,7 +82,7 @@ export function InvoicePage() {
       {split.isSuccess && <Alert tone="ok">{t('billing.splitDone', { count: split.data.data.length })}</Alert>}
       {panel === 'void' && <VoidPanel inv={inv} onClose={() => setPanel(null)} />}
 
-      <div className="grid items-start gap-6 lg:grid-cols-[1fr_22rem]">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="flex flex-col gap-6">
           <Card className="overflow-x-auto p-0">
             <table className="w-full min-w-[560px] text-left text-sm">
