@@ -22,7 +22,7 @@
 
 ## Layout and shortcuts
 
-- **Sidebar** (template, `variant="inset"`, `collapsible="icon"`): 16rem wide, 3rem when collapsed (3.75rem on touch screens so the 44px buttons fit), a drawer below 768px. Collapsed or not is saved on the device (`hms-sidebar-collapsed`). Collapsed items show their name as a tooltip.
+- **Sidebar** (template, `variant="inset"`, `collapsible="icon"`): 16rem wide, 3rem when collapsed (3.75rem on touch screens so the 44px buttons fit), a drawer below 768px. Collapsed or not is saved on the device (`hms-sidebar-collapsed`); with no saved choice, tablet widths (768–1023px) start collapsed. Collapsed items show their name as a tooltip.
 - **Shortcuts**: Ctrl/⌘+K or `/` opens the command menu (search, pages, theme); Ctrl/⌘+B opens/closes the sidebar; Tab from the top shows "Skip to main content".
 - **Icons**: Lucide, imported one by one (`import { House } from 'lucide-react'`) so only the used icons are downloaded. Heroicons are still used by screens not restyled yet (MIGRATION_PLAN P3–P16).
 - **Speed**: cmdk and the command menu are loaded only when the menu is first opened (or the search button is hovered).

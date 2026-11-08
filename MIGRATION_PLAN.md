@@ -128,7 +128,15 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [ ] **Offline check:** the app shell, fonts and icons work with the network off (offline banner, cached screens); nothing loaded from outside sites
 - [ ] **Every new text goes through `t()`** (`en.json`); no hard-coded words
 - [ ] **Before / after screenshots** of the changed screens in the report
-- [ ] First-download size (≤ 60 KB) noted in the report
+- [ ] First-download size noted in the report: **running total of what the restyle adds** (budget 60 KB gzip, owner 8 Nov) and the full first download
+
+**Report template (owner, 8 Nov):** every partition report ends with: *merge PR #… into `ui/shadcn-admin`, then* `git checkout ui/shadcn-admin && git pull && docker compose up -d --build`. Never "checkout main" for restyle PRs (only the final PR goes to `main`).
+
+**Size log (gzip, from the CI run summary):**
+| After | First download | Added by the restyle | Notes |
+|---|---:|---:|---|
+| P1 (#86) | ≈ 218.5 KB | ≈ 0 | estimate from the raw build sizes (CI did not measure yet) |
+| P2 (#87) | 251.6 KB | ≈ 33 KB | Radix menus / tooltip / dialog, Lucide nav icons, tw-animate CSS; cmdk is lazy (CommandMenu chunk, not counted) |
 
 ### P1 – Foundation (tokens, fonts, theme, notices)
 - [x] Packages: owner chose real packages; he runs the pinned install once (command in the P1 report) before P2. P1 itself needs no new package
@@ -154,7 +162,9 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [x] Super Admin uses the same shell with its own nav
 - [x] Skip-to-main link; keyboard: Ctrl/⌘K, `/`, Ctrl/⌘B, Esc; touch: 44px targets (collapsed sidebar 3.75rem wide on touch screens)
 - [x] CI prints the first-download size (`frontend/scripts/first-download.mjs`, run summary)
-- [ ] Browser check on the owner's machine (light / dark, 375 / 768 / desktop, keyboard)
+- [x] Tablet widths (768–1023px) start with the sidebar collapsed to icons unless the person chose otherwise on that device (owner, 8 Nov)
+- [x] "/" typed in a box never opens the search (test)
+- [ ] Browser check on the owner's machine (light / dark, 375 / 768 / 1024 / desktop, keyboard, room board at 768 and 1024)
 
 ### P3 – The 21 building blocks + Lucide
 - [ ] Button, Card, Badge, StatusBadge, Alert, Field, Select, Tabs, PageHeader, StatTile, Delta
