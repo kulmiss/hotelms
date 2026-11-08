@@ -69,7 +69,7 @@ class DemoHotelTest extends TestCase
         $this->assertTrue($pending->contains('kind', 'price_up'));
         $this->assertTrue($pending->contains('kind', 'price_down'));
 
-        $manager = User::where('email', DemoHotel::email('manager'))->firstOrFail();
+        $manager = User::where('email', DemoHotel::email('branch_manager'))->firstOrFail();
         $this->actingAs($manager);
         $up = $pending->firstWhere('kind', 'price_up');
         $down = $pending->firstWhere('kind', 'price_down');
@@ -80,7 +80,7 @@ class DemoHotelTest extends TestCase
 
         if ($refund = $pending->firstWhere('kind', 'refund')) {
             $cash = app(TenantContext::class)->runAs($hotel, fn () => PaymentMethod::where('type', 'cash')->value('id'));
-            $this->actingAs(User::where('email', DemoHotel::email('admin'))->firstOrFail());
+            $this->actingAs(User::where('email', DemoHotel::email('hotel_admin'))->firstOrFail());
             $this->postJson("/api/v1/approvals/{$refund->id}/approve", ['payment_method_id' => $cash])->assertOk();
         }
     }
