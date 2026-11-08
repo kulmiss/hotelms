@@ -111,7 +111,8 @@ export function WalkInPage() {
       <PageHeader title={t('desk.walkIn')} breadcrumbs={[{ label: t('nav.roomBoard'), to: '/rooms' }, { label: t('desk.walkIn') }]} />
       <div className="grid items-start gap-6 lg:grid-cols-[1fr_22rem]">
         <div className="flex flex-col gap-6">
-          <Card className="flex flex-col gap-4">
+          {/* @container: the fields below go 1, 2 or 3 per row by the card's own width, so dates always show in full. */}
+          <Card className="@container flex flex-col gap-4">
             <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t('reservations.form.stayType')}>
               {(['nightly', 'day_use', 'hourly'] as const).filter((s) => !lookups.data?.stay_types || lookups.data.stay_types.includes(s)).map((s) => (
                 <button
@@ -130,7 +131,7 @@ export function WalkInPage() {
                 </button>
               ))}
             </div>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 @sm:grid-cols-2 @2xl:grid-cols-3">
               {branches.length > 1 && (
                 <Select
                   label={t('settings.rooms.branch')}
@@ -242,7 +243,7 @@ export function WalkInPage() {
             </div>
             {quick ? (
               <div className="flex flex-col gap-3">
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                   <Field label={t('desk.quick.name')} autoComplete="off" value={quickName} onChange={(e) => setQuickName(e.target.value)} error={error?.field('quick_guest.name')} />
                   <Field label={t('guests.phone')} type="tel" inputMode="tel" value={quickPhone} onChange={(e) => setQuickPhone(e.target.value)} error={error?.field('quick_guest.phone')} />
                 </div>

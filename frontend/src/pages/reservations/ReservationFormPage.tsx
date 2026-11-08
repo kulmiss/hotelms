@@ -136,8 +136,8 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
       <PageHeader title={title} breadcrumbs={[{ label: t('nav.reservations'), to: '/reservations' }, { label: existing?.code ?? t('reservations.new') }]} />
       <div className="grid items-start gap-6 lg:grid-cols-[1fr_22rem]">
         <div className="flex flex-col gap-6">
-          {/* 1. Stay */}
-          <Card className="flex flex-col gap-4">
+          {/* 1. Stay – @container: the fields go 1, 2 or 3 per row by the card's own width, so dates always show in full. */}
+          <Card className="@container flex flex-col gap-4">
             <h2 className="text-sm font-semibold">{t('reservations.form.stay')}</h2>
             <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t('reservations.form.stayType')}>
               {(['nightly', 'day_use', 'hourly'] as const).filter((s) => !lookups.data?.stay_types || lookups.data.stay_types.includes(s)).map((s) => (
@@ -156,7 +156,7 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
                 </button>
               ))}
             </div>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 @sm:grid-cols-2 @2xl:grid-cols-3">
               {branches.length > 1 && !existing && (
                 <Select
                   label={t('settings.rooms.branch')}
@@ -310,8 +310,8 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
           </Card>
 
           {/* 4. Details */}
-          <Card className="grid gap-4 sm:grid-cols-2">
-            <h2 className="text-sm font-semibold sm:col-span-2">{t('reservations.form.details')}</h2>
+          <Card className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+            <h2 className="text-sm font-semibold sm:col-span-2 lg:col-span-1 xl:col-span-2">{t('reservations.form.details')}</h2>
             <Select label={t('reservations.form.source')} value={source} onChange={(e) => setSource(e.target.value)}>
               {SOURCES.map((s) => (
                 <option key={s} value={s}>
@@ -336,7 +336,7 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
                 ))}
               </Select>
             )}
-            <div className="sm:col-span-2">
+            <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
               <Field label={t('reservations.form.notes')} value={notes} onChange={(e) => setNotes(e.target.value)} />
             </div>
           </Card>
