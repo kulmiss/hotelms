@@ -50,7 +50,8 @@ describe('Super Admin area', () => {
   it('keeps hotel staff out of the Super Admin area', async () => {
     mockApi({ 'GET /me': { body: makeMe() }, 'GET /health': { body: {} } })
     renderApp('/admin/hotels')
-    expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: "You can't open this page" })).toBeInTheDocument()
+    // owner (QA 8 Nov): a clear "no access" page instead of a silent jump to the dashboard
   })
 
   it('lists hotels with status filters', async () => {
