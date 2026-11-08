@@ -18,6 +18,13 @@ class Housekeeping
 {
     public function __construct(private HotelModules $modules) {}
 
+    /** The open (not done) task of this kind for a room, if any (owner, QA 8 Nov: never two at once). */
+    public function openTask(int $roomId, string $type, ?int $except = null): ?HousekeepingTask
+    {
+        return HousekeepingTask::where('room_id', $roomId)->where('type', $type)->where('status', '!=', 'done')
+            ->when($except, fn ($q) => $q->whereKeyNot($except))->first();
+    }
+
     public function tasksForCheckOut(Reservation $reservation): void
     {
         if (! $this->modules->isEnabled($reservation->hotel, 'housekeeping')) {

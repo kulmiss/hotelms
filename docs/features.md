@@ -79,7 +79,8 @@ Code: `Front/GuestController`, `Models/Guest`. Tests: `ReservationsTest`, `Front
 Status cycle (W7): available → occupied → dirty → cleaning → available; maintenance/out of order by managers.
 Every dirty room has one open cleaning task (`Housekeeping::taskForDirtyRoom`, `ensureTasks` for rooms made dirty in bulk;
 `Room` updated hook in `AppServiceProvider`). Check-out creates the task (`GuestCheckedOut` → `CreateCleaningTasks`).
-Tests: `ModulesTest`.
+**One open task per room and kind** (owner, QA 8 Nov): adding or changing a task into a kind (cleaning / inspection / maintenance) the room already has open (not done) is refused with 422, the message names the room and kind, and `existing_task_id` lets the Assign screen link to it (`Housekeeping::openTask`, `HousekeepingController::alreadyOpen`); an automation rule then adds nothing (`RuleEngine`).
+Tests: `ModulesTest`, `AutomationsTest`, `hkDuplicateTask.test.tsx`.
 
 ## Staff, roles, security
 

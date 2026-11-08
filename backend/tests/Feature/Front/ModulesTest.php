@@ -175,6 +175,38 @@ class ModulesTest extends TestCase
         $this->assertSame(1, $this->inHotel(fn () => HousekeepingTask::count()));
     }
 
+    /** Owner (QA 8 Nov): never two OPEN tasks of the same kind for one room; the answer names the open task. */
+    public function test_a_second_open_task_of_the_same_kind_for_a_room_is_refused(): void
+    {
+        $room = $this->inHotel(fn () => Room::where('number', '102')->first());
+        $this->actingAs($this->manager);
+        $first = $this->postJson('/api/v1/housekeeping/tasks', ['room_id' => $room->id, 'type' => 'cleaning', 'priority' => 'normal'])->assertCreated()->json('data.id');
+
+        $this->postJson('/api/v1/housekeeping/tasks', ['room_id' => $room->id, 'type' => 'cleaning', 'priority' => 'high'])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.room_id.0', 'Room 102 already has an open cleaning task. Change that task instead of adding another one.')
+            ->assertJsonPath('existing_task_id', $first);
+
+        // Another kind for the same room is fine; so is a new cleaning task once the first is done.
+        $this->postJson('/api/v1/housekeeping/tasks', ['room_id' => $room->id, 'type' => 'maintenance', 'priority' => 'normal'])->assertCreated();
+        $this->inHotel(fn () => HousekeepingTask::whereKey($first)->update(['status' => 'done']));
+        $this->postJson('/api/v1/housekeeping/tasks', ['room_id' => $room->id, 'type' => 'cleaning', 'priority' => 'normal'])->assertCreated();
+        $this->assertSame(2, $this->inHotel(fn () => HousekeepingTask::where('status', '!=', 'done')->count()));
+    }
+
+    public function test_changing_a_task_into_a_kind_that_is_already_open_is_refused(): void
+    {
+        $room = $this->inHotel(fn () => Room::where('number', '102')->first());
+        $this->actingAs($this->manager);
+        $cleaning = $this->postJson('/api/v1/housekeeping/tasks', ['room_id' => $room->id, 'type' => 'cleaning', 'priority' => 'normal'])->assertCreated()->json('data.id');
+        $other = $this->postJson('/api/v1/housekeeping/tasks', ['room_id' => $room->id, 'type' => 'inspection', 'priority' => 'normal'])->assertCreated()->json('data.id');
+
+        $this->putJson("/api/v1/housekeeping/tasks/$other", ['room_id' => $room->id, 'type' => 'cleaning', 'priority' => 'normal'])
+            ->assertStatus(422)->assertJsonPath('existing_task_id', $cleaning);
+        // Changing the task itself (same kind) still works.
+        $this->putJson("/api/v1/housekeeping/tasks/$cleaning", ['room_id' => $room->id, 'type' => 'cleaning', 'priority' => 'high'])->assertOk();
+    }
+
     public function test_roster_and_late_clock_in(): void
     {
         $this->actingAs($this->manager);

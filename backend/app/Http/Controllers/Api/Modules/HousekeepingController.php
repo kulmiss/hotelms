@@ -60,6 +60,9 @@ class HousekeepingController extends Controller
     {
         $data = $this->validated($request);
         $room = Room::whereIn('branch_id', $this->branchIds($request))->findOrFail($data['room_id']);
+        if ($open = $this->housekeeping->openTask($room->id, $data['type'])) {
+            return $this->alreadyOpen($room, $open);
+        }
         $task = HousekeepingTask::create($data + ['branch_id' => $room->branch_id, 'status' => 'pending', 'created_by' => $request->user()->id]);
 
         return response()->json(['data' => $this->task($task->fresh(['room', 'assignee']), $request)], 201);
@@ -70,6 +73,9 @@ class HousekeepingController extends Controller
         $task = $this->find($request, $id);
         $data = $this->validated($request);
         unset($data['room_id']);
+        if ($task->status !== 'done' && ($open = $this->housekeeping->openTask($task->room_id, $data['type'], $task->id))) {
+            return $this->alreadyOpen($task->room, $open);
+        }
         $task->update($data);
 
         return response()->json(['data' => $this->task($task->fresh(['room', 'assignee']), $request)]);
@@ -85,6 +91,17 @@ class HousekeepingController extends Controller
         $data = $request->validate(['notes' => ['nullable', 'string', 'max:500']]);
 
         return response()->json(['data' => $this->task($this->housekeeping->done($this->find($request, $id), $request->user(), $data['notes'] ?? null), $request)]);
+    }
+
+    /**
+     * Owner (QA 8 Nov): never two open tasks of the same kind for one room. Says which task is open,
+     * so the screen can link to it.
+     */
+    private function alreadyOpen(?Room $room, HousekeepingTask $open): JsonResponse
+    {
+        $message = "Room {$room?->number} already has an open {$open->type} task. Change that task instead of adding another one.";
+
+        return response()->json(['message' => $message, 'errors' => ['room_id' => [$message]], 'existing_task_id' => $open->id], 422);
     }
 
     /** @return array<string, mixed> */
