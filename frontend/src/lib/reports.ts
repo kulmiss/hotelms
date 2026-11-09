@@ -34,6 +34,8 @@ export type Dashboard = {
   pending_expiring: number
   late_arrivals: number
   next_7_days: { date: string; occupancy: number }[]
+  /** Booking pace for the next 14 days (P18). */
+  next_days?: { date: string; occupancy: number }[]
   revenue_today?: string
   payments_today?: string
   unpaid_balances?: string

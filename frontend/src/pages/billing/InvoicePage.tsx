@@ -216,7 +216,8 @@ function DiscountPanel({ inv, onClose }: { inv: InvoiceDetail; onClose: () => vo
   )
 }
 
-function PayPanel({ inv, onClose }: { inv: InvoiceDetail; onClose: () => void }) {
+/** Also used by the dashboard side sheet (P18): same rules, same "saved once" key. */
+export function PayPanel({ inv, onClose }: { inv: InvoiceDetail; onClose: () => void }) {
   const { t } = useTranslation()
   const can = useCan()
   const lookups = useLookups()

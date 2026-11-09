@@ -38,6 +38,16 @@ class PlatformReportController extends Controller
             'lost' => (clone $hotels)->where(fn ($q) => $q->where('status', 'suspended')->orWhereNotNull('deleted_at'))->withTrashed()->count(),
             'new_this_month' => (clone $hotels)->where('created_at', '>=', now()->startOfMonth())->count(),
             'rooms' => DB::table('rooms')->join('hotels', 'hotels.id', '=', 'rooms.hotel_id')->where('hotels.is_demo', false)->whereNull('rooms.deleted_at')->count(),
+            // P18: new and lost hotels per month (lost = suspended or closed that month), and hotels per plan today.
+            'signups' => $months->map(fn ($m) => ['month' => $m, 'count' => Hotel::withTrashed()->where('is_demo', false)
+                ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$m])->count()])->values(),
+            'churned' => $months->map(fn ($m) => ['month' => $m, 'count' => Hotel::withTrashed()->where('is_demo', false)
+                ->where(fn ($q) => $q->whereRaw("DATE_FORMAT(deleted_at, '%Y-%m') = ?", [$m])
+                    ->orWhere(fn ($s) => $s->whereNull('deleted_at')->where('status', 'suspended')->whereRaw("DATE_FORMAT(suspended_at, '%Y-%m') = ?", [$m])))
+                ->count()])->values(),
+            'by_plan' => DB::table('hotels')->leftJoin('plans', 'plans.id', '=', 'hotels.plan_id')->where('hotels.is_demo', false)->whereNull('hotels.deleted_at')
+                ->selectRaw("COALESCE(plans.name, '—') as plan, COUNT(*) as hotels")->groupBy('plan')->orderByDesc('hotels')->get()
+                ->map(fn ($r) => ['plan' => $r->plan, 'hotels' => (int) $r->hotels])->values(),
         ]]);
     }
 

@@ -180,6 +180,32 @@ class Metrics
      *
      * @return list<array<string, mixed>>
      */
+    /**
+     * Rooms sold per night and arrivals / departures per day (no money). For the dashboard trend.
+     *
+     * @return list<array{date: string, arrivals: int, departures: int, in_house: int, occupancy: float}>
+     */
+    public function movements(string $from, string $to): array
+    {
+        $rooms = $this->roomCount();
+        $nights = $this->nights()->whereIn('rr.status', ['checked_in', 'checked_out'])->whereBetween('r.date', [$from, $to])
+            ->selectRaw('r.date as d, COUNT(*) as n')->groupBy('r.date')->pluck('n', 'd')->mapWithKeys(fn ($n, $d) => [substr((string) $d, 0, 10) => (int) $n]);
+        $count = fn (string $column) => $this->reservations()->whereNotIn('status', ['cancelled', 'no_show'])
+            ->whereBetween($column, [$this->utc($from), $this->utc($to)->addDay()])
+            ->selectRaw($this->localDate($column).' as d, COUNT(*) as n')->groupByRaw($this->localDate($column))->pluck('n', 'd')
+            ->mapWithKeys(fn ($n, $d) => [substr((string) $d, 0, 10) => (int) $n]);
+        $in = $count('check_in_at');
+        $out = $count('check_out_at');
+
+        return array_map(fn (string $d) => [
+            'date' => $d,
+            'arrivals' => $in[$d] ?? 0,
+            'departures' => $out[$d] ?? 0,
+            'in_house' => $nights[$d] ?? 0,
+            'occupancy' => $rooms > 0 ? round(($nights[$d] ?? 0) / $rooms * 100, 1) : 0.0,
+        ], self::days($from, $to));
+    }
+
     public function daily(string $from, string $to): array
     {
         $rooms = $this->roomCount();

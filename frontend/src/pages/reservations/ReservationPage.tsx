@@ -235,7 +235,8 @@ function Info({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-function PaymentForm({ r, onDone }: { r: ReservationDetail; onDone: () => void }) {
+/** Also used by the dashboard side sheet (P18): same rules, same "saved once" key. */
+export function PaymentForm({ r, onDone }: { r: ReservationDetail; onDone: () => void }) {
   const { t } = useTranslation()
   const can = useCan()
   const lookups = useLookups()

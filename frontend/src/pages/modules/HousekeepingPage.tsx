@@ -20,6 +20,7 @@ import { ROOM_DOTS, ROOM_TONES } from '@/lib/desk'
 import { localTime } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { useDoneTask, useHkBoard, useHkStaff, useSaveTask, useStartTask, useTasks, type Task } from '@/lib/modules'
+import { HousekeepingOverview } from './ModuleOverviews'
 
 const openTaskId = (e: unknown) => (e instanceof ApiError ? Number((e.body as { existing_task_id?: number } | null)?.existing_task_id ?? 0) : 0)
 const err = (e: unknown) => (e instanceof ApiError ? (Object.values(e.errors)[0]?.[0] ?? e.message) : null)
@@ -44,6 +45,7 @@ export function HousekeepingPage() {
     <div className="flex flex-col gap-6">
       <PageHeader title={t('nav.housekeeping')} subtitle={t('housekeeping.subtitle')} />
       <SmartHints hints={smart.data?.data} />
+      <HousekeepingOverview branchId={current?.id ?? null} />
       <div className="max-w-md">
         <Tabs label={t('nav.housekeeping')} active={tab} onChange={(k) => setParams({ tab: k })} items={tabs.map((k) => ({ key: k, label: t(`housekeeping.tabs.${k}`) }))} />
       </div>

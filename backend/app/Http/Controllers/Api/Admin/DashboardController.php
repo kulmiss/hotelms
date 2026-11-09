@@ -17,7 +17,8 @@ class DashboardController extends Controller
 {
     public function __invoke(TenantContext $tenant): JsonResponse
     {
-        $counts = Hotel::query()->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
+        // Demo hotels are not customers: left out of the counts like everywhere else on this page (QA P18).
+        $counts = Hotel::query()->where('is_demo', false)->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
         $real = fn () => DB::table('hotels')->where('is_demo', false)->whereNull('deleted_at')->pluck('id');
         $ids = $real();
         // "Today" for the platform is Addis Ababa time (all hotels are in Ethiopia).
@@ -58,10 +59,10 @@ class DashboardController extends Controller
                 'staff_online' => DB::table('user_devices')->whereIn('hotel_id', $ids)->where('status', 'active')->where('last_seen_at', '>=', now()->subMinutes(15))->distinct()->count('user_id'),
                 'open_support' => SupportRequest::withoutGlobalScope('hotel')->where('status', 'open')->count(),
             ],
-            'trials_ending_soon' => Hotel::query()->where('status', 'trial')
+            'trials_ending_soon' => Hotel::query()->where('is_demo', false)->where('status', 'trial')
                 ->whereBetween('trial_ends_at', [now()->toDateString(), now()->addDays(7)->toDateString()])
                 ->orderBy('trial_ends_at')->get(['id', 'name', 'trial_ends_at']),
-            'needs_attention' => Hotel::query()->whereIn('status', ['grace', 'suspended'])
+            'needs_attention' => Hotel::query()->where('is_demo', false)->whereIn('status', ['grace', 'suspended'])
                 ->orderBy('name')->limit(10)->get(['id', 'name', 'status', 'subscription_ends_at', 'trial_ends_at']),
             'top_hotels' => $top->map(fn ($r) => ['id' => $r->id, 'name' => $r->name, 'currency' => $r->currency, 'total' => Money::round((string) $r->total), 'payments' => (int) $r->payments])->values(),
             'activity' => $activity->map(fn (ActivityLog $a) => ['id' => $a->id, 'description' => $a->description, 'user' => $a->user?->name, 'hotel' => $a->hotel ? ['id' => $a->hotel->id, 'name' => $a->hotel->name] : null, 'at' => $a->created_at?->toIso8601String()])->values(),

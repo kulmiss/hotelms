@@ -16,9 +16,10 @@ describe('dashboard and reports', () => {
       'GET /dashboard': { body: { data: { date: '2026-11-12', arrivals: 4, arrived: 1, departures: 2, departed: 0, in_house: 7, occupancy: 58.3, rooms: { total: 12, by_status: { occupied: 7, available: 5 } }, pending_expiring: 1, late_arrivals: 0, next_7_days: [{ date: '2026-11-12', occupancy: 58.3 }], revenue_today: '12000.00', payments_today: '8000.00', unpaid_balances: '3000.00', cashier_shortages: 0, month: kpis } } },
     })
     renderApp('/')
-    expect(await screen.findByText('Arriving today')).toBeInTheDocument()
-    expect(screen.getByText('1 unpaid booking expires within 3 hours.')).toBeInTheDocument()
-    expect(screen.getByText('ETB 3,000.00')).toBeInTheDocument()
+    expect(await screen.findByText('Arriving · leaving today')).toBeInTheDocument()
+    expect(await screen.findByText('4 · 2')).toBeInTheDocument()
+    expect(await screen.findByText('Unpaid bookings expiring')).toBeInTheDocument()
+    expect(screen.getAllByText('ETB 3,000.00').length).toBeGreaterThan(0)
   })
 
   it('shows KPIs with the change and the bookings behind a day', async () => {

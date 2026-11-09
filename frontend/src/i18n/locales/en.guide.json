@@ -88,9 +88,12 @@
     "dashboard": {
       "title": "Dashboard",
       "steps": [
-        "The Dashboard is the first page. It shows today: guests arriving, guests leaving, free rooms.",
+        "The Dashboard is the first page. It shows today and the last days: guests arriving and leaving, rooms, and (for managers) money.",
+        "At the top, choose the days (Today, 7, 30 or 90 days) and the branch. Every box changes at once. The round arrow loads the newest numbers.",
         "The ✨ Smart box gives tips. Tap \"Why?\" to see how the app knows it.",
-        "Tap a number to open the list behind it."
+        "Tap a number, a bar or a line to see the details on the right side. \"View all\" opens the full page.",
+        "In \"Today at the desk\", tap Check in, Check out or Take payment. It opens the same form as on the booking page.",
+        "Managers also see the Revenue and Operations tabs."
       ]
     },
     "roomBoard": {
@@ -351,7 +354,8 @@
         "All cash you take is added to your shift.",
         "At the end of work: count the drawer again and type it.",
         "The app shows if it matches. If it is short or over, write why.",
-        "Tap Close shift. A manager checks it."
+        "Tap Close shift. A manager checks it.",
+        "At the top of the page you see the cash that should be in your drawer now, and if the last shifts were short or over."
       ]
     },
     "approveShift": {
@@ -384,7 +388,8 @@
         "Open Housekeeping → My tasks. You see the rooms to clean, the most urgent first.",
         "Tap Start when you begin a room.",
         "Tap Done when the room is clean. You can write a note, for example \"broken lamp\".",
-        "The room becomes ready, and reception sees it at once."
+        "The room becomes ready, and reception sees it at once.",
+        "At the top of the page you see how many rooms are dirty, and how many tasks are to do, in progress and done."
       ]
     },
     "assignCleaning": {
@@ -433,7 +438,8 @@
     "reports": {
       "title": "Reports",
       "steps": [
-        "Open Reports. Choose a report on the left, for example Daily report.",
+        "Open Reports. Managers first see an Overview: the main numbers and a card for each report. Tap a card to open its report.",
+        "Or choose a report on the left, for example Daily report.",
         "Choose the dates at the top: today, this week, this month…",
         "Tap a bar in a chart to see the bookings behind it.",
         "Tap Print, or download Excel, to share it."

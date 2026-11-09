@@ -174,7 +174,15 @@ class AutomationTest extends TestCase
     public function test_super_admin_platform_reports_and_hotel_health(): void
     {
         $sa = User::factory()->superAdmin()->create();
-        $this->actingAs($sa)->getJson('/api/v1/admin/reports/platform')->assertOk()->assertJsonCount(12, 'data.income')->assertJsonPath('data.rooms', 1);
+        $platform = $this->actingAs($sa)->getJson('/api/v1/admin/reports/platform')->assertOk()->assertJsonCount(12, 'data.income')->assertJsonPath('data.rooms', 1)
+            ->assertJsonCount(12, 'data.signups')->assertJsonCount(12, 'data.churned');
+        // P18: this month's sign-up is this hotel; hotels per plan.
+        $this->assertSame(1, collect($platform->json('data.signups'))->last()['count']);
+        $this->assertSame(1, collect($platform->json('data.by_plan'))->sum('hotels'));
+        // The command center leaves demo hotels out of its counts.
+        Hotel::factory()->create(['is_demo' => true, 'status' => 'active']);
+        $this->getJson('/api/v1/admin/dashboard')->assertOk()->assertJsonPath('hotels.total', 1);
+        $this->assertSame(1, collect($this->getJson('/api/v1/admin/reports/platform')->json('data.by_plan'))->sum('hotels'));
         $row = collect($this->getJson('/api/v1/admin/reports/hotel-health')->assertOk()->json('data'))->firstWhere('id', $this->hotel->id);
         $this->assertContains($row['health'], ['healthy', 'watch', 'at_risk', 'stuck']);
         $this->actingAs($this->admin)->getJson('/api/v1/admin/reports/platform')->assertForbidden();
