@@ -122,8 +122,8 @@ node -v
 
 ### B2. Get a clean copy of the code
 
-Build from a **fresh copy**, not from the folder you use for development (that folder's `backend/storage` may hold
-test uploads and session files from the demo, which would end up in the zip).
+Build from a **fresh copy** of `main`, not from the folder you use for development: then you know exactly which
+version goes online. (The package script leaves your local `.env`, uploads, logs and caches out either way.)
 
 ```sh
 cd ~
@@ -154,19 +154,17 @@ This takes a few minutes. **You should see** these lines, in this order, and no 
 Done: build/hotelms.zip – see docs/hosting.md
 ```
 
-### B4. Add the staff-guide pictures (needed today – CHECK)
-
-`deploy/package.sh` copies the app's top-level files and `assets/`, but **not** the `guide/` folder with the 15
-staff-guide pictures (Help → How to use). Until that is fixed in the project, add it by hand:
+### B4. Check the package
 
 ```sh
-cp -R frontend/dist/guide build/hotelms/public/guide
-cd build && rm -f hotelms.zip && zip -qr hotelms.zip hotelms && cd ..
 ls -lh build/hotelms.zip
 ls build/hotelms/public/guide | wc -l
+ls build/hotelms/storage/app/private
 ```
 
-**You should see:** the size of `hotelms.zip`, and `15`.
+**You should see:** the size of `hotelms.zip`, `15` (the staff-guide pictures), and nothing for the last line
+(no uploads from your computer). The package never holds your `.env`, uploads, logs or caches (`deploy/package.sh`;
+CI checks this on every pull request).
 
 ### B5. Make the secret key now (for hosts without SSH)
 
@@ -358,6 +356,7 @@ Change the values on the right. Lines not shown here: leave them as they are.
 | `SUPER_ADMIN_EMAIL=` | `<SUPER_ADMIN_EMAIL>` | Your owner account, made by `db:seed`. |
 | `SUPER_ADMIN_PASSWORD=` | **leave empty** | Then a random temporary password is shown once by `db:seed` (Part F). You must change it at the first sign-in either way. |
 | `HOTELMS_TWO_FACTOR_ADMINS=true` | keep | Two-step sign-in for the HotelMS team and Hotel Admins. |
+| `TRUSTED_PROXIES=` | keep **empty** | Only if a proxy or CDN (e.g. Cloudflare) sits in front of the host. Empty = trust nobody, so nobody can fake their IP. |
 | `BACKUP_PATH=` | `/home/<CPANEL_USER>/hotelms-backups` | From D2. Outside the web. |
 | `BACKUP_COPY_PATH=` | empty, or a second folder/disk (CHECK what your host offers) | A second copy of each backup. |
 | `BACKUP_KEEP_DAYS=30` | keep | Daily backups kept 30 days (hourly ones 48 hours). |
@@ -700,7 +699,7 @@ scroll to the end. The last lines say what went wrong.
 | **Blank white page** or the cPanel "default page" | The document root is wrong, or `app.html` is missing. | C3: document root must end in `hotelms/public`. Check that `hotelms/public/app.html` exists. |
 | A **list of files** or the text of `index.php` | Document root points at `hotelms` instead of `hotelms/public`, or PHP is off for the domain. | C3 and C1. |
 | Signed out at once / "419" / "CSRF token mismatch" / sign-in does nothing | `SESSION_DOMAIN` / `SANCTUM_STATEFUL_DOMAINS` not exactly `<YOUR_DOMAIN>`, or the site is opened with `http://`. | E3 and H2. Then `php artisan optimize`. |
-| Help → How to use: pictures missing | The `guide/` folder was not added to the package. | B4, then update. |
+| Help → How to use: pictures missing | The package is older than 9 Nov 2026 (before the fix in `deploy/package.sh`). | Build a new package (Part B), then update (Part J). |
 | Uploaded hotel logo does not show | `public/storage` link missing (or `symlink()` disabled by the host). | F1 `php artisan storage:link`. If it fails: ask the host to allow `symlink()` (CHECK). |
 | "The file failed to upload." / upload stops | PHP upload limits. | C2. |
 | Super Admin → System: *"The cron job has never run. Add the cron line from docs/hosting.md."* or *"The cron job stopped running."* | Cron line missing, wrong path or wrong PHP. | G1. Test the exact command in Terminal: `cd /home/<CPANEL_USER>/hotelms && <PHP_PATH> artisan schedule:run` – it must print `Running [...] DONE` lines. |

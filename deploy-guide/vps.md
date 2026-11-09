@@ -206,7 +206,8 @@ curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -    # Node 22 (
 sudo apt install -y nodejs
 ```
 
-Build from a **fresh copy** of `main` (your development folder may contain test uploads in `backend/storage`):
+Build from a **fresh copy** of `main` (then you know exactly which version goes online; the package script leaves your
+local `.env`, uploads, logs and caches out either way):
 
 ```sh
 cd ~
@@ -228,15 +229,14 @@ git checkout main
 Done: build/hotelms.zip – see docs/hosting.md
 ```
 
-**Add the staff-guide pictures** (`deploy/package.sh` does not copy the `guide/` folder today – CHECK):
+**Check the package:**
 
 ```sh
-cp -R frontend/dist/guide build/hotelms/public/guide
-cd build && rm -f hotelms.zip && zip -qr hotelms.zip hotelms && cd ..
 ls build/hotelms/public/guide | wc -l
+ls build/hotelms/storage/app/private
 ```
 
-**You should see:** `15`.
+**You should see:** `15` (the staff-guide pictures) and nothing for the second line (no uploads from your computer).
 
 **Copy the package and the guide's server files to the server:**
 
@@ -550,6 +550,7 @@ script). Lines you may add are marked *(add)*.
 | `SUPER_ADMIN_EMAIL` | `<SUPER_ADMIN_EMAIL>` | same | Owner account made by `db:seed`. |
 | `SUPER_ADMIN_PASSWORD` | **empty** | **empty** | A random temporary password is printed once at the first install. |
 | `HOTELMS_TWO_FACTOR_ADMINS` | `true` | `true` | Two-step sign-in for the HotelMS team and Hotel Admins. |
+| `TRUSTED_PROXIES` | **empty** | **empty** | Only if a proxy or CDN (e.g. Cloudflare) sits in front: its addresses. Empty = trust nobody, so nobody can fake their IP. |
 | `BACKUP_PATH` | `/var/backups/hotelms` | `/var/backups/hotelms` | Docker mounts this folder into the containers. |
 | `BACKUP_COPY_PATH` | empty (Part 10 copies off-server) | same | Or a second mounted disk. |
 | `BACKUP_KEEP_DAYS` | `30` | `30` | |
@@ -762,7 +763,7 @@ www-data:www-data /var/www/shared/storage/app/private`. On a **new** server: ins
 | Browser: "Your connection is not private" | Certificate missing/expired, or DNS points elsewhere. | `sudo certbot certificates`; `getent hosts <YOUR_DOMAIN>`; `sudo certbot renew`; ports 80/443 open (`sudo ufw status`). |
 | Certbot: *"Timeout during connect"* / *"unauthorized"* | DNS not ready or port 80 blocked. | Part 3; `sudo ufw allow 80/tcp`; provider firewall (CHECK). |
 | **Out of memory** – PHP or MySQL killed, random 502s | Too little RAM. | `free -h`; `sudo dmesg -T | grep -i -E "killed process|out of memory"`. Add swap (below) or a bigger VPS. |
-| Pictures missing in Help → How to use | `guide/` not in the package. | Part 4 (add the guide folder), deploy again. |
+| Pictures missing in Help → How to use | The package is older than 9 Nov 2026 (before the fix in `deploy/package.sh`). | Build a new package (Part 4), deploy again. |
 | Uploaded logo does not show | `public/storage` link. | `php artisan storage:link` (the deploy script does it). |
 
 **Add 2 GB swap** (helps small servers survive memory peaks):

@@ -20,21 +20,20 @@ A standalone guide for putting HotelMS online. It lives **outside the app code**
 Placeholders look like `<YOUR_DOMAIN>` and are listed at the top of each guide. No real secrets, IPs or customer
 data are in this folder. Things the guide cannot know about your host are marked **CHECK**.
 
-## Found in the project while writing this guide (not changed – owner decides)
+## Found in the project while writing this guide – all fixed in #129
 
-1. **Staff-guide pictures are not in the package.** `deploy/package.sh` copies `frontend/dist/assets` and the
-   top-level files of `frontend/dist`, but not the `frontend/dist/guide/` folder, so Help → How to use shows no
-   pictures on a live server. The guides add a manual copy step. Fix: one line in `deploy/package.sh`
-   (`cp -R frontend/dist/guide "$OUT/public/guide"`).
-2. **The package copies the local `backend/storage` folder** (only `storage/logs` and `storage/app/backups` are left
-   out), so a package built from a development folder can contain test uploads, cached views or session files.
-   The guides build from a fresh `git clone`. Fix: leave out the contents of `storage/` except the empty folders.
-3. **`docs/hosting.md`'s Nginx example has no "no-cache" for `app.html` and `sw.js`** (the Apache `.htaccess` has it).
-   Without it staff can keep an old version of the app after an update. `files/nginx/hotelms.conf` adds it.
-4. **No trusted proxies are set** (`bootstrap/app.php`). That is fine for the setups in this guide (the web server
-   talks to PHP directly). If you ever put a proxy or CDN in front (e.g. Cloudflare), sign-in limits would count all
-   users as one IP address and HTTPS detection would need the proxy to be trusted.
-5. **The Docker development image keeps PHP's default upload limit (2 MB)** (`backend/docker/php-dev.ini`), so uploads
-   between 2 and 8 MB fail on a developer laptop. Production is covered by `files/php/99-hotelms.ini` and the cPanel
-   steps.
-6. **`gd` is listed as required in `docs/hosting.md`** but no code uses it today. The guides call it optional.
+1. **Staff-guide pictures were not in the package** – `deploy/package.sh` now copies every folder of the web build
+   (`assets/`, `guide/`).
+2. **The package copied the local `backend/storage` folder** – now it never takes `.env`, uploads, logs, sessions,
+   caches, `bootstrap/cache/*.php` or tests from the work folder; `storage/` is created empty. A CI job ("Package")
+   plants such files and fails if any of them ends up in the zip.
+3. **No "no-cache" for `app.html` and `sw.js` in the Nginx example of `docs/hosting.md`** – added. Also: `.htaccess`
+   cached every picture for a year (also the staff-guide pictures and icons, whose names never change) – now only
+   `assets/`.
+4. **No trusted proxies** – new opt-in `TRUSTED_PROXIES` in `.env` (empty = trust nobody, as before). Trusting
+   everyone by default would let anyone fake their IP address.
+5. **Dev Docker upload limit 2 MB** – `backend/docker/php-dev.ini` now allows 9M / 10M.
+6. **`gd` listed as required** – now "optional" in `docs/hosting.md` (no code uses it).
+
+Also found and fixed in #129: `backend/.env.production.example` was never in Git (hidden by the `.env.*` rule in
+`.gitignore`), so a fresh clone did not have it. It is tracked now.
