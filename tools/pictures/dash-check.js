@@ -28,7 +28,8 @@ window.__bgOf = (el) => {
 }
 window.__vis = (e) => {
   const r = e.getBoundingClientRect()
-  if (r.width < 1 || r.height < 1) return false
+  if (r.width < 1 || r.height < 1 || r.bottom < 0 || r.right < 0) return false
+  if (e.closest('[inert]')) return false
   const s = getComputedStyle(e)
   return s.visibility !== 'hidden' && s.display !== 'none' && +s.opacity > 0.05 && !e.closest('[aria-hidden=true],.sr-only')
 }
