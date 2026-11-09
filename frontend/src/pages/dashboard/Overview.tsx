@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { ChevronRight } from 'lucide-react'
 import { Donut, OccRevenueChart, PaceChart } from '@/components/charts/charts'
 import { KpiCard } from '@/components/charts/KpiCard'
-import { ChartCard, Legend, ROOM_COLORS, SERIES, WidgetBoundary, widgetState } from '@/components/charts/kit'
+import { ChartCard, KpiGrid, Legend, ROOM_COLORS, SERIES, WidgetBoundary, widgetState } from '@/components/charts/kit'
 import { api } from '@/lib/api'
 import { useMe } from '@/lib/auth'
 import { previousRange, useDashToday, useOutstanding, usePaymentsSplit, usePendingApprovals, usePerformance, useTrend, type DashFilters, type TrendRow } from '@/lib/dashboard'
@@ -67,7 +67,7 @@ export function Overview({ f, onTab }: { f: DashFilters; onTab: (tab: 'operation
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,170px),1fr))] gap-3">
+      <KpiGrid>
         <KpiCard
           label={t('dash.kpi.occupancy')}
           loading={trend.isPending}
@@ -102,7 +102,7 @@ export function Overview({ f, onTab }: { f: DashFilters; onTab: (tab: 'operation
           onOpen={() => setKpi('arrivals')}
         />
         {!moneyRole && d && <KpiCard label={t('dash.kpi.toClean')} value={String(d.rooms.by_status.dirty ?? 0)} onOpen={() => setRooms('dirty')} />}
-      </div>
+      </KpiGrid>
 
       <div className="flex flex-wrap gap-4">
         <WidgetBoundary title={t('dash.occRevenue')} className="min-w-0 flex-[2_1_560px]">

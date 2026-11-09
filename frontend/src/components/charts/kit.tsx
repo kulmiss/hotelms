@@ -1,4 +1,4 @@
-import { Component, useSyncExternalStore, type ReactNode } from 'react'
+import { Children, Component, Fragment, isValidElement, useSyncExternalStore, type ReactElement, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -20,6 +20,46 @@ export const ROOM_COLORS: Record<string, string> = {
   cleaning: 'var(--room-clean)',
   maintenance: 'var(--room-maintenance)',
   out_of_order: 'var(--room-maintenance)',
+}
+
+/**
+ * Columns for a row of KPI cards, by the free width (container query) and the number of cards, so a row
+ * never ends with one lonely card: 6 cards go 1 → 2 → 3 → 6 per row, 3 cards 1 → 3, 9 cards 1 → 2 → 5.
+ * A count of columns is used when it divides the cards evenly or leaves the last row at most one short.
+ * About 190px per card. Written out in full so Tailwind sees every class.
+ */
+const KPI_COLS: Record<number, string> = {
+  2: '@min-[380px]:grid-cols-2',
+  3: '@min-[570px]:grid-cols-3',
+  4: '@min-[760px]:grid-cols-4',
+  5: '@min-[950px]:grid-cols-5',
+  6: '@min-[1140px]:grid-cols-6',
+  7: '@min-[1330px]:grid-cols-7',
+  8: '@min-[1520px]:grid-cols-8',
+}
+
+export function kpiCols(count: number): string[] {
+  const out: string[] = []
+  for (let c = 2; c <= Math.min(count, 8); c++) if (count % c === 0 || count % c >= c - 1) out.push(KPI_COLS[c])
+  return out
+}
+
+/** Cards in children: empty ones (false / null) are not counted, cards inside <>…</> are. */
+function countCards(children: ReactNode): number {
+  return Children.toArray(children).reduce<number>(
+    (n, c) => n + (isValidElement(c) && c.type === Fragment ? countCards((c as ReactElement<{ children?: ReactNode }>).props.children) : 1),
+    0,
+  )
+}
+
+/** A row of KPI cards (see kpiCols). */
+export function KpiGrid({ children, className }: { children: ReactNode; className?: string }) {
+  const count = countCards(children)
+  return (
+    <div className={cn('@container', className)}>
+      <div className={cn('grid grid-cols-1 gap-3', ...kpiCols(count))}>{children}</div>
+    </div>
+  )
 }
 
 const motionQuery = '(prefers-reduced-motion: reduce)'

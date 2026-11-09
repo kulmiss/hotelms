@@ -79,7 +79,8 @@
   The period and branch live in the address (`?range=30&branch=2&tab=revenue`, `useDashFilters` in `lib/dashboard.ts`), so every widget
   updates at once; every dashboard question's key starts with `'dash'`, so the refresh button reloads them all.
 - **Charts** `components/charts/` (Recharts, the template's library): `kit.tsx` (card with loading / empty / error states, `WidgetBoundary`
-  so one broken widget never breaks the page, `Legend`, `BarList`), `charts.tsx` (`OccRevenueChart`, `RevenuePaymentsChart`, `Donut`,
+  so one broken widget never breaks the page, `Legend`, `BarList`, `KpiGrid`: a row of KPI cards whose columns follow the free width and the
+  number of cards, so a row never ends with one lonely card), `charts.tsx` (`OccRevenueChart`, `RevenuePaymentsChart`, `Donut`,
   `PaceChart`, `Sparkline`), `KpiCard.tsx`. Colours: `--chart-1` = brand colour, `--chart-2…5`, `--chart-soft`, `--chart-grid`, and the room
   status colours (`ROOM_COLORS`). Animations are off with "reduce motion". Recharts is only imported by dashboard screens (lazy routes).
 - **Details in place**: a KPI, a chart day, a room status or a list row opens a side sheet (`pages/dashboard/Sheets.tsx`). Check in,
