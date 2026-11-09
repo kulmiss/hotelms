@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ChevronRight } from 'lucide-react'
 import { Donut, Sparkline } from '@/components/charts/charts'
 import { KpiCard } from '@/components/charts/KpiCard'
-import { SERIES, WidgetBoundary } from '@/components/charts/kit'
+import { KpiGrid, SERIES, WidgetBoundary } from '@/components/charts/kit'
 import { useMe } from '@/lib/auth'
 import { addMoney } from '@/lib/decimal'
 import { money } from '@/lib/format'
@@ -37,7 +37,7 @@ export function ReportsOverview({ f, open }: { f: ReportFilters; open: (key: str
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,160px),1fr))] gap-3">
+      <KpiGrid>
         <KpiCard label={t('dash.kpi.occupancy')} loading={perf.isPending} value={k ? `${k.occupancy}%` : '—'} change={k && c ? Math.round((k.occupancy - c.occupancy) * 10) / 10 : null} changeText={k && c ? t('dash.points', { n: Math.abs(Math.round((k.occupancy - c.occupancy) * 10) / 10) }) : undefined} spark={daily.map((d) => d.occupancy)} onOpen={() => open('performance')} />
         {money_ && <KpiCard label={t('dash.kpi.adr')} loading={perf.isPending} value={k ? fmt(k.adr) : '—'} change={k && c ? change(k.adr, c.adr) : null} onOpen={() => open('performance')} />}
         {money_ && <KpiCard label={t('dash.kpi.revpar')} loading={perf.isPending} value={k ? fmt(k.revpar) : '—'} change={k && c ? change(k.revpar, c.revpar) : null} onOpen={() => open('performance')} />}
@@ -46,7 +46,7 @@ export function ReportsOverview({ f, open }: { f: ReportFilters; open: (key: str
         <KpiCard label={t('reports.overview.cancellationRate')} loading={perf.isPending} value={k ? `${k.cancellation_rate}%` : '—'} change={k && c ? Math.round((k.cancellation_rate - c.cancellation_rate) * 10) / 10 : null} changeText={k && c ? t('dash.points', { n: Math.abs(Math.round((k.cancellation_rate - c.cancellation_rate) * 10) / 10) }) : undefined} invert onOpen={can('reports.cancellations') ? () => open('cancellations') : undefined} />
         <KpiCard label={t('reports.overview.leadTime')} loading={perf.isPending} value={k ? t('reports.overview.days', { n: k.lead_time }) : '—'} sub={c ? t('reports.overview.was', { value: t('reports.overview.days', { n: c.lead_time }) }) : undefined} />
         <KpiCard label={t('reports.overview.averageStay')} loading={perf.isPending} value={k ? t('reports.overview.nights', { n: k.average_stay }) : '—'} sub={c ? t('reports.overview.was', { value: t('reports.overview.nights', { n: c.average_stay }) }) : undefined} />
-      </div>
+      </KpiGrid>
 
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-4">
         <WidgetBoundary title={t('reports.names.performance')}>

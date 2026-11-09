@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Bar, BarChart, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Donut } from '@/components/charts/charts'
 import { KpiCard } from '@/components/charts/KpiCard'
-import { ChartCard, Legend, ROOM_COLORS, SERIES, WidgetBoundary, useReducedMotion, widgetState } from '@/components/charts/kit'
+import { ChartCard, KpiGrid, Legend, ROOM_COLORS, SERIES, WidgetBoundary, useReducedMotion, widgetState } from '@/components/charts/kit'
 import { useMe } from '@/lib/auth'
 import { addMoney, compareMoney, isNegative } from '@/lib/decimal'
 import { date, dateTime, money } from '@/lib/format'
@@ -30,7 +30,7 @@ export function CashierOverview({ shift }: { shift: CashierSession | null | unde
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,180px),1fr))] gap-3">
+      <KpiGrid>
         {can('cashier.own_shift') && (
           <KpiCard label={t('overviews.cashier.myShift')} value={shift ? t('overviews.cashier.open') : t('overviews.cashier.notOpen')} sub={shift ? t('overviews.cashier.since', { time: dateTime(shift.opened_at) }) : undefined} />
         )}
@@ -44,7 +44,7 @@ export function CashierOverview({ shift }: { shift: CashierSession | null | unde
           value={money(totalDiff, currency)}
           sub={short ? t('overviews.cashier.shortCount', { count: short }) : t('overviews.cashier.noDifferences')}
         />
-      </div>
+      </KpiGrid>
       <WidgetBoundary title={t('overviews.cashier.chart')}>
         <ChartCard title={t('overviews.cashier.chart')} description={t('overviews.cashier.chartHelp')} state={widgetState(recent, data.length > 0)} onRetry={() => recent.refetch()} emptyText={t('overviews.cashier.noClosed')}>
           <div role="img" aria-label={t('overviews.cashier.chartAria', { count: data.length, short })} className="h-36 w-full">
