@@ -17,6 +17,7 @@ use App\Services\Notify\MailSettings;
 use App\Services\PlatformPermissions;
 use App\Services\Switches;
 use App\Support\Tenancy\TenantContext;
+use App\Support\TrustedProxies;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Events\QueryExecuted;
@@ -42,6 +43,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // The mail server saved in Super Admin → Settings (if any), applied only when an email is sent.
         $this->app->resolving('mail.manager', fn () => MailSettings::apply());
+        // Behind a proxy or CDN only: trust its X-Forwarded-* headers (TRUSTED_PROXIES; empty = trust nobody).
+        TrustedProxies::apply(config('hotelms.trusted_proxies'));
         $this->automationHooks();
 
         // Development: write slow database work to the log, so slow screens are found early.

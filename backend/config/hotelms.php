@@ -3,6 +3,11 @@
 return [
 
     /*
+    | Proxy or CDN in front of the server (see App\Support\TrustedProxies and docs/hosting.md). Empty = none.
+    */
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+
+    /*
     | The platform owner account, created by SuperAdminSeeder on first start.
     | The password is temporary: it must be changed at first sign-in.
     | Leave the password empty in production to get a random one.
