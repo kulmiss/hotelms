@@ -31,7 +31,11 @@ export function RevenueTab({ f }: { f: DashFilters }) {
   const trend = useTrend(f)
   const pays = usePaymentsSplit(f, can(['reports.payments', 'reports.revenue']))
   const unpaid = useOutstanding(f, can('reports.outstanding'))
-  const recent = useQuery({ queryKey: ['dash', 'recent-payments'], queryFn: () => api<Page<PaymentRow>>('/payments?per_page=8&sort=paid&dir=desc'), enabled: can('payments.view') })
+  const recent = useQuery({
+    queryKey: ['dash', 'recent-payments', f.branchId],
+    queryFn: () => api<Page<PaymentRow>>(`/payments?per_page=8&sort=paid&dir=desc${f.branchId ? `&branch_id=${f.branchId}` : ''}`),
+    enabled: can('payments.view'),
+  })
   const [day, setDay] = useState<string | null>(null)
   const [invoice, setInvoice] = useState<number | null>(null)
   const k = perf.data?.data.kpis

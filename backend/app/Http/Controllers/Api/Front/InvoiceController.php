@@ -158,10 +158,12 @@ class InvoiceController extends Controller
 
     public function payments(Request $request): JsonResponse|Response
     {
-        $request->validate(['from' => ['nullable', 'date'], 'to' => ['nullable', 'date']]);
+        $request->validate(['from' => ['nullable', 'date'], 'to' => ['nullable', 'date'], 'branch_id' => ['nullable', 'integer']]);
         $hotel = $request->user()->hotel;
         $query = Payment::with(['method:id,name', 'receiver:id,name', 'reservation:id,code,guest_id', 'reservation.guest:id,first_name,last_name', 'invoice:id,number'])
             ->whereIn('branch_id', $request->user()->accessibleBranches()->pluck('id'))
+            // One branch (the dashboard's branch filter); only within the person's own branches (whereIn above).
+            ->when($request->input('branch_id'), fn ($w, $b) => $w->where('branch_id', (int) $b))
             ->when($request->input('type'), fn ($w, $t) => $w->where('type', $t))
             ->when($request->input('from'), fn ($w, $d) => $w->where('paid_at', '>=', HotelClock::parse($d, $hotel)))
             ->when($request->input('to'), fn ($w, $d) => $w->where('paid_at', '<', HotelClock::parse($d, $hotel)->addDay()));
