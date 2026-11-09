@@ -64,9 +64,9 @@ export function AdminDashboardPage() {
         subtitle={t('admin.dash.subtitle')}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <div role="group" aria-label={t('dash.period')} className="flex h-9 overflow-hidden rounded-md border border-border pointer-coarse:h-11">
+            <div role="group" aria-label={t('dash.period')} className="flex h-9 overflow-hidden rounded-md border border-border pointer-coarse:h-auto">
               {PERIODS.map((p) => (
-                <button key={p} type="button" aria-pressed={period === p} onClick={() => setPeriod(p)} className={cn('px-3 text-sm font-medium transition-colors duration-150', period === p ? 'bg-primary text-primary-foreground' : 'hover:bg-sunken')}>
+                <button key={p} type="button" aria-pressed={period === p} onClick={() => setPeriod(p)} className={cn('px-3 text-sm font-medium transition-colors duration-150 pointer-coarse:min-h-11', period === p ? 'bg-primary text-primary-foreground' : 'hover:bg-sunken')}>
                   {t(`admin.cc.periods.${p}`)}
                 </button>
               ))}
