@@ -16,6 +16,7 @@ use App\Services\Switches;
 use App\Support\HotelClock;
 use App\Support\Money;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -33,6 +34,54 @@ class SmartHints
     public function on(?Hotel $hotel, string $key): bool
     {
         return $this->switches->on($hotel, 'feature.smart_hints') && $this->switches->on($hotel, "smart.{$key}");
+    }
+
+    /** Week-on-week revenue (or occupancy) insight for the dashboard; null when there is nothing to say. */
+    private function insight(Hotel $hotel, User $user, array $branchIds, string $today): ?array
+    {
+        $m = Metrics::for($hotel, $branchIds);
+        $from = Carbon::parse($today)->subDays(6)->toDateString();
+        $now = $m->kpis($from, $today);
+        $before = $m->kpis(Carbon::parse($today)->subDays(13)->toDateString(), Carbon::parse($today)->subDays(7)->toDateString());
+        if ($user->hasPermission('dashboard.view_revenue') && Money::isPositive($now['revenue'])) {
+            $change = self::pct((float) $now['revenue'], (float) $before['revenue']);
+            if ($change === null) {
+                return null;
+            }
+            $top = collect($m->byRoomType($from, $today))->first();
+            $way = $change >= 0 ? 'above' : 'below';
+
+            return [
+                'text' => 'Revenue this week is '.abs($change)."% {$way} last week".($top && Money::isPositive($top['room_revenue']) ? ", mostly from {$top['name']} rooms." : '.'),
+                'why' => 'This week '.self::money($hotel->default_currency, $now['revenue']).', the week before '.self::money($hotel->default_currency, $before['revenue']).'.',
+                'tone' => $change >= 0 ? 'ok' : 'warn', 'link' => '/reports?report=performance',
+                'explain' => self::explain([
+                    ['Revenue, last 7 days', self::money($hotel->default_currency, $now['revenue'])],
+                    ['Revenue, the 7 days before', self::money($hotel->default_currency, $before['revenue'])],
+                    ['Change', ($change >= 0 ? '+' : '').$change.'%'],
+                    ['Occupancy, last 7 days', $now['occupancy'].'% (was '.$before['occupancy'].'%)'],
+                    ['Average night (ADR)', self::money($hotel->default_currency, $now['adr']).' (was '.self::money($hotel->default_currency, $before['adr']).')'],
+                ] + ($top ? [5 => ['Room type with most revenue', $top['name'].' · '.self::money($hotel->default_currency, $top['room_revenue'])]] : []),
+                    'Revenue of today and the 6 days before, compared with the 7 days before that. Revenue is room nights, extras and fees on the bills, after discounts, without tax.',
+                    $change >= 0 ? 'Keep prices as they are; check the Forecast report for the coming weeks.' : 'Open the report to see which days and room types fell. A weekend price or a corporate offer can help fill rooms.'),
+            ];
+        }
+        if ($now['room_nights'] === 0 && $before['room_nights'] === 0) {
+            return null;
+        }
+        $diff = round($now['occupancy'] - $before['occupancy']);
+
+        return [
+            'text' => "Occupancy this week is {$now['occupancy']}% (".($diff >= 0 ? '+' : '')."{$diff} points on last week).",
+            'why' => "Room nights sold: {$now['room_nights']} this week, {$before['room_nights']} the week before.", 'tone' => $diff >= 0 ? 'ok' : 'warn',
+            'explain' => self::explain([
+                ['Room nights sold, last 7 days', $now['room_nights']],
+                ['Room nights sold, the 7 days before', $before['room_nights']],
+                ['Rooms in the hotel', $now['rooms']],
+                ['Occupancy now / before', $now['occupancy'].'% / '.$before['occupancy'].'%'],
+            ], 'Occupancy = room nights sold ÷ (rooms × 7 nights). Only stays that checked in count; cancelled and no-show bookings do not.',
+                $diff >= 0 ? null : 'Look at the coming week on the Reservations calendar and follow up pending bookings.'),
+        ];
     }
 
     /** @param  callable(): ?array  $make */
@@ -83,51 +132,12 @@ class SmartHints
         $today = HotelClock::now($hotel)->toDateString();
 
         return self::list([
-            $this->hint($hotel, 'insight_of_the_day', function () use ($hotel, $user, $branchIds, $today) {
-                $m = Metrics::for($hotel, $branchIds);
-                $from = Carbon::parse($today)->subDays(6)->toDateString();
-                $now = $m->kpis($from, $today);
-                $before = $m->kpis(Carbon::parse($today)->subDays(13)->toDateString(), Carbon::parse($today)->subDays(7)->toDateString());
-                if ($user->hasPermission('dashboard.view_revenue') && Money::isPositive($now['revenue'])) {
-                    $change = self::pct((float) $now['revenue'], (float) $before['revenue']);
-                    if ($change === null) {
-                        return null;
-                    }
-                    $top = collect($m->byRoomType($from, $today))->first();
-                    $way = $change >= 0 ? 'above' : 'below';
-
-                    return [
-                        'text' => 'Revenue this week is '.abs($change)."% {$way} last week".($top && Money::isPositive($top['room_revenue']) ? ", mostly from {$top['name']} rooms." : '.'),
-                        'why' => 'This week '.self::money($hotel->default_currency, $now['revenue']).', the week before '.self::money($hotel->default_currency, $before['revenue']).'.',
-                        'tone' => $change >= 0 ? 'ok' : 'warn', 'link' => '/reports?report=performance',
-                        'explain' => self::explain([
-                            ['Revenue, last 7 days', self::money($hotel->default_currency, $now['revenue'])],
-                            ['Revenue, the 7 days before', self::money($hotel->default_currency, $before['revenue'])],
-                            ['Change', ($change >= 0 ? '+' : '').$change.'%'],
-                            ['Occupancy, last 7 days', $now['occupancy'].'% (was '.$before['occupancy'].'%)'],
-                            ['Average night (ADR)', self::money($hotel->default_currency, $now['adr']).' (was '.self::money($hotel->default_currency, $before['adr']).')'],
-                        ] + ($top ? [5 => ['Room type with most revenue', $top['name'].' · '.self::money($hotel->default_currency, $top['room_revenue'])]] : []),
-                            'Revenue of today and the 6 days before, compared with the 7 days before that. Revenue is room nights, extras and fees on the bills, after discounts, without tax.',
-                            $change >= 0 ? 'Keep prices as they are; check the Forecast report for the coming weeks.' : 'Open the report to see which days and room types fell. A weekend price or a corporate offer can help fill rooms.'),
-                    ];
-                }
-                if ($now['room_nights'] === 0 && $before['room_nights'] === 0) {
-                    return null;
-                }
-                $diff = round($now['occupancy'] - $before['occupancy']);
-
-                return [
-                    'text' => "Occupancy this week is {$now['occupancy']}% (".($diff >= 0 ? '+' : '')."{$diff} points on last week).",
-                    'why' => "Room nights sold: {$now['room_nights']} this week, {$before['room_nights']} the week before.", 'tone' => $diff >= 0 ? 'ok' : 'warn',
-                    'explain' => self::explain([
-                        ['Room nights sold, last 7 days', $now['room_nights']],
-                        ['Room nights sold, the 7 days before', $before['room_nights']],
-                        ['Rooms in the hotel', $now['rooms']],
-                        ['Occupancy now / before', $now['occupancy'].'% / '.$before['occupancy'].'%'],
-                    ], 'Occupancy = room nights sold ÷ (rooms × 7 nights). Only stays that checked in count; cancelled and no-show bookings do not.',
-                        $diff >= 0 ? null : 'Look at the coming week on the Reservations calendar and follow up pending bookings.'),
-                ];
-            }),
+            // The week-on-week insight needs ~25 database questions; it changes slowly, so it is kept 5 minutes (QA #120 speed).
+            $this->hint($hotel, 'insight_of_the_day', fn () => Cache::remember(
+                'smart:insight:'.$hotel->id.':'.implode(',', collect($branchIds)->sort()->values()->all()).':'.(int) $user->hasPermission('dashboard.view_revenue').':'.$today,
+                300,
+                fn () => $this->insight($hotel, $user, $branchIds, $today),
+            )),
             $this->hint($hotel, 'tonight', function () use ($hotel, $branchIds) {
                 $rooms = Metrics::for($hotel, $branchIds)->roomCount();
                 if ($rooms === 0) {

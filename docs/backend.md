@@ -81,7 +81,7 @@ Rate limits (`AppServiceProvider`): `login` (5/min per email+address, 30/min per
 | `Reports/CustomReportEngine` | The custom report builder (whitelisted measures and groups) |
 | `Reports/Automation` | Scheduled reports (email/Telegram) and smart alerts |
 | `Automation/*` | Ready-made automations (events and schedule), the rule builder, platform automations |
-| `Smart/SmartHints` | Free "smart" hints with a "Why?" explanation on many screens |
+| `Smart/SmartHints` | Free "smart" hints with a "Why?" explanation on many screens (the dashboard's week-on-week insight is cached 5 minutes) |
 | `Notify/Notifier`, `Notify/Telegram`, `Notify/MailSettings` | In-app bell, email, Telegram bot (polling, link by code); SMTP from Super Admin settings |
 | `Watchdog/WatchEvents`, `Watchdog/Watchdog` | Super Admin watchdog: password guessing, snooping, errors, cron/backup, mixed hotel data, money mismatches, double bookings, fraud signs |
 | `Backup/Backups` | Database backups (daily full, hourly small, monthly check, restore) and upload mirroring |

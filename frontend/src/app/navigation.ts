@@ -52,6 +52,9 @@ export type NavItem = {
   built?: boolean
 }
 
+/** Any of these opens Reports (menu item and the screen itself). */
+export const REPORTS_PERMISSIONS = ['reports.revenue', 'reports.occupancy', 'reports.payments', 'reports.outstanding', 'reports.tax', 'reports.guests', 'reports.cancellations', 'reports.branch_compare', 'reports.my_shift', 'reports.my_work', 'reports.forecast', 'reports.audit', 'reports.accounting_export', 'reports.targets_manage', 'reports.custom', 'reports.schedule', 'alerts.manage']
+
 export const mainNav: NavItem[] = [
   { key: 'dashboard', path: '/', icon: House, phase: 6, built: true },
   { key: 'roomBoard', path: '/rooms', icon: LayoutGrid, group: 'frontDesk', phase: 4, permission: 'frontdesk.view', built: true },
@@ -68,7 +71,7 @@ export const mainNav: NavItem[] = [
   { key: 'roles', path: '/roles', icon: ShieldCheck, group: 'team', phase: 1, permission: 'roles.manage', built: true },
   { key: 'activityLog', path: '/activity-log', icon: ClipboardList, group: 'team', phase: 1, permission: 'activity_log.view', built: true },
   { key: 'approvals', path: '/approvals', icon: BadgeCheck, group: 'insights', phase: 8, permission: 'approvals.decide', built: true },
-  { key: 'reports', path: '/reports', icon: ChartColumn, group: 'insights', phase: 6, built: true, permission: ['reports.revenue', 'reports.occupancy', 'reports.payments', 'reports.outstanding', 'reports.tax', 'reports.guests', 'reports.cancellations', 'reports.branch_compare', 'reports.my_shift', 'reports.my_work', 'reports.forecast', 'reports.audit', 'reports.accounting_export', 'reports.targets_manage', 'reports.custom', 'reports.schedule', 'alerts.manage'] },
+  { key: 'reports', path: '/reports', icon: ChartColumn, group: 'insights', phase: 6, built: true, permission: REPORTS_PERMISSIONS },
   {
     key: 'settings',
     path: '/settings',

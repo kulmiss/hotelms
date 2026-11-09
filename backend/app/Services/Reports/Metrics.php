@@ -18,6 +18,9 @@ class Metrics
 {
     private int $offset;
 
+    /** Sellable rooms, asked once per Metrics (the dashboard used to ask up to 4 times). */
+    private ?int $rooms = null;
+
     /** @param  list<int>  $branchIds */
     public function __construct(private Hotel $hotel, private array $branchIds)
     {
@@ -55,7 +58,7 @@ class Metrics
     /** Rooms that can be sold (out of order rooms are not counted). */
     public function roomCount(): int
     {
-        return DB::table('rooms')->where('hotel_id', $this->hotel->id)->whereIn('branch_id', $this->branchIds)
+        return $this->rooms ??= DB::table('rooms')->where('hotel_id', $this->hotel->id)->whereIn('branch_id', $this->branchIds)
             ->whereNull('deleted_at')->where('status', '!=', 'out_of_order')->count();
     }
 
@@ -91,12 +94,13 @@ class Metrics
     // ------------------------------------------------------------------ KPIs
 
     /** @return array<string, mixed> */
-    public function kpis(string $from, string $to): array
+    /**
+     * Revenue of a period and its parts (2 questions): what kpis() reports as revenue.
+     *
+     * @return array{room: string, extras: string, fees: string, discounts: string, cancellation_fees: string, revenue: string}
+     */
+    public function revenueParts(string $from, string $to): array
     {
-        $days = count(self::days($from, $to));
-        $available = $this->roomCount() * $days;
-        $sold = (int) $this->nights()->whereIn('rr.status', ['checked_in', 'checked_out'])->whereBetween('r.date', [$from, $to])->count();
-
         $byType = $this->items()->whereBetween('it.service_date', [$from, $to])->selectRaw('it.type, SUM(it.amount) as total')->groupBy('it.type')->pluck('total', 'type');
         $room = Money::round((string) ($byType['room'] ?? '0'));
         $extras = Money::round((string) ($byType['extra'] ?? '0'));
@@ -104,7 +108,18 @@ class Metrics
         $discounts = Money::sub('0', (string) ($byType['discount'] ?? '0'));
         $cancelFees = Money::round((string) $this->reservations()->whereIn('status', ['cancelled', 'no_show'])
             ->whereBetween('cancelled_at', [$this->utc($from), $this->utc($to)->addDay()])->sum('cancellation_fee') ?: '0');
-        $revenue = Money::sub(Money::add(Money::add(Money::add($room, $extras), $fees), $cancelFees), $discounts);
+
+        return ['room' => $room, 'extras' => $extras, 'fees' => $fees, 'discounts' => $discounts, 'cancellation_fees' => $cancelFees,
+            'revenue' => Money::sub(Money::add(Money::add(Money::add($room, $extras), $fees), $cancelFees), $discounts)];
+    }
+
+    public function kpis(string $from, string $to): array
+    {
+        $days = count(self::days($from, $to));
+        $available = $this->roomCount() * $days;
+        $sold = (int) $this->nights()->whereIn('rr.status', ['checked_in', 'checked_out'])->whereBetween('r.date', [$from, $to])->count();
+
+        ['room' => $room, 'extras' => $extras, 'fees' => $fees, 'discounts' => $discounts, 'cancellation_fees' => $cancelFees, 'revenue' => $revenue] = $this->revenueParts($from, $to);
 
         $tax = Money::round((string) DB::table('invoice_item_taxes as t')->join('invoice_items as it', 'it.id', '=', 't.invoice_item_id')
             ->join('invoices as inv', 'inv.id', '=', 'it.invoice_id')->where('inv.hotel_id', $this->hotel->id)->whereIn('inv.branch_id', $this->branchIds)
