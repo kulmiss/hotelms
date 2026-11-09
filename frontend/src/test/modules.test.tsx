@@ -26,7 +26,7 @@ describe('optional modules', () => {
       'POST /cashier/close': { body: { data: { ...openShift, status: 'closed' } } },
     })
     renderApp('/cashier')
-    expect(await screen.findByText('ETB 1,880.00')).toBeInTheDocument()
+    expect((await screen.findAllByText('ETB 1,880.00')).length).toBeGreaterThan(0) // also in the overview (P18)
     await userEvent.click(screen.getByRole('button', { name: 'Count the drawer' }))
     await userEvent.type(screen.getByLabelText('Counted (ETB)'), '1800')
     expect(screen.getByText('Short by ETB 80.00')).toBeInTheDocument()

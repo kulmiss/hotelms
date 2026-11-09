@@ -127,7 +127,7 @@ describe('module overviews (P18)', () => {
       'GET /cashier/sessions': { body: { data: [shift(3, 'open', null), shift(2, 'closed', '-150.00'), shift(1, 'approved', '50.00')], current_page: 1, last_page: 1, total: 3, per_page: 20 } },
     })
     renderApp('/cashier')
-    expect(await screen.findByText('ETB -100.00')).toBeInTheDocument()
+    expect(await screen.findByText('-ETB 100.00')).toBeInTheDocument()
     expect(screen.getByText('1 shift was short')).toBeInTheDocument()
     expect(screen.getByText('Closed, waiting for approval')).toBeInTheDocument()
   })
@@ -152,7 +152,7 @@ describe('module overviews (P18)', () => {
     })
     renderApp('/reports')
     expect(await screen.findByText('Bookings made')).toBeInTheDocument()
-    expect(screen.getByText('100%')).toBeInTheDocument() // 20 bookings, up from 10
+    expect(await screen.findByText('100%')).toBeInTheDocument() // 20 bookings, up from 10
     await userEvent.click(screen.getAllByRole('button', { name: /Revenue and performance/ })[0])
     expect(screen.getByRole('button', { name: 'Revenue and performance', current: 'page' })).toBeInTheDocument()
   })
