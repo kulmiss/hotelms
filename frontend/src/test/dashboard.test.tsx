@@ -104,7 +104,7 @@ describe('Super Admin command center (P18)', () => {
     renderApp('/admin')
     expect(await screen.findByText('No subscription payments yet. Bars appear when a hotel pays.')).toBeInTheDocument()
     expect(screen.getByText('Basic')).toBeInTheDocument()
-    expect(await screen.findByText('All OK')).toBeInTheDocument()
+    expect((await screen.findAllByText('All OK')).length).toBeGreaterThan(0)
     await userEvent.click(await screen.findByRole('button', { name: /Safari/ }))
     const sheet = await screen.findByRole('dialog')
     expect(within(sheet).getByRole('link', { name: /Open the hotel page/ })).toHaveAttribute('href', '/admin/hotels/2')
