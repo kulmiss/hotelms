@@ -370,8 +370,10 @@ class FrontDeskTest extends TestCase
         $this->getJson('/api/v1/payments?branch_id='.$piassa->id)->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.amount', '250.00');
         $this->getJson('/api/v1/payments?branch_id='.$other->id)->assertOk()->assertJsonCount(0, 'data'); // another hotel's branch: nothing
 
-        // A receptionist who works only in Bole never sees Piassa, even when asking for it.
-        $this->actingAs($this->receptionist);
+        // A branch manager who works only in Bole never sees Piassa, even when asking for it.
+        $manager = User::factory()->withRole($this->hotel, 'branch_manager')->create();
+        $manager->branches()->attach($this->branch->id);
+        $this->actingAs($manager);
         $this->getJson('/api/v1/payments?branch_id='.$piassa->id)->assertOk()->assertJsonCount(0, 'data');
         $this->getJson('/api/v1/payments')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.amount', '100.00');
     }
