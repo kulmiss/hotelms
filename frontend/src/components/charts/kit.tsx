@@ -52,6 +52,7 @@ export function ChartCard({
   title,
   description,
   action,
+  toolbar,
   state = 'ready',
   onRetry,
   emptyText,
@@ -64,6 +65,8 @@ export function ChartCard({
   title: ReactNode
   description?: ReactNode
   action?: ReactNode
+  /** Always shown under the title (tabs, filters), whatever the state of the body. */
+  toolbar?: ReactNode
   state?: WidgetState
   onRetry?: () => void
   emptyText?: string
@@ -82,6 +85,7 @@ export function ChartCard({
         </div>
         {action}
       </div>
+      {toolbar && <div className="px-4 pt-3">{toolbar}</div>}
       <div className={cn('flex min-w-0 flex-1 flex-col p-4', bodyClassName)}>
         {state === 'loading' && <div aria-hidden className="h-full min-h-32 animate-pulse rounded-lg bg-sunken motion-reduce:animate-none" />}
         {state === 'loading' && <span className="sr-only">{t('common.loading')}</span>}
