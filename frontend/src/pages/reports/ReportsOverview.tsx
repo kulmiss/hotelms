@@ -56,7 +56,7 @@ export function ReportsOverview({ f, open }: { f: ReportFilters; open: (key: str
         </WidgetBoundary>
         {can('reports.payments') && (
           <WidgetBoundary title={t('reports.names.payments')}>
-            <ReportCard title={t('reports.names.payments')} line={pays.data ? t('reports.overview.paysLine', { total: fmt(pays.data.data.total), count: methods.reduce((s, m) => s + m.count, 0) }) : ''} onOpen={() => open('payments')}>
+            <ReportCard title={t('reports.names.payments')} line={pays.data ? t('reports.overview.paysLine', { total: fmt(pays.data.data.total), count: methods.reduce((s: number, m) => s + m.count, 0) }) : ''} onOpen={() => open('payments')}>
               {methods.length > 0 && (
                 <Donut
                   size={56}
