@@ -102,7 +102,16 @@ function DashFiltersBar({ f, setF }: { f: DashFilters; setF: (n: Partial<DashFil
   ]
   return (
     <div className="flex flex-wrap items-end gap-2">
-      <CollapsibleToolbar id="dashboard" active={chips} onClearAll={() => setF({ range: '30', branchId: null })}>
+      <CollapsibleToolbar
+        id="dashboard"
+        active={chips}
+        onClearAll={() => setF({ range: '30', branchId: null })}
+        actions={
+          <Button variant="secondary" className="shrink-0" aria-label={t('dash.refresh')} title={t('dash.refresh')} onClick={() => void refresh()}>
+            <RefreshCw aria-hidden className={cn(fetching && 'animate-spin motion-reduce:animate-none')} />
+          </Button>
+        }
+      >
         {branches.length > 1 && (
           <div className="w-44">
             <Select label={t('dash.branch')} value={String(f.branchId ?? '')} onChange={(e) => setF({ branchId: e.target.value ? Number(e.target.value) : null })}>
@@ -115,14 +124,14 @@ function DashFiltersBar({ f, setF }: { f: DashFilters; setF: (n: Partial<DashFil
             </Select>
           </div>
         )}
-        <div role="group" aria-label={t('dash.period')} className="flex h-9 overflow-hidden rounded-md border border-border pointer-coarse:h-11">
+        <div role="group" aria-label={t('dash.period')} className="flex h-9 overflow-hidden rounded-md border border-border pointer-coarse:h-auto">
           {DASH_RANGES.map((r) => (
             <button
               key={r}
               type="button"
               aria-pressed={f.range === r}
               onClick={() => setF({ range: r })}
-              className={cn('px-3 text-sm font-medium transition-colors duration-150', f.range === r ? 'bg-primary text-primary-foreground' : 'hover:bg-sunken')}
+              className={cn('px-3 text-sm font-medium transition-colors duration-150 pointer-coarse:min-h-11', f.range === r ? 'bg-primary text-primary-foreground' : 'hover:bg-sunken')}
             >
               {t(`dash.ranges.${r}`)}
             </button>
@@ -139,9 +148,6 @@ function DashFiltersBar({ f, setF }: { f: DashFilters; setF: (n: Partial<DashFil
           </>
         )}
       </CollapsibleToolbar>
-      <Button variant="secondary" aria-label={t('dash.refresh')} title={t('dash.refresh')} onClick={() => void refresh()}>
-        <RefreshCw aria-hidden className={cn(fetching && 'animate-spin motion-reduce:animate-none')} />
-      </Button>
     </div>
   )
 }

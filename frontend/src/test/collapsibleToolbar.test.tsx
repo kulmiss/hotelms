@@ -3,7 +3,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { DataTable } from '@/components/ui/DataTable'
-import { ToolbarSearch } from '@/components/ui/CollapsibleToolbar'
+import { CollapsibleToolbar, ToolbarSearch } from '@/components/ui/CollapsibleToolbar'
 import { makeMe, mockApi } from './mockApi'
 import { renderApp } from './renderApp'
 
@@ -96,6 +96,18 @@ describe('collapsible filters (P19)', () => {
     expect(screen.getByRole('combobox', { name: 'Status' })).toBeVisible()
     expect(screen.getByRole('searchbox', { name: 'Search' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Columns/ })).toBeInTheDocument()
+  })
+
+  it.each([375, 1280])('keeps the "actions" buttons (e.g. Refresh) in view at %ipx', (width) => {
+    screenWidth(width)
+    render(
+      <CollapsibleToolbar id="test-actions" actions={<button type="button">Refresh</button>}>
+        <select aria-label="Period" />
+      </CollapsibleToolbar>,
+    )
+    const refresh = screen.getByRole('button', { name: 'Refresh' })
+    if (width < 1024) expect(panel()).not.toContainElement(refresh) // next to Filters, not folded away
+    else expect(screen.queryByRole('button', { name: /^Filters/ })).not.toBeInTheDocument()
   })
 
   it('opens and closes, and remembers it for this session only', async () => {

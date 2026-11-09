@@ -57,27 +57,34 @@ type Props = {
   onClearAll?: () => void
   /** Extra controls that fold away too on phones and tablets (e.g. the table's Excel and Columns buttons). */
   tools?: ReactNode
+  /** Buttons that never fold away: next to the Filters button on phones and tablets, after the filters on desktop (e.g. Refresh). */
+  actions?: ReactNode
   /** The filter and sort controls, laid out as on desktop. */
   children: ReactNode
   className?: string
 }
 
-export function CollapsibleToolbar({ id, search, active = [], onClearAll, tools, children, className }: Props) {
+export function CollapsibleToolbar({ id, search, active = [], onClearAll, tools, actions, children, className }: Props) {
   const compact = useCompactToolbar()
 
   if (!compact) {
-    return <SearchContext.Provider value={{ search, compact: false }}>{children}</SearchContext.Provider>
+    return (
+      <SearchContext.Provider value={{ search, compact: false }}>
+        {children}
+        {actions}
+      </SearchContext.Provider>
+    )
   }
   return (
     <SearchContext.Provider value={{ search, compact: true }}>
-      <Compact id={id} search={search} active={active} onClearAll={onClearAll} tools={tools} className={className}>
+      <Compact id={id} search={search} active={active} onClearAll={onClearAll} tools={tools} actions={actions} className={className}>
         {children}
       </Compact>
     </SearchContext.Provider>
   )
 }
 
-function Compact({ id, search, active = [], onClearAll, tools, children, className }: Props) {
+function Compact({ id, search, active = [], onClearAll, tools, actions, children, className }: Props) {
   const { t } = useTranslation()
   const count = active.filter((f) => f.onRemove).length
   const [open, setOpenState] = useState(() => loadOpen(id))
@@ -135,6 +142,7 @@ function Compact({ id, search, active = [], onClearAll, tools, children, classNa
             )}
           </Button>
         </CollapsibleTrigger>
+        {actions}
       </div>
 
       {active.length > 0 && (
