@@ -85,7 +85,7 @@
 - **Details in place**: a KPI, a chart day, a room status or a list row opens a side sheet (`pages/dashboard/Sheets.tsx`). Check in,
   check out and take payment use the SAME panels as the booking and bill pages (`CheckInPanel`, `CheckOutPanel`, `PaymentForm`, `PayPanel`,
   loaded only when a sheet opens), so the rules and the "saved once" keys are the same. No new business logic on the dashboard.
-- **Module overviews**: `pages/modules/ModuleOverviews.tsx` (cashier: my drawer and short / over of the last closed shifts; housekeeping: rooms by status, tasks today, who is cleaning) and `pages/reports/ReportsOverview.tsx` (the Reports landing for roles with the revenue or occupancy report: KPIs with change, one card per report).
+- **Module overviews**: `pages/modules/ModuleOverviews.tsx` (cashier: my drawer and short / over of the last closed shifts; housekeeping: rooms by status, tasks today, who is cleaning) and `pages/reports/ReportsOverview.tsx` (the Reports landing for roles with the revenue or occupancy report: KPIs with change, one card per report; every role allowed it, the Accountant too, starts there – others start on their first report, e.g. "My shift").
 - **Who sees what**: money widgets need `dashboard.view_revenue` (the server never sends money to other roles, `/dashboard/trend` included);
   report widgets also need the report permission; desk lists need `frontdesk.view`; approvals `approvals.decide`.
 
