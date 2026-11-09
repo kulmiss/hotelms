@@ -115,6 +115,7 @@ Development (Docker): `docker compose exec backend php artisan migrate`.
 5. **What's new:** publish the note for staff (Super Admin → Releases; draft in `docs/drafts/`).
 6. **Code:** the final PR `ui/shadcn-admin → main` is merged; the server runs `main`.
 7. **Smoke test:** sign in as each role on a phone and a computer; take a test payment in the demo hotel.
+8. **Dashboards:** open the dashboard as Hotel Admin (charts show, the data appears in about 1 s) and as Receptionist (no money anywhere on it). Super Admin → Command center shows real hotels only (the demo is left out).
 
 ### Rollback plan
 - **Code:** put the previous package back (keep the last `hotelms.zip`), `php artisan optimize`.
