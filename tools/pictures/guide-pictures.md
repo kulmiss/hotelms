@@ -24,8 +24,8 @@ Steps per picture:
 | 10 | takePayment | Reception | `/billing/<open bill>` → tap Record payment | a partly paid bill | 1 "Record payment" · 2 method · 3 amount + reference · 4 "Save payment" |
 | 11 | paymentProof | Reception | same panel | same | 2 Take photo / Choose file · 3 "Add proof" on a payment |
 | 12 | extraCharge | Reception | `/billing/<open bill>` → tap Add charge | same | 2 "Add charge" · 3 charge type · 4 quantity + price + Add charge |
-| 13 | cashierShift | Reception | `/cashier` | shift closed (open form) or open (count form) | 1 opening cash + Open shift · 3 counted cash · 5 Close shift |
-| 14 | cleaning | Housekeeping (Mulu) | `/housekeeping` (My tasks) | a pending and an in-progress task | 1 "My tasks" tab · 2 "Start" · 3 "Done" |
+| 13 | cashierShift | Reception | `/cashier` (since P18 the overview is above the form; the picture shows only the form) | shift closed (open form) or open (count form) | 1 opening cash + Open shift · 3 counted cash · 5 Close shift |
+| 14 | cleaning | Housekeeping (Mulu) | `/housekeeping` (My tasks) | a pending and an in-progress task | 1 "My tasks" tab · 2 "Start" · 3 "Done" · 5 the overview (room status + tasks today) |
 | 15 | clockIn | Reception | `/attendance` | not clocked in | 1 "Clock in" · 4 kiosk PIN section |
 
 Find the demo records with the browser helper `api()` (`/front-desk/today` for arrivals / leaving / in house,
