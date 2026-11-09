@@ -386,6 +386,8 @@ Differences from §2: Restaurant / Bar still opens `/reports` by address ("Your 
 | Restaurant / Bar start page | ✓ Charge a room, as designed |
 | Command center | ✓ demo hotel left out (1 real hotel); income shows its empty state until a hotel pays |
 | Side sheets | ✓ KPI sheet (day by day) opens with **View all →** the full report |
+| Guide pictures | Cleaning redone with the new overview (number 5); Cashier shift kept – it shows only the Open shift form, which did not change. No guide picture shows a dashboard |
+| Re-check of the fixes in #124 (owner's browser) | ✓ 44px buttons, Refresh next to Filters, no sideways scroll at 768px, KPI rows 3 + 3 (hotel) and 5 + 4 (command center) at 1280px, daily report fits at 1024px |
 | **New:** range / period buttons 42px on touch | ✗ → fixed in #124 (44px) |
 | **New:** Refresh on its own line under Filters (phones) | ✗ → fixed in #124 (next to Filters) |
 | **New:** whole page scrolled sideways at 768px (desk table) | ✗ → fixed in #124 |
