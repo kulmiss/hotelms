@@ -6,7 +6,7 @@
 #
 # Only the code goes into the package – never files from your own computer's work folder:
 # no .env, no uploads, logs, sessions or caches (storage/ and bootstrap/cache/ are created empty),
-# no tests. CI runs this script on every pull request and checks that (job "Package").
+# no tests, no development Docker files. CI runs this script on every pull request and checks that (job "Package").
 set -euo pipefail
 cd "$(dirname "$0")/.."
 ROOT="$PWD"
@@ -18,7 +18,8 @@ echo "1/4 Web app"
 echo "2/4 API"
 rm -rf "$OUT" && mkdir -p "$OUT"
 rsync -a \
-  --exclude node_modules --exclude vendor --exclude tests \
+  --exclude node_modules --exclude vendor --exclude tests --exclude phpunit.xml \
+  --exclude /Dockerfile --exclude /.dockerignore --exclude /docker/ \
   --exclude '.env' --exclude '.env.backup' --exclude '.env.production' --exclude '.env.testing' \
   --exclude '.phpunit.result.cache' --exclude '.phpunit.cache' --exclude '*.log' \
   --exclude '/storage/' --exclude '/bootstrap/cache/*.php' \

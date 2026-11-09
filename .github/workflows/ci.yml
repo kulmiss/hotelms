@@ -165,7 +165,7 @@ jobs:
           for d in app/public app/private framework/cache/data framework/sessions framework/views logs; do
             grep -qx "hotelms/storage/$d/" list.txt || fail "Missing empty folder: storage/$d"
           done
-          bad=$(grep -E '^hotelms/(\.env$|\.phpunit|tests/|public/storage|bootstrap/cache/config\.php)|^hotelms/storage/.*[^/]$' list.txt | grep -v '/\.gitignore$' || true)
+          bad=$(grep -E '^hotelms/(\.env$|\.phpunit|phpunit\.xml|Dockerfile|docker/|tests/|public/storage|bootstrap/cache/config\.php)|^hotelms/storage/.*[^/]$' list.txt | grep -v '/\.gitignore$' || true)
           [ -z "$bad" ] || fail "Files from the work folder are in the package: $bad"
           grep -q '^hotelms/vendor/phpunit/' list.txt && fail "Developer packages (phpunit) are in the package"
           {
