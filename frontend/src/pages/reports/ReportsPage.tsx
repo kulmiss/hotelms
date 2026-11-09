@@ -72,8 +72,8 @@ export function ReportsPage() {
   const [params, setParams] = useSearchParams()
   const modules = me.data?.hotel?.modules ?? []
   const allowed = LIBRARY.filter((r) => r.perms.some((p) => can(p)) && (!r.module || modules.includes(r.module)))
-  // Everyone who may see it starts on the Overview (P18) – also the Accountant, who never starts on "My shift".
-  const first = allowed.some((r) => r.key === 'overview') ? 'overview' : allowed[0]?.key
+  // People who do not work the desk (e.g. the Accountant) start on the daily report, not on "My shift".
+  const first = !can('cashier.own_shift') && allowed.some((r) => r.key === 'daily') ? 'daily' : allowed[0]?.key
   const key = allowed.find((r) => r.key === params.get('report'))?.key ?? first
   const [f, setF] = useState<ReportFilters>(() => ({ from: presets()[0].from, to: presets()[0].to, compare: 'prev', branch_id: null }))
 

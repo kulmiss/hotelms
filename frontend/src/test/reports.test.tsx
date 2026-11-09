@@ -52,12 +52,11 @@ describe('personal and insight reports', () => {
     expect(screen.getAllByText('ETB 5,000.00').length).toBeGreaterThan(0)
   })
 
-  it('opens the Overview first, not "My shift", for people who may see the hotel numbers (Accountant)', async () => {
+  it('opens the daily report first for people who do not work the desk (Accountant)', async () => {
     const fetchMock = mockApi({ 'GET /me': { body: makeMe({}, ['reports.my_shift', 'reports.revenue']) } })
     renderApp('/reports')
-    await waitFor(() => expect(fetchMock.mock.calls.some(([u]) => String(u).includes('/reports/performance'))).toBe(true))
+    await waitFor(() => expect(fetchMock.mock.calls.some(([u]) => String(u).includes('/reports/daily'))).toBe(true))
     expect(fetchMock.mock.calls.some(([u]) => String(u).includes('/reports/my-shift'))).toBe(false)
-    expect(fetchMock.mock.calls.some(([u]) => String(u).includes('/reports/daily'))).toBe(false)
   })
 
   it('flags people in the staff audit', async () => {
