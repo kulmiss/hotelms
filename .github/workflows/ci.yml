@@ -179,7 +179,11 @@ jobs:
             echo ""; echo "storage/ (empty folders only):"; grep -E '^hotelms/storage/' list.txt | sort
             echo ""; echo "bootstrap/cache/:"; grep -E '^hotelms/bootstrap/cache/' list.txt | sort
             echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+          } > summary.md
+          cat summary.md >> "$GITHUB_STEP_SUMMARY"
+          cat summary.md   # also in the job log
+          echo "Everything outside vendor/ and public/assets/:"
+          grep -v -E '^hotelms/(vendor/.|public/assets/.)' list.txt | sort
           cp list.txt build/hotelms-contents.txt
       - uses: actions/upload-artifact@v4
         with:
