@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ChartCard, ROOM_COLORS, SERIES, WidgetBoundary, widgetState } from '@/components/charts/kit'
+import { ChartCard, KpiGrid, ROOM_COLORS, SERIES, WidgetBoundary, widgetState } from '@/components/charts/kit'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
@@ -37,7 +37,7 @@ export function OperationsTab({ f }: { f: DashFilters }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,150px),1fr))] gap-3">
+      <KpiGrid>
         {statuses.map(([s, n]) => (
           <button key={s} type="button" onClick={() => setRooms(s)} className="panel flex flex-col gap-1.5 p-4 text-left transition-colors hover:bg-sunken/40">
             <span className="flex items-center gap-2 text-[13px] font-medium text-muted">
@@ -50,7 +50,7 @@ export function OperationsTab({ f }: { f: DashFilters }) {
             </span>
           </button>
         ))}
-      </div>
+      </KpiGrid>
 
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,360px),1fr))] gap-4">
         {can('housekeeping.view') && (
