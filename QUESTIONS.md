@@ -81,5 +81,12 @@ No change (nothing to fold): Staff, Roles, Devices, Shifts, Housekeeping, Approv
 ## QA part 2 (8 Nov, evening)
 
 1. **Branch Manager and the currency list** – Settings → Currencies opened for a Branch Manager but the list gave 403, so the exchange-rate form never showed. `permissions.md` gives Branch Managers `settings.exchange_rates` ("update exchange rates only"). *Chose:* reading the currency list also works with `settings.exchange_rates`; adding / changing / removing currencies still needs `settings.money` (test added, #119). – Easy (one route).
-2. **Restaurant / Bar can open Reports by its address** (not in the menu). It shows "Your role has no reports", no data. *Recommend:* show the "You can't open this page" screen instead, like other blocked screens. Not changed yet – your call. – Easy.
+2. **[Done 9 Nov – #120]** **Restaurant / Bar can open Reports by its address** (not in the menu). It shows "Your role has no reports", no data. *Recommend:* show the "You can't open this page" screen instead, like other blocked screens. Not changed yet – your call. – Easy.
 3. **I reset the demo hotel once** during the re-check (the two demo approvals had already been decided in part 1, so there was nothing to approve). My earlier QA test data is gone; the demo hotel id is now 16. – —
+
+## P18 – Dashboards (9 Nov)
+
+1. **"Recent payments" ignores the branch filter** – the Revenue tab's last 8 payments come from `/payments`, which has no branch option, so they show all your branches even when one branch is picked (every other widget follows the filter). *Recommend:* add `branch_id` to `GET /payments` (server, one line + test), then the list follows the filter. Needs your OK (server change). – Easy.
+2. **Accountant's Reports start page** – he still opens on the Daily manager report (your answer of 8 Nov). Every other role allowed the new Overview starts there. *Recommend:* keep the Daily report for him; or he starts on the Overview too (one line). – Easy.
+3. **Docker dev server and `.env`** – to answer 8 requests at once, the backend runs with `--no-reload`, so after editing `backend/.env` you run `docker compose restart backend` (in `docs/local-setup.md`). Development only. – —
+4. **Charts load as one shared file** (118.3 KB gzip) the first time any dashboard screen opens, then they are reused. *Recommend:* keep (one download, cached). – —

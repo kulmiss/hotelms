@@ -363,3 +363,50 @@ Differences from §2: Restaurant / Bar still opens `/reports` by address ("Your 
 - LICENSE placeholders – must be filled before the final PR to `main`.
 - Restaurant / Bar → `/reports` by address (your call).
 - Things I cannot test (you check in person): password change, kiosk PIN, two-step sign-in, screen-lock unlock, session timeout, sign out / in. See the final report.
+
+## 9. Dashboards (P18) – check (9 Nov, morning)
+
+- **Code:** `p18/modules` @ `d9068ba` (= #121–#123, merged) in the owner's browser at `localhost:5173`; fixes found today are in **#124** (each one also tried in the page first).
+- **Hotel:** only Sheger Demo Hotel (id 16). Roles through Super Admin "log in as hotel" with a reason. No passwords typed, nothing saved (side sheets opened and closed only).
+
+### How it was checked
+`tools/pictures/dash-check.js` opened every dashboard screen and waited until it stopped changing, then recorded: sideways scroll, boxes sticking out, widget errors, charts drawn, "You can't open this page", money shown (ETB), tap targets under 44px (touch) and text under 4.5:1 contrast – in **light and dark**.
+- **Screens:** hotel dashboard (Overview, Revenue, Operations), Cashier shift, Housekeeping, Reports (Overview), Super Admin command center.
+- **Roles × sizes:** Hotel Admin, Branch Manager, Receptionist, Housekeeping, Accountant, Restaurant / Bar and Super Admin, each at **375 / 768 / 1024 / 1280 / 1920px**.
+
+### Result
+
+| Check | Result |
+|---|---|
+| Charts draw (Recharts) | ✓ every role and size; Operations tab uses plain bars by design |
+| Widget errors, crashes, console errors | ✓ none |
+| Text contrast | ✓ nothing under 4.5:1, light and dark |
+| Money hidden from staff without it | ✓ Receptionist and Housekeeping: no ETB on the dashboard, no Revenue tab, no Unpaid list (the server also leaves the money out – tests in #121). Receptionist's cashier page shows only her own shift |
+| Blocked screens | ✓ Housekeeping → Cashier, Accountant → Housekeeping, Restaurant / Bar → Cashier, Housekeeping and Reports: "You can't open this page" |
+| Restaurant / Bar start page | ✓ Charge a room, as designed |
+| Command center | ✓ demo hotel left out (1 real hotel); income shows its empty state until a hotel pays |
+| Side sheets | ✓ KPI sheet (day by day) opens with **View all →** the full report |
+| **New:** range / period buttons 42px on touch | ✗ → fixed in #124 (44px) |
+| **New:** Refresh on its own line under Filters (phones) | ✗ → fixed in #124 (next to Filters) |
+| **New:** whole page scrolled sideways at 768px (desk table) | ✗ → fixed in #124 |
+| **New:** 5 + 1 KPI cards at 1280px, 7 + 2 on the command center | ✗ → fixed in #124 (balanced rows) |
+| Accountant's Reports | ✓ open on the Daily manager report (owner's answer, 8 Nov); the Overview is one tap away |
+| **New:** daily report boxes spilled out at 1024px (older screen) | ✗ → fixed in #124 |
+
+### Speed (owner's PC, demo Hotel Admin, warm)
+
+| | Before (#119) | After (#120 + #124) |
+|---|---|---|
+| `/dashboard` alone | 282 ms | 188 ms |
+| `/smart/dashboard` alone | 266 ms | 68 ms |
+| All 12 dashboard requests at once | 1.05–1.15 s | 0.56–0.69 s |
+| Full page: dashboard data window | 1.9 s | 1.0 s |
+
+- The 2–5 s first loads came from the **Docker dev server answering one request at a time** (Laravel ignored `PHP_CLI_SERVER_WORKERS` without `--no-reload`, fixed in #124) plus Vite's dev start-up. cPanel / VPS answer requests in parallel.
+- The browser sends at most 6 requests at once to one address over HTTP/1.1 (the dev setup), so the page needs about 1.0 s locally; HTTP/2 on the live server removes that limit.
+- Big-hotel test in CI (160 rooms, 15,000 bookings): `/dashboard` 42 → 25 database questions.
+- **Chart code size:** Recharts and our chart parts are one shared file of **118.3 KB gzip** (`KpiCard-*.js` in the build), loaded the first time a dashboard screen opens (hotel dashboard, cashier, housekeeping, reports or command center) and then reused. Each screen's own file is under 30 KB. First download **257.4 KB gzip** (253.6 before P18). CI prints both on every PR.
+
+### Still open
+- "Recent payments" on the Revenue tab ignores the branch filter (server change – QUESTIONS.md "P18" 1).
+- The screenshots tool in the browser pane draws slowly at big sizes; numbers above come from the page itself, not from pictures.

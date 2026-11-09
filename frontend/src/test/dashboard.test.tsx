@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { kpiCols } from '@/components/charts/kit'
 import { rangeDates } from '@/lib/dashboard'
 import { healthOk, makeMe, mockApi } from './mockApi'
 import { renderApp } from './renderApp'
@@ -20,6 +21,16 @@ const leaving = {
   check_in_at: '2026-11-10T14:00:00+03:00', check_out_at: '2026-11-12T12:00:00+03:00', expires_at: null, rooms: [{ room_type: 'Standard', room_number: '405' }],
   adults: 2, children: 0, currency: 'ETB', total: '8855.00', paid_total: '4427.50', late: false, overdue: true, balance: '4427.50',
 }
+
+describe('KPI rows (P18)', () => {
+  it('never leaves one card alone on the last row', () => {
+    const cols = (n: number) => kpiCols(n).map((c) => Number(/grid-cols-(\d+)/.exec(c)![1]))
+    expect(cols(6)).toEqual([2, 3, 6]) // 6 → 2+2+2, 3+3 or one row; never 5+1 or 4+2
+    expect(cols(3)).toEqual([3]) // 1 per row on a phone, then 3
+    expect(cols(9)).toEqual([3, 5]) // 3+3+3 or 5+4, never 7+2
+    expect(cols(1)).toEqual([])
+  })
+})
 
 describe('hotel dashboard (P18)', () => {
   it('shows money KPIs, the Revenue tab and what needs attention to a manager', async () => {

@@ -6,7 +6,7 @@ import { CircleCheck, CircleX, PlusIcon, RefreshCw } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Donut } from '@/components/charts/charts'
 import { KpiCard } from '@/components/charts/KpiCard'
-import { BarList, ChartCard, Legend, SERIES, WidgetBoundary, useReducedMotion, widgetState } from '@/components/charts/kit'
+import { BarList, ChartCard, KpiGrid, Legend, SERIES, WidgetBoundary, useReducedMotion, widgetState } from '@/components/charts/kit'
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -64,9 +64,9 @@ export function AdminDashboardPage() {
         subtitle={t('admin.dash.subtitle')}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <div role="group" aria-label={t('dash.period')} className="flex h-9 overflow-hidden rounded-md border border-border pointer-coarse:h-11">
+            <div role="group" aria-label={t('dash.period')} className="flex h-9 overflow-hidden rounded-md border border-border pointer-coarse:h-auto">
               {PERIODS.map((p) => (
-                <button key={p} type="button" aria-pressed={period === p} onClick={() => setPeriod(p)} className={cn('px-3 text-sm font-medium transition-colors duration-150', period === p ? 'bg-primary text-primary-foreground' : 'hover:bg-sunken')}>
+                <button key={p} type="button" aria-pressed={period === p} onClick={() => setPeriod(p)} className={cn('px-3 text-sm font-medium transition-colors duration-150 pointer-coarse:min-h-11', period === p ? 'bg-primary text-primary-foreground' : 'hover:bg-sunken')}>
                   {t(`admin.cc.periods.${p}`)}
                 </button>
               ))}
@@ -89,7 +89,7 @@ export function AdminDashboardPage() {
       )}
       <SmartHints hints={smart.data?.data} />
 
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,160px),1fr))] gap-3">
+      <KpiGrid>
         <KpiCard loading={dash.isPending} label={t('admin.dash.totalHotels')} value={String(d?.hotels.total ?? '—')} sub={d ? t('admin.cc.hotelsSub', { trial: d.hotels.by_status.trial ?? 0, active: d.hotels.by_status.active ?? 0 }) : undefined} />
         <KpiCard
           loading={dash.isPending}
@@ -110,7 +110,7 @@ export function AdminDashboardPage() {
           />
         )}
         {d?.today && <KpiCard label={t('admin.dash.occupancyTonight')} value={`${d.today.occupancy}%`} sub={t('hotelTabs.roomsLine', { occupied: d.today.occupied, rooms: d.today.rooms })} />}
-      </div>
+      </KpiGrid>
 
       {d && d.hotels.total === 0 && (
         <Card className="flex flex-col items-start gap-3 p-8">

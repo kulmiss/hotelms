@@ -69,7 +69,7 @@ export function DailyReport({ branchId }: { branchId?: number | null }) {
             <Tile label={t('reports.kpis.payments')} value={money(d.kpis.payments, d.currency)} sub={<Delta value={change(d.kpis.payments, d.last_week.payments)} />} />
           </div>
           <p className="text-xs text-muted">{t('insights.vsLastWeek')}</p>
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,240px),1fr))] gap-4">
             <Card className="flex flex-col gap-1 text-sm">
               <h4 className="text-sm font-semibold">{t('insights.rooms')}</h4>
               <Row label={t('insights.arrived')} value={d.arrivals} />
@@ -410,7 +410,7 @@ export function MyShiftReport() {
         <Tile label={t('insights.walkIns')} value={String(d.walk_ins)} />
         <Tile label={t('insights.bookingsMade')} value={String(d.bookings)} />
       </div>
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,240px),1fr))] gap-4">
         <Card className="flex flex-col gap-1 text-sm">
           <h4 className="text-sm font-semibold">{t('insights.paymentsTaken')}</h4>
           {d.payments.map((p) => (

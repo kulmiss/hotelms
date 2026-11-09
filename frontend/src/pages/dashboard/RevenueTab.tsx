@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { RevenuePaymentsChart } from '@/components/charts/charts'
 import { KpiCard } from '@/components/charts/KpiCard'
-import { BarList, ChartCard, SERIES, WidgetBoundary, widgetState } from '@/components/charts/kit'
+import { BarList, ChartCard, KpiGrid, SERIES, WidgetBoundary, widgetState } from '@/components/charts/kit'
 import { Badge } from '@/components/ui/Badge'
 import { api } from '@/lib/api'
 import { useMe } from '@/lib/auth'
@@ -50,14 +50,14 @@ export function RevenueTab({ f }: { f: DashFilters }) {
   return (
     <div className="flex flex-col gap-4">
       {reports && (
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,170px),1fr))] gap-3">
+        <KpiGrid>
           {kpi('revenue', t('dash.kpi.revenue'))}
           {kpi('room_revenue', t('dash.kpi.roomRevenue'))}
           {kpi('extras', t('dash.kpi.extras'))}
           {kpi('payments', t('dash.kpi.moneyTaken'))}
           {kpi('tax', t('dash.kpi.tax'))}
           {unpaid.data && <KpiCard label={t('dash.kpi.outstanding')} value={fmt(addMoney(...unpaidRows.map((r) => r.balance)))} sub={t('dash.bills', { count: unpaidRows.length })} />}
-        </div>
+        </KpiGrid>
       )}
 
       <WidgetBoundary title={t('dash.revPay')}>
