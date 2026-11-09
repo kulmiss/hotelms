@@ -1,0 +1,54 @@
+# HotelMS – production compose file for the VPS Docker option (deploy-guide/vps.md, option A).
+# Put this file, Dockerfile, 99-hotelms.ini and db.env in /opt/hotelms-docker, then: docker compose -f docker-compose.prod.yml up -d --build
+# Nginx and Certbot run on the server itself (not in Docker); they send PHP requests to 127.0.0.1:9000.
+# UNTESTED in this guide's workspace (no Docker daemon there) – see vps.md "What was tested".
+name: hotelms
+
+services:
+  app:
+    build: .
+    image: hotelms-php:8.3
+    restart: unless-stopped
+    # The whole /var/www folder, so the "current release" link resolves the same inside and outside the container.
+    volumes:
+      - /var/www:/var/www
+      - /var/backups/hotelms:/var/backups/hotelms
+    ports:
+      - '127.0.0.1:9000:9000'   # only reachable from the server itself – never use 0.0.0.0 here
+    depends_on:
+      mysql: { condition: service_healthy }
+      redis: { condition: service_started }
+
+  scheduler:
+    image: hotelms-php:8.3
+    restart: unless-stopped
+    user: www-data
+    working_dir: /var/www/hotelms
+    # The same as the project's development "scheduler" service: runs the schedule every minute (no cron line needed).
+    command: ['php', 'artisan', 'schedule:work']
+    volumes:
+      - /var/www:/var/www
+      - /var/backups/hotelms:/var/backups/hotelms
+    depends_on:
+      app: { condition: service_started }
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    env_file: db.env          # MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD"']
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    # No "ports": the database is only reachable by the app containers.
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ['redis-server', '--save', '', '--appendonly', 'no']   # cache and sessions only: nothing to keep on disk
+
+volumes:
+  mysql-data:

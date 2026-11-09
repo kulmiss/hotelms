@@ -1,0 +1,13 @@
+# Runs hotelms-scheduler.service at the start of every minute.
+#   sudo cp hotelms-scheduler.* /etc/systemd/system/ && sudo systemctl daemon-reload
+#   sudo systemctl enable --now hotelms-scheduler.timer && systemctl list-timers | grep hotelms
+[Unit]
+Description=Run the HotelMS scheduler every minute
+
+[Timer]
+OnCalendar=*-*-* *:*:00
+AccuracySec=1s
+Persistent=true
+
+[Install]
+WantedBy=timers.target
