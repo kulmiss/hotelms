@@ -70,11 +70,9 @@ export function DeskLists({ f, tab: wanted, setTab, onStay, onInvoice }: { f: Da
       state={widgetState(q, has)}
       onRetry={() => q.refetch()}
       emptyText={t(`dash.desk.empty.${tab}`)}
-      bodyClassName="p-0"
+      bodyClassName="p-0 pt-3"
+      toolbar={<Tabs label={t('dash.desk.title')} active={tab} onChange={(k) => setTab(k as Tab)} items={tabs.map((k) => ({ key: k, label: `${t(`dash.desk.tabs.${k}`)} ${count(k)}` }))} />}
     >
-      <div className="px-4 pb-3">
-        <Tabs label={t('dash.desk.title')} active={tab} onChange={(k) => setTab(k as Tab)} items={tabs.map((k) => ({ key: k, label: `${t(`dash.desk.tabs.${k}`)} ${count(k)}` }))} />
-      </div>
       {tab === 'unpaid' ? (
         <UnpaidRows rows={unpaid.data?.data.rows ?? []} onInvoice={onInvoice} />
       ) : (

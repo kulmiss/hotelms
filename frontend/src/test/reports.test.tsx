@@ -17,7 +17,7 @@ describe('dashboard and reports', () => {
     })
     renderApp('/')
     expect(await screen.findByText('Arriving · leaving today')).toBeInTheDocument()
-    expect(screen.getByText('4 · 2')).toBeInTheDocument()
+    expect(await screen.findByText('4 · 2')).toBeInTheDocument()
     expect(await screen.findByText('Unpaid bookings expiring')).toBeInTheDocument()
     expect(screen.getAllByText('ETB 3,000.00').length).toBeGreaterThan(0)
   })
