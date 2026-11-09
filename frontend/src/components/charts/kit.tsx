@@ -24,8 +24,8 @@ export const ROOM_COLORS: Record<string, string> = {
 
 /**
  * Columns for a row of KPI cards, by the free width (container query) and the number of cards, so a row
- * never ends with one lonely card: 6 cards go 1 → 2 → 3 → 6 per row, 3 cards 1 → 3, 9 cards 1 → 2 → 5.
- * A count of columns is used when it divides the cards evenly or leaves the last row at most one short.
+ * never ends with one lonely card: 6 cards go 1 → 2 → 3 → 6 per row, 3 cards 1 → 3, 9 cards 1 → 3 → 5.
+ * A count of columns is used when it divides the cards evenly, or the last row is at most one short and still has 2+.
  * About 190px per card. Written out in full so Tailwind sees every class.
  */
 const KPI_COLS: Record<number, string> = {
@@ -40,7 +40,7 @@ const KPI_COLS: Record<number, string> = {
 
 export function kpiCols(count: number): string[] {
   const out: string[] = []
-  for (let c = 2; c <= Math.min(count, 8); c++) if (count % c === 0 || count % c >= c - 1) out.push(KPI_COLS[c])
+  for (let c = 2; c <= Math.min(count, 8); c++) if (count % c === 0 || (count % c >= c - 1 && count % c >= 2)) out.push(KPI_COLS[c])
   return out
 }
 

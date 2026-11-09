@@ -27,7 +27,7 @@ describe('KPI rows (P18)', () => {
     const cols = (n: number) => kpiCols(n).map((c) => Number(/grid-cols-(\d+)/.exec(c)![1]))
     expect(cols(6)).toEqual([2, 3, 6]) // 6 → 2+2+2, 3+3 or one row; never 5+1 or 4+2
     expect(cols(3)).toEqual([3]) // 1 per row on a phone, then 3
-    expect(cols(9)).toEqual([2, 5]) // 5+4, never 7+2
+    expect(cols(9)).toEqual([3, 5]) // 3+3+3 or 5+4, never 7+2
     expect(cols(1)).toEqual([])
   })
 })

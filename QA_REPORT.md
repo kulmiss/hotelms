@@ -390,7 +390,7 @@ Differences from §2: Restaurant / Bar still opens `/reports` by address ("Your 
 | **New:** Refresh on its own line under Filters (phones) | ✗ → fixed in #124 (next to Filters) |
 | **New:** whole page scrolled sideways at 768px (desk table) | ✗ → fixed in #124 |
 | **New:** 5 + 1 KPI cards at 1280px, 7 + 2 on the command center | ✗ → fixed in #124 (balanced rows) |
-| **New:** Accountant's Reports opened on the daily report, not the Overview | ✗ → fixed in #124 |
+| Accountant's Reports | ✓ open on the Daily manager report (owner's answer, 8 Nov); the Overview is one tap away |
 | **New:** daily report boxes spilled out at 1024px (older screen) | ✗ → fixed in #124 |
 
 ### Speed (owner's PC, demo Hotel Admin, warm)
