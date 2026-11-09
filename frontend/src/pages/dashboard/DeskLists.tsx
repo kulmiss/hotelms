@@ -123,7 +123,7 @@ function StayRows({ rows, kind, showBranch, onStay }: { rows: TodayRow[]; kind: 
         ))}
       </ul>
       {/* Bigger screens: a table; a row opens the booking in the side sheet. */}
-      <div className="hidden overflow-x-auto sm:block">
+      <div className="relative hidden overflow-x-auto sm:block">
         <table className="w-full min-w-[720px] text-sm">
           <thead>
             <tr className="text-left text-xs text-muted">
