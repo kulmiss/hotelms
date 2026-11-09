@@ -7,6 +7,7 @@ use App\Models\ChargeType;
 use App\Models\Guest;
 use App\Models\Hotel;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Plan;
 use App\Models\Room;
@@ -358,7 +359,7 @@ class FrontDeskTest extends TestCase
         $piassa = Branch::factory()->for($this->hotel)->create(['name' => 'Piassa', 'code' => 'PS']);
         $this->inHotel(function () use ($piassa) {
             foreach ([[$this->branch->id, '100.00'], [$piassa->id, '250.00']] as [$branchId, $amount]) {
-                \App\Models\Payment::forceCreate(['branch_id' => $branchId, 'payment_method_id' => $this->cash, 'type' => 'payment', 'amount' => $amount,
+                Payment::forceCreate(['branch_id' => $branchId, 'payment_method_id' => $this->cash, 'type' => 'payment', 'amount' => $amount,
                     'currency' => 'ETB', 'amount_in_base' => $amount, 'paid_at' => now()]);
             }
         });
