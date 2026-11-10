@@ -59,12 +59,18 @@ The demo never sends emails or Telegram messages, and is left out of platform re
 
 ## Checks (CI)
 
-`.github/workflows/ci.yml` runs on every pull request:
+Three workflows in `.github/workflows/`. Each runs on a pull request **only when its files change** (to save
+GitHub Actions minutes – a PR that changes only documentation runs none of them). Each can also be started by hand:
+GitHub → Actions → the workflow → **Run workflow**. Nothing runs again after a merge to `main` (the PR was tested).
 
-1. **Backend** (on MySQL 8.4): `composer audit`, Pint (fixes style and pushes a "Code style (fixed by CI)" commit
-   on PRs – run `git pull --rebase` before your next push), `php artisan test`, then the **speed test**
-   `php artisan test tests/Performance` (big hotel; prints the slowest screens and the slowest database query of each).
-2. **Frontend**: `npm audit`, lint, typecheck, `vitest`, build.
+1. **Backend** (`backend.yml`, when `backend/` changes; on MySQL 8.4): `composer audit`, Pint (fixes style and pushes
+   a "Code style (fixed by CI)" commit on PRs – run `git pull --rebase` before your next push), migrations back and
+   forward, `php artisan test`, then the **speed test** `php artisan test tests/Performance` (big hotel; prints the
+   slowest screens and the slowest database query of each).
+2. **Frontend** (`frontend.yml`, when `frontend/` changes): `npm audit`, lint, typecheck, `vitest`, build, first-download size.
+3. **Package** (`package.yml`, when `deploy/`, `frontend/`, `backend/public/` or `backend/composer.*` change): builds
+   `hotelms.zip` with `deploy/package.sh` and checks it (staff-guide pictures in, work-folder files out); the zip is
+   kept 7 days (the run → Artifacts → `hotelms-package`).
 
 A PR is merged only when all checks are green. Never push to `main`: work on a branch, open a PR, the owner merges.
 
