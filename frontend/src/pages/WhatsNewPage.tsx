@@ -19,7 +19,7 @@ export function WhatsNewPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <PageHeader title={t('whatsNew.title')} subtitle={q.data ? t('whatsNew.version', { version: q.data.version }) : undefined} />
-      {q.data?.data.length === 0 && <p className="text-[13px] text-muted">{t('whatsNew.none')}</p>}
+      {q.data?.data.length === 0 && <p className="text-sm text-muted">{t('whatsNew.none')}</p>}
       <ul className="flex flex-col gap-3">
         {q.data?.data.map((r) => (
           <li key={r.id}>
@@ -28,7 +28,7 @@ export function WhatsNewPage() {
                 {r.version} · {date(r.published_at?.slice(0, 10) ?? null)}
               </p>
               <h2 className="text-sm font-semibold">{r.title}</h2>
-              <p className="text-[13px] whitespace-pre-wrap">{r.body}</p>
+              <p className="text-sm whitespace-pre-wrap">{r.body}</p>
             </Card>
           </li>
         ))}

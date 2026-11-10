@@ -14,11 +14,15 @@ docker compose up             # other times
 | Service | Address | What |
 |---|---|---|
 | frontend | http://localhost:5173 | React dev server (hot reload) |
-| backend | http://localhost:8000/api/v1/health | Laravel (`php artisan serve`) |
+| backend | http://localhost:8000/api/v1/health | Laravel (`php artisan serve --no-reload`, 8 workers) |
 | scheduler | – | runs `php artisan schedule:work` (the cron jobs) |
 | mysql | localhost:3306 | MySQL 8.4 (data in the `mysql-data` volume) |
 | redis | localhost:6379 | optional |
 | mailpit | http://localhost:8025 | every email the app sends lands here |
+
+The backend answers 8 requests at the same time (`PHP_CLI_SERVER_WORKERS`). Laravel only does that with `--no-reload`,
+so it no longer restarts by itself when `backend/.env` changes: run `docker compose restart backend` after editing `.env`.
+(Code changes still show at once.)
 
 The `docs/` folder is mounted into the backend container (read-only), so Super Admin → Developer docs shows your latest edits.
 
@@ -39,6 +43,8 @@ docker compose exec frontend npm test                  # frontend tests
 docker compose exec frontend npm run lint
 docker compose exec frontend npm run typecheck
 ```
+
+The demo hotel runs no automations (no messages), so the reset also makes **approvals waiting** to try: two or three price suggestions and, when there is a cancelled paid booking, a refund (`DemoHistory::approvals`).
 
 Other artisan commands: see [backend.md → Commands](backend.md#commands).
 

@@ -17,6 +17,7 @@ use App\Support\Money;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /** Every report number is checked against known data (build-plan.md risk 4). */
@@ -145,6 +146,74 @@ class ReportsTest extends TestCase
         $csv = $this->get('/api/v1/reports/performance?from=2026-11-12&to=2026-11-14&format=csv')->assertOk()->getContent();
         $this->assertStringContainsString('2026-11-13', (string) $csv);
         $this->assertStringStartsWith('PK', $this->get('/api/v1/reports/tax?from=2026-11-01&to=2026-11-30&format=xlsx')->assertOk()->getContent());
+    }
+
+    public function test_dashboard_booking_pace_and_few_database_questions(): void
+    {
+        // QA #120 speed: the 7-day pace is one question, revenue today is not a full KPI set, rooms are counted once.
+        $this->at('2026-11-12 16:00');
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $data = $this->getJson('/api/v1/dashboard')->assertOk()->json('data');
+        $queries = count(DB::getQueryLog());
+        DB::disableQueryLog();
+
+        $this->assertCount(7, $data['next_7_days']);
+        $this->assertEquals(['date' => '2026-11-12', 'occupancy' => 50], $data['next_7_days'][0]); // 1 of 2 rooms booked tonight
+        $this->assertEquals(['date' => '2026-11-13', 'occupancy' => 50], $data['next_7_days'][1]); // the cancelled booking does not count
+        $this->assertEquals(['date' => '2026-11-14', 'occupancy' => 0], $data['next_7_days'][2]); // check-out day
+        $this->assertLessThan(40, $queries, "The dashboard asked the database $queries times.");
+    }
+
+    public function test_dashboard_trend_sends_money_only_to_roles_allowed_to_see_it(): void
+    {
+        $this->at('2026-11-15 10:00');
+        $money = ['revenue', 'room_revenue', 'adr', 'revpar', 'payments'];
+        $user = function (string $role) {
+            $u = User::factory()->withRole($this->hotel, $role)->create();
+            $u->branches()->attach($this->branch->id);
+
+            return $u;
+        };
+        $url = '/api/v1/dashboard/trend?from=2026-11-12&to=2026-11-14';
+
+        // Hotel Admin: counts + money.
+        $rows = $this->actingAs($this->admin)->getJson($url)->assertOk()->assertJsonPath('rooms', 2)->json('data');
+        $this->assertCount(3, $rows);
+        $this->assertSame([1, 0, 0], array_column($rows, 'arrivals')); // the cancelled booking is not an arrival
+        $this->assertSame([0, 0, 1], array_column($rows, 'departures'));
+        $this->assertSame([1, 1, 0], array_column($rows, 'in_house'));
+        foreach ($money as $k) {
+            $this->assertArrayHasKey($k, $rows[0]);
+        }
+
+        // Branch Manager and Accountant have dashboard.view_revenue: money too.
+        foreach (['branch_manager', 'accountant'] as $role) {
+            $rows = $this->actingAs($user($role))->getJson($url)->assertOk()->json('data');
+            $this->assertArrayHasKey('revenue', $rows[0], $role);
+        }
+
+        // Receptionist: the same counts, and NO money field at all (not just hidden on screen).
+        $res = $this->actingAs($user('receptionist'))->getJson($url)->assertOk();
+        $this->assertSame([1, 1, 0], array_column($res->json('data'), 'in_house'));
+        foreach ($money as $k) {
+            $this->assertArrayNotHasKey($k, $res->json('data.0'), "receptionist got $k");
+        }
+        $this->assertStringNotContainsString('revenue', $res->getContent());
+
+        // No dashboard at all: Housekeeping and Restaurant / Bar.
+        foreach (['housekeeping', 'restaurant'] as $role) {
+            $this->actingAs($user($role))->getJson($url)->assertForbidden();
+        }
+    }
+
+    public function test_dashboard_pace_covers_14_days(): void
+    {
+        $this->at('2026-11-12 16:00');
+        $data = $this->getJson('/api/v1/dashboard')->assertOk()->json('data');
+        $this->assertCount(14, $data['next_days']);
+        $this->assertSame('2026-11-25', $data['next_days'][13]['date']);
+        $this->assertSame(array_slice($data['next_days'], 0, 7), $data['next_7_days']);
     }
 
     public function test_dashboard_today(): void

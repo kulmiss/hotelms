@@ -25,7 +25,9 @@ export type CashierSession = {
   payments?: { id: number; type: string; amount: string; currency: string; method: string | null; reservation: { id: number; code: string } | null; paid_at: string }[]
 }
 
-export const useCurrentShift = () => useQuery({ queryKey: ['cashier', 'current'], queryFn: () => api<{ data: CashierSession | null }>('/cashier/current'), refetchInterval: 30_000 })
+/** The signed-in person's own open shift. Only asked for when the role has `cashier.own_shift` (an accountant sees all shifts but has none). */
+export const useCurrentShift = (enabled = true) =>
+  useQuery({ queryKey: ['cashier', 'current'], queryFn: () => api<{ data: CashierSession | null }>('/cashier/current'), refetchInterval: 30_000, enabled })
 export const useShifts = (f: { status?: string; short?: boolean; page?: number; from?: string; to?: string; per_page?: number; sort?: string; dir?: string }) =>
   useQuery({ queryKey: ['cashier', 'list', f], queryFn: () => api<Page<CashierSession>>(`/cashier/sessions?${new URLSearchParams(Object.entries(f).filter(([, v]) => v).map(([k, v]) => [k, String(v)]))}`), placeholderData: keepPreviousData })
 

@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { Badge, type Tone } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
+import { CollapsibleToolbar } from '@/components/ui/CollapsibleToolbar'
 import { Bars } from '@/components/ui/Delta'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatusBadge } from '@/components/ui/StatusBadge'
@@ -41,7 +42,7 @@ export function PlatformReportsPage() {
               ] as const
             ).map(([k, v]) => (
               <Card key={k} className="flex flex-col gap-1 p-4">
-                <span className="text-[13px] text-muted">{t(`admin.reports.${k}`)}</span>
+                <span className="text-sm text-muted">{t(`admin.reports.${k}`)}</span>
                 <span className="text-xl font-semibold tabular-nums">{v}</span>
               </Card>
             ))}
@@ -52,7 +53,7 @@ export function PlatformReportsPage() {
               {currencies.length > 1 && (
                 <div className="flex gap-1">
                   {currencies.map((c) => (
-                    <button key={c} type="button" aria-pressed={cur === c} onClick={() => setCurrency(c)} className={cn('min-h-touch rounded-lg px-2.5 text-xs font-medium', cur === c ? 'bg-sunken ring-1 ring-ring' : 'text-muted')}>
+                    <button key={c} type="button" aria-pressed={cur === c} onClick={() => setCurrency(c)} className={cn('min-h-touch rounded-lg px-2.5 text-xs font-medium', cur === c ? 'bg-sunken border' : 'text-muted')}>
                       {c}
                     </button>
                   ))}
@@ -64,7 +65,7 @@ export function PlatformReportsPage() {
               items={p.income.map((m) => ({ key: m.month, label: m.month, value: Number((m.totals as Record<string, string>)[cur] ?? 0) }))}
               format={(v) => money(v.toFixed(2), cur)}
             />
-            <table className="w-full text-left text-[13px]">
+            <table className="w-full text-left text-sm">
               <tbody>
                 {[...p.income].reverse().slice(0, 3).flatMap((m) =>
                   m.by_plan.map((b) => (
@@ -83,7 +84,7 @@ export function PlatformReportsPage() {
             <Card className="flex flex-col gap-2">
               <h2 className="text-sm font-semibold">{t('admin.reports.byStatus')}</h2>
               {Object.entries(statuses).map(([s, c]) => (
-                <div key={s} className="flex items-center justify-between text-[13px]">
+                <div key={s} className="flex items-center justify-between text-sm">
                   <StatusBadge status={s} />
                   <span className="tabular-nums">{c}</span>
                 </div>
@@ -91,9 +92,9 @@ export function PlatformReportsPage() {
             </Card>
             <Card className="flex flex-col gap-2">
               <h2 className="text-sm font-semibold">{t('admin.reports.trialsEnding')}</h2>
-              {p.trials_ending.length === 0 && <p className="text-[13px] text-muted">{t('reports.nothing')}</p>}
+              {p.trials_ending.length === 0 && <p className="text-sm text-muted">{t('reports.nothing')}</p>}
               {p.trials_ending.map((x) => (
-                <Link key={x.id} to={`/admin/hotels/${x.id}`} className="flex justify-between text-[13px] hover:text-accent-text">
+                <Link key={x.id} to={`/admin/hotels/${x.id}`} className="flex justify-between text-sm hover:text-accent-text">
                   <span className="font-medium">{x.name}</span>
                   <span className="text-muted">{date(x.trial_ends_at)}</span>
                 </Link>
@@ -106,22 +107,30 @@ export function PlatformReportsPage() {
         <Card className="flex flex-col gap-3 overflow-x-auto p-0">
           <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-4">
             <h2 className="text-sm font-semibold">{t('admin.reports.health')}</h2>
-            <div className="flex flex-wrap gap-1.5">
-              {HEALTH.map((k) => (
-                <button
-                  key={k}
-                  type="button"
-                  aria-pressed={filter === k}
-                  onClick={() => setFilter(filter === k ? null : k)}
-                  className={cn('min-h-touch rounded-full px-3 text-[13px] font-medium ring-1 transition duration-75', filter === k ? 'bg-accent text-on-accent ring-accent' : 'bg-surface text-muted ring-ring hover:bg-sunken')}
-                >
-                  {t(`admin.reports.healthStates.${k}`)} · {counts[k] ?? 0}
-                </button>
-              ))}
-            </div>
+            {/* Phones and tablets (P19): the health choices fold behind "Filters". */}
+            <CollapsibleToolbar
+              id="platform-health"
+              active={filter ? [{ key: 'health', label: t(`admin.reports.healthStates.${filter}`), onRemove: () => setFilter(null) }] : []}
+              onClearAll={() => setFilter(null)}
+              className="w-full"
+            >
+              <div className="flex flex-wrap gap-1.5">
+                {HEALTH.map((k) => (
+                  <button
+                    key={k}
+                    type="button"
+                    aria-pressed={filter === k}
+                    onClick={() => setFilter(filter === k ? null : k)}
+                    className={cn('min-h-touch rounded-full px-3 text-sm font-medium border shadow-xs transition-colors', filter === k ? 'border-primary bg-primary text-primary-foreground' : 'bg-background text-muted hover:bg-sunken dark:bg-input/30')}
+                  >
+                    {t(`admin.reports.healthStates.${k}`)} · {counts[k] ?? 0}
+                  </button>
+                ))}
+              </div>
+            </CollapsibleToolbar>
           </div>
           <p className="px-4 text-xs text-muted">{t('admin.reports.healthHelp')}</p>
-          <table className="w-full min-w-[720px] text-left text-[13px]">
+          <table className="w-full min-w-[720px] text-left text-sm">
             <thead className="text-muted">
               <tr>
                 <th className="px-4 py-1.5 font-medium">{t('admin.reports.hotel')}</th>

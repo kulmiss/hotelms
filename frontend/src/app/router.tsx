@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
-import { createBrowserRouter, Navigate, Outlet } from 'react-router'
+import { createBrowserRouter, Navigate, Outlet, useLocation } from 'react-router'
 import { AppShell } from '@/components/layout/AppShell'
 import { ProgressBar } from '@/components/layout/ProgressBar'
 import { RequireAuth } from '@/components/layout/RequireAuth'
@@ -9,9 +9,10 @@ import { useFrontDeskMode } from '@/lib/frontDeskMode'
 import { RouteError } from '@/components/layout/RouteError'
 import { ChangePasswordPage } from '@/pages/ChangePasswordPage'
 import { LoginPage } from '@/pages/LoginPage'
+import { NoAccessPage } from '@/pages/NoAccessPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
-import { mainNav } from './navigation'
+import { adminNav, mainNav, REPORTS_PERMISSIONS } from './navigation'
 import { pages } from './prefetch'
 
 const DashboardPage = lazy(() => pages.dashboard().then((m) => ({ default: m.DashboardPage })))
@@ -110,13 +111,17 @@ function HomeRedirect() {
 /** Hotel screens: only for users whose role has the permission. */
 function RequirePermission({ permission }: { permission: string | string[] }) {
   const can = useCan()
-  return can(permission) ? <Outlet /> : <Navigate to="/" replace />
+  return can(permission) ? <Outlet /> : <NoAccessPage />
 }
 
-/** Only HotelMS team members may open /admin. */
+/** Only HotelMS team members may open /admin; a page with a team permission also needs it (same rule as the sidebar). */
 function RequireSuperAdmin() {
   const me = useMe()
-  return me.data?.user.is_super_admin ? <Outlet /> : <Navigate to="/" replace />
+  const { pathname } = useLocation()
+  if (!me.data?.user.is_super_admin) return <NoAccessPage />
+  const item = adminNav.filter((i) => i.path !== '/admin' && (pathname === i.path || pathname.startsWith(`${i.path}/`)))[0]
+  const allowed = !item?.permission || [item.permission].flat().some((p) => me.data?.platform?.permissions.includes(p))
+  return allowed ? <Outlet /> : <NoAccessPage />
 }
 
 export const routes = [
@@ -161,7 +166,11 @@ export const routes = [
               ...mainNav
                 .filter((item) => !item.built)
                 .map((item) => ({ path: item.path.slice(1), element: <PlaceholderPage item={item} /> })),
-              { path: 'reports', element: page(<ReportsPage />) },
+              {
+                // A role with no report at all gets the no-access screen (QA #120), like every other blocked screen.
+                element: <RequirePermission permission={REPORTS_PERMISSIONS} />,
+                children: [{ path: 'reports', element: page(<ReportsPage />) }],
+              },
               {
                 element: <RequirePermission permission={['cashier.own_shift', 'cashier.view_all']} />,
                 children: [{ path: 'cashier', element: page(<CashierPage />) }],
@@ -231,13 +240,16 @@ export const routes = [
                 element: <RequirePermission permission="staff.view" />,
                 children: [
                   { path: 'staff', element: page(<StaffPage />) },
-                  { path: 'staff/new', element: page(<StaffFormPage />) },
                   { path: 'staff/:id', element: page(<StaffFormPage />) },
                 ],
               },
               {
                 element: <RequirePermission permission="staff.manage" />,
-                children: [{ path: 'devices', element: page(<DevicesPage />) }],
+                children: [
+                  { path: 'devices', element: page(<DevicesPage />) },
+                  // Adding staff needs staff.manage (the server checks it too); staff.view alone may only look.
+                  { path: 'staff/new', element: page(<StaffFormPage />) },
+                ],
               },
               {
                 element: <RequirePermission permission="roles.manage" />,

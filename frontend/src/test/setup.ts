@@ -13,6 +13,17 @@ afterEach(() => {
   document.documentElement.classList.remove('dark')
 })
 
+// jsdom lacks what Radix UI and cmdk use (menus, tooltips, the command menu).
+class NoResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+window.ResizeObserver ??= NoResizeObserver as unknown as typeof ResizeObserver
+Element.prototype.scrollIntoView ??= function () {}
+Element.prototype.hasPointerCapture ??= () => false
+Element.prototype.releasePointerCapture ??= () => {}
+
 // jsdom has no matchMedia.
 if (!window.matchMedia) {
   window.matchMedia = (query: string) =>

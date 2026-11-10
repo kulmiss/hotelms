@@ -14,11 +14,14 @@ export class ApiError extends Error {
   readonly status: number
   readonly code?: string
   readonly errors: Record<string, string[]>
+  /** The whole answer (e.g. `existing_task_id` when a room already has that open task). */
+  readonly body: unknown
 
   constructor(status: number, message: string, body: unknown) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    this.body = body
     const b = (body ?? {}) as { code?: string; errors?: Record<string, string[]> }
     this.code = b.code
     this.errors = b.errors ?? {}
@@ -40,22 +43,76 @@ export async function prepareSession(): Promise<void> {
   await fetch(ROOT + '/sanctum/csrf-cookie', { credentials: 'include' })
 }
 
-export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+/**
+ * A change sent twice while the first is still on its way (double-click / double tap, often on a slow network) is
+ * sent once: the second caller gets the first answer (QA 8 Nov: a double-click on "Add guest" made two guests).
+ * Only exactly the same change (method, address and data) at the same time; one after the other is sent again.
+ */
+const inFlight = new Map<string, Promise<unknown>>()
+
+export function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const method = (init.method ?? 'GET').toUpperCase()
+  if (method === 'GET' || (init.body !== undefined && typeof init.body !== 'string')) return send<T>(path, init)
+  const key = `${method} ${path} ${init.body ?? ''}`
+  const running = inFlight.get(key)
+  if (running) return running as Promise<T>
+  const p = send<T>(path, init).finally(() => inFlight.delete(key))
+  inFlight.set(key, p)
+  return p
+}
+
+/**
+ * Saved once (owner, QA 8 Nov): every change is one submission with its own Idempotency-Key (a new UUID per call
+ * of `api()` – a form submit, a tap). When the network fails or the server says "still being saved", the SAME
+ * submission is sent again with the SAME key, so the server returns the first answer instead of saving twice.
+ * Money forms may pass their own key (`useMoneyAction`), kept until the payment is saved.
+ */
+const RETRY_NETWORK_MS = [1000, 3000]
+const RETRY_BUSY_MS = [1500, 3000, 5000]
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+async function send<T>(path: string, init: RequestInit = {}): Promise<T> {
   // Offline: nothing can be changed (read-only copy). The form keeps what was typed.
   if ((init.method ?? 'GET') !== 'GET' && typeof navigator !== 'undefined' && navigator.onLine === false) {
     throw new ApiError(0, i18n.t('offline.cannotChange'), { code: 'offline' })
   }
-  const token = xsrfToken()
-  const res = await fetch(BASE + path, {
-    ...init,
-    credentials: 'include',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      ...(token ? { 'X-XSRF-TOKEN': token } : {}),
-      ...init.headers,
-    },
-  })
+  const method = (init.method ?? 'GET').toUpperCase()
+  const given = new Headers(init.headers).get('Idempotency-Key')
+  const key = method !== 'GET' ? (given ?? newIdempotencyKey()) : null
+  const attempt = () => {
+    const token = xsrfToken()
+    return fetch(BASE + path, {
+      ...init,
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        ...(token ? { 'X-XSRF-TOKEN': token } : {}),
+        ...init.headers,
+        ...(key ? { 'Idempotency-Key': key } : {}),
+      },
+    })
+  }
+  let res!: Response
+  for (let i = 0; ; i++) {
+    try {
+      res = await attempt()
+    } catch (e) {
+      // Network dropped or timed out: send the same submission again (same key), never a new one.
+      if (!key || i >= RETRY_NETWORK_MS.length || (typeof navigator !== 'undefined' && navigator.onLine === false)) throw e
+      await wait(RETRY_NETWORK_MS[i])
+      continue
+    }
+    // The first try is still being saved on the server (a retry or a second tab with the same key): wait for it.
+    if (key && res.status === 409 && i < RETRY_BUSY_MS.length) {
+      const peek = (await res.clone().json().catch(() => null)) as { code?: string } | null
+      if (peek?.code === 'busy') {
+        await wait(RETRY_BUSY_MS[i])
+        continue
+      }
+    }
+    break
+  }
   const body: unknown = await res.json().catch(() => null)
   // More than the guest owes (often a typing mistake): ask, then send again with "yes" (owner, 2026-11-07).
   const overpay = res.status === 422 ? (body as { errors?: Record<string, string[]> } | null)?.errors?.confirm_overpay?.[0] : undefined

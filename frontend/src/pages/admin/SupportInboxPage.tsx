@@ -2,7 +2,7 @@ import { dateTime } from '@/lib/format'
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { PhoneIcon } from '@heroicons/react/20/solid'
+import { PhoneIcon } from 'lucide-react'
 import { Conversation, SupportStatusBadge } from '@/components/support/Conversation'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
@@ -53,8 +53,8 @@ export function SupportInboxPage() {
       />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <Card className="flex flex-col p-1.5">
-          {inbox.isPending && <p className="p-3 text-[13px] text-muted">{t('common.loading')}</p>}
-          {!inbox.isPending && rows.length === 0 && <p className="p-3 text-[13px] text-muted">{t('inbox.empty')}</p>}
+          {inbox.isPending && <p className="p-3 text-sm text-muted">{t('common.loading')}</p>}
+          {!inbox.isPending && rows.length === 0 && <p className="p-3 text-sm text-muted">{t('inbox.empty')}</p>}
           <ul className="flex flex-col">
             {rows.map((r) => (
               <li key={r.id}>
@@ -65,7 +65,7 @@ export function SupportInboxPage() {
                   className={cn('flex min-h-touch w-full flex-col items-start gap-1 rounded-lg px-3 py-2 text-left transition duration-75 hover:bg-sunken', open === r.id && 'bg-sunken')}
                 >
                   <span className="flex w-full items-center justify-between gap-2">
-                    <span className="truncate text-[13px] font-medium">{r.subject}</span>
+                    <span className="truncate text-sm font-medium">{r.subject}</span>
                     {r.priority === 'urgent' && <Badge tone="danger">{t('inbox.urgent')}</Badge>}
                   </span>
                   <span className="text-xs text-muted">
@@ -77,7 +77,7 @@ export function SupportInboxPage() {
             ))}
           </ul>
         </Card>
-        {open === 'call' ? <LogCall onDone={(id) => setOpen(id)} /> : open ? <InboxRequest key={open} id={open} /> : <Card className="text-[13px] text-muted">{t('help.pick')}</Card>}
+        {open === 'call' ? <LogCall onDone={(id) => setOpen(id)} /> : open ? <InboxRequest key={open} id={open} /> : <Card className="text-sm text-muted">{t('help.pick')}</Card>}
       </div>
     </div>
   )
@@ -89,7 +89,7 @@ function InboxRequest({ id }: { id: number }) {
   const send = useInboxMessage(id)
   const update = useInboxUpdate(id)
   const [body, setBody] = useState('')
-  if (req.isPending) return <Card className="text-[13px] text-muted">{t('common.loading')}</Card>
+  if (req.isPending) return <Card className="text-sm text-muted">{t('common.loading')}</Card>
   if (req.isError) return <Alert>{errorOf(req.error)}</Alert>
   const r = req.data.data
 
@@ -194,8 +194,8 @@ function LogCall({ onDone }: { onDone: (id: number) => void }) {
           <Field label={t('help.subject')} value={f.subject} maxLength={150} required onChange={(e) => setF({ ...f, subject: e.target.value })} />
         </div>
         <TextArea label={t('inbox.whatTheySaid')} value={f.body} onChange={(body) => setF({ ...f, body })} />
-        <label className="flex min-h-touch items-center gap-2 text-[13px]">
-          <input type="checkbox" checked={f.urgent} onChange={(e) => setF({ ...f, urgent: e.target.checked })} className="size-4 accent-accent" />
+        <label className="flex min-h-touch items-center gap-2 text-sm">
+          <input type="checkbox" checked={f.urgent} onChange={(e) => setF({ ...f, urgent: e.target.checked })} />
           {t('help.urgent')}
         </label>
         <div>

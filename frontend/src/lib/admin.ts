@@ -254,6 +254,10 @@ export type PlatformReport = {
   lost: number
   new_this_month: number
   rooms: number
+  /** P18: new and lost hotels per month (12 months), and hotels per plan today. */
+  signups?: { month: string; count: number }[]
+  churned?: { month: string; count: number }[]
+  by_plan?: { plan: string; hotels: number }[]
 }
 export type HotelHealth = {
   id: number

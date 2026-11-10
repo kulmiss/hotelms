@@ -26,7 +26,7 @@ Each section says the rule, the code and the tests. Backend paths are under `bac
 | **Early check-out** (Q12): unused nights come off the bill (each room's first night always paid), plus the hotel's early check-out fee (waivable); the booking's % discount follows; preview on the check-out screen | `FrontDesk::earlyDeparture`, `shortenStay`, `earlyDeparturePreview` | `FrontDeskTest::test_leaving_early…` |
 | Unpaid balance at check-out only with a manager (Q8) → bill `outstanding` | `FrontDesk::checkOut`, `InvoiceService::approveBalance` | `FrontDeskTest` |
 | Room board, today's lists, filters (status, arriving, leaving, overdue, free tonight, type, floor, search, sort) | `FrontDeskController::board/today`; `pages/desk/RoomBoardPage.tsx`, `lib/roomFilter.ts` | `test/roomFilter.test.ts`, `test/desk.test.tsx` |
-| **Room panel**: a guest inside → **Check out** (opens the booking's check-out) and **Stay details**; free room with an arrival → Check in. **Front desk mode** tiles: Check in, Check out, Walk-in, Take payment, **Charge a room**, Room board (each by permission). The top-bar search is hidden for a role with nothing to search (Restaurant / Bar). Walk-in after midnight shows "pays for last night" (Q13) | `pages/desk/RoomBoardPage.tsx`, `FrontDeskModePage.tsx`, `WalkInPage.tsx`, `components/layout/GlobalSearch.tsx` | `test/frontDeskReview.test.tsx` |
+| **Room panel**: a guest inside → **Check out** (opens the booking's check-out) and **Stay details**; free room with an arrival → Check in. **Front desk mode** tiles: Check in, Check out, Walk-in, Take payment, **Charge a room**, Room board (each by permission). The header search is hidden for a role with nothing to search (Restaurant / Bar). Walk-in after midnight shows "pays for last night" (Q13) | `pages/desk/RoomBoardPage.tsx`, `FrontDeskModePage.tsx`, `WalkInPage.tsx`, `components/layout/Search.tsx` | `test/frontDeskReview.test.tsx` |
 | **Room board on another day** (`?date=`): who stays in each room that night (booked, staying or left), read only, not polled; today = live board | `FrontDeskController::boardOn`; `RoomBoardPage` `DayPicker` | `FrontDeskTest::test_lists_filter_by_date…`, `test/dateFilters.test.tsx` |
 | **Date filter** on lists (one component: Any time, Today, Yesterday, This week, This month, Last month, From–To): bills (`from`/`to` = bill date), payments, cashier shifts, activity log, guests (`stayed_from`/`stayed_to` = stayed on any of those days) | `components/ui/DateRangeFilter.tsx`, `lib/dateRange.ts` | same |
 
@@ -79,7 +79,8 @@ Code: `Front/GuestController`, `Models/Guest`. Tests: `ReservationsTest`, `Front
 Status cycle (W7): available → occupied → dirty → cleaning → available; maintenance/out of order by managers.
 Every dirty room has one open cleaning task (`Housekeeping::taskForDirtyRoom`, `ensureTasks` for rooms made dirty in bulk;
 `Room` updated hook in `AppServiceProvider`). Check-out creates the task (`GuestCheckedOut` → `CreateCleaningTasks`).
-Tests: `ModulesTest`.
+**One open task per room and kind** (owner, QA 8 Nov): adding or changing a task into a kind (cleaning / inspection / maintenance) the room already has open (not done) is refused with 422, the message names the room and kind, and `existing_task_id` lets the Assign screen link to it (`Housekeeping::openTask`, `HousekeepingController::alreadyOpen`); an automation rule then adds nothing (`RuleEngine`).
+Tests: `ModulesTest`, `AutomationsTest`, `hkDuplicateTask.test.tsx`.
 
 ## Staff, roles, security
 

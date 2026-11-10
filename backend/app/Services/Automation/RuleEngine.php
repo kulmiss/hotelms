@@ -92,7 +92,8 @@ class RuleEngine
                     $text, $facts['summary'] ?? null, $facts['link'] ?? null, (bool) ($a['urgent'] ?? false),
                 ),
                 'booking_note' => $reservation?->forceFill(['notes' => trim(($reservation->notes ? $reservation->notes."\n" : '').'['.$rule->name.'] '.$text)])->saveQuietly(),
-                'housekeeping_task' => $room ? HousekeepingTask::create([
+                // Never a second open task of the same kind for the room (owner, QA 8 Nov): then the rule adds nothing.
+                'housekeeping_task' => $room && ! HousekeepingTask::where('room_id', $room->id)->where('type', in_array($a['task'] ?? 'cleaning', HousekeepingTask::TYPES, true) ? $a['task'] : 'cleaning')->where('status', '!=', 'done')->exists() ? HousekeepingTask::create([
                     'branch_id' => $room->branch_id, 'room_id' => $room->id, 'reservation_id' => $reservation?->id,
                     'type' => in_array($a['task'] ?? 'cleaning', ['cleaning', 'inspection', 'maintenance'], true) ? $a['task'] : 'cleaning',
                     'priority' => 'normal', 'status' => 'pending', 'notes' => $text,

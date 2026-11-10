@@ -78,7 +78,7 @@ export function CheckInPanel({ r, onClose }: { r: ReservationDetail; onClose: ()
   }
 
   return (
-    <Card className="flex flex-col gap-4 ring-accent/40 animate-page-in">
+    <Card className="flex flex-col gap-4 border-primary/40 animate-page-in">
       <h2 className="text-sm font-semibold">{t('desk.checkInTitle')}</h2>
       {info.error && <Alert>{firstError(info.error)}</Alert>}
       <SmartHints hints={smart.data?.data} />
@@ -87,7 +87,7 @@ export function CheckInPanel({ r, onClose }: { r: ReservationDetail; onClose: ()
         const options = [...(x.room_id && !x.free_rooms.some((f) => f.id === x.room_id) ? [{ id: x.room_id, number: `${x.room_number} (${t(`roomStatus.${x.room_status ?? 'dirty'}`)})`, floor: null }] : []), ...x.free_rooms]
         return (
           <div key={x.id} className="flex flex-wrap items-end gap-3">
-            <span className="min-w-28 self-center text-[13px] font-medium">{x.room_type}</span>
+            <span className="min-w-28 self-center text-sm font-medium">{x.room_type}</span>
             <div className="w-44">
               <Select label={t('reservations.form.roomNumber')} value={String(roomFor(x.id, x.room_id) || '')} onChange={(e) => setPicks({ ...picks, [x.id]: Number(e.target.value) })}>
                 <option value="">—</option>
@@ -105,11 +105,11 @@ export function CheckInPanel({ r, onClose }: { r: ReservationDetail; onClose: ()
         )
       })}
       {isPositive(early) && (
-        <label className="flex items-center gap-3 rounded-lg bg-warn-bg/50 px-3 py-2 text-[13px]">
+        <label className="flex items-center gap-3 rounded-lg bg-warn-bg/50 px-3 py-2 text-sm">
           <span className="flex-1">{t((d?.rooms ?? []).some((x) => x.early_is_night) ? 'desk.lastNightFee' : 'desk.earlyFee', { amount: money(early, r.currency) })}</span>
           {can('fees.waive') && (
             <span className="flex items-center gap-2">
-              <input type="checkbox" className="size-4 accent-accent" checked={waive} onChange={(e) => setWaive(e.target.checked)} />
+              <input type="checkbox" checked={waive} onChange={(e) => setWaive(e.target.checked)} />
               {t('desk.waive')}
             </span>
           )}
@@ -117,13 +117,13 @@ export function CheckInPanel({ r, onClose }: { r: ReservationDetail; onClose: ()
       )}
       {isPositive(due) && (
         <div className="flex flex-col gap-2">
-          <p className="text-[13px] text-muted">{t('desk.depositDue', { amount: money(due, r.currency) })}</p>
+          <p className="text-sm text-muted">{t('desk.depositDue', { amount: money(due, r.currency) })}</p>
           <PayFields amount={pay.amount ?? due} setAmount={pay.setAmount} methodId={pay.methodId} setMethodId={pay.setMethodId} />
         </div>
       )}
       {d?.id_photo_needed && (
         <div className="flex flex-col gap-2 rounded-lg bg-warn-bg/50 px-3 py-2.5">
-          <p className="text-[13px]">{t('idPhoto.needed')}</p>
+          <p className="text-sm">{t('idPhoto.needed')}</p>
           <IdPhoto compact guestId={r.guest.id} photo={null} canEdit={can('guests.create_edit')} />
         </div>
       )}
@@ -167,7 +167,7 @@ export function CheckOutPanel({ r, onClose }: { r: ReservationDetail; onClose: (
   const balance = early ? (waiveEarly ? early.balance_without_fee : early.balance) : addMoney(d?.balance ?? '0', waive ? '0' : late)
 
   return (
-    <Card className="flex flex-col gap-4 ring-accent/40 animate-page-in">
+    <Card className="flex flex-col gap-4 border-primary/40 animate-page-in">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold">{t('desk.checkOutTitle')}</h2>
         {/* Last extras before the guest leaves (minibar, laundry…): they go on the bill and into "To pay". */}
@@ -179,25 +179,25 @@ export function CheckOutPanel({ r, onClose }: { r: ReservationDetail; onClose: (
       </div>
       {bill && charging && <ChargePanel invoiceId={bill.id} onClose={() => setCharging(false)} />}
       {isPositive(late) && (
-        <label className="flex items-center gap-3 rounded-lg bg-warn-bg/50 px-3 py-2 text-[13px]">
+        <label className="flex items-center gap-3 rounded-lg bg-warn-bg/50 px-3 py-2 text-sm">
           <span className="flex-1">{t('desk.lateFee', { amount: money(late, r.currency) })}</span>
           {can('fees.waive') && (
             <span className="flex items-center gap-2">
-              <input type="checkbox" className="size-4 accent-accent" checked={waive} onChange={(e) => setWaive(e.target.checked)} />
+              <input type="checkbox" checked={waive} onChange={(e) => setWaive(e.target.checked)} />
               {t('desk.waive')}
             </span>
           )}
         </label>
       )}
       {early && (
-        <div className="flex flex-col gap-2 rounded-lg bg-info-bg/50 px-3 py-2 text-[13px]">
+        <div className="flex flex-col gap-2 rounded-lg bg-info-bg/50 px-3 py-2 text-sm">
           <span>{t('desk.earlyLeave', { count: early.nights })}</span>
           {isPositive(early.fee) && (
             <label className="flex items-center gap-3">
               <span className="flex-1">{t('desk.earlyLeaveFee', { amount: money(early.fee, r.currency) })}</span>
               {can('fees.waive') && (
                 <span className="flex items-center gap-2">
-                  <input type="checkbox" className="size-4 accent-accent" checked={waiveEarly} onChange={(e) => setWaiveEarly(e.target.checked)} />
+                  <input type="checkbox" checked={waiveEarly} onChange={(e) => setWaiveEarly(e.target.checked)} />
                   {t('desk.waive')}
                 </span>
               )}
@@ -206,11 +206,11 @@ export function CheckOutPanel({ r, onClose }: { r: ReservationDetail; onClose: (
         </div>
       )}
       <p className="text-sm font-semibold">{isPositive(balance) ? t('desk.toPay', { amount: money(balance, r.currency) }) : t('desk.allPaid')}</p>
-      {isNegative(balance) && <p className="text-[13px] text-warn-text">{t('desk.giveBack', { amount: money(balance.replace('-', ''), r.currency) })}</p>}
+      {isNegative(balance) && <p className="text-sm text-warn-text">{t('desk.giveBack', { amount: money(balance.replace('-', ''), r.currency) })}</p>}
       {isPositive(balance) && !leaveOwing && <PayFields amount={pay.amount ?? balance} setAmount={pay.setAmount} methodId={pay.methodId} setMethodId={pay.setMethodId} />}
       {isPositive(balance) && can('checkout.approve_balance') && (
-        <label className="flex items-center gap-2 text-[13px]">
-          <input type="checkbox" className="size-4 accent-accent" checked={leaveOwing} onChange={(e) => setLeaveOwing(e.target.checked)} />
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={leaveOwing} onChange={(e) => setLeaveOwing(e.target.checked)} />
           {t('desk.leaveOwing')}
         </label>
       )}

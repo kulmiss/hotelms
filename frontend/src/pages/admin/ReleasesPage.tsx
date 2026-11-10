@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { PlusIcon } from '@heroicons/react/20/solid'
+import { PlusIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -45,11 +45,11 @@ export function ReleasesPage() {
           <li key={r.id}>
             <Card className="flex flex-col gap-2">
               <div className="flex flex-wrap items-center gap-2">
-                <strong className="text-[13px]">{r.version}</strong>
-                <span className="min-w-0 flex-1 text-[13px] font-medium">{r.title}</span>
+                <strong className="text-sm">{r.version}</strong>
+                <span className="min-w-0 flex-1 text-sm font-medium">{r.title}</span>
                 <Badge tone={r.status === 'published' ? 'ok' : 'grey'}>{r.status === 'published' ? t('releases.publishedOn', { date: date(r.published_at?.slice(0, 10) ?? null) }) : t('releases.draft')}</Badge>
               </div>
-              <p className="text-[13px] whitespace-pre-wrap text-muted">{r.body}</p>
+              <p className="text-sm whitespace-pre-wrap text-muted">{r.body}</p>
               <div className="flex gap-2">
                 <Button variant="ghost" onClick={() => setEditing(r)}>
                   {t('common.edit')}
@@ -69,7 +69,7 @@ export function ReleasesPage() {
           </li>
         ))}
       </ul>
-      {q.data?.data.length === 0 && <p className="text-[13px] text-muted">{t('releases.none')}</p>}
+      {q.data?.data.length === 0 && <p className="text-sm text-muted">{t('releases.none')}</p>}
     </div>
   )
 }

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="200" viewBox="0 0 900 200" font-family="Inter, Arial, sans-serif">
+  <rect width="900" height="200" fill="#ffffff"/>
+  <text x="30" y="34" font-size="18" font-weight="700" fill="#0f172a">Safe update, in this order</text>
+  <g font-size="12" text-anchor="middle" fill="#0f172a">
+    <rect x="30" y="60" width="120" height="70" rx="10" fill="#eff6ff" stroke="#2563eb"/><text x="90" y="90" font-weight="600">1. Backup</text><text x="90" y="110" fill="#475569">hotelms:backup</text>
+    <rect x="175" y="60" width="120" height="70" rx="10" fill="#f8fafc" stroke="#64748b"/><text x="235" y="90" font-weight="600">2. Down</text><text x="235" y="110" fill="#475569">artisan down</text>
+    <rect x="320" y="60" width="120" height="70" rx="10" fill="#ecfdf5" stroke="#16a34a"/><text x="380" y="90" font-weight="600">3. New files</text><text x="380" y="110" fill="#475569">keep .env, storage/</text>
+    <rect x="465" y="60" width="120" height="70" rx="10" fill="#fff7ed" stroke="#d97706"/><text x="525" y="90" font-weight="600">4. Migrate</text><text x="525" y="110" fill="#475569">migrate --force</text>
+    <rect x="610" y="60" width="120" height="70" rx="10" fill="#f5f3ff" stroke="#7c3aed"/><text x="670" y="90" font-weight="600">5. Optimize</text><text x="670" y="110" fill="#475569">artisan optimize</text>
+    <rect x="755" y="60" width="120" height="70" rx="10" fill="#ecfdf5" stroke="#16a34a"/><text x="815" y="90" font-weight="600">6. Up + test</text><text x="815" y="110" fill="#475569">artisan up</text>
+  </g>
+  <g stroke="#0f172a" stroke-width="2"><line x1="150" y1="95" x2="173" y2="95"/><line x1="295" y1="95" x2="318" y2="95"/><line x1="440" y1="95" x2="463" y2="95"/><line x1="585" y1="95" x2="608" y2="95"/><line x1="730" y1="95" x2="753" y2="95"/></g>
+  <text x="30" y="170" font-size="12" fill="#475569">Something wrong? Rollback: previous package back + "optimize"; if the new version added tables, "migrate:rollback --step=1"; data problem: restore the backup from step 1.</text>
+</svg>

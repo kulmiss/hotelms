@@ -44,9 +44,10 @@ Order for hotel routes: `auth:sanctum` → `active` → `device` → `tenant` �
 | `module:x` | `EnsureModuleEnabled` | The hotel has this optional module on |
 | `switch:x` | `EnsureSwitchOn` | A Super Admin switch is on for this hotel |
 | `not.impersonating` | `BlockDuringImpersonation` | Not allowed in a "log in as hotel" support session |
-| `idempotent` | `Idempotent` | Money actions: the same `Idempotency-Key` header gives the first answer again (no double payment) |
+| `idempotent` | `Idempotent` | Saved once (owner, QA 8 Nov) on every action that takes money or creates / changes a booking, bill, charge, cashier shift, guest or approval: the `Idempotency-Key` + user + endpoint + request hash + answer are kept 24 h in `idempotency_keys` (unique per user and key). Same key → the first answer again; same key with other details → 422 `idempotency_mismatch`; same key still running → waits, then 409 `busy`; a failed answer frees the key |
 | `one.at.a.time:kind` | `OneAtATime` | One change at a time per booking/bill (a lock in the cache) |
 | (global) | `SecurityHeaders` | nosniff, frame deny, referrer policy, HSTS on HTTPS |
+| (global) | Laravel `TrustProxies` | trusts nobody by default; `TRUSTED_PROXIES` in `.env` (via `App\Support\TrustedProxies`, set in `AppServiceProvider`) only behind a proxy/CDN – see hosting.md |
 | (global) | `RecordProblems` | Notes refused requests and errors for the watchdog |
 
 Rate limits (`AppServiceProvider`): `login` (5/min per email+address, 30/min per address), `two-factor`
@@ -81,7 +82,7 @@ Rate limits (`AppServiceProvider`): `login` (5/min per email+address, 30/min per
 | `Reports/CustomReportEngine` | The custom report builder (whitelisted measures and groups) |
 | `Reports/Automation` | Scheduled reports (email/Telegram) and smart alerts |
 | `Automation/*` | Ready-made automations (events and schedule), the rule builder, platform automations |
-| `Smart/SmartHints` | Free "smart" hints with a "Why?" explanation on many screens |
+| `Smart/SmartHints` | Free "smart" hints with a "Why?" explanation on many screens (the dashboard's week-on-week insight is cached 5 minutes) |
 | `Notify/Notifier`, `Notify/Telegram`, `Notify/MailSettings` | In-app bell, email, Telegram bot (polling, link by code); SMTP from Super Admin settings |
 | `Watchdog/WatchEvents`, `Watchdog/Watchdog` | Super Admin watchdog: password guessing, snooping, errors, cron/backup, mixed hotel data, money mismatches, double bookings, fraud signs |
 | `Backup/Backups` | Database backups (daily full, hourly small, monthly check, restore) and upload mirroring |

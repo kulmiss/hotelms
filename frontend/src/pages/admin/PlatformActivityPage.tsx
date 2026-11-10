@@ -34,12 +34,12 @@ export function PlatformActivityPage() {
       </div>
       <Card className="overflow-x-auto p-0">
         {log.isPending ? (
-          <p className="p-5 text-[13px] text-muted">{t('common.loading')}</p>
+          <p className="p-5 text-sm text-muted">{t('common.loading')}</p>
         ) : log.data?.data.length === 0 ? (
-          <p className="p-5 text-[13px] text-muted">{t('common.nothingYet')}</p>
+          <p className="p-5 text-sm text-muted">{t('common.nothingYet')}</p>
         ) : (
-          <table className="w-full min-w-[720px] text-left text-[13px]">
-            <thead className="bg-sunken">
+          <table className="w-full min-w-[720px] text-left text-sm">
+            <thead>
               <tr>
                 <th className="px-5 py-3 font-medium">{t('platformActivity.when')}</th>
                 <th className="px-5 py-3 font-medium">{t('platformActivity.who')}</th>
@@ -55,7 +55,7 @@ export function PlatformActivityPage() {
                   <td className="px-5 py-3">{a.description}</td>
                   <td className="px-5 py-3">
                     {a.hotel ? (
-                      <Link to={`/admin/hotels/${a.hotel.id}`} className="text-accent-text hover:underline">
+                      <Link to={`/admin/hotels/${a.hotel.id}`} className="tap-link text-accent-text hover:underline">
                         {a.hotel.name}
                       </Link>
                     ) : (
@@ -69,7 +69,7 @@ export function PlatformActivityPage() {
         )}
       </Card>
       {meta && meta.last_page > 1 && (
-        <div className="flex items-center gap-2 text-[13px]">
+        <div className="flex items-center gap-2 text-sm">
           <Button variant="secondary" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
             {t('common.previous')}
           </Button>

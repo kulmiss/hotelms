@@ -47,9 +47,10 @@ describe('data tables', () => {
     expect(names()).toEqual(['Almaz', 'Bekele', 'Chala'])
     expect(screen.getByRole('columnheader', { name: 'Amount' })).toHaveAttribute('aria-sort', 'descending')
 
-    await userEvent.click(screen.getByText('Columns'))
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Amount' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Columns' }))
+    await userEvent.click(screen.getByRole('menuitemcheckbox', { name: 'Amount' }))
     expect(screen.queryByRole('columnheader', { name: 'Amount' })).not.toBeInTheDocument()
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Amount' })).toHaveAttribute('aria-checked', 'false') // menu stays open while ticking
     unmount()
     render(<Small />)
     expect(screen.queryByRole('columnheader', { name: 'Amount' })).not.toBeInTheDocument() // remembered
@@ -57,10 +58,10 @@ describe('data tables', () => {
 
   it('closes the Columns menu on a click elsewhere', async () => {
     render(<Small />)
-    await userEvent.click(screen.getByText('Columns'))
-    expect(screen.getByRole('checkbox', { name: 'Amount' })).toBeVisible()
+    await userEvent.click(screen.getByRole('button', { name: 'Columns' }))
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Amount' })).toBeVisible()
     await userEvent.click(document.body)
-    expect(screen.getByText('Columns').closest('details')).not.toHaveAttribute('open')
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
   })
 
   it('downloads the list for people allowed to', async () => {

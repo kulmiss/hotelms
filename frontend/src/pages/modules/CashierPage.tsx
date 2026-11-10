@@ -17,8 +17,10 @@ import { listFileUrl, localDate, localTime, useLookups } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { DataTable, type SortState } from '@/components/ui/DataTable'
 import { DateRangeFilter } from '@/components/ui/DateRangeFilter'
-import type { DateRange } from '@/lib/dateRange'
+import { rangeChip, type DateRange } from '@/lib/dateRange'
+import { useCompactToolbar } from '@/lib/compactToolbar'
 import { useApproveShift, useCloseShift, useCurrentShift, useOpenShift, useShifts, type CashierSession } from '@/lib/modules'
+import { CashierOverview } from './ModuleOverviews'
 
 const err = (e: unknown) => (e instanceof ApiError ? (Object.values(e.errors)[0]?.[0] ?? e.message) : null)
 const TONES = { open: 'info', closed: 'warn', approved: 'ok' } as const
@@ -27,7 +29,7 @@ const TONES = { open: 'info', closed: 'warn', approved: 'ok' } as const
 export function CashierPage() {
   const { t } = useTranslation()
   const can = useCan()
-  const current = useCurrentShift()
+  const current = useCurrentShift(can('cashier.own_shift'))
   const shift = current.data?.data
   const smart = useSmart('cashier', {}, Boolean(shift) && can('cashier.own_shift'))
 
@@ -35,6 +37,7 @@ export function CashierPage() {
     <div className="flex flex-col gap-6">
       <PageHeader title={t('nav.cashier')} subtitle={t('cashier.subtitle')} />
       {shift && <SmartHints hints={smart.data?.data} />}
+      <CashierOverview shift={shift} />
       {can('cashier.own_shift') && current.data && (shift ? <MyShift shift={shift} /> : <OpenShift />)}
       <ShiftList />
     </div>
@@ -52,7 +55,7 @@ function OpenShift() {
     <Card className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <h2 className="text-sm font-semibold">{t('cashier.openTitle')}</h2>
-        <p className="text-[13px] text-muted">{t('cashier.openHelp')}</p>
+        <p className="text-sm text-muted">{t('cashier.openHelp')}</p>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
         {currencies.map((c) => (
@@ -80,13 +83,13 @@ function MyShift({ shift }: { shift: CashierSession }) {
   const anyDiff = expected.some(([c, r]) => (diff(c, r.expected) ?? 0) !== 0)
 
   return (
-    <div className="grid items-start gap-6 xl:grid-cols-[1fr_22rem]">
+    <div className="grid items-start grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
       <Card className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-semibold">{t('cashier.myShift')}</h2>
           <span className="text-xs text-muted">{t('cashier.openedAt', { time: `${date(localDate(shift.opened_at))} ${localTime(shift.opened_at)}` })}</span>
         </div>
-        <table className="w-full text-left text-[13px]">
+        <table className="w-full text-left text-sm">
           <thead className="text-muted">
             <tr>
               <th className="py-1.5 font-medium">{t('reservations.currency')}</th>
@@ -109,14 +112,14 @@ function MyShift({ shift }: { shift: CashierSession }) {
           </tbody>
         </table>
         <h3 className="pt-2 text-xs font-semibold text-muted">{t('cashier.cashTaken')}</h3>
-        {shift.payments?.length === 0 && <p className="text-[13px] text-muted">{t('cashier.noCash')}</p>}
-        <ul className="flex flex-col divide-y divide-border text-[13px]">
+        {shift.payments?.length === 0 && <p className="text-sm text-muted">{t('cashier.noCash')}</p>}
+        <ul className="flex flex-col divide-y divide-border text-sm">
           {shift.payments?.map((p) => (
             <li key={p.id} className="flex justify-between gap-3 py-1.5">
               <span>
                 {localTime(p.paid_at)} · {t(`reservations.paymentTypes.${p.type}`)}
                 {p.reservation && (
-                  <Link to={`/reservations/${p.reservation.id}`} className="text-accent-text">
+                  <Link to={`/reservations/${p.reservation.id}`} className="tap-link text-accent-text">
                     {' '}
                     · {p.reservation.code}
                   </Link>
@@ -135,7 +138,7 @@ function MyShift({ shift }: { shift: CashierSession }) {
         <h2 className="text-sm font-semibold">{t('cashier.closeTitle')}</h2>
         {!closing ? (
           <>
-            <p className="text-[13px] text-muted">{t('cashier.closeHelp')}</p>
+            <p className="text-sm text-muted">{t('cashier.closeHelp')}</p>
             <Button variant="secondary" onClick={() => setClosing(true)}>
               {t('cashier.countDrawer')}
             </Button>
@@ -174,22 +177,33 @@ function ShiftList() {
   const [sort, setSort] = useState<SortState>({ by: 'opened', dir: 'desc' })
   const list = useShifts({ short, ...range, page, per_page: perPage, sort: sort.by, dir: sort.dir })
   const approve = useApproveShift()
+  const compact = useCompactToolbar()
+  const controls = (
+    <div className="flex flex-wrap items-end gap-3">
+      <DateRangeFilter value={range} onChange={setRange} />
+      <label className="flex min-h-touch items-center gap-2 text-sm">
+        <input type="checkbox" checked={short} onChange={(e) => setShort(e.target.checked)} />
+        {t('cashier.onlyShort')}
+      </label>
+    </div>
+  )
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold">{can('cashier.view_all') ? t('cashier.allShifts') : t('cashier.pastShifts')}</h2>
-        <div className="flex flex-wrap items-end gap-3">
-          <DateRangeFilter value={range} onChange={setRange} />
-          <label className="flex min-h-touch items-center gap-2 text-[13px]">
-            <input type="checkbox" className="size-4 accent-accent" checked={short} onChange={(e) => setShort(e.target.checked)} />
-            {t('cashier.onlyShort')}
-          </label>
-        </div>
+        {!compact && controls}
       </div>
       {approve.error && <Alert>{err(approve.error)}</Alert>}
       <DataTable<CashierSession>
         id="cashier-shifts"
+        // Phones and tablets (P19): the dates and "only short" fold behind "Filters" by the table.
+        filters={compact ? controls : undefined}
+        activeFilters={[
+          ...rangeChip(t, 'dates', t('dates.label'), range, () => setRange({})),
+          ...(short ? [{ key: 'short', label: t('cashier.onlyShort'), onRemove: () => setShort(false) }] : []),
+        ]}
+        onClearFilters={() => (setRange({}), setShort(false))}
         rows={list.data?.data ?? []}
         rowKey={(s) => s.id}
         loading={list.isLoading}

@@ -106,11 +106,11 @@ export function ReservationPage() {
       {action === 'check_out' && r.status === 'checked_in' && <CheckOutPanel r={r} onClose={() => setAction(null)} />}
       {action === 'change' && r.status === 'checked_in' && <ChangeStayPanel r={r} onClose={() => setAction(null)} />}
 
-      <div className="grid items-start gap-6 lg:grid-cols-[1fr_22rem]">
+      <div className="grid items-start grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="flex flex-col gap-6">
-          <Card className="grid gap-4 text-[13px] sm:grid-cols-3">
+          <Card className="grid gap-4 text-sm sm:grid-cols-3">
             <Info label={t('reservations.guest')}>
-              <Link to={`/guests/${r.guest.id}`} className="font-medium text-accent-text">
+              <Link to={`/guests/${r.guest.id}`} className="tap-link w-fit font-medium text-accent-text">
                 {r.guest.full_name}
               </Link>
               <span className="text-xs text-muted">{r.guest.phone}</span>
@@ -162,8 +162,8 @@ export function ReservationPage() {
               )}
             </div>
             {action === 'pay' && <PaymentForm r={r} onDone={() => setAction(null)} />}
-            {r.payments.length === 0 && <p className="text-[13px] text-muted">{t('reservations.noPayments')}</p>}
-            <ul className="flex flex-col divide-y divide-border text-[13px]">
+            {r.payments.length === 0 && <p className="text-sm text-muted">{t('reservations.noPayments')}</p>}
+            <ul className="flex flex-col divide-y divide-border text-sm">
               {r.payments.map((p) => (
                 <li key={p.id} className="flex items-center justify-between gap-3 py-2">
                   <span className="flex flex-col">
@@ -188,7 +188,7 @@ export function ReservationPage() {
           </Card>
         </div>
 
-        <Card className="flex flex-col gap-2 text-[13px] lg:sticky lg:top-20">
+        <Card className="flex flex-col gap-2 text-sm lg:sticky lg:top-20">
           <h2 className="text-sm font-semibold">{t('reservations.money')}</h2>
           {/* Once there is a bill: rooms + extras (breakfast, laundry…) + fees, from the bill. */}
           {r.booking_total && compareMoney(r.total, r.booking_total) > 0 && (
@@ -235,7 +235,8 @@ function Info({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-function PaymentForm({ r, onDone }: { r: ReservationDetail; onDone: () => void }) {
+/** Also used by the dashboard side sheet (P18): same rules, same "saved once" key. */
+export function PaymentForm({ r, onDone }: { r: ReservationDetail; onDone: () => void }) {
   const { t } = useTranslation()
   const can = useCan()
   const lookups = useLookups()
@@ -319,10 +320,10 @@ function CancelPanel({ r, noShow, onClose }: { r: ReservationDetail; noShow: boo
   const x = terms.data?.data
 
   return (
-    <Card className="flex flex-col gap-3 ring-danger/40 animate-page-in">
+    <Card className="flex flex-col gap-3 border-danger/40 animate-page-in">
       <h2 className="text-sm font-semibold">{noShow ? t('reservations.markNoShow') : t('reservations.cancelTitle')}</h2>
       {x && (
-        <div className="flex flex-col gap-1 text-[13px]">
+        <div className="flex flex-col gap-1 text-sm">
           <p className="text-muted">{x.free ? t('reservations.cancelFree') : t('reservations.cancelFee', { fee: money(x.fee, r.currency), policy: x.policy?.name ?? '' })}</p>
           {isPositive(r.paid_total) && <p className="text-muted">{t('reservations.refundDue', { amount: money(x.refund_due, r.currency) })}</p>}
         </div>

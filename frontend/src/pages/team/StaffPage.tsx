@@ -1,7 +1,6 @@
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { PlusIcon } from '@heroicons/react/20/solid'
-import { UserGroupIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, UsersRoundIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { buttonClass } from '@/components/ui/Button'
 import { DataTable } from '@/components/ui/DataTable'
@@ -40,7 +39,7 @@ export function StaffPage() {
         empty={
           <div className="flex flex-col items-center gap-3 py-6">
             <span className="flex size-12 items-center justify-center rounded-full bg-sunken">
-              <UserGroupIcon aria-hidden className="size-6 text-icon" />
+              <UsersRoundIcon aria-hidden className="size-6 text-icon" />
             </span>
             <p>{t('team.staff.empty')}</p>
           </div>

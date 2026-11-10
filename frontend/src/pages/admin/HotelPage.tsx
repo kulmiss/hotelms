@@ -1,8 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { ArrowRightEndOnRectangleIcon, ClipboardDocumentIcon, KeyIcon } from '@heroicons/react/24/outline'
-import { CheckIcon } from '@heroicons/react/20/solid'
+import { CheckIcon, ClipboardIcon, KeyRoundIcon, LogInIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
@@ -74,7 +73,7 @@ export function HotelPage() {
           <>
             {canLoginAs && (
               <Button variant="secondary" onClick={() => toggle('loginAs')}>
-                <ArrowRightEndOnRectangleIcon aria-hidden className="size-4 text-icon" />
+                <LogInIcon aria-hidden className="size-4 text-icon" />
                 {t('support.loginAs')}
               </Button>
             )}
@@ -171,7 +170,7 @@ export function HotelPage() {
             ))}
           </ul>
           {hotel.data.admins.length > 5 && (
-            <button type="button" className="flex min-h-touch items-center self-start text-[13px] font-medium text-accent-text hover:underline" onClick={() => setTab('staff')}>
+            <button type="button" className="flex min-h-touch items-center self-start text-sm font-medium text-accent-text hover:underline" onClick={() => setTab('staff')}>
               {t('admin.hotel.seeAllStaff', { count: hotel.data.admins.length })}
             </button>
           )}
@@ -249,7 +248,7 @@ function HotelSwitches({ hotelId, canManage }: { hotelId: number; canManage: boo
           </Link>
         )}
       </div>
-      <ul className="grid gap-x-6 gap-y-1.5 text-[13px] sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2 lg:grid-cols-3">
         {rows.data.data.map((r) => (
           <li key={r.key} className="flex items-center justify-between gap-2">
             <span>{t(`switches.keys.${r.key}`)}</span>
@@ -285,7 +284,7 @@ function LoginAsPanel({ hotel, users, onDone }: { hotel: Hotel; users: { id: num
       >
         <div className="flex flex-col gap-1 sm:col-span-2">
           <h2 className="text-sm font-semibold">{t('support.loginAsTitle', { hotel: hotel.name })}</h2>
-          <p className="text-[13px] text-muted">{t('support.loginAsHelp')}</p>
+          <p className="text-sm text-muted">{t('support.loginAsHelp')}</p>
         </div>
         <Field label={t('admin.hotel.reason')} value={reason} placeholder={t('support.reasonPlaceholder')} onChange={(e) => setReason(e.target.value)} error={error?.field('reason')} />
         <Select label={t('support.as')} value={userId} onChange={(e) => setUserId(e.target.value)} error={error?.field('user_id')}>
@@ -333,7 +332,7 @@ function ResetPassword({ hotelId, user }: { hotelId: number; user: { id: number;
   if (!open) {
     return (
       <Button variant="secondary" className="self-start" onClick={() => setOpen(true)}>
-        <KeyIcon aria-hidden className="size-4 text-icon" />
+        <KeyRoundIcon aria-hidden className="size-4 text-icon" />
         {t('admin.hotel.resetPassword')}
       </Button>
     )
@@ -349,7 +348,7 @@ function ResetPassword({ hotelId, user }: { hotelId: number; user: { id: number;
         <div className="flex items-center justify-between gap-2">
           <span className="font-mono text-base font-semibold break-all">{reset.data.temporary_password}</span>
           <Button variant="secondary" onClick={copy}>
-            {copied ? <CheckIcon aria-hidden className="size-5" /> : <ClipboardDocumentIcon aria-hidden className="size-4 text-icon" />}
+            {copied ? <CheckIcon aria-hidden className="size-5" /> : <ClipboardIcon aria-hidden className="size-4 text-icon" />}
             {copied ? t('admin.hotel.copied') : t('admin.hotel.copy')}
           </Button>
         </div>
@@ -365,8 +364,8 @@ function ResetPassword({ hotelId, user }: { hotelId: number; user: { id: number;
       <p className="text-sm font-semibold">{t('admin.hotel.resetTitle', { name: user.name })}</p>
       <p className="text-xs text-muted">{t('admin.hotel.resetHelp', { name: user.name })}</p>
       <label className="flex min-h-touch items-center gap-3 text-sm">
-        <input type="checkbox" className="size-5 accent-accent" checked={sendEmail} onChange={(e) => setSendEmail(e.target.checked)} />
-        {t('admin.hotel.emailIt', { email: user.email })}
+        <input type="checkbox" className="size-5" checked={sendEmail} onChange={(e) => setSendEmail(e.target.checked)} />
+        <span className="min-w-0 [overflow-wrap:anywhere]">{t('admin.hotel.emailIt', { email: user.email })}</span>
       </label>
       {reset.isError && <Alert>{t('common.serverUnreachable')}</Alert>}
       <div className="flex justify-end gap-2">

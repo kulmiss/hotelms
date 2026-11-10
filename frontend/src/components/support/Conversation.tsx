@@ -26,8 +26,8 @@ export function Conversation({ messages, side }: { messages: SupportMessage[]; s
             </span>
             <p
               className={cn(
-                'max-w-[85%] rounded-xl px-3 py-2 text-[13px] whitespace-pre-wrap break-words',
-                m.kind === 'note' ? 'bg-warn-bg text-warn-text ring-1 ring-warn-text/20' : ours ? 'bg-accent-soft text-text' : 'bg-sunken text-text',
+                'max-w-[85%] rounded-xl px-3 py-2 text-sm whitespace-pre-wrap break-words',
+                m.kind === 'note' ? 'border border-warn-text/20 bg-warn-bg text-warn-text' : ours ? 'bg-accent-soft text-text' : 'bg-sunken text-text',
               )}
             >
               {m.body}
@@ -41,6 +41,6 @@ export function Conversation({ messages, side }: { messages: SupportMessage[]; s
 
 export function SupportStatusBadge({ status }: { status: 'open' | 'waiting' | 'solved' }) {
   const { t } = useTranslation()
-  const tone = status === 'solved' ? 'bg-ok-bg text-ok-text ring-ok-text/20' : status === 'waiting' ? 'bg-warn-bg text-warn-text ring-warn-text/20' : 'bg-info-bg text-info-text ring-info-text/20'
-  return <span className={cn('inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset', tone)}>{t(`inbox.status.${status}`)}</span>
+  const tone = status === 'solved' ? 'border-ok-text/20 bg-ok-bg text-ok-text' : status === 'waiting' ? 'border-warn-text/25 bg-warn-bg text-warn-text' : 'border-info-text/20 bg-info-bg text-info-text'
+  return <span className={cn('inline-flex w-fit items-center rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap', tone)}>{t(`inbox.status.${status}`)}</span>
 }

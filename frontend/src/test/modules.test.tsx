@@ -26,7 +26,7 @@ describe('optional modules', () => {
       'POST /cashier/close': { body: { data: { ...openShift, status: 'closed' } } },
     })
     renderApp('/cashier')
-    expect(await screen.findByText('ETB 1,880.00')).toBeInTheDocument()
+    expect((await screen.findAllByText('ETB 1,880.00')).length).toBeGreaterThan(0) // also in the overview (P18)
     await userEvent.click(screen.getByRole('button', { name: 'Count the drawer' }))
     await userEvent.type(screen.getByLabelText('Counted (ETB)'), '1800')
     expect(screen.getByText('Short by ETB 80.00')).toBeInTheDocument()
@@ -37,6 +37,16 @@ describe('optional modules', () => {
       const call = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/cashier/close'))
       expect(JSON.parse(String(call?.[1]?.body))).toEqual({ counted: { ETB: '1800' }, notes: 'Wrong change' })
     })
+  })
+
+  it('does not ask for an own shift when the role only sees all shifts (accountant, QA 8 Nov)', async () => {
+    const fetchMock = mockApi({
+      'GET /me': { body: meWith(['cashier.view_all']) },
+      'GET /cashier/sessions': { body: { data: [], current_page: 1, last_page: 1, total: 0, per_page: 25 } },
+    })
+    renderApp('/cashier')
+    expect(await screen.findByText('All cashier shifts')).toBeInTheDocument()
+    expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith('/cashier/current'))).toBe(false)
   })
 
   it('lets housekeeping start and finish a task', async () => {

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { ResourceList } from '@/components/ui/ResourceList'
-import { Select } from '@/components/ui/Select'
+import { Select, SelectBox } from '@/components/ui/Select'
 import { api, ApiError, post } from '@/lib/api'
 import { useMe } from '@/lib/auth'
 import { money } from '@/lib/format'
@@ -46,6 +46,12 @@ function BranchSelect({ branches, value, onChange }: { branches: { id: number; n
   )
 }
 
+/** Phones and tablets: which branch the list is for, while the branch box is folded away (information only). */
+function branchChip(branches: { id: number; name: string }[], id: number | null) {
+  const name = branches.find((b) => b.id === id)?.name
+  return branches.length > 1 && name ? [{ key: 'branch', label: name }] : []
+}
+
 /* ------------------------------------------------------------- room types */
 
 export function RoomTypesSettings() {
@@ -59,7 +65,8 @@ export function RoomTypesSettings() {
       title={t('settings.sections.room-types')}
       description={t('settings.roomTypes.help')}
       addLabel={t('settings.roomTypes.add')}
-      header={<BranchSelect branches={branches} value={branchId} onChange={setBranchId} />}
+      filters={branches.length > 1 ? <BranchSelect branches={branches} value={branchId} onChange={setBranchId} /> : undefined}
+      activeFilters={branchChip(branches, branchId)}
       defaults={{ branch_id: branchId, name: '', description: '', base_capacity: 2, max_capacity: 2, nightly_price: '', day_use_price: '', hourly_price: '', currency: 'ETB', amenities: '' }}
       canDelete={(r) => !r.rooms_count}
       columns={[
@@ -116,10 +123,11 @@ export function RoomsSettings() {
       title={t('settings.sections.rooms')}
       description={t('settings.rooms.help')}
       addLabel={t('settings.rooms.addOne')}
+      filters={branches.length > 1 ? <BranchSelect branches={branches} value={branchId} onChange={setBranchId} /> : undefined}
+      activeFilters={branchChip(branches, branchId)}
       header={
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-end gap-4">
-            <BranchSelect branches={branches} value={branchId} onChange={setBranchId} />
             {limit && (
               <Badge tone={limit.max !== null && limit.used >= limit.max ? 'warn' : 'grey'}>
                 {limit.max === null ? t('settings.rooms.usedUnlimited', { used: limit.used }) : t('settings.rooms.used', { used: limit.used, max: limit.max })}
@@ -216,7 +224,7 @@ function RoomGenerator({ types }: { types: RoomType[] }) {
     <Card className="animate-page-in flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <h3 className="text-sm font-semibold">{t('settings.rooms.generator')}</h3>
-        <p className="text-[13px] text-muted">{t('settings.rooms.generatorHelp')}</p>
+        <p className="text-sm text-muted">{t('settings.rooms.generatorHelp')}</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         <Select label={t('settings.rooms.type')} value={String(f.room_type_id)} onChange={(e) => setF({ ...f, room_type_id: Number(e.target.value) })}>
@@ -234,14 +242,14 @@ function RoomGenerator({ types }: { types: RoomType[] }) {
 
       {types.length > 1 && f.rooms_per_floor > 0 && f.rooms_per_floor <= 30 && (
         <div className="flex flex-col gap-2">
-          <span className="text-[13px] font-medium">{t('settings.rooms.typeByPosition')}</span>
+          <span className="text-sm font-medium">{t('settings.rooms.typeByPosition')}</span>
           <div className="flex flex-wrap gap-2">
             {Array.from({ length: f.rooms_per_floor }, (_, i) => i + 1).map((pos) => (
               <label key={pos} className="flex items-center gap-1.5 text-xs text-muted">
                 <span className="w-5 text-right">{pos}</span>
-                <select
+                <SelectBox
                   aria-label={t('settings.rooms.position', { n: pos })}
-                  className="min-h-touch rounded-lg bg-surface px-2 text-[13px] text-text ring-1 ring-ring"
+                  className="w-auto ps-2"
                   value={byPosition[pos] ?? f.room_type_id}
                   onChange={(e) => {
                     const id = Number(e.target.value)
@@ -258,7 +266,7 @@ function RoomGenerator({ types }: { types: RoomType[] }) {
                       {x.name}
                     </option>
                   ))}
-                </select>
+                </SelectBox>
               </label>
             ))}
           </div>
@@ -268,13 +276,13 @@ function RoomGenerator({ types }: { types: RoomType[] }) {
       {preview.error instanceof ApiError && <Alert>{Object.values(preview.error.errors)[0]?.[0] ?? preview.error.message}</Alert>}
       {plan.length > 0 && (
         <div className="flex flex-col gap-2">
-          <span className="text-[13px] text-muted">{t('settings.rooms.previewCount', { count: plan.length })}</span>
+          <span className="text-sm text-muted">{t('settings.rooms.previewCount', { count: plan.length })}</span>
           <div className="flex max-h-48 flex-wrap gap-1.5 overflow-y-auto rounded-lg bg-sunken p-3">
             {plan.map((p) => (
               <span
                 key={p.number}
                 title={p.room_type}
-                className={`rounded-md px-2 py-1 text-xs font-medium ring-1 ${existing.has(p.number) ? 'bg-danger-bg text-danger-text ring-danger' : 'bg-surface ring-ring'}`}
+                className={`rounded-md border px-2 py-1 text-xs font-medium ${existing.has(p.number) ? 'border-danger bg-danger-bg text-danger-text' : 'bg-surface'}`}
               >
                 {p.number}
               </span>
@@ -414,7 +422,7 @@ function PricePreview({ types, typeName, guestTypes }: { types: RoomType[]; type
     <Card className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <h3 className="text-sm font-semibold">{t('settings.rates.preview')}</h3>
-        <p className="text-[13px] text-muted">{t('settings.rates.previewHelp')}</p>
+        <p className="text-sm text-muted">{t('settings.rates.previewHelp')}</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-4">
         <Select label={t('settings.rates.roomType')} value={String(current)} onChange={(e) => setTypeId(Number(e.target.value))}>
@@ -437,7 +445,7 @@ function PricePreview({ types, typeName, guestTypes }: { types: RoomType[]; type
       </div>
       {q.error instanceof ApiError && <Alert>{Object.values(q.error.errors)[0]?.[0] ?? q.error.message}</Alert>}
       {stay && (
-        <div className="flex flex-col gap-1 text-[13px]">
+        <div className="flex flex-col gap-1 text-sm">
           {stay.nights.map((n) => (
             <div key={n.date} className="flex justify-between gap-4 border-b border-border py-1.5">
               <span>

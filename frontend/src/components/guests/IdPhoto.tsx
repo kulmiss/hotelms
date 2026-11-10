@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { IdentificationIcon } from '@heroicons/react/24/outline'
+import { IdCardIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { PhotoPickers } from '@/components/ui/PhotoPickers'
@@ -48,12 +48,12 @@ export function IdPhoto({ guestId, photo, canEdit, compact }: { guestId: number;
       {has ? (
         <div className="flex flex-wrap items-center gap-3">
           {photo?.mime === 'application/pdf' ? (
-            <a href={src} target="_blank" rel="noopener" className="flex size-20 items-center justify-center rounded-lg bg-sunken ring-1 ring-ring">
-              <IdentificationIcon aria-hidden className="size-8 text-icon" />
+            <a href={src} target="_blank" rel="noopener" className="flex size-20 items-center justify-center rounded-lg bg-sunken border">
+              <IdCardIcon aria-hidden className="size-8 text-icon" />
             </a>
           ) : (
             <a href={src} target="_blank" rel="noopener">
-              <img src={src} alt={t('idPhoto.title')} className="h-20 w-28 rounded-lg object-cover ring-1 ring-ring" />
+              <img src={src} alt={t('idPhoto.title')} className="h-20 w-28 rounded-lg object-cover border" />
             </a>
           )}
           <span className="flex flex-col gap-1 text-xs text-muted">
@@ -71,7 +71,7 @@ export function IdPhoto({ guestId, photo, canEdit, compact }: { guestId: number;
       ) : canEdit ? (
         <PhotoPickers disabled={save.isPending} onFile={(f) => save.mutate(f)} />
       ) : (
-        <p className="text-[13px] text-muted">{t('idPhoto.none')}</p>
+        <p className="text-sm text-muted">{t('idPhoto.none')}</p>
       )}
       {save.isPending && <span className="text-xs text-muted">{t('proof.uploading')}</span>}
       {error && <Alert>{error}</Alert>}

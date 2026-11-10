@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { SILENT } from '@/lib/toast'
-import { ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline'
+import { DownloadIcon, UploadIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/Select'
 import { api, ApiError, apiUrl, post, upload } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { date } from '@/lib/format'
+import { inputClass } from '@/components/ui/formStyles'
 
 type Parsed = { file_name: string; headers: string[]; rows: string[][]; columns: string[] }
 type Row = Record<string, string>
@@ -96,7 +97,7 @@ export function ImportRooms({ onDone }: { onDone?: () => void }) {
     return (
       <Card className="flex flex-col gap-3">
         <Alert tone="ok">{t('import.done', { rooms: save.data.data.rooms, types: save.data.data.room_types })}</Alert>
-        <p className="text-[13px] text-muted">{t('import.undoHint')}</p>
+        <p className="text-sm text-muted">{t('import.undoHint')}</p>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={reset}>
             {t('import.another')}
@@ -111,13 +112,13 @@ export function ImportRooms({ onDone }: { onDone?: () => void }) {
     <Card className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <h3 className="text-sm font-semibold">{t('import.title')}</h3>
-        <p className="text-[13px] text-muted">{t('import.help')}</p>
+        <p className="text-sm text-muted">{t('import.help')}</p>
       </div>
 
       {!parsed && (
         <div className="flex flex-wrap items-center gap-2">
           <a href={apiUrl('/settings/import/template')} className={buttonClass('secondary')} download>
-            <ArrowDownTrayIcon aria-hidden className="size-4" />
+            <DownloadIcon aria-hidden className="size-4" />
             {t('import.templateExcel')}
           </a>
           <a href={apiUrl('/settings/import/template?format=csv')} className={buttonClass('ghost')} download>
@@ -136,7 +137,7 @@ export function ImportRooms({ onDone }: { onDone?: () => void }) {
             }}
           />
           <Button disabled={parse.isPending} onClick={() => input.current?.click()}>
-            <ArrowUpTrayIcon aria-hidden className="size-4" />
+            <UploadIcon aria-hidden className="size-4" />
             {parse.isPending ? t('import.reading') : t('import.upload')}
           </Button>
         </div>
@@ -146,7 +147,7 @@ export function ImportRooms({ onDone }: { onDone?: () => void }) {
       {/* Match columns (for files not made from the template) */}
       {parsed && !rows && (
         <div className="flex flex-col gap-3">
-          <p className="text-[13px] text-muted">{t('import.matchHelp', { file: parsed.file_name, count: parsed.rows.length })}</p>
+          <p className="text-sm text-muted">{t('import.matchHelp', { file: parsed.file_name, count: parsed.rows.length })}</p>
           <div className="grid gap-3 sm:grid-cols-3">
             {parsed.columns.map((c) => (
               <Select key={c} label={label(c)} value={String(map[c] ?? '')} onChange={(e) => setMap({ ...map, [c]: e.target.value === '' ? undefined : Number(e.target.value) })}>
@@ -176,7 +177,7 @@ export function ImportRooms({ onDone }: { onDone?: () => void }) {
       {/* Preview: every cell can be fixed here */}
       {parsed && rows && (
         <div className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-center gap-2 text-[13px]">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
             <Badge tone="grey">{parsed.file_name}</Badge>
             {report && <Badge tone="info">{t('import.summaryRooms', { count: report.summary.rooms })}</Badge>}
             {report && report.summary.new_types.length > 0 && <Badge tone="accent">{t('import.summaryTypes', { list: report.summary.new_types.join(', ') })}</Badge>}
@@ -185,13 +186,13 @@ export function ImportRooms({ onDone }: { onDone?: () => void }) {
           {report?.general.map((g) => (
             <Alert key={g}>{g}</Alert>
           ))}
-          <div className="max-h-[28rem] overflow-auto rounded-lg ring-1 ring-ring">
+          <div className="max-h-[28rem] overflow-auto rounded-lg border">
             <table className="w-full min-w-[900px] text-left text-xs">
               <thead className="sticky top-0 z-10 bg-sunken">
                 <tr>
-                  <th className="px-2 py-2 font-semibold">#</th>
+                  <th className="px-2 py-2 font-medium">#</th>
                   {parsed.columns.map((c) => (
-                    <th key={c} className="px-2 py-2 font-semibold whitespace-nowrap">
+                    <th key={c} className="px-2 py-2 font-medium whitespace-nowrap">
                       {label(c)}
                     </th>
                   ))}
@@ -211,9 +212,9 @@ export function ImportRooms({ onDone }: { onDone?: () => void }) {
                             title={errs[c]}
                             value={r[c] ?? ''}
                             onChange={(e) => changeRows(rows.map((x, j) => (j === i ? { ...x, [c]: e.target.value } : x)))}
-                            className={cn('h-8 w-full min-w-20 rounded-md bg-surface px-1.5 ring-1 ring-ring outline-none focus:ring-accent', errs[c] && 'ring-danger')}
+                            className={cn(inputClass, 'h-8 min-h-8 w-full min-w-20 px-1.5', errs[c] && 'border-destructive')}
                           />
-                          {errs[c] && <p className="mt-0.5 max-w-48 text-[11px] text-danger-text">{errs[c]}</p>}
+                          {errs[c] && <p className="mt-0.5 max-w-48 text-xs text-danger-text">{errs[c]}</p>}
                         </td>
                       ))}
                     </tr>
@@ -253,14 +254,14 @@ export function ImportSettings() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <h2 className="text-base font-semibold">{t('settings.sections.import')}</h2>
-        <p className="max-w-prose text-[13px] text-muted">{t('import.sectionHelp')}</p>
+        <p className="max-w-prose text-sm text-muted">{t('import.sectionHelp')}</p>
       </div>
       <ImportRooms />
       <div className="flex flex-col gap-2">
         <h3 className="text-sm font-semibold">{t('import.history')}</h3>
         {undo.error instanceof ApiError && <Alert>{undo.error.field('import') ?? undo.error.message}</Alert>}
-        <Card className="overflow-x-auto p-0">
-          <table className="w-full min-w-[520px] text-left text-[13px]">
+        <Card className="relative overflow-x-auto p-0">
+          <table className="w-full min-w-[520px] text-left text-sm">
             <tbody>
               {list.data?.data.map((i) => (
                 <tr key={i.id} className="border-t border-border first:border-t-0">

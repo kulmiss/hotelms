@@ -66,10 +66,12 @@ class ReportController extends Controller
             'rooms' => ['total' => array_sum($rooms->all()), 'by_status' => $rooms],
             'pending_expiring' => $res()->where('status', 'pending')->where('expires_at', '<=', now()->addHours(3))->count(),
             'late_arrivals' => $res()->whereIn('status', ['pending', 'confirmed'])->where('check_in_at', '<', now())->where('check_in_at', '>=', $start)->count(),
-            'next_7_days' => array_map(fn ($d) => ['date' => $d, 'occupancy' => $this->onTheBooks($hotel, $branchIds, $d, $sellable)], Metrics::days($today, Carbon::parse($today)->addDays(6)->toDateString())),
+            // Booking pace for the next 14 days (P18); next_7_days stays for older screens.
+            'next_days' => $pace = $this->onTheBooks($hotel, $branchIds, $today, Carbon::parse($today)->addDays(13)->toDateString(), $sellable),
+            'next_7_days' => array_slice($pace, 0, 7),
         ];
         if ($money) {
-            $data['revenue_today'] = $metrics->kpis($today, $today)['revenue'];
+            $data['revenue_today'] = $metrics->revenueParts($today, $today)['revenue'];
             $data['payments_today'] = Money::round((string) Payment::whereIn('branch_id', $branchIds)->whereBetween('paid_at', [$start, $end])
                 ->selectRaw("SUM(CASE WHEN type = 'refund' THEN -amount_in_base ELSE amount_in_base END) as t")->value('t') ?? '0');
             $data['unpaid_balances'] = Money::round((string) Invoice::whereIn('branch_id', $branchIds)->where('status', '!=', 'void')->where('balance', '>', 0)->sum('balance') ?: '0');
@@ -80,6 +82,37 @@ class ReportController extends Controller
         }
 
         return response()->json(['data' => $data]);
+    }
+
+    /**
+     * Dashboard trend (P18): per day arrivals, departures, rooms sold and occupancy for every dashboard role;
+     * revenue, room revenue, ADR, RevPAR and money taken ONLY with dashboard.view_revenue (never sent otherwise).
+     */
+    public function trend(Request $request): JsonResponse
+    {
+        $data = $request->validate(['from' => ['required', 'date'], 'to' => ['required', 'date', 'after_or_equal:from'], 'branch_id' => ['nullable', 'integer']]);
+        if (Carbon::parse($data['from'])->diffInDays(Carbon::parse($data['to'])) > 400) {
+            abort(422, 'Choose at most 400 days.');
+        }
+        $user = $request->user();
+        $hotel = $user->hotel;
+        $m = Metrics::for($hotel, $this->branchIds($request));
+        $from = Carbon::parse($data['from'])->toDateString();
+        $to = Carbon::parse($data['to'])->toDateString();
+        $rows = $m->movements($from, $to);
+        $rooms = $m->roomCount();
+        if ($user->hasPermission('dashboard.view_revenue')) {
+            $money = collect($m->daily($from, $to))->keyBy('date');
+            $rows = array_map(fn (array $r) => $r + [
+                'revenue' => $money[$r['date']]['revenue'],
+                'room_revenue' => $money[$r['date']]['room_revenue'],
+                'adr' => $money[$r['date']]['adr'],
+                'revpar' => $rooms > 0 ? Money::round(bcdiv($money[$r['date']]['room_revenue'], (string) $rooms, 4)) : '0.00',
+                'payments' => $money[$r['date']]['payments'],
+            ], $rows);
+        }
+
+        return response()->json(['data' => $rows, 'rooms' => $rooms, 'from' => $from, 'to' => $to, 'currency' => $hotel->default_currency ?? 'ETB']);
     }
 
     public function show(Request $request, string $key): JsonResponse|Response
@@ -171,17 +204,20 @@ class ReportController extends Controller
         ];
     }
 
-    /** Share of rooms already booked for a day (on the books, any active booking). */
-    private function onTheBooks($hotel, array $branchIds, string $date, int $sellable): float
+    /**
+     * Share of rooms already booked per day (on the books, any active booking), in ONE question for the whole range.
+     *
+     * @return list<array{date: string, occupancy: float}>
+     */
+    private function onTheBooks($hotel, array $branchIds, string $from, string $to, int $sellable): array
     {
-        if ($sellable === 0) {
-            return 0.0;
-        }
-        $n = ReservationRoomRate::query()->join('reservation_rooms as rr', 'rr.id', '=', 'reservation_room_rates.reservation_room_id')
+        $booked = $sellable === 0 ? collect() : ReservationRoomRate::query()->join('reservation_rooms as rr', 'rr.id', '=', 'reservation_room_rates.reservation_room_id')
             ->join('reservations as res', 'res.id', '=', 'rr.reservation_id')->where('res.hotel_id', $hotel->id)->whereIn('res.branch_id', $branchIds)
-            ->whereIn('rr.status', ['pending', 'confirmed', 'checked_in', 'checked_out'])->where('reservation_room_rates.date', $date)->where('reservation_room_rates.label', 'Night')->count();
+            ->whereIn('rr.status', ['pending', 'confirmed', 'checked_in', 'checked_out'])->whereBetween('reservation_room_rates.date', [$from, $to])->where('reservation_room_rates.label', 'Night')
+            ->selectRaw('reservation_room_rates.date as d, COUNT(*) as n')->groupBy('reservation_room_rates.date')->pluck('n', 'd')
+            ->mapWithKeys(fn ($n, $d) => [substr((string) $d, 0, 10) => (int) $n]);
 
-        return round($n / $sellable * 100, 1);
+        return array_map(fn (string $d) => ['date' => $d, 'occupancy' => $sellable > 0 ? round(($booked[$d] ?? 0) / $sellable * 100, 1) : 0.0], Metrics::days($from, $to));
     }
 
     /** @return list<int> */

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ComputerDesktopIcon, DevicePhoneMobileIcon, EnvelopeIcon } from '@heroicons/react/24/outline'
+import { MailIcon, MonitorIcon, SmartphoneIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -46,15 +46,15 @@ export function TwoFactorSetup({ onDone }: { onDone: () => void }) {
     return (
       <form onSubmit={submit} noValidate className="flex flex-col gap-4">
         <fieldset className="grid gap-2 sm:grid-cols-2">
-          <legend className="mb-2 text-[13px] font-medium">{t('security.howCodes')}</legend>
+          <legend className="mb-2 text-sm font-medium">{t('security.howCodes')}</legend>
           {(['app', 'email'] as const).map((m) => {
-            const Icon = m === 'app' ? DevicePhoneMobileIcon : EnvelopeIcon
+            const Icon = m === 'app' ? SmartphoneIcon : MailIcon
             return (
-              <label key={m} className={cn('flex min-h-touch cursor-pointer items-start gap-3 rounded-lg p-3 ring-1 transition duration-75', method === m ? 'bg-accent-soft ring-accent' : 'ring-ring hover:bg-sunken')}>
+              <label key={m} className={cn('flex min-h-touch cursor-pointer items-start gap-3 rounded-lg p-3 border shadow-xs transition-colors', method === m ? 'border-primary bg-accent-soft' : 'hover:bg-sunken')}>
                 <input type="radio" name="method" className="sr-only" checked={method === m} onChange={() => setMethod(m)} />
                 <Icon aria-hidden className="mt-0.5 size-5 shrink-0 text-icon" />
                 <span className="flex flex-col">
-                  <span className="text-[13px] font-semibold">{t(`security.methods.${m}`)}</span>
+                  <span className="text-sm font-semibold">{t(`security.methods.${m}`)}</span>
                   <span className="text-xs text-muted">{t(`security.methods.${m}Hint`)}</span>
                 </span>
               </label>
@@ -79,7 +79,7 @@ export function TwoFactorSetup({ onDone }: { onDone: () => void }) {
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-4">
       {start.method === 'app' ? (
-        <ol className="flex list-decimal flex-col gap-3 pl-5 text-[13px]">
+        <ol className="flex list-decimal flex-col gap-3 pl-5 text-sm">
           <li>{t('security.app.step1')}</li>
           <li className="flex flex-col gap-2">
             <span>{t('security.app.scan')}</span>
@@ -93,7 +93,7 @@ export function TwoFactorSetup({ onDone }: { onDone: () => void }) {
           <li>{t('security.app.step3')}</li>
         </ol>
       ) : (
-        <p className="text-[13px]">{t('security.emailSent', { email: start.email })}</p>
+        <p className="text-sm">{t('security.emailSent', { email: start.email })}</p>
       )}
       <Field label={t('security.code')} inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} />
       {confirm.error && <Alert>{errorText(confirm.error)}</Alert>}
@@ -178,7 +178,7 @@ function TwoFactorCard({ required, method, left }: { required: boolean; method: 
           <div className="w-64">
             <Field label={t('security.yourPassword')} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
-          <Button type="submit" variant={mode === 'off' ? 'danger' : 'primary'} disabled={!password}>
+          <Button type="submit" variant={mode === 'off' ? 'danger' : 'primary'} disabled={!password || disable.isPending || renew.isPending}>
             {mode === 'off' ? t('security.turnOff') : t('security.newCodes')}
           </Button>
           <Button variant="ghost" onClick={() => setMode('idle')}>
@@ -277,8 +277,8 @@ function MyDevicesCard({ devices }: { devices: Device[] }) {
       <ul className="flex flex-col">
         {active.map((d) => (
           <li key={d.id} className="flex items-center gap-3 border-t border-border py-2 first:border-t-0">
-            <ComputerDesktopIcon aria-hidden className="size-5 shrink-0 text-icon" />
-            <span className="flex min-w-0 flex-1 flex-col text-[13px]">
+            <MonitorIcon aria-hidden className="size-5 shrink-0 text-icon" />
+            <span className="flex min-w-0 flex-1 flex-col text-sm">
               <span className="font-medium">
                 {d.name} {d.this_device && <span className="text-accent-text">· {t('security.thisDevice')}</span>}
               </span>

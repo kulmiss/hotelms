@@ -50,7 +50,8 @@ describe('Super Admin area', () => {
   it('keeps hotel staff out of the Super Admin area', async () => {
     mockApi({ 'GET /me': { body: makeMe() }, 'GET /health': { body: {} } })
     renderApp('/admin/hotels')
-    expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: "You can't open this page" })).toBeInTheDocument()
+    // owner (QA 8 Nov): a clear "no access" page instead of a silent jump to the dashboard
   })
 
   it('lists hotels with status filters', async () => {
@@ -132,15 +133,58 @@ describe('collapsible sidebar', () => {
     mockApi({ 'GET /me': { body: superAdmin() }, 'GET /admin/dashboard': dashboard })
     renderApp('/admin')
     await userEvent.click(await screen.findByRole('button', { name: 'Collapse menu' }))
-    expect(screen.getByRole('complementary')).toHaveAttribute('data-collapsed', 'true')
+    const sidebar = () => document.querySelector('[data-slot="sidebar"]')
+    expect(sidebar()).toHaveAttribute('data-state', 'collapsed')
     expect(localStorage.getItem('hms-sidebar-collapsed')).toBe('1')
     // Collapsed: icons only; each link still has its name for screen readers and a tooltip.
     expect(screen.getByRole('link', { name: 'Hotels' })).toBeInTheDocument()
     await userEvent.hover(screen.getByRole('link', { name: 'Hotels' }))
-    expect(screen.getByRole('tooltip')).toHaveTextContent('Hotels')
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Hotels')
 
     await userEvent.click(screen.getByRole('button', { name: 'Expand menu' }))
-    expect(screen.getByRole('complementary')).toHaveAttribute('data-collapsed', 'false')
+    expect(sidebar()).toHaveAttribute('data-state', 'expanded')
+  })
+
+  // Tablet widths (768–1023px): icons only until the person opens it; their own choice is remembered.
+  const tablet = () =>
+    vi.spyOn(window, 'matchMedia').mockImplementation(
+      (query: string) =>
+        ({ matches: query.includes('min-width: 768px'), media: query, onchange: null, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {}, dispatchEvent: () => false }) as MediaQueryList,
+    )
+
+  it('starts collapsed on a tablet', async () => {
+    const spy = tablet()
+    mockApi({ 'GET /me': { body: superAdmin() }, 'GET /admin/dashboard': dashboard })
+    renderApp('/admin')
+    expect(await screen.findByRole('button', { name: 'Expand menu' })).toBeInTheDocument()
+    expect(document.querySelector('[data-slot="sidebar"]')).toHaveAttribute('data-state', 'collapsed')
+    spy.mockRestore()
+  })
+
+  it('keeps the choice made on this tablet', async () => {
+    const spy = tablet()
+    localStorage.setItem('hms-sidebar-collapsed', '0')
+    mockApi({ 'GET /me': { body: superAdmin() }, 'GET /admin/dashboard': dashboard })
+    renderApp('/admin')
+    expect(await screen.findByRole('button', { name: 'Collapse menu' })).toBeInTheDocument()
+    spy.mockRestore()
+  })
+})
+
+describe('command menu shortcut', () => {
+  it('opens with "/" but not while typing in a box', async () => {
+    mockApi({ 'GET /me': { body: superAdmin() }, 'GET /admin/dashboard': dashboard })
+    renderApp('/admin')
+    await screen.findByRole('heading', { name: 'Command center' })
+    const box = document.createElement('input')
+    document.body.appendChild(box)
+    await userEvent.type(box, '/')
+    expect(box).toHaveValue('/')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    box.remove()
+
+    await userEvent.keyboard('/')
+    expect(await screen.findByRole('combobox', { name: 'Search hotels and people' })).toBeInTheDocument()
   })
 })
 

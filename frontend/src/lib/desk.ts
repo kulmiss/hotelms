@@ -191,13 +191,14 @@ export const INVOICE_TONES: Record<InvoiceSummary['status'], 'warn' | 'ok' | 'in
   void: 'grey',
 }
 
+/** Room card colours. Small text on these cards uses `text-grey-text` (≥ 4.5:1 on every tint, light and dark), not `text-muted`. */
 export const ROOM_TONES: Record<string, string> = {
-  available: 'bg-room-available/15 ring-room-available/40',
-  occupied: 'bg-room-occupied/15 ring-room-occupied/40',
-  dirty: 'bg-room-dirty/15 ring-room-dirty/40',
-  cleaning: 'bg-room-clean/15 ring-room-clean/40',
-  maintenance: 'bg-room-maintenance/15 ring-room-maintenance/40',
-  out_of_order: 'bg-room-maintenance/25 ring-room-maintenance/60',
+  available: 'bg-room-available/15 border-room-available/40',
+  occupied: 'bg-room-occupied/15 border-room-occupied/40',
+  dirty: 'bg-room-dirty/15 border-room-dirty/40',
+  cleaning: 'bg-room-clean/15 border-room-clean/40',
+  maintenance: 'bg-room-maintenance/15 border-room-maintenance/40',
+  out_of_order: 'bg-room-maintenance/25 border-room-maintenance/60',
 }
 export const ROOM_DOTS: Record<string, string> = {
   available: 'bg-room-available',

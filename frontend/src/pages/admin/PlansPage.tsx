@@ -131,7 +131,7 @@ function PlanForm({ plan, onDone }: { plan: Plan; onDone: () => void }) {
               <label key={m} className="flex min-h-touch items-center gap-3 text-sm">
                 <input
                   type="checkbox"
-                  className="size-5 accent-accent"
+                  className="size-5"
                   checked={f.modules.includes(m)}
                   onChange={(e) =>
                     setF((s) => ({ ...s, modules: e.target.checked ? [...s.modules, m] : s.modules.filter((x) => x !== m) }))
@@ -143,7 +143,7 @@ function PlanForm({ plan, onDone }: { plan: Plan; onDone: () => void }) {
           </div>
         </fieldset>
         <label className="flex min-h-touch items-center gap-3 text-sm sm:col-span-2">
-          <input type="checkbox" className="size-5 accent-accent" checked={f.is_active} onChange={(e) => setF((s) => ({ ...s, is_active: e.target.checked }))} />
+          <input type="checkbox" className="size-5" checked={f.is_active} onChange={(e) => setF((s) => ({ ...s, is_active: e.target.checked }))} />
           {t('admin.plans.active')}
         </label>
         <div className="flex justify-end gap-2 sm:col-span-2">

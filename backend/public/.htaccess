@@ -6,10 +6,12 @@ DirectoryIndex app.html index.php
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-Frame-Options "DENY"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    # Built files have a hash in their name: cache them for a year. app.html: never cache.
-    <FilesMatch "\.(js|css|woff2|svg|png|webp)$">
+    # Files in assets/ have a hash in their name: cache them for a year. Other files keep their name when they
+    # change (staff-guide pictures in guide/, icons), so they are not cached for a year.
+    <If "%{REQUEST_URI} =~ m#^/assets/#">
         Header set Cache-Control "public, max-age=31536000, immutable"
-    </FilesMatch>
+    </If>
+    # The app page and the offline copy (service worker): never cached, or staff keep an old version.
     <FilesMatch "^(app\.html|sw\.js)$">
         Header set Cache-Control "no-cache"
     </FilesMatch>

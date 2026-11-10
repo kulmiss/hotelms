@@ -26,14 +26,15 @@
         "The first time, the app asks you to make a new password. Choose one only you know.",
         "If the app asks for a code, open your code app (or your email) and type the 6 numbers.",
         "Forgot your password? Tap \"Forgot password?\" on the sign-in page, or ask your manager.",
-        "To sign out: tap your picture at the top right, then Sign out."
+        "To sign out: tap your picture at the top right, then Sign out.",
+        "A page says \"You can't open this page\"? Your role does not allow it. Tap Go to the start page, and ask your manager if you need it."
       ]
     },
     "lockScreen": {
       "title": "Locked screen and PIN",
       "steps": [
         "If nobody uses the app for some minutes, the screen locks. This keeps guest data safe.",
-        "To open it again, type your password.",
+        "To open it again, type your password.", "Leaving the desk? Lock it yourself: tap your picture at the top right → Lock screen.",
         "On a shared computer, another person can type their own 4-number PIN. Then the app opens for them.",
         "Set your PIN in My profile (picture at the top right → My profile). A PIN your manager set works only for clock-in; to open a shared computer, set your own."
       ]
@@ -41,9 +42,9 @@
     "search": {
       "title": "Find anything fast",
       "steps": [
-        "Use the search box at the top. Press Ctrl and K together to go there.",
+        "Tap the search box at the top. A search window opens. You can also press Ctrl and K together.",
         "Type a guest name, a phone number, a room number or a booking code.",
-        "Tap the result to open it.",
+        "Tap the result to open it, or press Enter.",
         "You can also ask simple questions, like \"free rooms\" or \"who is in room 105\"."
       ]
     },
@@ -54,7 +55,9 @@
         "Columns: tick or untick to show or hide a column. The app remembers it.",
         "Rows (at the bottom): show 25, 50 or 100 rows on one page.",
         "Excel: download the list with the same filters. You see this button only if you may export.",
-        "On a phone, each row is a small card."
+        "On a phone, each row is a small card.",
+        "On a phone or tablet, the filters are behind the Filters button. Tap it to open or close them. The number on it shows how many filters are on.",
+        "Each filter that is on shows as a small chip under the button. Tap × on a chip to remove it, or Clear all to remove all."
       ]
     },
     "bell": {
@@ -71,13 +74,13 @@
         "Tap your picture at the top right → My profile.",
         "Change your name or phone, then tap Save.",
         "Tap Change password to choose a new password.",
-        "Link Telegram if you want to get reports and alerts on your phone."
+        "Link Telegram if you want to get reports and alerts on your phone.", "Light or dark screen: tap the sun button at the top right."
       ]
     },
     "branch": {
       "title": "Choose your branch",
       "steps": [
-        "If your hotel has more than one branch, choose your branch at the top of the page.",
+        "If your hotel has more than one branch, tap the name at the top of the menu (left side) and choose your branch.",
         "All pages then show that branch: rooms, bookings, cleaning.",
         "The app remembers your choice on this computer."
       ]
@@ -85,9 +88,12 @@
     "dashboard": {
       "title": "Dashboard",
       "steps": [
-        "The Dashboard is the first page. It shows today: guests arriving, guests leaving, free rooms.",
+        "The Dashboard is the first page. It shows today and the last days: guests arriving and leaving, rooms, and (for managers) money.",
+        "At the top, choose the days (Today, 7, 30 or 90 days) and the branch. Every box changes at once. The round arrow loads the newest numbers.",
         "The ✨ Smart box gives tips. Tap \"Why?\" to see how the app knows it.",
-        "Tap a number to open the list behind it."
+        "Tap a number, a bar or a line to see the details on the right side. \"View all\" opens the full page.",
+        "In \"Today at the desk\", tap Check in, Check out or Take payment. It opens the same form as on the booking page.",
+        "Managers also see the Revenue and Operations tabs."
       ]
     },
     "roomBoard": {
@@ -99,7 +105,8 @@
         "Use Arriving, Leaving, Overdue or Free tonight to see only those rooms.",
         "A red \"Owes\" tag means the guest still has money to pay.",
         "Tap a room box to see the guest and to change the room status. A guest is inside? Tap Check out to let them leave, or Stay details to see the booking.",
-        "Want to see another day? Use the arrows or pick a date at the top. You see who stays in each room that night. Tap Back to today to work again."
+        "Want to see another day? Use the arrows or pick a date at the top. You see who stays in each room that night. Tap Back to today to work again.",
+        "On a phone or tablet, the color buttons, the day and the sort are behind the Filters button, so you see the rooms first. The search box stays at the top."
       ]
     },
     "todayLists": {
@@ -163,7 +170,7 @@
       "title": "Is a room free on a date?",
       "steps": [
         "Reservations → Calendar. Each line is a room, each column is a day.",
-        "A colored bar is a booking. Move your mouse on it (or tap it) to see the guest and the dates.",
+        "A colored bar is a booking. Move your mouse on it to see the guest and the dates. Tap it to open the booking.",
         "An empty place means the room is free that day.",
         "Tap a day at the top to see all rooms for that day."
       ]
@@ -347,7 +354,8 @@
         "All cash you take is added to your shift.",
         "At the end of work: count the drawer again and type it.",
         "The app shows if it matches. If it is short or over, write why.",
-        "Tap Close shift. A manager checks it."
+        "Tap Close shift. A manager checks it.",
+        "At the top of the page you see the cash that should be in your drawer now, and if the last shifts were short or over."
       ]
     },
     "approveShift": {
@@ -380,7 +388,8 @@
         "Open Housekeeping → My tasks. You see the rooms to clean, the most urgent first.",
         "Tap Start when you begin a room.",
         "Tap Done when the room is clean. You can write a note, for example \"broken lamp\".",
-        "The room becomes ready, and reception sees it at once."
+        "The room becomes ready, and reception sees it at once.",
+        "At the top of the page you see how many rooms are dirty, and how many tasks are to do, in progress and done."
       ]
     },
     "assignCleaning": {
@@ -429,7 +438,8 @@
     "reports": {
       "title": "Reports",
       "steps": [
-        "Open Reports. Choose a report on the left, for example Daily report.",
+        "Open Reports. Managers first see an Overview: the main numbers and a card for each report. Tap a card to open its report.",
+        "Or choose a report on the left, for example Daily report.",
         "Choose the dates at the top: today, this week, this month…",
         "Tap a bar in a chart to see the bookings behind it.",
         "Tap Print, or download Excel, to share it."

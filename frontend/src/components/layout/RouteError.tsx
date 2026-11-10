@@ -31,10 +31,16 @@ export function RouteError() {
 
   return (
     <div className="flex min-h-full items-center justify-center bg-bg p-6">
-      <div className="panel flex w-full max-w-md flex-col gap-3 p-6 text-center">
-        <h1 className="text-base font-semibold">{update ? t('routeError.updateTitle') : t('routeError.title')}</h1>
-        <p className="text-[13px] text-muted">{update ? t('routeError.updateText') : t('routeError.text')}</p>
-        <div className="flex flex-wrap justify-center gap-2">
+      {/* The template's error page: a big title, a short line, the way out. */}
+      <div className="flex w-full max-w-md flex-col items-center gap-2 text-center">
+        {!update && (
+          <span aria-hidden className="text-[7rem] leading-tight font-bold">
+            500
+          </span>
+        )}
+        <h1 className="font-medium">{update ? t('routeError.updateTitle') : t('routeError.title')}</h1>
+        <p className="text-sm text-muted">{update ? t('routeError.updateText') : t('routeError.text')}</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-4">
           <Button
             onClick={() => {
               sessionStorage.removeItem(RELOADED)

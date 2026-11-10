@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeMe, mockApi } from './mockApi'
@@ -214,7 +214,12 @@ describe('room calendars', () => {
     expect(await screen.findByText('1 of 2 rooms free that night')).toBeInTheDocument()
     expect(screen.getByText('Arriving')).toBeInTheDocument()
 
-    // Hovering a booking shows the dates and the number of nights.
+    // A finger on a booking (touch) does not open the hover card, so the tap opens the booking (owner, QA 8 Nov).
+    fireEvent.pointerEnter(screen.getByRole('link', { name: /^Abebe Kebede, / }), { pointerType: 'touch' })
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /^Abebe Kebede, / })).toHaveAttribute('href', '/reservations/9')
+
+    // Hovering a booking with the mouse shows the dates and the number of nights.
     await userEvent.hover(screen.getByRole('link', { name: /^Abebe Kebede, / }))
     const tip = await screen.findByRole('tooltip')
     expect(tip).toHaveTextContent('2 nights')
@@ -333,6 +338,7 @@ describe('billing', () => {
     })
     renderApp('/rooms')
 
+    await userEvent.click(await screen.findByRole('button', { name: 'Search guests, rooms, bookings, bills' }))
     const box = await screen.findByRole('combobox', { name: 'Search guests, rooms, bookings, bills' })
     await userEvent.type(box, 'Abebe')
     expect(await screen.findByRole('option', { name: /BL-26-00001 · Abebe Kebede/ })).toBeInTheDocument()
@@ -353,7 +359,7 @@ describe('reception extras', () => {
     })
     renderApp('/rooms')
 
-    await userEvent.click(await screen.findByRole('button', { name: /Account menu|Meron Tesfaye/ }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Account menu' }))
     await userEvent.click(screen.getByRole('menuitem', { name: 'Front desk mode' }))
     expect(await screen.findByRole('heading', { name: 'Front desk' })).toBeInTheDocument()
     expect(await screen.findByText('Abebe Kebede')).toBeInTheDocument()

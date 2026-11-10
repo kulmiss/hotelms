@@ -90,3 +90,7 @@ in the claude.ai Project.
 | `report_schedules` **H** | Reports sent by email/Telegram |
 | `alert_rules` **H**, `alert_events` **H** | Smart alerts |
 | `automation_settings` **H**, `automation_rules` **H**, `automation_firings` **H** | Ready-made automations (on/off + options), the rule builder, and "already done" marks |
+
+## Saved-once keys
+
+`idempotency_keys` (not hotel-owned; per person): `user_id`, `key` (the app's Idempotency-Key), `endpoint` (method + path), `request_hash` (sha256 of the body), `status` (processing / done), `response_status`, `response_body`, timestamps. Unique (`user_id`, `key`). Kept 24 hours, deleted after 48 by the scheduler. Used by the `Idempotent` middleware.

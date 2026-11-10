@@ -80,7 +80,8 @@ describe('hotel settings', () => {
   it('keeps receptionists out of settings', async () => {
     mockApi({ 'GET /me': { body: makeMe({}, ['frontdesk.view']) }, 'GET /health': { body: {} } })
     renderApp('/settings/taxes')
-    expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: "You can't open this page" })).toBeInTheDocument()
+    // owner (QA 8 Nov): a clear "no access" page instead of a silent jump to the dashboard
   })
 })
 
