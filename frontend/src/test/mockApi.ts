@@ -17,6 +17,7 @@ export function mockApi(routes: Record<string, Reply>) {
       status,
       statusText: '',
       json: () => Promise.resolve(reply.body ?? {}),
+      blob: () => Promise.resolve(reply.body instanceof Blob ? reply.body : new Blob([JSON.stringify(reply.body ?? {})])),
     } as Response
   })
   vi.stubGlobal('fetch', fetchMock)

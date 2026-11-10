@@ -30,7 +30,7 @@ services:
 
   backend:
     build: ./backend
-    volumes: ['./backend:/var/www/backend', './docs:/var/www/docs:ro'] # docs: Super Admin → Developer docs
+    volumes: ['./backend:/var/www/backend', './docs:/var/www/docs:ro', './deploy-guide/pdf:/var/www/deploy-guide/pdf:ro'] # docs + guide PDFs: Super Admin → Developer docs
     ports: ['8000:8000']
     # --no-reload: without it Laravel ignores PHP_CLI_SERVER_WORKERS and answers one request at a time.
     # (After editing backend/.env run `docker compose restart backend`.)

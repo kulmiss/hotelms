@@ -434,6 +434,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
             // Developer documentation (the docs/ folder), for the Owner and the tech team.
             Route::middleware('platform:docs.view')->group(function () {
                 Route::get('/docs', [DocsController::class, 'index']);
+                Route::get('/docs/pdf/{name}', [DocsController::class, 'pdf'])->where('name', '[a-z0-9-]+');
                 Route::get('/docs/{name}', [DocsController::class, 'show'])->where('name', '[a-z0-9-]+');
             });
             Route::get('/hotels/{hotel}/switches', [SwitchController::class, 'forHotel'])->withTrashed();

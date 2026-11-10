@@ -12,8 +12,8 @@ Same code for **shared hosting (cPanel)** and a **VPS**. No Redis, no always-on 
 
 ## 1. Build the package (on your laptop)
 
-The package also holds the `docs/` folder (outside `public/`, so not on the web): Super Admin → Developer docs reads it.
-Another place: set `DOCS_PATH` in `.env`.
+The package also holds the `docs/` folder and the deployment guide PDFs (`deploy-guide/pdf/`), both outside `public/`, so not on the web: Super Admin → Developer docs reads them.
+Another place: set `DOCS_PATH` / `DEPLOY_GUIDE_PATH` in `.env`.
 ```sh
 ./deploy/package.sh        # makes build/hotelms.zip
 ```
