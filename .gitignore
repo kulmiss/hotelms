@@ -18,3 +18,8 @@ node_modules/
 vendor/
 dist/
 coverage/
+
+# Caches from tools (never commit)
+__pycache__/
+*.pyc
+frontend/.vite/
