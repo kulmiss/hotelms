@@ -7,6 +7,7 @@ use App\Models\ChargeType;
 use App\Models\Guest;
 use App\Models\Hotel;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Plan;
 use App\Models\Room;
@@ -351,6 +352,30 @@ class FrontDeskTest extends TestCase
         $cleaner = User::factory()->withRole($this->hotel, 'housekeeping')->create();
         $cleaner->branches()->attach($this->branch->id);
         $this->actingAs($cleaner)->putJson("/api/v1/invoices/$invoiceId/buyer", ['company' => 'X'])->assertForbidden();
+    }
+
+    public function test_payments_list_filters_by_branch_only_within_the_persons_branches(): void
+    {
+        $piassa = Branch::factory()->for($this->hotel)->create(['name' => 'Piassa', 'code' => 'PS']);
+        $this->inHotel(function () use ($piassa) {
+            foreach ([[$this->branch->id, '100.00'], [$piassa->id, '250.00']] as [$branchId, $amount]) {
+                Payment::forceCreate(['branch_id' => $branchId, 'payment_method_id' => $this->cash, 'type' => 'payment', 'amount' => $amount,
+                    'currency' => 'ETB', 'amount_in_base' => $amount, 'paid_at' => now()]);
+            }
+        });
+        $other = Branch::factory()->for(Hotel::factory()->create())->create();
+
+        $this->actingAs($this->admin);
+        $this->getJson('/api/v1/payments')->assertOk()->assertJsonCount(2, 'data');
+        $this->getJson('/api/v1/payments?branch_id='.$piassa->id)->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.amount', '250.00');
+        $this->getJson('/api/v1/payments?branch_id='.$other->id)->assertOk()->assertJsonCount(0, 'data'); // another hotel's branch: nothing
+
+        // A branch manager who works only in Bole never sees Piassa, even when asking for it.
+        $manager = User::factory()->withRole($this->hotel, 'branch_manager')->create();
+        $manager->branches()->attach($this->branch->id);
+        $this->actingAs($manager);
+        $this->getJson('/api/v1/payments?branch_id='.$piassa->id)->assertOk()->assertJsonCount(0, 'data');
+        $this->getJson('/api/v1/payments')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.amount', '100.00');
     }
 
     public function test_lists_filter_by_date_and_the_board_shows_another_day(): void

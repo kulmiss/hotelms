@@ -410,5 +410,5 @@ Differences from §2: Restaurant / Bar still opens `/reports` by address ("Your 
 - **Chart code size:** Recharts and our chart parts are one shared file of **118.3 KB gzip** (`KpiCard-*.js` in the build), loaded the first time a dashboard screen opens (hotel dashboard, cashier, housekeeping, reports or command center) and then reused. Each screen's own file is under 30 KB. First download **257.4 KB gzip** (253.6 before P18). CI prints both on every PR.
 
 ### Still open
-- "Recent payments" on the Revenue tab ignores the branch filter (server change – QUESTIONS.md "P18" 1).
+- ~~"Recent payments" on the Revenue tab ignores the branch filter~~ – fixed after your OK (`GET /payments?branch_id=`, test added).
 - The screenshots tool in the browser pane draws slowly at big sizes; numbers above come from the page itself, not from pictures.

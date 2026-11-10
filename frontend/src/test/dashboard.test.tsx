@@ -89,6 +89,17 @@ describe('hotel dashboard (P18)', () => {
     expect(screen.getByRole('button', { name: '7 days' })).toHaveAttribute('aria-pressed', 'true')
   })
 
+  it('asks for the recent payments of the chosen branch only', async () => {
+    const fetchMock = mockApi({
+      'GET /me': { body: makeMe({}, ['dashboard.view', 'dashboard.view_revenue', 'payments.view']) },
+      'GET /dashboard': { body: { data: { ...today, ...money } } },
+      'GET /dashboard/trend': { body: { data: [day('2026-11-12')], rooms: 12, currency: 'ETB' } },
+      'GET /payments': { body: { data: [], current_page: 1, last_page: 1, total: 0, per_page: 8 } },
+    })
+    renderApp('/?tab=revenue&branch=2')
+    await waitFor(() => expect(fetchMock.mock.calls.some(([u]) => String(u).includes('/payments?') && String(u).includes('branch_id=2'))).toBe(true))
+  })
+
   it('keeps the page working when one widget fails', async () => {
     mockApi({
       'GET /me': { body: makeMe({}, ['dashboard.view']) },
