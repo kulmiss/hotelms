@@ -6,7 +6,7 @@
 #
 # Only the code goes into the package – never files from your own computer's work folder:
 # no .env, no uploads, logs, sessions or caches (storage/ and bootstrap/cache/ are created empty),
-# no tests, no development Docker files. CI runs this script on every pull request and checks that (job "Package").
+# no tests, no development Docker files. CI runs this script on pull requests that change the app or this script, and checks that (.github/workflows/package.yml).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 ROOT="$PWD"

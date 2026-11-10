@@ -19,8 +19,8 @@ Another place: set `DOCS_PATH` in `.env`.
 ```
 Only code goes into the package: the web app (`app.html`, `assets/`, the staff-guide pictures in `guide/`, icons,
 `sw.js`), the backend with `vendor/` (no developer packages) and `docs/`. Never your `.env`, uploads, logs, sessions,
-caches, tests or the development Docker files – `storage/` and `bootstrap/cache/` are created empty. CI builds the package on every pull request,
-checks exactly this (job "Package") and keeps the zip for 7 days (Actions → the run → Artifacts → `hotelms-package`).
+caches, tests or the development Docker files – `storage/` and `bootstrap/cache/` are created empty. CI builds the package on every pull request that
+touches the app or the package script, checks exactly this (workflow "Package") and keeps the zip for 7 days (Actions → the run → Artifacts → `hotelms-package`).
 
 ## 2a. Shared hosting (cPanel)
 1. **MySQL Databases:** create a database + user, give the user ALL PRIVILEGES.

@@ -164,7 +164,7 @@ ls build/hotelms/storage/app/private
 
 **You should see:** the size of `hotelms.zip`, `15` (the staff-guide pictures), and nothing for the last line
 (no uploads from your computer). The package never holds your `.env`, uploads, logs or caches (`deploy/package.sh`;
-CI checks this on every pull request).
+CI checks this whenever the app or the package script changes).
 
 ### B5. Make the secret key now (for hosts without SSH)
 
