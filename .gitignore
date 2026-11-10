@@ -10,6 +10,8 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+# Example settings for a live server (no secrets, placeholders only) – the package and docs/hosting.md need it.
+!.env.production.example
 
 # Dependencies and builds
 node_modules/

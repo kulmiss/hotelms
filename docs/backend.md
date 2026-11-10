@@ -47,6 +47,7 @@ Order for hotel routes: `auth:sanctum` → `active` → `device` → `tenant` �
 | `idempotent` | `Idempotent` | Saved once (owner, QA 8 Nov) on every action that takes money or creates / changes a booking, bill, charge, cashier shift, guest or approval: the `Idempotency-Key` + user + endpoint + request hash + answer are kept 24 h in `idempotency_keys` (unique per user and key). Same key → the first answer again; same key with other details → 422 `idempotency_mismatch`; same key still running → waits, then 409 `busy`; a failed answer frees the key |
 | `one.at.a.time:kind` | `OneAtATime` | One change at a time per booking/bill (a lock in the cache) |
 | (global) | `SecurityHeaders` | nosniff, frame deny, referrer policy, HSTS on HTTPS |
+| (global) | Laravel `TrustProxies` | trusts nobody by default; `TRUSTED_PROXIES` in `.env` (via `App\Support\TrustedProxies`, set in `AppServiceProvider`) only behind a proxy/CDN – see hosting.md |
 | (global) | `RecordProblems` | Notes refused requests and errors for the watchdog |
 
 Rate limits (`AppServiceProvider`): `login` (5/min per email+address, 30/min per address), `two-factor`
