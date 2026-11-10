@@ -1,0 +1,9 @@
+# Alternative to the cron line (deploy-guide/vps.md, option B). Use EITHER the cron line OR this timer, not both.
+[Unit]
+Description=HotelMS scheduler (php artisan schedule:run)
+
+[Service]
+Type=oneshot
+User=www-data
+WorkingDirectory=/var/www/hotelms
+ExecStart=/usr/bin/php /var/www/hotelms/artisan schedule:run

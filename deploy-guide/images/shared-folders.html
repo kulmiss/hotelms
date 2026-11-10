@@ -1,0 +1,20 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+body{margin:0;width:900px;height:450px;background:#fff;font-family:Inter,Arial,sans-serif;color:#0f172a}
+h1{font-size:20px;margin:22px 30px 4px}p{margin:0 30px;color:#475569;font-size:13px}
+pre{margin:22px 40px 18px;font:14px/25px "DejaVu Sans Mono",Consolas,monospace}
+.box{margin:0 40px;width:560px;padding:10px 20px;border:2px solid #16a34a;background:#ecfdf5;border-radius:10px;font-size:13px;line-height:20px}
+</style></head><body>
+<h1>Where the files go on shared hosting</h1>
+<p>Your cPanel home folder (/home/&lt;CPANEL_USER&gt;). Only the "public" folder is reachable from the web.</p>
+<pre>/home/&lt;CPANEL_USER&gt;/
+├── hotelms/               ← the app (upload + extract here)
+│   ├── .env               ← your settings (secret!)
+│   ├── app/ config/ vendor/ docs/ …
+│   ├── storage/           ← uploads, logs (must be writable)
+│   └── public/            ← the domain's document root points HERE
+│       ├── app.html  assets/  sw.js  guide/
+│       └── index.php  .htaccess  storage → ../storage/app/public
+├── hotelms-backups/       ← BACKUP_PATH (outside the web)
+└── public_html/           ← your main website (leave it alone)</pre>
+<div class="box">cPanel → Domains → &lt;YOUR_DOMAIN&gt; → Manage<br>Document Root = /home/&lt;CPANEL_USER&gt;/hotelms/public</div>
+</body></html>
