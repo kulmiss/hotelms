@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * The developer documentation (Markdown files in the repository's docs/ folder), readable in the app
  * by the Owner and the tech team. Shipped with the app by deploy/package.sh. Only these files: no path
  * from the request reaches the disk (the name must match a file in the list).
+ * Also the deployment guide PDFs (deploy-guide/pdf), to read or download.
  */
 class DocsController extends Controller
 {
@@ -24,6 +26,34 @@ class DocsController extends Controller
         }
 
         return null;
+    }
+
+    /** Folder with the deployment guide PDFs: deploy-guide/pdf next to the app on a server, ../deploy-guide/pdf in development. */
+    public static function pdfFolder(): ?string
+    {
+        foreach ([config('hotelms.deploy_guide_path'), base_path('deploy-guide/pdf'), base_path('../deploy-guide/pdf')] as $dir) {
+            if ($dir && is_dir($dir)) {
+                return realpath($dir) ?: $dir;
+            }
+        }
+
+        return null;
+    }
+
+    /** @return array<string, string> name => PDF path; the overview (index) first */
+    private function pdfs(): array
+    {
+        $dir = self::pdfFolder();
+        $files = [];
+        foreach ($dir ? (glob($dir.'/*.pdf') ?: []) : [] as $path) {
+            $name = Str::lower(pathinfo($path, PATHINFO_FILENAME));
+            if (preg_match('/^[a-z0-9-]+$/', $name)) {
+                $files[$name] = $path;
+            }
+        }
+        uksort($files, fn ($a, $b) => [$a !== 'index', $a] <=> [$b !== 'index', $b]);
+
+        return $files;
     }
 
     /** @return array<string, string> name => file path, README first */
@@ -69,7 +99,24 @@ class DocsController extends Controller
             usort($rows, fn ($a, $b) => $b['hits'] <=> $a['hits']);
         }
 
-        return response()->json(['data' => $rows, 'available' => self::folder() !== null]);
+        $pdfs = [];
+        foreach ($this->pdfs() as $name => $path) {
+            $pdfs[] = ['name' => $name, 'size' => (int) filesize($path), 'updated_at' => date(DATE_ATOM, (int) filemtime($path))];
+        }
+
+        return response()->json(['data' => $rows, 'available' => self::folder() !== null, 'pdfs' => $pdfs]);
+    }
+
+    /** One deployment guide PDF (only names from the list; nothing from the request reaches the disk). */
+    public function pdf(string $name): BinaryFileResponse
+    {
+        $path = $this->pdfs()[$name] ?? abort(404, 'This document does not exist.');
+
+        return response()->file($path, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="hotelms-deploy-'.$name.'.pdf"',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     /** A diagram from docs/images as a data URL; only plain names (no folders), only files that exist. */

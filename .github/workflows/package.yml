@@ -59,7 +59,7 @@ jobs:
           packed=$(grep -c '^hotelms/public/guide/.*\.webp$' list.txt || true)
           [ "$packed" -eq "$pictures" ] || fail "Staff-guide pictures: $packed of $pictures in the package"
           for f in hotelms/public/app.html hotelms/public/sw.js hotelms/public/.htaccess hotelms/public/index.php \
-                   hotelms/artisan hotelms/.env.production.example hotelms/vendor/autoload.php hotelms/docs/README.md; do
+                   hotelms/artisan hotelms/.env.production.example hotelms/vendor/autoload.php hotelms/docs/README.md hotelms/deploy-guide/pdf/index.pdf; do
             grep -qx "$f" list.txt || fail "Missing: $f"
           done
           for d in app/public app/private framework/cache/data framework/sessions framework/views logs; do

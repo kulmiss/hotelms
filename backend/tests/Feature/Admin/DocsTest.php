@@ -24,7 +24,10 @@ class DocsTest extends TestCase
         File::ensureDirectoryExists($this->dir.'/images');
         File::put($this->dir.'/images/flow.svg', '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
         File::put($this->dir.'/architecture.md', "# Architecture\n\n| A | B |\n|---|---|\n| money | strings |\n");
-        config(['hotelms.docs_path' => $this->dir]);
+        File::ensureDirectoryExists($this->dir.'/pdf');
+        File::put($this->dir.'/pdf/vps.pdf', '%PDF-1.4 vps');
+        File::put($this->dir.'/pdf/index.pdf', '%PDF-1.4 index');
+        config(['hotelms.docs_path' => $this->dir, 'hotelms.deploy_guide_path' => $this->dir.'/pdf']);
     }
 
     protected function tearDown(): void
@@ -52,14 +55,31 @@ class DocsTest extends TestCase
         $this->get('/api/v1/admin/docs/..%2F.env')->assertNotFound(); // only names from the list
     }
 
+    public function test_the_deployment_guide_pdfs_can_be_read_and_downloaded(): void
+    {
+        $this->actingAs(User::factory()->superAdmin()->create());
+        $this->getJson('/api/v1/admin/docs')->assertOk()
+            ->assertJsonCount(2, 'pdfs')->assertJsonPath('pdfs.0.name', 'index')->assertJsonPath('pdfs.1.name', 'vps')
+            ->assertJsonPath('pdfs.1.size', strlen('%PDF-1.4 vps'));
+
+        $res = $this->get('/api/v1/admin/docs/pdf/vps')->assertOk()->assertHeader('Content-Type', 'application/pdf');
+        $this->assertStringContainsString('filename="hotelms-deploy-vps.pdf"', (string) $res->headers->get('Content-Disposition'));
+        $this->assertSame('%PDF-1.4 vps', file_get_contents($res->baseResponse->getFile()->getPathname()));
+
+        $this->get('/api/v1/admin/docs/pdf/nothing')->assertNotFound();
+        $this->get('/api/v1/admin/docs/pdf/..%2Freadme')->assertNotFound(); // only names from the list
+    }
+
     public function test_nobody_else_can_read_them(): void
     {
         $support = User::factory()->superAdmin()->create(['platform_role' => 'support']);
         $this->actingAs($support)->getJson('/api/v1/admin/docs')->assertForbidden();
+        $this->actingAs($support)->get('/api/v1/admin/docs/pdf/vps')->assertForbidden();
 
         $hotel = Hotel::factory()->create();
         Branch::factory()->for($hotel)->create();
         $admin = User::factory()->withRole($hotel, 'hotel_admin')->create();
         $this->actingAs($admin)->getJson('/api/v1/admin/docs/readme')->assertForbidden();
+        $this->actingAs($admin)->get('/api/v1/admin/docs/pdf/vps')->assertForbidden();
     }
 }

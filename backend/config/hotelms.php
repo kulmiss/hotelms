@@ -37,6 +37,8 @@ return [
     */
     // Developer documentation shown in Super Admin → Developer docs (default: docs/ next to the app, or ../docs).
     'docs_path' => env('DOCS_PATH'),
+    // Deployment guide PDFs (Super Admin → Developer docs). Empty = deploy-guide/pdf next to the app.
+    'deploy_guide_path' => env('DEPLOY_GUIDE_PATH'),
 
     'platform_roles' => ['owner', 'support', 'sales', 'finance', 'tech'],
 

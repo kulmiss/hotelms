@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api, del, post, put } from './api'
+import { api, ApiError, apiUrl, del, post, put } from './api'
 import { REMOVED, SILENT } from './toast'
 
 /* ---------- Support inbox (both sides) ---------- */
@@ -49,10 +49,29 @@ export type WatchFinding = {
 }
 /* ---------- Developer docs (the docs/ folder; Owner + tech team) ---------- */
 export type DocListItem = { name: string; title: string; hits?: number; snippet?: string }
+/** A deployment guide PDF (deploy-guide/pdf). */
+export type DocPdf = { name: string; size: number; updated_at: string }
 export const useDocs = (q: string) =>
-  useQuery({ queryKey: ['admin', 'docs', q], queryFn: () => api<{ data: DocListItem[]; available: boolean }>(`/admin/docs${q ? `?q=${encodeURIComponent(q)}` : ''}`), placeholderData: keepPreviousData })
-export const useDoc = (name: string) =>
-  useQuery({ queryKey: ['admin', 'docs', 'one', name], queryFn: () => api<{ data: { name: string; title: string; html: string; updated_at: string } }>(`/admin/docs/${name}`), staleTime: 60_000 })
+  useQuery({ queryKey: ['admin', 'docs', q], queryFn: () => api<{ data: DocListItem[]; available: boolean; pdfs?: DocPdf[] }>(`/admin/docs${q ? `?q=${encodeURIComponent(q)}` : ''}`), placeholderData: keepPreviousData })
+export const useDoc = (name: string, enabled = true) =>
+  useQuery({ queryKey: ['admin', 'docs', 'one', name], queryFn: () => api<{ data: { name: string; title: string; html: string; updated_at: string } }>(`/admin/docs/${name}`), staleTime: 60_000, enabled })
+/** Address of a guide PDF (a download link sends the sign-in cookie). */
+export const docPdfUrl = (name: string) => apiUrl(`/admin/docs/pdf/${name}`)
+/**
+ * The PDF itself, to show inside the page. Fetched (not an <iframe> of the API address), because the server
+ * forbids showing its answers in frames (X-Frame-Options: DENY); a copy made in the browser has no such rule.
+ */
+export const useDocPdf = (name: string | undefined) =>
+  useQuery({
+    queryKey: ['admin', 'docs', 'pdf', name],
+    enabled: !!name,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const res = await fetch(docPdfUrl(name!), { credentials: 'include', headers: { Accept: 'application/pdf' } })
+      if (!res.ok) throw new ApiError(res.status, res.statusText, null)
+      return res.blob()
+    },
+  })
 
 export const useWatchdog = (show: 'open' | 'fixed', enabled = true) =>
   useQuery({

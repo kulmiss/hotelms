@@ -2735,7 +2735,17 @@
     "noHits": "Nothing found.",
     "missing": "The docs folder is not on this server. Upload it with the app (deploy/package.sh does this).",
     "notFound": "This document does not exist.",
-    "updated": "Last changed {{date}}"
+    "updated": "Last changed {{date}}",
+    "pdfHeading": "Deployment guide (PDF)",
+    "pdfNames": {
+      "index": "Which option to choose",
+      "shared-hosting": "Shared hosting (cPanel)",
+      "vps": "VPS (Ubuntu 24.04)"
+    },
+    "pdfSize": "PDF · {{size}}",
+    "download": "Download",
+    "openTab": "Open in a new tab",
+    "pdfTip": "Pages not showing (for example on an iPad)? Use Open in a new tab or Download."
   },
   "watchdog": {
     "title": "Watchdog",

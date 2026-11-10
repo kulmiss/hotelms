@@ -24,7 +24,7 @@ The backend answers 8 requests at the same time (`PHP_CLI_SERVER_WORKERS`). Lara
 so it no longer restarts by itself when `backend/.env` changes: run `docker compose restart backend` after editing `.env`.
 (Code changes still show at once.)
 
-The `docs/` folder is mounted into the backend container (read-only), so Super Admin → Developer docs shows your latest edits.
+The `docs/` folder and `deploy-guide/pdf/` are mounted into the backend container (read-only), so Super Admin → Developer docs shows your latest edits and the newest guide PDFs (after editing `docker-compose.yml` mounts: `docker compose up -d`).
 
 Sign in as the Super Admin with `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD` from `backend/.env`
 (you are asked to choose your own password the first time).

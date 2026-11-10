@@ -35,6 +35,8 @@ mkdir -p "$OUT/bootstrap/cache"
 
 echo "   Developer docs (Super Admin → Developer docs; not public)"
 cp -R docs "$OUT/docs"
+# The deployment guide PDFs too (shown there as well; outside public/, so not on the web).
+mkdir -p "$OUT/deploy-guide" && cp -R deploy-guide/pdf "$OUT/deploy-guide/pdf"
 
 echo "3/4 Web app into public/ (as app.html, so / opens the app and /api stays Laravel)"
 cp frontend/dist/index.html "$OUT/public/app.html"

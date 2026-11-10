@@ -290,6 +290,7 @@ export const routes = [
                   { path: 'releases', element: page(<ReleasesPage />) },
                   { path: 'watchdog', element: page(<WatchdogPage />) },
                   { path: 'docs', element: page(<DocsPage />) },
+                  { path: 'docs/pdf/:pdf', element: page(<DocsPage />) },
                   { path: 'docs/:name', element: page(<DocsPage />) },
                   { path: 'content', element: page(<ContentPage />) },
                 ],

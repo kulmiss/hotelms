@@ -2,6 +2,7 @@
 
 Everything a developer needs to understand, run, change and ship HotelMS.
 Also readable **inside the app**: Super Admin → **Developer docs** (the Owner and the tech team; platform permission `docs.view`).
+The same page shows the **deployment guide PDFs** (`deploy-guide/pdf/`): read them in the page, open them in a new tab or download them.
 Read in this order the first time:
 
 | # | Document | What you learn |
