@@ -5,13 +5,16 @@ namespace Tests\Feature\Admin;
 use App\Models\Branch;
 use App\Models\FeatureSwitch;
 use App\Models\Hotel;
+use App\Models\HotelInvoice;
 use App\Models\PaymentProof;
 use App\Models\Plan;
 use App\Models\PlatformSetting;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\HotelBilling;
 use App\Services\HotelDefaults;
 use App\Services\HotelModules;
+use App\Services\HotelStatus;
 use App\Services\Switches;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -157,5 +160,16 @@ class BalancedPlansTest extends TestCase
         $this->actingAs($owner)->putJson('/api/v1/admin/settings', ['whatsapp' => '+251 911 22 33 44'])->assertOk();
         $this->assertSame('+251 911 22 33 44', PlatformSetting::read('whatsapp'));
         $this->putJson('/api/v1/admin/settings', ['whatsapp' => 'call me'])->assertJsonValidationErrors('whatsapp');
+    }
+
+    public function test_a_free_hotel_stays_active_and_gets_no_invoices(): void
+    {
+        $hotel = Hotel::factory()->create(['status' => 'trial', 'plan_id' => Plan::where('code', 'free')->value('id'), 'trial_ends_at' => null, 'subscription_ends_at' => null]);
+        $this->assertSame('active', app(HotelStatus::class)->compute($hotel));
+        $this->assertSame(0, app(HotelBilling::class)->issueDue());
+        $this->assertSame(0, HotelInvoice::where('hotel_id', $hotel->id)->count());
+        // A paid plan without dates still runs out as before.
+        $hotel->update(['plan_id' => Plan::where('code', 'starter')->value('id')]);
+        $this->assertSame('suspended', app(HotelStatus::class)->compute($hotel->fresh()));
     }
 }
