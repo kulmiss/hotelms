@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { LoadFailed } from '@/components/ui/LoadFailed'
 import { cn } from '@/lib/cn'
 import { useInvoice } from '@/lib/desk'
-import { date, money } from '@/lib/format'
+import { printDate, money } from '@/lib/format'
 import { localDate, localTime } from '@/lib/front'
 
 /**
@@ -71,7 +71,7 @@ export function InvoicePrintPage() {
           <div className={cn('flex flex-col', !small && 'text-right')}>
             <strong className="text-[16px]">{inv.status === 'void' ? t('billing.printVoid') : t('billing.printTitle')}</strong>
             <span>{inv.number}</span>
-            <span>{date(localDate(inv.issued_at))}</span>
+            <span>{printDate(localDate(inv.issued_at))}</span>
           </div>
         </header>
 
@@ -87,7 +87,7 @@ export function InvoicePrintPage() {
             <div className={cn('flex flex-col', !small && 'text-right')}>
               <span className="text-black/60">{inv.reservation?.code}</span>
               <span>
-                {date(localDate(inv.stay.check_in_at))} {localTime(inv.stay.check_in_at)} → {date(localDate(inv.stay.check_out_at))} {localTime(inv.stay.check_out_at)}
+                {printDate(localDate(inv.stay.check_in_at))} {localTime(inv.stay.check_in_at)} → {printDate(localDate(inv.stay.check_out_at))} {localTime(inv.stay.check_out_at)}
               </span>
               <span>{inv.stay.rooms.map((r) => r.room_number ?? r.room_type).join(', ')}</span>
             </div>
@@ -106,7 +106,7 @@ export function InvoicePrintPage() {
           <tbody>
             {inv.items.map((it) => (
               <tr key={it.id} className="border-b border-black/10 align-top">
-                {!small && <td className="py-1 pr-2 whitespace-nowrap">{date(it.service_date)}</td>}
+                {!small && <td className="py-1 pr-2 whitespace-nowrap">{printDate(it.service_date)}</td>}
                 <td className="py-1 pr-2">
                   {it.description}
                   {it.is_waived && ` (${t('billing.waived')})`}
@@ -126,7 +126,7 @@ export function InvoicePrintPage() {
           ))}
           <Row label={t('reservations.total')} value={money(inv.total, c)} strong />
           {inv.payments.map((p) => (
-            <Row key={p.id} label={`${t(`reservations.paymentTypes.${p.type}`)} · ${p.method ?? ''} · ${date(localDate(p.paid_at))}`} value={`${p.type === 'refund' ? '' : '− '}${money(p.amount_in_base, c)}`} />
+            <Row key={p.id} label={`${t(`reservations.paymentTypes.${p.type}`)} · ${p.method ?? ''} · ${printDate(localDate(p.paid_at))}`} value={`${p.type === 'refund' ? '' : '− '}${money(p.amount_in_base, c)}`} />
           ))}
           <Row label={t('reservations.balance')} value={money(inv.balance, c)} strong />
         </section>

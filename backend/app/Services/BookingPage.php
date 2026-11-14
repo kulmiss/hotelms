@@ -87,6 +87,7 @@ class BookingPage
                 ])->values()->all(),
                 'note' => $this->settings->get(self::NOTE),
                 'powered_by' => ! $this->switches->on($hotel, 'feature.branding'),
+                'language' => (string) $this->settings->get('language', 'en'), // the hotel's default; ?lang= changes it
             ];
         });
     }
@@ -94,16 +95,16 @@ class BookingPage
     /** A guest's request. @param array<string, mixed> $data */
     public function request(Hotel $hotel, array $data, Request $request): BookingRequest
     {
-        return $this->tenant->runAs($hotel, function () use ($hotel, $data, $request) {
+        return $this->tenant->runAs($hotel, function () use ($hotel, $data) {
             $branch = Branch::find($data['branch_id']);
             $type = isset($data['room_type_id']) ? RoomType::where('branch_id', $branch?->id)->find($data['room_type_id']) : null;
             if (! $branch || (isset($data['room_type_id']) && ! $type)) {
-                throw ValidationException::withMessages(['room_type_id' => 'Choose a room from the list.']);
+                throw ValidationException::withMessages(['room_type_id' => __('Choose a room from the list.')]);
             }
             $r = BookingRequest::create([
                 'branch_id' => $branch->id, 'room_type_id' => $type?->id, 'check_in' => $data['check_in'], 'check_out' => $data['check_out'],
                 'adults' => (int) $data['adults'], 'children' => (int) ($data['children'] ?? 0), 'name' => $data['name'], 'phone' => $data['phone'],
-                'email' => $data['email'] ?? null, 'note' => $data['note'] ?? null, 'ip' => $request->ip(),
+                'email' => $data['email'] ?? null, 'note' => $data['note'] ?? null,
             ]);
             $staff = User::where('hotel_id', $hotel->id)->where('status', 'active')->get()->filter(fn (User $u) => $u->hasPermission('reservations.create'));
             app(Automations::class)->tell($hotel, 'booking_request', $staff, "Booking request from {$r->name}",

@@ -5,6 +5,7 @@ name: Lighthouse
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - 'backend/resources/views/landing/**'
       - 'backend/public/landing/**'
@@ -24,6 +25,8 @@ concurrency:
 
 jobs:
   lighthouse:
+    # Draft PRs (the lower ones in a stack) are not tested; the top PR is (owner, 14 Nov 2026).
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     name: Website speed and quality (Lighthouse)
     runs-on: ubuntu-24.04
     services:

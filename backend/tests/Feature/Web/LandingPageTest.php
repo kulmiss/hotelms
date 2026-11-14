@@ -40,6 +40,57 @@ class LandingPageTest extends TestCase
         $this->assertStringContainsString('src="/landing/dashboard.webp"', $html);
     }
 
+    public function test_the_website_in_amharic_by_link_with_no_cookie(): void
+    {
+        $r = $this->get('/?lang=am')->assertOk();
+        $this->assertEmpty($r->headers->getCookies());
+        $html = $r->getContent();
+        $this->assertStringContainsString('<html lang="am">', $html);
+        $this->assertStringContainsString('<h1>ሆቴልዎን ከአንድ ቀላል ማያ ያስተዳድሩ</h1>', $html);
+        $this->assertStringContainsString('href="/login?lang=am"', $html); // the app opens in Amharic too
+        $this->assertStringContainsString('href="/privacy?lang=am"', $html);
+        $this->assertStringContainsString('<link rel="alternate" hreflang="en"', $html);
+        $this->assertStringContainsString('<link rel="canonical" href="'.rtrim(config('app.url'), '/').'/?lang=am">', $html);
+        $this->assertStringContainsString('እስከ 15 ክፍሎች', $html); // plan limits with numbers
+        $this->assertStringContainsString("font-src 'self'", $r->headers->get('Content-Security-Policy'));
+        $this->assertStringNotContainsString('<script', $html);
+
+        // English stays the default, with no Amharic font download.
+        $en = $this->get('/')->getContent();
+        $this->assertStringContainsString('<html lang="en">', $en);
+        $this->assertStringNotContainsString('noto-sans-ethiopic', $en);
+        $this->assertStringContainsString('Up to 15 rooms', $en);
+
+        // Legal drafts: English text with an Amharic note.
+        $legal = $this->get('/privacy?lang=am')->assertOk()->getContent();
+        $this->assertStringContainsString('ይህ ጽሑፍ ለአሁን በእንግሊዝኛ ብቻ ነው', $legal);
+        $this->assertStringContainsString('<article class="prose" lang="en">', $legal);
+    }
+
+    public function test_every_website_string_has_an_amharic_translation(): void
+    {
+        $am = json_decode((string) file_get_contents(lang_path('am.json')), true);
+        $files = array_merge(glob(resource_path('views/landing/*.blade.php')), [app_path('Http/Controllers/Web/BookingPageController.php'), app_path('Services/Landing/LandingContent.php'), app_path('Services/BookingPage.php')]);
+        $missing = [];
+        foreach ($files as $f) {
+            preg_match_all("/(?:__|trans_choice)\\('((?:[^'\\\\]|\\\\.)*)'/", (string) file_get_contents($f), $m);
+            foreach ($m[1] as $key) {
+                $key = str_replace("\\'", "'", $key);
+                if (! isset($am[$key])) {
+                    $missing[] = $key;
+                }
+            }
+        }
+        $this->assertSame([], $missing);
+        foreach ($am as $en => $text) {
+            preg_match_all('/:[a-z]+/', $en, $a);
+            preg_match_all('/:[a-z]+/', $text, $b);
+            sort($a[0]);
+            sort($b[0]);
+            $this->assertSame($a[0], $b[0], "placeholders of: {$en}");
+        }
+    }
+
     public function test_plan_cards_come_from_the_database_with_pro_highlighted(): void
     {
         $html = $this->get('/')->getContent();
