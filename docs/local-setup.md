@@ -59,7 +59,7 @@ The demo never sends emails or Telegram messages, and is left out of platform re
 
 ## Checks (CI)
 
-Three workflows in `.github/workflows/`. Each runs on a pull request **only when its files change** (to save
+Four workflows in `.github/workflows/`. The first three run on a pull request **only when their files change** (to save
 GitHub Actions minutes – a PR that changes only documentation runs none of them). Each can also be started by hand:
 GitHub → Actions → the workflow → **Run workflow**. Nothing runs again after a merge to `main` (the PR was tested).
 
@@ -70,7 +70,9 @@ GitHub → Actions → the workflow → **Run workflow**. Nothing runs again aft
 2. **Frontend** (`frontend.yml`, when `frontend/` changes): `npm audit`, lint, typecheck, `vitest`, build, first-download size.
 3. **Package** (`package.yml`, when `deploy/`, `frontend/`, `backend/public/` or `backend/composer.*` change): builds
    `hotelms.zip` with `deploy/package.sh` and checks it (staff-guide pictures in, work-folder files out); the zip is
-   kept 7 days (the run → Artifacts → `hotelms-package`).
+   kept 7 days (the run → Artifacts → `hotelms-package`). Also `deploy/check-csp.sh` (the app page's CSP hash).
+4. **Secrets** (`secrets.yml`, every PR, a few seconds): gitleaks on the PR's commits only; a key, token or password
+   fails it. Known test data that looks like a secret: `.gitleaksignore`.
 
 A PR is merged only when all checks are green. Never push to `main`: work on a branch, open a PR, the owner merges.
 
@@ -78,6 +80,9 @@ A PR is merged only when all checks are green. Never push to `main`: work on a b
 
 - **Every business rule gets a test** (backend feature test that calls the API like the app does).
 - New hotel data or routes: make sure `IsolationSweepTest` covers them (another hotel gets 404/403 and sees nothing).
+- **New routes: `AccessMatrixTest` fails until the route's protection is known** – `permission:…` / `platform:…`
+  middleware (then every role without it is tried and must get 403), or the short `PUBLIC` / `INSIDE` lists in the test
+  (checked inside the controller: give it its own test).
 - New screen logic with rules (filters, money maths): a small frontend test (`frontend/src/test/*.test.ts(x)`), using
   `mockApi` and `renderApp` from `test/mockApi.ts` and `test/renderApp.tsx`.
 - Time-dependent rules: `$this->travelTo(Carbon::parse('2026-11-12 09:00', 'Africa/Addis_Ababa'))`.

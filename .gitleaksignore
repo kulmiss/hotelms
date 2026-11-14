@@ -1,0 +1,2 @@
+# Test data that looks like a secret (a made-up temporary password in a test), checked by hand.
+689a9664ac553fecb0e518ad8d06006af7fb9edf:frontend/src/test/admin.test.tsx:generic-api-key:114
