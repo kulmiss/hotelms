@@ -52,6 +52,7 @@ in the claude.ai Project.
 | `room_types` **H** | branch_id, base/max capacity, nightly_price, day_use_price, hourly_price, amenities | |
 | `rooms` **H** | branch_id, room_type_id, number, floor, status (available, occupied, dirty, cleaning, maintenance, out_of_order) | |
 | `guest_types` **H**, `rate_rules` **H** | rule_type (weekend, season, holiday, guest_type; long_stay, early_bird, last_minute), dates, days_of_week, min_nights, days_before, min_stay, adjustment, value, priority | Prices |
+| `message_templates` **H**, `guest_messages` **H** | templates: key, language, subject, body; log: reservation_id / booking_request_id, guest_id, key, channel (email, sms, whatsapp, sms_app), language, to, status (sent, failed, opened), error, sent_by (null = automatic) | Guest messages |
 | `ical_feeds` **H**, `ical_blocks` **H** | feeds: branch_id, room_id or room_type_id, name, url (encrypted), is_active, last_synced_at, last_status, last_error, events_count, conflicts; blocks: feed, room_id / room_type_id, uid, starts_on, ends_on, starts_at, ends_at (UTC), summary | Calendar sync; blocks hold rooms like bookings |
 | `holidays` **H** | name, date, kind (fixed, calculated, expected, own), is_active | The hotel's holiday list ("holiday" rules) |
 | `imports` **H** | type, rows_count, created_ids, undone_at | Excel/CSV imports (undo possible) |

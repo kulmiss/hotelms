@@ -250,6 +250,7 @@ class FrontDeskController extends Controller
             'rooms.*.children' => ['nullable', 'integer', 'between:0,20'],
             'discount_percent' => ['nullable', 'decimal:0,2', 'between:0,100'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'feedback_consent' => ['nullable', 'boolean'], // may we send the thank-you with the feedback link?
             ...$this->paymentRules(),
         ]);
         $user = $request->user();

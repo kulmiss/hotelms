@@ -8,6 +8,7 @@ use App\Models\Hotel;
 use App\Models\RoomType;
 use App\Models\User;
 use App\Services\Automation\Automations;
+use App\Services\Messages\GuestMessenger;
 use App\Support\HotelClock;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\Request;
@@ -145,7 +146,9 @@ class BookingPage
                 'branch_id' => $branch->id, 'room_type_id' => $type?->id, 'check_in' => $data['check_in'], 'check_out' => $data['check_out'],
                 'adults' => (int) $data['adults'], 'children' => (int) ($data['children'] ?? 0), 'name' => $data['name'], 'phone' => $data['phone'],
                 'email' => $data['email'] ?? null, 'note' => $data['note'] ?? null,
+                'feedback_consent' => ! empty($data['feedback_consent']), 'language' => app()->getLocale(),
             ]);
+            app(GuestMessenger::class)->sendForRequest($hotel, $r, 'request_received');
             $staff = User::where('hotel_id', $hotel->id)->where('status', 'active')->get()->filter(fn (User $u) => $u->hasPermission('reservations.create'));
             app(Automations::class)->tell($hotel, 'booking_request', $staff, "Booking request from {$r->name}",
                 $r->check_in->format('d M').' – '.$r->check_out->format('d M').($type ? " · {$type->name}" : '')." · {$r->phone}", '/booking-requests');

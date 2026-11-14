@@ -97,6 +97,7 @@ const SETTINGS_PAGES: Record<string, ReturnType<typeof section>> = {
   attendance: section('AttendanceSettings'),
   subscription: section('SubscriptionSettings'),
   'booking-page': section('BookingPageSettings'),
+  'guest-messages': section('GuestMessagesSettings', pages.guestMessages),
 }
 const DesignSystemPage = lazy(() => pages.designSystem().then((m) => ({ default: m.DesignSystemPage })))
 

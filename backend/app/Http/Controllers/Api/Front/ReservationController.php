@@ -172,7 +172,7 @@ class ReservationController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $data = $request->validate($this->bookingRules() + ['source' => ['nullable', Rule::in(Reservation::SOURCES)], 'notes' => ['nullable', 'string', 'max:1000'], 'pay_later' => ['nullable', 'boolean']], self::DATE_MESSAGES);
+        $data = $request->validate($this->bookingRules() + ['source' => ['nullable', Rule::in(Reservation::SOURCES)], 'notes' => ['nullable', 'string', 'max:1000'], 'pay_later' => ['nullable', 'boolean'], 'feedback_consent' => ['nullable', 'boolean']], self::DATE_MESSAGES);
         $reservation = $this->service->create($data, $request->user());
 
         return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)], 201);
@@ -181,7 +181,7 @@ class ReservationController extends Controller
     public function update(Request $request, string $id): JsonResponse
     {
         $reservation = $this->find($request, $id);
-        $data = $request->validate($this->bookingRules(false) + ['source' => ['nullable', Rule::in(Reservation::SOURCES)], 'notes' => ['nullable', 'string', 'max:1000']], self::DATE_MESSAGES);
+        $data = $request->validate($this->bookingRules(false) + ['source' => ['nullable', Rule::in(Reservation::SOURCES)], 'notes' => ['nullable', 'string', 'max:1000'], 'feedback_consent' => ['nullable', 'boolean']], self::DATE_MESSAGES);
         $reservation = $this->service->update($reservation, $data, $request->user());
 
         return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)]);

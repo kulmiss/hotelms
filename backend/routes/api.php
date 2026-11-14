@@ -33,6 +33,7 @@ use App\Http\Controllers\Api\Front\InvoiceController;
 use App\Http\Controllers\Api\Front\PaymentProofController;
 use App\Http\Controllers\Api\Front\QuickChargeController;
 use App\Http\Controllers\Api\Front\ReservationController;
+use App\Http\Controllers\Api\Front\ReservationMessageController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\Hotel\ActivityLogController;
 use App\Http\Controllers\Api\Hotel\PermissionController;
@@ -58,6 +59,7 @@ use App\Http\Controllers\Api\Settings\CancellationPolicyController;
 use App\Http\Controllers\Api\Settings\ChargeTypeController;
 use App\Http\Controllers\Api\Settings\CurrencyController;
 use App\Http\Controllers\Api\Settings\ExchangeRateController;
+use App\Http\Controllers\Api\Settings\GuestMessagesController;
 use App\Http\Controllers\Api\Settings\GuestTypeController;
 use App\Http\Controllers\Api\Settings\HolidayController;
 use App\Http\Controllers\Api\Settings\HotelProfileController;
@@ -197,12 +199,16 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
                 Route::get('/reservations/{id}', [ReservationController::class, 'show']);
                 Route::get('/reservations/{id}/registration-card', [ReservationController::class, 'registrationCard']);
                 Route::get('/reservations/{id}/cancellation-terms', [ReservationController::class, 'cancellationTerms']);
+                Route::get('/reservations/{id}/messages', [ReservationMessageController::class, 'index']);
+                Route::get('/reservations/{id}/messages/preview', [ReservationMessageController::class, 'preview']);
                 Route::post('/reservations/{id}/payments', [ReservationController::class, 'payment'])->middleware(['idempotent', 'one.at.a.time:reservation']); // payments.take / payments.refund checked inside
             });
             Route::post('/reservations', [ReservationController::class, 'store'])->middleware(['permission:reservations.create', 'idempotent']);
             Route::post('/booking-requests/{id}/accept', [BookingRequestController::class, 'accept'])->middleware('permission:reservations.create');
             Route::post('/booking-requests/{id}/decline', [BookingRequestController::class, 'decline'])->middleware('permission:reservations.create');
             Route::put('/reservations/{id}', [ReservationController::class, 'update'])->middleware(['permission:reservations.edit', 'one.at.a.time:reservation']);
+            Route::post('/reservations/{id}/messages', [ReservationMessageController::class, 'send'])->middleware(['permission:reservations.edit', 'throttle:30,1']);
+            Route::put('/reservations/{id}/feedback-consent', [ReservationMessageController::class, 'consent'])->middleware('permission:reservations.edit');
             Route::post('/reservations/{id}/pay-later', [ReservationController::class, 'payLater'])->middleware(['permission:reservations.edit', 'idempotent', 'one.at.a.time:reservation']);
             Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->middleware(['permission:reservations.cancel', 'idempotent', 'one.at.a.time:reservation']);
             Route::post('/reservations/{id}/no-show', [ReservationController::class, 'noShow'])->middleware(['permission:reservations.no_show', 'idempotent', 'one.at.a.time:reservation']);
@@ -343,6 +349,13 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
             // Settings (phase 2a)
             Route::prefix('settings')->group(function () {
                 Route::middleware('permission:settings.hotel')->group(function () {
+                    Route::get('/guest-messages', [GuestMessagesController::class, 'index']);
+                    Route::put('/guest-messages/templates/{key}/{lang}', [GuestMessagesController::class, 'saveTemplate']);
+                    Route::delete('/guest-messages/templates/{key}/{lang}', [GuestMessagesController::class, 'resetTemplate']);
+                    Route::put('/guest-messages/auto', [GuestMessagesController::class, 'saveAuto']);
+                    Route::put('/guest-messages/info', [GuestMessagesController::class, 'saveInfo']);
+                    Route::put('/guest-messages/sms', [GuestMessagesController::class, 'saveSms']);
+                    Route::post('/guest-messages/sms/test', [GuestMessagesController::class, 'testSms'])->middleware('throttle:5,10');
                     Route::get('/booking-page', [BookingRequestController::class, 'settings']);
                     Route::put('/booking-page', [BookingRequestController::class, 'saveSettings']);
                     Route::get('/hotel', [HotelProfileController::class, 'show']);

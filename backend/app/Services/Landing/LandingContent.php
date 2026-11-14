@@ -172,6 +172,8 @@ class LandingContent
                 $row('Cashier shift close', fn (Plan $p) => $yes(in_array('cashier_close', $p->modules ?? [], true))),
                 $row('Weekend, season and holiday prices', fn () => '✓'),
                 $row('Long-stay, early-bird and last-minute prices, minimum stay', fn (Plan $p) => $yes($this->on($p, 'feature.smart_pricing'))),
+                $row('Guest messages: email, WhatsApp and SMS by a tap', fn () => '✓'),
+                $row('Automatic SMS (your own SMS account)', fn (Plan $p) => $yes($this->on($p, 'feature.auto_sms'))),
                 $row('Calendar sync (Airbnb, Booking.com)', function (Plan $p) {
                     $n = $this->number($p, 'limit.ical_rooms');
 

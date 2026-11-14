@@ -170,6 +170,17 @@
         "Tap Book. If the hotel asks for a deposit, the booking waits until the deposit is paid."
       ]
     },
+    "guestMessages": {
+      "title": "Messages to guests (WhatsApp, SMS, email)",
+      "steps": [
+        "Open the booking. Under \"Messages to the guest\", choose the message, e.g. Welcome.",
+        "Tap WhatsApp or SMS app: it opens on your phone with the text ready. Check it and tap Send. It is free.",
+        "Email goes out at once. SMS (account) only when your hotel set up an SMS account.",
+        "Ask the guest if they want a thank-you with a short feedback form after the stay. Tick the box only when they say yes.",
+        "A guest who wants no messages: open the guest and tick \"No messages, please\".",
+        "Every message is listed under the buttons: what, to whom, when and who sent it."
+      ]
+    },
     "priceByHand": {
       "title": "Change a price by hand",
       "steps": [
@@ -589,6 +600,15 @@
         "Give the other site your room's link too (Make link → Copy), so it sees the bookings made here.",
         "The sites read each other every 15 minutes to a few hours. For a booking today, close the dates on the other site by hand.",
         "A clash? You get a message. Nothing is cancelled: move a guest or close the dates on the other site."
+      ]
+    },
+    "messageSettings": {
+      "title": "Set up guest messages",
+      "steps": [
+        "Settings → Guest messages. Fill in Wi-Fi, breakfast, reception's WhatsApp and the menu link.",
+        "Choose which messages go by themselves (email; SMS on paid plans).",
+        "Change the texts in English and Amharic if you like. Words in {braces} are filled in for each guest.",
+        "SMS: use your own AfroMessage account (or another provider). You pay them per SMS; send a test SMS to your phone first."
       ]
     },
     "activity": {

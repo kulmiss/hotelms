@@ -44,7 +44,7 @@ class BookingPageController extends Controller
         $page = $this->pages->page($hotel);
         $lang = PublicLocale::apply($request, $page['language']);
         $done = "/h/{$slug}?sent=1&lang={$lang}";
-        $old = $request->only(['branch_id', 'room_type_id', 'check_in', 'check_out', 'adults', 'children', 'name', 'phone', 'email', 'note']);
+        $old = $request->only(['branch_id', 'room_type_id', 'check_in', 'check_out', 'adults', 'children', 'name', 'phone', 'email', 'note', 'feedback_consent']);
 
         if (filled($request->input('website'))) {
             return redirect($done, 303); // a bot: the normal answer, nothing saved
@@ -72,6 +72,7 @@ class BookingPageController extends Controller
             'phone' => ['required', 'string', 'max:30', 'regex:/^\+?[0-9 ]{7,20}$/'],
             'email' => ['nullable', 'email:rfc', 'max:120'],
             'note' => ['nullable', 'string', 'max:500'],
+            'feedback_consent' => ['nullable', 'in:1'],
         ], ['phone.regex' => __('Write the phone number with digits, e.g. +251 911 234 567.'), 'check_in.after_or_equal' => __('Choose today or a later day.')]);
         $v->after(function ($v) use ($request) {
             $in = strtotime((string) $request->input('check_in'));

@@ -25,6 +25,10 @@ export type Guest = {
   guest_type?: GuestType | null
   is_blacklisted: boolean
   blacklist_reason: string | null
+  /** "No messages, please" (guest messages). */
+  messages_opt_out?: boolean
+  /** Messages in this language; null = the hotel's. */
+  language?: 'en' | 'am' | null
   reservations_count?: number
 }
 
@@ -68,6 +72,8 @@ export type ReservationDetail = Omit<ReservationSummary, 'guest' | 'rooms'> & {
   /** Allowed to pay everything at check-out, and by whom. */
   pay_later?: { by: string | null; at: string | null } | null
   notes: string | null
+  /** The guest said yes to the thank-you message with the feedback link. */
+  feedback_consent?: boolean
   subtotal: string
   discount_percent: string
   discount_amount: string
@@ -135,6 +141,8 @@ export type BookingInput = StayInput & {
   price_override_reason?: string | null
   /** Book a stay shorter than a season's minimum (permission reservations.override_price). */
   allow_short_stay?: boolean
+  /** The guest said yes to the thank-you message with the feedback link (unticked by default). */
+  feedback_consent?: boolean
 }
 
 export type Quote = {

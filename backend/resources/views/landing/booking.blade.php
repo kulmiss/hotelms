@@ -112,8 +112,9 @@
       <label>{{ __('Email (optional)') }} <input type="email" name="email" autocomplete="email" value="{{ $val('email') }}">{!! $err('email') !!}</label>
     </div>
     <label>{{ __('Message (optional)') }} <textarea name="note" maxlength="500">{{ $val('note') }}</textarea>{!! $err('note') !!}</label>
+    <label style="display:flex;gap:10px;align-items:flex-start;font-weight:400;min-height:44px"><input type="checkbox" name="feedback_consent" value="1" style="width:20px;min-height:20px;margin-top:2px" @checked(($old['feedback_consent'] ?? null) === '1')> <span>{{ __('After my stay, send me a thank-you with a short feedback form.') }}</span></label>
     <button class="btn btn-primary" type="submit">{{ __('Send request') }}</button>
-    <p class="muted" style="font-size:13px">{{ __('Your details go only to :hotel, to answer your request.', ['hotel' => $h['name']]) }} <a href="{{ \App\Support\PublicLocale::url('/privacy') }}">{{ __('Privacy policy') }}</a></p>
+    <p class="muted" style="font-size:13px">{{ __('Your details go only to :hotel, to answer your request. With an email address you get a message that it arrived.', ['hotel' => $h['name']]) }} <a href="{{ \App\Support\PublicLocale::url('/privacy') }}">{{ __('Privacy policy') }}</a></p>
   </form>
 </div>
 <footer class="foot">

@@ -1,4 +1,86 @@
 {
+  "messages": {
+    "title": "Messages to the guest",
+    "which": "Message",
+    "language": "Language",
+    "guestDefault": "The guest's",
+    "guestLanguage": "Language for messages",
+    "hotelLanguage": "Hotel's language",
+    "optOut": "No messages, please",
+    "optOutHint": "The guest gets no confirmation, reminder or welcome message.",
+    "guestOptedOut": "This guest asked for no messages.",
+    "consent": "The guest says yes to a thank-you with a feedback form after the stay",
+    "consentHint": "Ask the guest. Leave it empty when they say no or you did not ask.",
+    "needsYes": "needs the guest's yes",
+    "onlyWithYes": "Only when the guest said yes",
+    "tapHint": "WhatsApp and SMS open on this device with the text ready: check it and tap Send. They cost nothing extra.",
+    "none": "No messages yet.",
+    "automatic": "automatic",
+    "keys": {
+      "confirmation": "Booking confirmation",
+      "pre_arrival": "Day before arrival",
+      "welcome": "Welcome (Wi-Fi, breakfast, contacts)",
+      "thank_you": "Thank-you with feedback link",
+      "request_received": "Booking request received",
+      "request_declined": "Booking request declined"
+    },
+    "channels": {
+      "email": "Email",
+      "sms": "SMS (account)",
+      "whatsapp": "WhatsApp",
+      "sms_app": "SMS app"
+    },
+    "status": {
+      "sent": "Sent",
+      "failed": "Not sent",
+      "opened": "Opened to send",
+      "skipped": "Skipped"
+    },
+    "settings": {
+      "help": "Messages to guests: by email (all plans), by SMS with your own SMS account (paid plans), or by a tap on WhatsApp or the SMS app (free). Guests who say no get nothing; the thank-you only goes with their yes.",
+      "info": "Guest information",
+      "infoHelp": "Goes into the welcome message and the room cards. Empty lines are left out.",
+      "wifiName": "Wi-Fi name",
+      "wifiPassword": "Wi-Fi password",
+      "breakfast": "Breakfast",
+      "whatsapp": "Reception's WhatsApp number",
+      "menuUrl": "Restaurant menu link",
+      "menuUrlHint": "A web page or PDF of your menu. Shown on the booking page and the room cards too.",
+      "auto": "Sent by themselves",
+      "autoHelp": "Choose which messages go out automatically, by email or SMS.",
+      "autoSmsPlan": "Automatic SMS comes with the Starter plan and up. WhatsApp and SMS by a tap work on every plan.",
+      "texts": "Texts",
+      "textsHelp": "Change the words in English and Amharic. {words} in braces are filled in for each guest.",
+      "ownText": "Your text",
+      "defaultText": "Default text",
+      "subject": "Subject (email)",
+      "body": "Text",
+      "length_one": "{{count}} letter. One SMS holds about 160 English or 70 Amharic letters.",
+      "length_other": "{{count}} letters. One SMS holds about 160 English or 70 Amharic letters.",
+      "placeholders": "You can use:",
+      "reset": "Back to the default text",
+      "sms": "SMS account",
+      "smsHelp": "Use your own SMS account: you pay your provider for each SMS, HotelMS charges nothing. AfroMessage works in Ethiopia; any other provider with a web address works too.",
+      "provider": "Provider",
+      "providers": {
+        "none": "No SMS account",
+        "http": "Other (web address)"
+      },
+      "token": "API token",
+      "tokenSaved": "Saved – type a new one to change it",
+      "tokenHint": "From your provider's account. Stored encrypted and never shown again.",
+      "sender": "Sender name",
+      "identifier": "Identifier ID (if you have several)",
+      "url": "Address",
+      "urlHint": "Use {to} and {message} where the number and the text go.",
+      "method": "Method",
+      "bodyJson": "Body (JSON)",
+      "testPhone": "Your phone number",
+      "test": "Send a test SMS",
+      "testSent": "Sent. Check your phone.",
+      "whatsappApi": "Automatic WhatsApp (WhatsApp Business Cloud API) is not included yet: Meta charges per conversation and needs a verified business. WhatsApp by a tap is free."
+    }
+  },
   "calendarSync": {
     "help": "Paste the calendar (iCal) link of each listing from Airbnb, Booking.com or another site. Their busy dates block the room here, so it is not booked twice. Links are read every {{minutes}} minutes, and the other sites read ours every few hours: a booking can take that long to show on the other side.",
     "bookingCom": "Booking.com allows calendar links mainly for apartments, holiday homes and guesthouses (not for most hotels). Airbnb and VRBO allow them for every listing.",
@@ -787,6 +869,7 @@
     "subtitle": "How your hotel works: profile, money, rules and features.",
     "search": { "label": "Search settings", "placeholder": "Search settings, e.g. VAT", "none": "No setting found." },
     "sections": {
+      "guest-messages": "Guest messages",
       "calendar-sync": "Calendar sync (Airbnb, Booking.com)",
       "holidays": "Holidays",
       "profile": "Hotel profile",
@@ -2176,6 +2259,8 @@
         "attendance": "Attendance"
       },
       "feature": {
+        "smart_pricing": "Long-stay, early and last-minute prices, minimum stay",
+        "auto_sms": "Automatic SMS to guests",
         "hourly_stays": "Hourly stays",
         "day_use": "Day use",
         "multi_currency": "More than one currency",
@@ -2188,6 +2273,7 @@
         "beta": "Beta features"
       },
       "limit": {
+        "ical_rooms": "Rooms in calendar sync",
         "rooms": "Rooms",
         "branches": "Branches",
         "staff": "Staff"
@@ -2197,6 +2283,8 @@
         "read_only": "Read only (no changes saved)"
       },
       "automation": {
+        "guest_welcome": "Welcome message at check-in",
+        "guest_thank_you": "Thank-you message at check-out",
         "booking_confirmation": "Booking confirmation to the guest",
         "deposit_reminder": "Collect the deposit",
         "booking_expired": "Booking expired",
@@ -2564,6 +2652,14 @@
       "percent": "Percent"
     },
     "items": {
+      "guest_welcome": {
+        "name": "Welcome message to the guest",
+        "what": "At check-in the guest gets Wi-Fi, breakfast, the menu and reception's WhatsApp (Settings → Guest messages)."
+      },
+      "guest_thank_you": {
+        "name": "Thank-you message to the guest",
+        "what": "At check-out, only when the guest said yes: a thank-you with the feedback link."
+      },
       "booking_confirmation": {
         "name": "Booking confirmation to the guest",
         "what": "When a booking is confirmed, the guest gets an email with the dates and amount."

@@ -171,6 +171,31 @@ lawyer"**: the hotel is the data controller for its guests and the platform the 
 and security log kept one year; 7-day removal of unconfirmed sign-ups; 90 days after closing. Change the date in
 `LandingController::LEGAL_UPDATED` when the texts change.
 
+## Guest messages
+
+Settings → Guest messages (`settings.hotel`; `Settings/GuestMessagesController`, `pages/settings/GuestMessagesSections.tsx`) and the
+booking's **Messages** card (`Front/ReservationMessageController`, `components/messages/GuestMessagesCard.tsx`).
+- Messages (`config/guest_messages.php`): booking confirmation (when confirmed), day before arrival (from 10:00, `automations:run`),
+  welcome at check-in (Wi-Fi, breakfast, menu link, reception WhatsApp, phone), thank-you at check-out (with the feedback link),
+  booking-page request received / declined. Default texts in English and Amharic (Amharic needs a native review); the hotel edits
+  each (`message_templates`) or goes back to the default. `{placeholders}` are filled in; **a line whose placeholder is empty is
+  left out**. Language: the guest's (`guests.language`), else the hotel's; a booking-page request uses the page's language.
+  Dates: Gregorian (+ EC when the hotel uses it); Amharic: EC first.
+- **Consent** (owner): confirmation, day-before, welcome and request messages go unless the guest said no (`guests.messages_opt_out`,
+  "No messages, please" on the guest); the thank-you only with a ticked yes (`reservations.feedback_consent`, unticked by default
+  in the booking form, walk-in, the booking's card and the public booking page; copied when a request becomes a booking).
+- **Channels**: email (every plan, automatic and by hand); **WhatsApp and the phone's SMS app by a tap** (free, every plan:
+  `wa.me` / `sms:` link with the text ready, logged as "opened"); SMS through the hotel's own account (`Messages/SmsGateway`):
+  AfroMessage (`POST https://api.afromessage.com/api/send`, Bearer token, `to`, `message`, `from`, `sender`; success =
+  `acknowledge: success`, as in the provider's SDKs) or any provider with a web address (GET/POST, `{to}` `{message}`); token
+  stored encrypted, never shown; internet addresses only. **Automatic SMS only on paid plans** (`feature.auto_sms`, off on Free).
+  WhatsApp Business Cloud API: not included (Meta charges per conversation and needs a verified business).
+- Each automatic message once per booking and channel; nothing from the demo hotel or an unconfirmed sign-up
+  (`Hotel::maySendMessages`). Every message is in the booking's log (`guest_messages`: what, channel, to, status, who).
+- Automations: `booking_confirmation`, `arrival_reminder` (now on by default), `guest_welcome`, `guest_thank_you` (Super Admin
+  switches like the others).
+- Tests: `Hotel/GuestMessagesTest`, `test/guestMessages.test.tsx`.
+
 ## Calendar sync (Airbnb, Booking.com – iCal)
 
 Settings → Calendar sync (`settings.rooms`; `Settings/CalendarSyncController`, `pages/settings/CalendarSyncSections.tsx`).

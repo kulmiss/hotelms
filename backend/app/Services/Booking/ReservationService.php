@@ -93,6 +93,7 @@ class ReservationService
                 'deposit_required' => $plan['deposit_required'],
                 'paid_total' => '0.00',
                 'notes' => $data['notes'] ?? null,
+                'feedback_consent' => ! empty($data['feedback_consent']),
                 'created_by' => $user->id,
                 'pay_later_by' => $payLater ? $user->id : null,
                 'pay_later_at' => $payLater ? now() : null,
@@ -130,6 +131,7 @@ class ReservationService
                 'tax_total' => $plan['tax_total'],
                 'total' => $plan['total'],
                 'notes' => array_key_exists('notes', $data) ? $data['notes'] : $reservation->notes,
+                'feedback_consent' => array_key_exists('feedback_consent', $data) ? (bool) $data['feedback_consent'] : $reservation->feedback_consent,
             ];
             if ($reservation->status === 'pending') {
                 $changes['deposit_required'] = $plan['deposit_required'];

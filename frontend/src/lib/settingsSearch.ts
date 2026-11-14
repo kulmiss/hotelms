@@ -24,6 +24,7 @@ export const SETTINGS_SECTIONS = [
   { key: 'automations', permission: 'automations.manage' },
   { key: 'security', permission: 'settings.hotel' },
   { key: 'booking-page', permission: 'settings.hotel' },
+  { key: 'guest-messages', permission: 'settings.hotel' },
   { key: 'subscription', permission: 'subscription.view' },
 ] as const
 
@@ -48,6 +49,7 @@ const SOURCES: Record<string, string[]> = {
   'rate-rules': ['settings.rates'],
   holidays: ['settings.holidays'],
   'calendar-sync': ['calendarSync'],
+  'guest-messages': ['messages.settings'],
   'guest-types': ['settings.guestTypes'],
   currencies: ['settings.currencies'],
   taxes: ['settings.taxes'],
@@ -77,6 +79,7 @@ const SYNONYMS: Record<string, string> = {
   'booking-page': 'online booking website link guests request',
   'rate-rules': 'price weekend season discount corporate long stay early bird last minute minimum stay',
   holidays: 'holiday genna timket fasika meskel eid ethiopian calendar',
+  'guest-messages': 'sms whatsapp email message template wifi breakfast menu afromessage welcome thank you',
   'calendar-sync': 'airbnb booking.com ical ics channel sync calendar link double booking',
   cancellation: 'no-show refund policy fee',
 }

@@ -109,6 +109,8 @@ function BookingForm({ existing, fromRequest }: { existing?: ReservationDetail; 
   const mayOverride = can('reservations.override_price')
   const [overrideReason, setOverrideReason] = useState('')
   const [allowShort, setAllowShort] = useState(false)
+  // The thank-you message with the feedback link only with the guest's yes (unticked by default).
+  const [consent, setConsent] = useState(existing?.feedback_consent ?? false)
   const anyOverride = rooms.some((r) => r.price_override)
   const preset = useGuest(Number(params.get('guest') ?? 0))
   const chosenGuest = guest ?? (preset.data && !preset.data.data.is_blacklisted ? preset.data.data : null)
@@ -145,6 +147,7 @@ function BookingForm({ existing, fromRequest }: { existing?: ReservationDetail; 
           notes: notes || null,
           ...(anyOverride ? { price_override_reason: overrideReason || null } : {}),
           ...(allowShort ? { allow_short_stay: true } : {}),
+          feedback_consent: consent,
         }
       : null
   const debouncedInput = useDebounced(input, 300)
@@ -398,6 +401,13 @@ function BookingForm({ existing, fromRequest }: { existing?: ReservationDetail; 
             <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
               <Field label={t('reservations.form.notes')} value={notes} onChange={(e) => setNotes(e.target.value)} />
             </div>
+            <label className="flex min-h-touch items-start gap-2 text-sm sm:col-span-2 lg:col-span-1 xl:col-span-2">
+              <input type="checkbox" className="mt-0.5 size-4" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+              <span className="flex flex-col">
+                {t('messages.consent')}
+                <span className="text-xs text-muted">{t('messages.consentHint')}</span>
+              </span>
+            </label>
           </Card>
         </div>
 

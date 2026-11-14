@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { GuestMessagesCard } from '@/components/messages/GuestMessagesCard'
 import { ProofField, ProofLink, type Proof } from '@/components/payments/PaymentProof'
 import { SmartHints } from '@/components/ui/SmartHints'
 import { useSmart } from '@/lib/smart'
@@ -186,6 +187,8 @@ export function ReservationPage() {
               ))}
             </ul>
           </Card>
+
+          <GuestMessagesCard reservationId={r.id} />
         </div>
 
         <Card className="flex flex-col gap-2 text-sm lg:sticky lg:top-20">

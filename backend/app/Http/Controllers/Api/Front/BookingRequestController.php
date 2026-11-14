@@ -7,6 +7,7 @@ use App\Models\BookingRequest;
 use App\Models\Reservation;
 use App\Services\ActivityLogger;
 use App\Services\BookingPage;
+use App\Services\Messages\GuestMessenger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -39,6 +40,13 @@ class BookingRequestController extends Controller
         $r = $this->find($request, $id);
         $reservation = Reservation::find($data['reservation_id']) ?? throw ValidationException::withMessages(['reservation_id' => 'Booking not found.']);
         $r->update(['status' => 'accepted', 'reservation_id' => $reservation->id, 'handled_by' => $request->user()->id, 'handled_at' => now()]);
+        // What the guest chose on the booking page carries over: the thank-you message and the language.
+        if ($r->feedback_consent && ! $reservation->feedback_consent) {
+            $reservation->update(['feedback_consent' => true]);
+        }
+        if ($r->language && $reservation->guest && ! $reservation->guest->language) {
+            $reservation->guest->update(['language' => $r->language]);
+        }
         $log->log('booking_request.accepted', "Booked the online request of {$r->name} ({$reservation->code})", $reservation);
 
         return response()->json(['data' => $r->fresh(['branch', 'roomType'])->present()]);
@@ -49,6 +57,9 @@ class BookingRequestController extends Controller
         $r = $this->find($request, $id);
         $r->update(['status' => 'declined', 'handled_by' => $request->user()->id, 'handled_at' => now()]);
         $log->log('booking_request.declined', "Declined the online request of {$r->name}", $r);
+        if ($request->boolean('tell_guest', true)) {
+            app(GuestMessenger::class)->sendForRequest($request->user()->hotel, $r, 'request_declined');
+        }
 
         return response()->json(['data' => $r->fresh(['branch', 'roomType'])->present()]);
     }
