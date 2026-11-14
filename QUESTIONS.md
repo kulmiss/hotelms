@@ -55,7 +55,7 @@ Format: **question** – options – *chosen* and why – how easy to change lat
 2. **[Answered 8 Nov: remove – PR #104]** **`sonner` is installed but not used** (P3 kept our own toasts). *Recommend:* remove it in a later PR with your OK (removing a package needs your OK). – Easy.
 3. **[Answered 8 Nov: remove – PR #104]** **`@radix-ui/react-avatar`, `-checkbox`, `-radio-group`, `-switch`, `-tabs`, `-label`, `-alert-dialog`, `-scroll-area`, `-collapsible`** are installed but not used (CSS / own components did the job without changing form code). They are not in the download (unused code is dropped by the build). *Recommend:* keep for now, or remove together with sonner. – Easy.
 4. **[Done 8 Nov – PR #119]** **Staff guide pictures** (15 screenshots in `frontend/public/guide/`) still show the old look. They are made by `tools/pictures/` against a running app; I cannot run the app in my workspace. *Recommend:* after the staging test, I redo them in your browser. – Medium.
-5. **Final PR `ui/shadcn-admin → main` is not opened yet** – your plan asks for a staging test first. *Recommend:* merge #88 → #103 in order into `ui/shadcn-admin`, test on staging (or locally), then I open the final PR. – —
+5. **[Done 10 Nov – #127 merged]** **Final PR `ui/shadcn-admin → main`** – opened and merged after your local check (the staging test on a real server is still on your list). Earlier note: your plan asked for a staging test first. *Recommend:* merge #88 → #103 in order into `ui/shadcn-admin`, test on staging (or locally), then I open the final PR. – —
 
 ## P19 – Collapsible filters on phones and tablets
 

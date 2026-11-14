@@ -4,6 +4,8 @@ Goal (owner, 8 Nov 2026): when someone opens HotelMS it should **look and feel l
 (layout, sidebar, header, Cmd+K, spacing, type, colours, dark mode, animations, interactions).
 Code structure stays ours. Approved approach: the **smaller option**, pushed as close to the template as possible.
 
+**Status (10 Nov 2026): finished.** Everything is on `main` (release PR #127). New work goes straight to `main`.
+
 - Template: https://github.com/satnaing/shadcn-admin, **pinned to `e16c87f`** (MIT; notice kept in `THIRD_PARTY_NOTICES`).
 - Copy **style and patterns only**: no demo pages (tasks, apps, chats, Clerk), no TanStack Router, no zod/react-hook-form.
 - Comparison the owner approved: Design canvas "HotelMS dashboard – shadcn-admin look (comparison)".
@@ -223,9 +225,9 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [x] All checks green on every PR (#88–#103): lint (0 errors; the 8 warnings are old), typecheck, 161 tests, build
 - [x] Every route in light / dark at 375 / 768 / 1024 / 1280 / 1920 – full QA pass 8 Nov (`QA_REPORT.md`, #108); problems fixed in the QA fix PRs below
 - [x] Unused packages removed (owner, 8 Nov): `sonner` and 9 unused Radix parts (#104); Heroicons kept for the print pages
-- [ ] Redo the 15 staff-guide pictures (owner: after the browser check passes) (`tools/pictures/`) – needs the running app
-- [ ] **Staging test** before the final PR: deploy `ui/shadcn-admin` to a staging copy (shared-hosting style build), click through as every role
-- [ ] Final PR `ui/shadcn-admin → main` (after the staging test)
+- [x] Redo the 15 staff-guide pictures (#119; cleaning picture #125)
+- [ ] **Staging test** on a real server – owner, still to do (now on `main`; follow `deploy-guide/`)
+- [x] Final PR `ui/shadcn-admin → main` – merged 10 Nov (#127; owner checked locally, CI green)
 
 ### P19 – Collapsible filters on phones and tablets (owner, 8 Nov; after #105)
 - [x] Audit: every page with a filter or sort bar (list in QUESTIONS.md P19)
@@ -242,9 +244,9 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 - [x] One open housekeeping task per room and kind (rule); clean-up: extra 403, 14 unused texts, easy role errors (#112)
 - [x] Docs, THIRD_PARTY_NOTICES, LICENSE (placeholders), What's new draft (#113)
 - [x] Demo approvals on every reset (#114); double-click on a slow network sends once (#115)
-- [ ] Saved once with idempotency keys on every money / data action; calendar tap on touch (#116 + #117, needs `migrate`)
-- [ ] Redo the 15 staff-guide pictures; re-run the QA checks on everything fixed and update `QA_REPORT.md`
-- [ ] **Owner: fill in the `LICENSE` placeholders – must be done before the final PR to `main`**
+- [x] Saved once with idempotency keys on every money / data action; calendar tap on touch (#116 + #117, needs `migrate`)
+- [x] Redo the 15 staff-guide pictures; re-run the QA checks on everything fixed and update `QA_REPORT.md` (#118, #119)
+- [x] Owner: fill in the `LICENSE` placeholders (done 10 Nov, before #127)
 
 ## 6. Status
 
@@ -274,4 +276,9 @@ Each partition: list files → change → compare old/new for lost buttons, hand
 | P19 Collapsible filters | merged 8 Nov | #106 → #107 |
 | Full QA pass | report | #108 |
 | QA fixes | merged 8 Nov | #109–#115 |
-| Saved once + calendar tap | open | #116 (+ #117) |
+| Saved once + calendar tap | merged 8 Nov | #116 (+ #117) |
+| Go-live checklist, QA re-check, guide pictures | merged 8 Nov | #118, #119 |
+| No-access gaps, faster dashboard | merged 9 Nov | #120 |
+| P18 Dashboards (hotel, command center, module overviews) + follow-ups | merged 9 Nov | #121–#125 |
+| Payments branch option, package fixes, deployment guide | merged 10 Nov | #126, #129, #128 |
+| **Release `ui/shadcn-admin → main`** | **merged 10 Nov – restyle finished** | **#127** |

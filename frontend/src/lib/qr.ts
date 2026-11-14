@@ -1,7 +1,9 @@
 /**
  * Tiny QR code maker (byte mode, error correction level M) for the two-step sign-in key.
- * No library: it follows the QR standard (ISO/IEC 18004) the same way as the well-known
- * public-domain reference implementations. Returns a square grid of dark (true) / light modules.
+ * No package: a small TypeScript adaptation of Project Nayuki's QR Code generator library
+ * (https://www.nayuki.io/page/qr-code-generator-library, Copyright (c) Project Nayuki, MIT License –
+ * see THIRD_PARTY_NOTICES), following the QR standard (ISO/IEC 18004).
+ * Returns a square grid of dark (true) / light modules.
  */
 
 // Error-correction codewords per block and number of blocks, level M, versions 1–40 (index 0 unused).

@@ -26,6 +26,12 @@ shadcn/ui – https://github.com/shadcn-ui/ui
   Copyright (c) 2023 shadcn – MIT License
   (the components that shadcn-admin includes, see above)
 
+QR Code generator library – https://www.nayuki.io/page/qr-code-generator-library
+  Copyright (c) Project Nayuki – MIT License
+  What was adapted: frontend/src/lib/qr.ts (the QR code for setting up two-step sign-in)
+  follows the library's way of building QR codes (byte mode, level M), rewritten in
+  shorter TypeScript.
+
 2. Packages bundled into the web app (installed with npm, not copied)
 ---------------------------------------------------------------------
 
@@ -51,7 +57,7 @@ is in vendor/<package>/LICENSE.
 3. Licence texts
 ----------------
 
-MIT License (shadcn-admin, shadcn/ui, Radix UI, cmdk, clsx, tailwind-merge, tw-animate-css,
+MIT License (shadcn-admin, shadcn/ui, Project Nayuki's QR Code generator, Radix UI, cmdk, clsx, tailwind-merge, tw-animate-css,
 Heroicons and the other MIT packages above, with the copyright lines given above)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
