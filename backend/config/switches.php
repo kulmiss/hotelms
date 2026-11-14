@@ -28,12 +28,14 @@ return [
     'feature.accountant_role' => ['type' => 'bool', 'group' => 'features', 'default' => true], // the Accountant role can be given to staff
     'feature.branding' => ['type' => 'bool', 'group' => 'features', 'default' => true], // no "Powered by" badge on the hotel's public pages
     'feature.priority_support' => ['type' => 'bool', 'group' => 'features', 'default' => true],
+    'feature.smart_pricing' => ['type' => 'bool', 'group' => 'features', 'default' => true], // long-stay, early-bird, last-minute prices and minimum stay (off on Free)
 
     // Limits (empty = the plan's limit)
     'limit.rooms' => ['type' => 'int', 'group' => 'limits', 'default' => null],
     'limit.branches' => ['type' => 'int', 'group' => 'limits', 'default' => null],
     'limit.staff' => ['type' => 'int', 'group' => 'limits', 'default' => null],
     'limit.storage_mb' => ['type' => 'int', 'group' => 'limits', 'default' => null], // files: payment proofs, ID photos, logo
+    'limit.ical_rooms' => ['type' => 'int', 'group' => 'limits', 'default' => null], // rooms in calendar sync (iCal): Free 0, Starter 10, others all
 
     // Emergency
     'emergency.maintenance' => ['type' => 'bool', 'group' => 'emergency', 'default' => false],

@@ -129,6 +129,7 @@ class ReservationPresenter
                 'adults' => $rr->adults,
                 'children' => $rr->children,
                 'total' => $rr->total_amount,
+                'price_override' => $rr->price_override,
                 'status' => $rr->status,
                 'lines' => $rr->rates->map(fn ($l) => ['date' => $l->date->toDateString(), 'label' => $l->label, 'amount' => $l->amount, 'rule_name' => $l->rule_name])->values(),
                 'guests' => $rr->guests->map(fn ($g) => ['id' => $g->id, 'name' => $g->full_name])->values(),

@@ -8,8 +8,10 @@ use App\Models\Hotel;
 use App\Models\RoomType;
 use App\Models\User;
 use App\Services\Automation\Automations;
+use App\Support\HotelClock;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -87,6 +89,40 @@ class BookingPage
                 ])->values()->all(),
                 'note' => $this->settings->get(self::NOTE),
                 'powered_by' => ! $this->switches->on($hotel, 'feature.branding'),
+                'language' => (string) $this->settings->get('language', 'en'), // the hotel's default; ?lang= changes it
+            ];
+        });
+    }
+
+    /**
+     * The price night by night for a guest who checks dates (no personal data in the link), or null when the
+     * dates are not usable. @return array{type: string, currency: string, total: string, nights: list<array{date: string, amount: string, rule: ?string}>, min_stay: ?array{name: string, nights: int}}|null
+     */
+    public function quote(Hotel $hotel, mixed $typeId, mixed $checkIn, mixed $checkOut): ?array
+    {
+        if (! is_string($checkIn) || ! is_string($checkOut) || ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $checkIn) || ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $checkOut)) {
+            return null;
+        }
+        $in = Carbon::parse($checkIn)->startOfDay();
+        $out = Carbon::parse($checkOut)->startOfDay();
+        $today = HotelClock::now($hotel)->startOfDay();
+        if ($in->lt($today) || $out->lte($in) || $in->diffInDays($out) > self::MAX_NIGHTS || $in->gt($today->copy()->addYear())) {
+            return null;
+        }
+
+        return $this->tenant->runAs($hotel, function () use ($hotel, $typeId, $in, $out, $today) {
+            $branches = Branch::pluck('id');
+            $type = is_numeric($typeId) ? RoomType::whereIn('branch_id', $branches)->find((int) $typeId) : RoomType::whereIn('branch_id', $branches)->orderBy('nightly_price')->first();
+            if (! $type || $type->nightly_price === null) {
+                return null;
+            }
+            $prices = app(PriceCalculator::class);
+            $stay = $prices->stay($type, $in, $out, null, $today);
+
+            return [
+                'type' => $type->name, 'currency' => $type->currency ?: $hotel->default_currency ?: 'ETB', 'total' => $stay['total'],
+                'nights' => array_map(fn ($n) => ['date' => $n['date'], 'amount' => $n['amount'], 'rule' => $n['rule']['name'] ?? null], $stay['nights']),
+                'min_stay' => $prices->minStayProblem($type, $in, $out),
             ];
         });
     }
@@ -94,16 +130,21 @@ class BookingPage
     /** A guest's request. @param array<string, mixed> $data */
     public function request(Hotel $hotel, array $data, Request $request): BookingRequest
     {
-        return $this->tenant->runAs($hotel, function () use ($hotel, $data, $request) {
+        return $this->tenant->runAs($hotel, function () use ($hotel, $data) {
             $branch = Branch::find($data['branch_id']);
             $type = isset($data['room_type_id']) ? RoomType::where('branch_id', $branch?->id)->find($data['room_type_id']) : null;
             if (! $branch || (isset($data['room_type_id']) && ! $type)) {
-                throw ValidationException::withMessages(['room_type_id' => 'Choose a room from the list.']);
+                throw ValidationException::withMessages(['room_type_id' => __('Choose a room from the list.')]);
+            }
+            // Minimum stay of a season or holiday (the hotel can still agree to less by phone).
+            $short = $type ? app(PriceCalculator::class)->minStayProblem($type, Carbon::parse($data['check_in']), Carbon::parse($data['check_out'])) : null;
+            if ($short) {
+                throw ValidationException::withMessages(['check_out' => __(':name: stays of at least :n nights. Please call the hotel for a shorter stay.', ['name' => $short['name'], 'n' => $short['nights']])]);
             }
             $r = BookingRequest::create([
                 'branch_id' => $branch->id, 'room_type_id' => $type?->id, 'check_in' => $data['check_in'], 'check_out' => $data['check_out'],
                 'adults' => (int) $data['adults'], 'children' => (int) ($data['children'] ?? 0), 'name' => $data['name'], 'phone' => $data['phone'],
-                'email' => $data['email'] ?? null, 'note' => $data['note'] ?? null, 'ip' => $request->ip(),
+                'email' => $data['email'] ?? null, 'note' => $data['note'] ?? null,
             ]);
             $staff = User::where('hotel_id', $hotel->id)->where('status', 'active')->get()->filter(fn (User $u) => $u->hasPermission('reservations.create'));
             app(Automations::class)->tell($hotel, 'booking_request', $staff, "Booking request from {$r->name}",

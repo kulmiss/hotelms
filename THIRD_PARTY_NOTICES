@@ -54,6 +54,8 @@ tw-animate-css – Copyright (c) 2025 Luca Bockmann – MIT License
 @heroicons/react (print page toolbars only) – Copyright (c) Tailwind Labs, Inc. – MIT License
 Inter font (@fontsource-variable/inter) – Copyright (c) 2016 The Inter Project Authors –
   SIL Open Font License 1.1 (https://openfontlicense.org)
+Noto Sans Ethiopic font (Amharic; frontend/public/fonts, backend/public/landing/fonts; subsets of the
+  original files) – Copyright 2012 Google Inc. – SIL Open Font License 1.1 (OFL-noto-sans-ethiopic.txt)
 React, React Router, TanStack Query, i18next, Tailwind CSS – MIT License (see each package's
   LICENSE file in node_modules)
 
@@ -99,4 +101,4 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 Apache License 2.0 (class-variance-authority): https://www.apache.org/licenses/LICENSE-2.0
-SIL Open Font License 1.1 (Inter): https://openfontlicense.org
+SIL Open Font License 1.1 (Inter, Noto Sans Ethiopic): https://openfontlicense.org

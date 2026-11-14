@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Services\Landing\LandingContent;
+use App\Support\PublicLocale;
 use App\Support\SignedInCookie;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -15,14 +16,15 @@ use Symfony\Component\HttpFoundation\Response as BaseResponse;
  */
 class LandingController extends Controller
 {
-    /** No scripts at all; styles only from the page itself; pictures from this site. */
-    public const CSP = "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+    /** No scripts at all; styles only from the page itself; pictures and the Amharic font from this site. */
+    public const CSP = "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
     public function index(Request $request, LandingContent $content): BaseResponse
     {
         if (SignedInCookie::check($request)) {
             return redirect('/dashboard');
         }
+        PublicLocale::apply($request);
 
         return $this->page(view('landing.index', ['c' => $content->page(), 'url' => $this->base()]));
     }
@@ -31,6 +33,7 @@ class LandingController extends Controller
     public function legal(Request $request, LandingContent $content): Response
     {
         $page = $request->is('privacy') ? 'privacy' : 'terms';
+        PublicLocale::apply($request);
 
         return $this->page(view("landing.{$page}", ['c' => $content->page(), 'url' => $this->base(), 'updated' => self::LEGAL_UPDATED]));
     }
@@ -41,14 +44,14 @@ class LandingController extends Controller
     {
         $base = $this->base();
 
-        return response("User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nSitemap: {$base}/sitemap.xml\n", 200, ['Content-Type' => 'text/plain; charset=UTF-8', 'Cache-Control' => 'public, max-age=3600']);
+        return response("User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nDisallow: /ical/\nSitemap: {$base}/sitemap.xml\n", 200, ['Content-Type' => 'text/plain; charset=UTF-8', 'Cache-Control' => 'public, max-age=3600']);
     }
 
     public function sitemap(): Response
     {
         $base = $this->base();
-        $urls = collect(['/', '/register', '/terms', '/privacy'])
-            ->map(fn ($p) => '<url><loc>'.e($base.($p === '/' ? '/' : $p)).'</loc></url>')->implode('');
+        $urls = collect(['/', '/?lang=am', '/register', '/terms', '/privacy'])
+            ->map(fn ($p) => '<url><loc>'.e($base.$p).'</loc></url>')->implode('');
 
         return response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'.$urls.'</urlset>', 200, ['Content-Type' => 'application/xml; charset=UTF-8', 'Cache-Control' => 'public, max-age=3600']);
     }

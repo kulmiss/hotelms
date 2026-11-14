@@ -48,7 +48,7 @@ class InvoiceService
                 foreach ($rr->rates as $rate) {
                     $this->line($invoice, [
                         'type' => 'room',
-                        'description' => trim(($rr->room ? 'Room '.$rr->room->number.' · ' : '').($rr->roomType?->name ?? '').' · '.$rate->label),
+                        'description' => trim(($rr->room ? 'Room '.$rr->room->number.' · ' : '').($rr->roomType?->name ?? '').' · '.$rate->label.($rate->rule_name ? ' ('.$rate->rule_name.')' : '')), // per-night price and why
                         'unit_price' => (string) $rate->amount,
                         'service_date' => $rate->date->toDateString(),
                         'reservation_room_id' => $rr->id,

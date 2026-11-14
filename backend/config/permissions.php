@@ -48,6 +48,7 @@ return [
             'reservations.cancel' => [$BM, $RC],
             'reservations.no_show' => [$BM, $RC],
             'reservations.change_policy' => [$BM],
+            'reservations.override_price' => [$BM], // change a room's price by hand, or allow a stay shorter than the minimum (logged)
         ],
         'guests' => [
             'guests.view' => [$BM, $RC, $AC],

@@ -89,6 +89,7 @@ export type ReservationDetail = Omit<ReservationSummary, 'guest' | 'rooms'> & {
     adults: number
     children: number
     total: string
+    price_override?: string | null
     status: string
     lines: PriceLine[]
     guests: { id: number; name: string }[]
@@ -112,7 +113,14 @@ export type AvailableType = {
 }
 
 export type StayInput = { branch_id: number; stay_type: StayType; check_in: string; check_out?: string | null; hours?: number | null }
-export type RoomInput = { room_type_id: number; room_id?: number | null; adults: number; children: number }
+export type RoomInput = {
+  room_type_id: number
+  room_id?: number | null
+  adults: number
+  children: number
+  /** A price per night set by hand (permission reservations.override_price; logged). */
+  price_override?: string | null
+}
 export type BookingInput = StayInput & {
   guest_id: number | null
   rooms: RoomInput[]
@@ -123,6 +131,10 @@ export type BookingInput = StayInput & {
   walk_in?: boolean
   /** No deposit or up-front payment: the guest pays at check-out. */
   pay_later?: boolean
+  /** Why the price was set by hand (needed with a price_override). */
+  price_override_reason?: string | null
+  /** Book a stay shorter than a season's minimum (permission reservations.override_price). */
+  allow_short_stay?: boolean
 }
 
 export type Quote = {
@@ -130,7 +142,19 @@ export type Quote = {
   check_in_at: string
   check_out_at: string
   currency: string
-  rooms: { room_type_id: number; room_type: string; room_id: number | null; room_number: string | null; adults: number; children: number; total: string; lines: PriceLine[] }[]
+  rooms: {
+    room_type_id: number
+    room_type: string
+    room_id: number | null
+    room_number: string | null
+    adults: number
+    children: number
+    total: string
+    lines: PriceLine[]
+    price_override?: string | null
+    calculated_total?: string | null
+    min_stay?: { name: string; nights: number } | null
+  }[]
   subtotal: string
   discount_percent: string
   discount_amount: string
@@ -147,6 +171,8 @@ export type CalendarData = {
   days: number
   rooms: { id: number; number: string; floor: string | null; status: string; room_type_id: number; room_type: string | null }[]
   bookings: { id: number; reservation_id: number; code: string; guest: string | null; status: ReservationStatus; stay_type: StayType; room_id: number | null; room_type_id: number; room_type: string | null; check_in_at: string; check_out_at: string }[]
+  /** Busy dates from Airbnb, Booking.com… (calendar sync): on a room, or on one room of a type (room_id null). */
+  blocks?: { id: number; source: string | null; summary: string | null; room_id: number | null; room_type_id: number | null; check_in_at: string; check_out_at: string }[]
 }
 
 /* ------------------------------------------------------------- hooks */

@@ -1,4 +1,60 @@
 {
+  "calendarSync": {
+    "help": "Paste the calendar (iCal) link of each listing from Airbnb, Booking.com or another site. Their busy dates block the room here, so it is not booked twice. Links are read every {{minutes}} minutes, and the other sites read ours every few hours: a booking can take that long to show on the other side.",
+    "bookingCom": "Booking.com allows calendar links mainly for apartments, holiday homes and guesthouses (not for most hotels). Airbnb and VRBO allow them for every listing.",
+    "limit": "Rooms in calendar sync: {{used}} of {{max}} (your plan).",
+    "notInPlan": "Calendar sync comes with the Starter plan (up to 10 rooms) and Pro (all rooms). Help → Ask us to upgrade.",
+    "add": "Add a calendar link",
+    "name": "Site",
+    "url": "Calendar link (iCal / .ics)",
+    "urlHint": "Airbnb: Calendar → Availability → Connect calendars → Export. Booking.com: Rates & availability → Sync calendars.",
+    "for": "For",
+    "rooms": "Rooms",
+    "roomTypes": "Any room of a type",
+    "anyRoomOf": "any {{type}} room",
+    "room": "room {{number}}",
+    "addButton": "Add and read now",
+    "added_one": "Saved. {{count}} busy date was read.",
+    "added_other": "Saved. {{count}} busy dates were read.",
+    "status": {
+      "ok": "Synced",
+      "error": "Problem",
+      "never": "Not read yet"
+    },
+    "clashes_one": "{{count}} clash",
+    "clashes_other": "{{count}} clashes",
+    "clashHelp": "Nothing was cancelled. Move one of the guests to another room, or close the dates on the other site.",
+    "lastSync_one": "Read {{time}} · {{count}} busy date",
+    "lastSync_other": "Read {{time}} · {{count}} busy dates",
+    "syncNow": "Sync now",
+    "pause": "Pause",
+    "resume": "Turn on",
+    "remove": "Remove {{name}}",
+    "removeConfirm": "Remove this link? Its busy dates are removed too.",
+    "export": "Your calendar links (export)",
+    "exportHelp": "Give a room's link to Airbnb or Booking.com (\"Import calendar\"), so they see the dates booked here. The link shows only busy dates, never guest names. Keep it secret; Reset makes a new one.",
+    "makeLink": "Make link",
+    "copy": "Copy",
+    "copied": "Copied",
+    "reset": "Reset",
+    "resetConfirm": "Make a new link? The old one stops working: give the new one to the other sites.",
+    "stop": "Turn off",
+    "onCalendar": "{{source}} · not available"
+  },
+  "pricing": {
+    "override": {
+      "label": "Price per night (by hand)",
+      "placeholder": "Normal price",
+      "reason": "Why is the price changed?",
+      "reasonHint": "Needed when you set a price by hand. It goes to the activity log.",
+      "was": "Normal price: {{amount}}"
+    },
+    "shortStay": {
+      "option": "Book anyway (shorter than the minimum stay)",
+      "hint": "Only with the permission to change prices. It goes to the activity log.",
+      "note": "Shorter than the minimum: {{name}} ({{n}} nights)"
+    }
+  },
   "common": {
     "loading": "Loading…",
     "breadcrumb": "Where you are",
@@ -613,6 +669,7 @@
     "reservations.cancel": "Cancel a booking",
     "reservations.no_show": "Mark no-show",
     "reservations.change_policy": "Use a different cancellation policy",
+    "reservations.override_price": "Change a room price by hand, or allow a shorter stay than the minimum",
     "guests.view": "Guest list and profiles",
     "guests.create_edit": "Add and edit guests",
     "guests.blacklist": "Blacklist / unblacklist",
@@ -708,9 +765,30 @@
     "resetting": "Resetting…"
   },
   "settings": {
+    "holidays": {
+      "help": "Your holiday list. A price rule of the type \"Holidays\" changes the price on these nights. Ethiopian dates are shown next to each day.",
+      "add": "Add holiday",
+      "name": "Name",
+      "date": "Date",
+      "ec": "Ethiopian date",
+      "kind": "Kind",
+      "kinds": {
+        "fixed": "Fixed day",
+        "calculated": "Calculated",
+        "expected": "Expected – check the announcement",
+        "own": "Own"
+      },
+      "preset": "Ethiopian holidays",
+      "presetHelp": "Add the public holidays of the next 3 years: Genna, Timket, Fasika, Meskel, Eid and the others. Eid and Mawlid follow the moon: check their dates when they are announced. You can change or remove any day.",
+      "presetButton": "Add Ethiopian holidays",
+      "presetDone_one": "{{count}} holiday added.",
+      "presetDone_other": "{{count}} holidays added."
+    },
     "subtitle": "How your hotel works: profile, money, rules and features.",
     "search": { "label": "Search settings", "placeholder": "Search settings, e.g. VAT", "none": "No setting found." },
     "sections": {
+      "calendar-sync": "Calendar sync (Airbnb, Booking.com)",
+      "holidays": "Holidays",
       "profile": "Hotel profile",
       "branches": "Branches",
       "room-types": "Room types",
@@ -954,11 +1032,28 @@
       "name": "Name"
     },
     "rates": {
+      "minNights": "From how many nights",
+      "daysBefore": "Days before arrival",
+      "daysBeforeHint": "Early booking: at least this many days. Last minute: at most this many days (0 = the same day).",
+      "minStay": "Minimum stay (nights)",
+      "minStayHint": "A stay that touches these days must be at least this long. Empty = no minimum.",
+      "minStayShort": "min. {{n}} nights",
+      "arrivalHint": "Long stay, early booking, last minute: for arrivals between these days (empty = always).",
+      "adjustmentHint": "Long stay, early booking and last minute change each night by a percent or an amount. They come on top of the night's own rule.",
+      "onHolidays": "On the holidays of your list",
+      "whenLong": "{{n}} nights or more",
+      "whenEarly": "Booked {{n}}+ days before",
+      "whenLast": "Booked up to {{n}} days before",
+      "planNote": "Long-stay, early-booking and last-minute prices and a minimum stay come with the Starter plan and up.",
       "help": "Change the room price on weekends, in seasons or for guest types. When several rules match a night, only the one with the highest priority is used.",
       "add": "Add rule",
       "name": "Name",
       "type": "Rule type",
       "types": {
+        "holiday": "Holidays (from the list)",
+        "long_stay": "Long stay",
+        "early_bird": "Early booking",
+        "last_minute": "Last minute",
         "weekend": "Weekdays",
         "season": "Season (dates)",
         "guest_type": "Guest type"
@@ -2814,6 +2909,28 @@
     "replace": "Replace",
     "original": "Use the original",
     "save": "Save website"
+  },
+  "language": {
+    "mine": "My language",
+    "hotelDefault": "Hotel default ({{choice}})",
+    "hotel": "Language",
+    "hotelHint": "The language for new staff and for guest messages. Each person can change it in My profile.",
+    "names": { "en": "English", "am": "አማርኛ (Amharic)" }
+  },
+  "calendar": {
+    "day": "Day",
+    "month": "Month",
+    "year": "Year (EC)",
+    "ecHint": "Pick the day, month and year in the Ethiopian calendar.",
+    "outOfRange": "outside the allowed dates",
+    "useEthiopian": "Type in Ethiopian calendar",
+    "useGregorian": "Type in Gregorian calendar",
+    "mine": "My calendar",
+    "mineHint": "How dates are shown to you. Dates are always saved the same way.",
+    "hotelDefault": "Hotel default ({{choice}})",
+    "hotel": "Calendar",
+    "hotelHint": "How dates are shown in this hotel. Each person can change it in My profile.",
+    "modes": { "gregorian": "Gregorian only", "ethiopian": "Ethiopian only", "both": "Both (Gregorian and Ethiopian)" }
   },
   "gettingStarted": {
     "title": "Getting started",
