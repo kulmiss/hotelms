@@ -58,6 +58,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Slow down password guessing: 5 tries a minute per email and device.
         // Per email + address, and per address alone (trying many emails from one place).
+        // General limit for every signed-in call (SECURITY_REPORT M5): a dashboard load is about 12 calls,
+        // live screens poll every few seconds – far below this. One stolen session cannot pull data endlessly.
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(300)->by('api|'.($request->user()?->id ?? $request->ip()))
+            ->response(fn () => response()->json(['message' => 'Too many requests in a short time. Wait a minute and try again.', 'code' => 'too_many'], 429)));
         RateLimiter::for('login', fn (Request $request) => [
             Limit::perMinute(5)->by(strtolower(is_string($request->input('email')) ? $request->input('email') : '').'|'.$request->ip()),
             Limit::perMinute(30)->by('login-ip|'.$request->ip()),

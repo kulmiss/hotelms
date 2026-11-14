@@ -100,7 +100,7 @@ Development (Docker): `docker compose exec backend php artisan migrate`.
 
 ## Speed
 - **PHP OPcache on** (cPanel → *Select PHP Version* → *Extensions*: tick `opcache`; *Options*: `opcache.memory_consumption` 128 or more, `opcache.max_accelerated_files` 20000). On a VPS it is on by default with `php8.3-fpm`.
-- **Redis** if the host offers it (`CACHE_STORE=redis`, `SESSION_DRIVER=redis`); otherwise the database drivers work.
+- **Redis** if the host offers it (`CACHE_STORE=redis`, `SESSION_DRIVER=redis`, `CACHE_LIMITER=redis`); otherwise the database drivers work. Rate-limit counters use files by default (`CACHE_LIMITER=file`, fast on shared hosting; `storage/framework/cache` must be writable).
 - After every update run `php artisan optimize` (above). Never leave `APP_DEBUG=true` on a live server: it is slow and shows internals.
 - Text is compressed (gzip/brotli) and the hashed files in `assets/` are cached for a year by `public/.htaccess` (`app.html` and `sw.js` never); on Nginx use the `gzip on;` lines in the VPS config above.
 

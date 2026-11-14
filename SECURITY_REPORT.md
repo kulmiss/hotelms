@@ -230,6 +230,7 @@ What's missing is mostly **defence in depth**: the extra layers that limit the d
 | S4 Screen lock and session limits | M3, M4 | done – the server keeps the screen lock (423 until unlocked), a sign-in ends after 12 hours, "Remember me" 30 days for staff only and never for Super Admin / Hotel Admin (Q3) |
 | S5 "Was this you?" emails, confirmed email changes | M7, L6 | done – notices for password, two-step, recovery codes, new device, email change (to the old address); a new email works only after its link is opened (24 h); temporary passwords run out after 7 days (needs migrate) |
 | S6 Security event log | M9 | done – `security_events` (1 year): sign-ins, failures, pauses, PINs, password / email / two-step changes, 403 / 429, voids, refunds; Activity log → Sign-in and security (own hotel), Watchdog (all) (needs migrate) |
+| S7 Rate limits | M5 | done – 300 calls a minute per person, downloads 20 a minute, reports 60 a minute (429); counters in files (no measurable cost) |
 
 ## Proposed fix PRs (step 2, after your OK)
 In order of importance. Each one is small, with tests, and speed measured before and after (page load, API time, first download).

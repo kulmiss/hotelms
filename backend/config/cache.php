@@ -18,6 +18,12 @@ return [
     'default' => env('CACHE_STORE', 'database'),
 
     /*
+     * Where rate-limit counters live (every signed-in call counts one, SECURITY_REPORT M5). Files are much
+     * quicker than the database on shared hosting (~0.2 ms instead of ~5 ms); with Redis set CACHE_LIMITER=redis.
+     */
+    'limiter' => env('CACHE_LIMITER', 'file'),
+
+    /*
     |--------------------------------------------------------------------------
     | Cache Stores
     |--------------------------------------------------------------------------

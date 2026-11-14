@@ -84,7 +84,7 @@ Route::post('/auth/reset-password', [PasswordResetController::class, 'reset'])->
 Route::post('/auth/two-factor/resend', [AuthController::class, 'resendCode'])->middleware('throttle:two-factor');
 Route::post('/auth/confirm-email', [AuthController::class, 'confirmEmail'])->middleware('throttle:login');
 
-Route::middleware(['auth:sanctum', 'active', 'device', 'tenant', 'session.rules'])->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant', 'session.rules', 'heavy'])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::post('/auth/lock', [AuthController::class, 'lock']);
     Route::post('/auth/unlock', [AuthController::class, 'unlock'])->middleware('throttle:pin');
