@@ -13,6 +13,8 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 Route::withoutMiddleware([StartSession::class, EncryptCookies::class, AddQueuedCookiesToResponse::class, ShareErrorsFromSession::class, PreventRequestForgery::class])
     ->group(function () {
         Route::get('/', [LandingController::class, 'index']);
+        Route::get('/terms', [LandingController::class, 'legal']);
+        Route::get('/privacy', [LandingController::class, 'legal']);
         Route::get('/robots.txt', [LandingController::class, 'robots']);
         Route::get('/sitemap.xml', [LandingController::class, 'sitemap']);
     });

@@ -27,6 +27,16 @@ class LandingController extends Controller
         return $this->page(view('landing.index', ['c' => $content->page(), 'url' => $this->base()]));
     }
 
+    /** Terms of use and Privacy policy (drafts, owner 14 Nov 2026: "to be checked by a lawyer"). */
+    public function legal(Request $request, LandingContent $content): Response
+    {
+        $page = $request->is('privacy') ? 'privacy' : 'terms';
+
+        return $this->page(view("landing.{$page}", ['c' => $content->page(), 'url' => $this->base(), 'updated' => self::LEGAL_UPDATED]));
+    }
+
+    public const LEGAL_UPDATED = '14 November 2026';
+
     public function robots(): Response
     {
         $base = $this->base();

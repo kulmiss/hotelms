@@ -130,6 +130,10 @@ signed in (read from their session cookie, no new cookie) goes to `/dashboard`. 
 the app opens it. `/robots.txt`, `/sitemap.xml`, Open Graph picture `public/landing/og.png`. Pictures in `public/landing/` are real
 screens of the demo hotel (WebP, 640/960/1280 wide). Speed budget checked in CI (`.github/workflows/lighthouse.yml`,
 `lighthouserc.json`): Lighthouse mobile ≥ 95 in all four categories, LCP ≤ 1.5 s. Tests: `Web/LandingPageTest`.
+Legal pages `/terms` and `/privacy` (`landing/terms.blade.php`, `landing/privacy.blade.php`), marked **"Draft – to be checked by a
+lawyer"**: the hotel is the data controller for its guests and the platform the processor; Free plan terms; security emails; sign-in
+and security log kept one year; 7-day removal of unconfirmed sign-ups; 90 days after closing. Change the date in
+`LandingController::LEGAL_UPDATED` when the texts change.
 
 ## Getting started (new hotels)
 

@@ -138,4 +138,16 @@ class LandingPageTest extends TestCase
         $this->assertStringContainsString("<loc>{$base}/</loc>", $xml);
         $this->assertStringContainsString('/register</loc>', $xml);
     }
+
+    public function test_terms_and_privacy_drafts(): void
+    {
+        $terms = $this->get('/terms')->assertOk();
+        $this->assertEmpty($terms->headers->getCookies());
+        $terms->assertSee('Draft – to be checked by a lawyer.')->assertSee('The Free plan costs nothing')->assertSee('kept for one year')->assertSee('security emails');
+        $this->get('/privacy')->assertOk()->assertSee('Draft – to be checked by a lawyer.')
+            ->assertSee('data controller')->assertSee('data processor')->assertSee('one year')->assertSee('sets <strong>no cookies</strong>', false);
+        $home = $this->get('/')->getContent();
+        $this->assertStringContainsString('href="/terms"', $home);
+        $this->assertStringContainsString('href="/privacy"', $home);
+    }
 }
