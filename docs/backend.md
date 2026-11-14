@@ -53,6 +53,12 @@ Order for hotel routes: `auth:sanctum` → `active` → `device` → `tenant` �
 
 Rate limits (`AppServiceProvider`): `login` (5/min per email+address, 30/min per address), `two-factor`
 (per session and per address; plus 10 wrong codes per person per 15 min in `AuthController`), `pin` (per hotel).
+**Secrets and checks** (SECURITY_REPORT M6, L5, L8, L9): `PlatformSetting::SECRETS` (`telegram_bot_token`, `mail_password`)
+are encrypted, read with `PlatformSetting::secret()` (a value saved before encryption still works; migration
+2026_11_25_000003 encrypts the token); `App\Support\SafeHost` refuses mail servers inside the server's network
+(`MAIL_ALLOW_PRIVATE_HOST`); `SystemController::settingsCheck()` (System + watchdog); `/health` shows the version only
+to the HotelMS team.
+
 **General and heavy limits** (SECURITY_REPORT M5): every signed-in call `throttle:api` – 300 a minute per person;
 `LimitHeavyRequests` (`heavy`) – file downloads (`?format=xlsx|csv`, accounting export, hotel data export) 20 a minute,
 reports 60 a minute per person; then `429 code: too_many`. The counters live in `cache.limiter` (`CACHE_LIMITER`,

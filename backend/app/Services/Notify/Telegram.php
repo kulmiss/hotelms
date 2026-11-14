@@ -19,9 +19,7 @@ class Telegram
 {
     private function token(): ?string
     {
-        $t = PlatformSetting::read('telegram_bot_token');
-
-        return is_string($t) && $t !== '' ? $t : null;
+        return PlatformSetting::secret('telegram_bot_token');
     }
 
     public function enabled(): bool

@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Crypt;
 
 /**
  * Platform-wide settings edited by the Super Admin (e.g. default trial length).
@@ -71,6 +73,23 @@ class PlatformSetting extends Model
     public static function write(string $key, mixed $value): void
     {
         static::updateOrCreate(['key' => $key], ['value' => $value]);
+    }
+
+    /** Settings that are secrets: stored encrypted with APP_KEY, never sent back in full (SECURITY_REPORT M6). */
+    public const SECRETS = ['telegram_bot_token', 'mail_password'];
+
+    /** A secret setting in plain text (a value saved before it was encrypted is returned as it is). */
+    public static function secret(string $key): ?string
+    {
+        $v = static::read($key);
+        if (! is_string($v) || $v === '') {
+            return null;
+        }
+        try {
+            return Crypt::decryptString($v);
+        } catch (DecryptException) {
+            return $v;
+        }
     }
 
     /** @return array<string, mixed> */

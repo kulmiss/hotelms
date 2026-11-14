@@ -149,6 +149,8 @@ export type SystemHealth = {
     jobs: Check & { waiting: number; failed: number; recent_failures: { id: number; queue: string; at: string; error: string }[] }
     backups: Check & { daily: BackupFile | null; small: BackupFile | null; key: boolean }
     disk: Check & { free_mb: number | null }
+    /** .env safety on a live server (SECURITY_REPORT L8); older servers do not send it. */
+    settings?: Check & { problems: string[] }
   }
   errors: { at: string; level: string; message: string }[]
   versions: { app: string; php: string; laravel: string; database: string | null }

@@ -175,7 +175,8 @@ export const put = <T>(path: string, data?: unknown) =>
 export type Health = {
   status: 'ok' | 'degraded'
   app: string
-  version: string
+  /** Only for the HotelMS team (SECURITY_REPORT L9). */
+  version: string | null
   time: string
   checks: { database: 'ok' | 'down' }
 }

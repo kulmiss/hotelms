@@ -59,6 +59,7 @@ class SystemController extends Controller
         ];
 
         $checks['backups'] = $this->backups($backups);
+        $checks['settings'] = self::settingsCheck();
         $disk = @disk_free_space(storage_path());
         $checks['disk'] = ['ok' => $disk === false || $disk > 500 * 1024 * 1024, 'free_mb' => $disk === false ? null : (int) ($disk / 1024 / 1024)];
 
@@ -68,6 +69,24 @@ class SystemController extends Controller
             'versions' => ['app' => config('app.version', '1.0.0'), 'php' => PHP_VERSION, 'laravel' => app()->version(), 'database' => $this->dbVersion()],
             'checked_at' => now()->toIso8601String(),
         ]]);
+    }
+
+    /**
+     * The .env lines a live server must have (SECURITY_REPORT L8): no debug pages, production mode,
+     * HTTPS-only cookies and an https address. Also used by the watchdog.
+     *
+     * @return array{ok: bool, problems: list<string>, problem: ?string}
+     */
+    public static function settingsCheck(): array
+    {
+        $problems = array_values(array_filter([
+            config('app.debug') ? 'APP_DEBUG=true: error pages show internals. Set APP_DEBUG=false.' : null,
+            ! app()->isProduction() ? 'APP_ENV is "'.app()->environment().'": set APP_ENV=production on a live server.' : null,
+            ! config('session.secure') ? 'SESSION_SECURE_COOKIE is not true: the sign-in cookie could travel without HTTPS.' : null,
+            ! str_starts_with((string) config('app.url'), 'https://') ? 'APP_URL does not start with https://.' : null,
+        ]));
+
+        return ['ok' => $problems === [], 'problems' => $problems, 'problem' => $problems[0] ?? null];
     }
 
     /** @return array<string, mixed> */

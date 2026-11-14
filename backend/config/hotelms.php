@@ -6,6 +6,8 @@ return [
     | Proxy or CDN in front of the server (see App\Support\TrustedProxies and docs/hosting.md). Empty = none.
     */
     'trusted_proxies' => env('TRUSTED_PROXIES'),
+    // A mail server typed in Super Admin may be inside the server's own network only when this is true (SSRF, L5).
+    'mail_allow_private_host' => (bool) env('MAIL_ALLOW_PRIVATE_HOST', false),
 
     /*
     | The platform owner account, created by SuperAdminSeeder on first start.

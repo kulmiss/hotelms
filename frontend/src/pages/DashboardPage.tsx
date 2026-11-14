@@ -208,7 +208,7 @@ function ApiStatus() {
       {health.isError && <TriangleAlertIcon aria-hidden className="size-4 text-danger-text" />}
       <span>{t('dashboard.apiStatus')}</span>
       {status}
-      {health.data && <span>{t('dashboard.version', { version: health.data.version })}</span>}
+      {health.data?.version && <span>{t('dashboard.version', { version: health.data.version })}</span>}
     </div>
   )
 }

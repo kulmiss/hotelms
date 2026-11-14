@@ -2198,6 +2198,7 @@
     "jobsLine": "{{waiting}} waiting · {{failed}} failed",
     "backupLine": "Newest: {{when}} · {{kb}} KB · {{count}} kept",
     "backupEncrypted": "encrypted",
+    "settingsOk": "Production mode, no debug pages, HTTPS-only cookies.",
     "backupPlain": "not encrypted (set BACKUP_KEY)",
     "freeSpace": "{{size}} free",
     "checks": {
@@ -2206,7 +2207,8 @@
       "scheduler": "Cron job (scheduler)",
       "jobs": "Background jobs",
       "backups": "Backups",
-      "disk": "Disk space"
+      "disk": "Disk space",
+      "settings": "Server settings (.env)"
     },
     "failedJobs": "Failed background jobs",
     "errors": "Latest errors",

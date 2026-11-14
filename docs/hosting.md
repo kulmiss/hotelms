@@ -104,6 +104,12 @@ Development (Docker): `docker compose exec backend php artisan migrate`.
 - After every update run `php artisan optimize` (above). Never leave `APP_DEBUG=true` on a live server: it is slow and shows internals.
 - Text is compressed (gzip/brotli) and the hashed files in `assets/` are cached for a year by `public/.htaccess` (`app.html` and `sw.js` never); on Nginx use the `gzip on;` lines in the VPS config above.
 
+## Secrets and server settings
+- Secret settings typed in Super Admin (mail password, Telegram bot token) are stored **encrypted** with `APP_KEY` and never sent back in full.
+- The mail server typed in Super Admin → Settings must be an **internet** address: `localhost`, `127.0.0.1`, `10.x`, `172.16–31.x`, `192.168.x`, link-local and names that point there are refused (SSRF). A mail server on the same machine: put it in `.env` (`MAIL_HOST`), or set `MAIL_ALLOW_PRIVATE_HOST=true`.
+- Super Admin → System → **Server settings** turns red (and the watchdog warns) when `APP_DEBUG=true`, `APP_ENV` is not `production`, `SESSION_SECURE_COOKIE` is not `true`, or `APP_URL` is not `https://`. (On a development computer it is red on purpose.)
+- `GET /api/v1/health` shows the version only to the HotelMS team.
+
 ## Security headers
 Sent by `public/.htaccess` (Apache / cPanel) and the Nginx example; Laravel adds the same safe defaults to every API answer (`App\Http\Middleware\SecurityHeaders`).
 - **App page (`app.html`): a strict Content-Security-Policy.** Scripts only from the site itself plus the one inline theme script in `frontend/index.html`, allowed by its `sha256` hash; no plugins (`object-src 'none'`), no framing (`frame-ancestors 'none'`), data only from the site (`connect-src 'self'`), the guide PDFs from `blob:`. Styles may be inline (the charts need it). **When you change that inline script, the hash changes:** `./deploy/check-csp.sh` prints the new one and fails until `.htaccess`, the Nginx example and the snippet above match (CI runs it in the Package job).

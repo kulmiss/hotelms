@@ -19,7 +19,8 @@ class HealthController extends Controller
         return response()->json([
             'status' => $database ? 'ok' : 'degraded',
             'app' => config('app.name'),
-            'version' => config('app.version'),
+            // The version only for the HotelMS team (SECURITY_REPORT L9); the public answer says ok / down.
+            'version' => auth('web')->user()?->is_super_admin ? config('app.version') : null,
             'time' => now()->toIso8601String(),
             'checks' => [
                 'database' => $database ? 'ok' : 'down',

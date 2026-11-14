@@ -3,6 +3,7 @@
 namespace App\Services\Notify;
 
 use App\Models\PlatformSetting;
+use App\Support\SafeHost;
 use Illuminate\Support\Facades\Crypt;
 use Throwable;
 
@@ -23,6 +24,13 @@ class MailSettings
             return; // e.g. before the first migration
         }
         if (empty($s['mail_host'])) {
+            return;
+        }
+        // Checked again here: a name may point inside the server's network later (SECURITY_REPORT L5). Then the
+        // .env mail server is used instead.
+        if (! SafeHost::allowed((string) $s['mail_host'])) {
+            report(new \RuntimeException('Mail server '.$s['mail_host'].' points inside the server network; using the .env mail settings.'));
+
             return;
         }
         $password = null;
