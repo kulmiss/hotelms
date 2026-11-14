@@ -135,6 +135,16 @@ lawyer"**: the hotel is the data controller for its guests and the platform the 
 and security log kept one year; 7-day removal of unconfirmed sign-ups; 90 days after closing. Change the date in
 `LandingController::LEGAL_UPDATED` when the texts change.
 
+## Public booking page (online requests)
+
+Off until the hotel turns it on (Settings → Booking page, `settings.hotel`): link `/h/{booking_slug}`, a short note for guests.
+Server-made like the website (`Web/BookingPageController`, `landing/booking.blade.php`, `Services/BookingPage`): room types and nightly
+prices per branch and a request form – no script, no cookies, hidden field + form time + 10 requests an hour per address. A request
+(`booking_requests`) never books or charges anything: reception is told (bell, Telegram if on) and sees it in **Online requests**
+(`/booking-requests`, `reservations.view`, own branches only); "Book it" opens the normal booking form filled with the dates, room
+and message (`?request=ID`), and saving links the booking (`accept`); or "Decline". "Powered by" shows unless `feature.branding`
+(Pro and Business). No page for hotels that are suspended or not confirmed/approved. Tests: `Web/BookingPageTest`.
+
 ## Getting started (new hotels)
 
 After the first sign-in a Hotel Admin goes through the setup walkthrough (`/setup`, `HotelSetup`). Then the dashboard shows a

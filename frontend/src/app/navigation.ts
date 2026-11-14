@@ -60,6 +60,7 @@ export const mainNav: NavItem[] = [
   { key: 'roomBoard', path: '/rooms', icon: LayoutGrid, group: 'frontDesk', phase: 4, permission: 'frontdesk.view', built: true },
   { key: 'chargeRoom', path: '/charge', icon: ShoppingBag, group: 'frontDesk', phase: 4, permission: 'charges.room', built: true },
   { key: 'reservations', path: '/reservations', icon: CalendarDays, group: 'frontDesk', phase: 3, permission: 'reservations.view', built: true },
+  { key: 'bookingRequests', path: '/booking-requests', icon: ClipboardList, group: 'frontDesk', phase: 3, permission: 'reservations.view', built: true },
   { key: 'guests', path: '/guests', icon: Users, group: 'frontDesk', phase: 3, permission: 'guests.view', built: true },
   { key: 'billing', path: '/billing', icon: FileText, group: 'frontDesk', phase: 4, permission: 'invoices.view', built: true },
   { key: 'cashier', path: '/cashier', icon: Banknote, group: 'operations', phase: 5, module: 'cashier', permission: ['cashier.own_shift', 'cashier.view_all'], built: true },

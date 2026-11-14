@@ -490,6 +490,16 @@
         "Lost a phone? Tap Sign out next to it."
       ]
     },
+    "onlineRequests": {
+      "title": "Online requests (booking page)",
+      "steps": [
+        "Guests can ask for a room on your booking page. The admin turns it on in Settings → Booking page.",
+        "A new request shows in the bell and in Online requests.",
+        "Call the guest. Then tap \"Book it\": the booking form opens with their dates and room.",
+        "Choose or add the guest and save. The request becomes \"Booked\".",
+        "If you have no room, tap \"Decline\" (call the guest to tell them)."
+      ]
+    },
     "gettingStarted": {
       "title": "Getting started (new hotel)",
       "steps": [

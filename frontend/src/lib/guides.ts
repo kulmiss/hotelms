@@ -33,6 +33,7 @@ export const GUIDE: GuideSection[] = [
       { key: 'noEndDate', perm: 'frontdesk.walk_in' },
       { key: 'quickCheckIn', perm: 'frontdesk.quick_check_in' },
       { key: 'newBooking', perm: 'reservations.create' },
+      { key: 'onlineRequests', perm: 'reservations.view' },
       { key: 'freeRooms', pic: true, perm: 'reservations.view' },
       { key: 'checkIn', pic: true, perm: 'frontdesk.check_in' },
       { key: 'moveExtend', pic: true, perm: 'frontdesk.room_move' },

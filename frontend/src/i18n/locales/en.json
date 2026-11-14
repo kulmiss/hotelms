@@ -74,6 +74,7 @@
     "switches": "Switches",
     "support": "Support",
     "signups": "Pending hotels",
+    "bookingRequests": "Online requests",
     "system": "System health",
     "team": "Team",
     "watchdog": "Watchdog",
@@ -725,6 +726,7 @@
       "cancellation": "Cancellation policies",
       "modules": "Modules",
       "attendance": "Attendance",
+      "booking-page": "Booking page",
       "subscription": "Subscription",
       "security": "Security",
       "automations": "Automations"
@@ -879,6 +881,17 @@
       "kiosk_pinHint": "A tablet at the staff entrance; each person types their PIN.",
       "manual": "Manual entry by a manager",
       "manualHint": "Managers fix or add times by hand."
+    },
+    "bookingPage": {
+      "help": "A page on the internet where guests ask for a room. Their requests come to Online requests; you call them and make the booking.",
+      "enabled": "Show our booking page",
+      "enabledHint": "Off = the link shows \"not found\". Guests never book or pay by themselves.",
+      "link": "Your link:",
+      "slug": "Link name",
+      "slugHint": "Letters, numbers and dashes, e.g. lake-tana-lodge.",
+      "note": "Short note for guests",
+      "noteHint": "For example: Breakfast included. Free airport pick-up.",
+      "poweredBy": "On your plan the page shows a small \"Powered by\" link. Bigger plans can remove it."
     },
     "subscription": {
       "help": "Your plan and what you use. Contact us to change it.",
@@ -2759,6 +2772,24 @@
     "hours_other": "{{count}} hours",
     "leavingCol": "Leaving that day",
     "states": { "staying": "Staying", "arriving": "Arriving", "free": "Free" }
+  },
+  "bookingRequests": {
+    "subtitle": "Requests from your booking page. Call the guest, then book the room or decline.",
+    "settings": "Booking page settings",
+    "status": { "new": "New", "accepted": "Booked", "declined": "Declined" },
+    "empty": "Nothing here.",
+    "emptyNew": "No new requests. Turn on your booking page in Settings → Booking page and share the link.",
+    "dates": "Dates",
+    "room": "Room",
+    "anyRoom": "Any room",
+    "guests": "Guests",
+    "guestCount": "{{adults}} adults, {{children}} children",
+    "message": "Message",
+    "sent": "Sent",
+    "book": "Book it",
+    "decline": "Decline",
+    "openBooking": "Open the booking",
+    "fromWeb": "Online request"
   },
   "website": {
     "title": "Website (public home page)",

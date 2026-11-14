@@ -694,3 +694,53 @@ export function SubscriptionSettings() {
     </div>
   )
 }
+
+/* ------------------------------------------------------------- booking page */
+
+type BookingPageSettings = { enabled: boolean; slug: string | null; url: string | null; note: string | null; powered_by: boolean }
+
+/** The hotel's public booking page: guests send requests, reception books them (owner, 14 Nov 2026). */
+export function BookingPageSettings() {
+  const { t } = useTranslation()
+  const q = useSettingsObject<BookingPageSettings>('/settings/booking-page')
+  const save = useSettingsObjectSave<BookingPageSettings>('/settings/booking-page')
+  const v = q.data?.data
+  const [slug, setSlug] = useState<string | null>(null)
+  const [note, setNote] = useState<string | null>(null)
+  if (!v) return null
+  const error = save.error instanceof ApiError ? save.error : null
+  const send = (enabled: boolean) => save.mutate({ enabled, slug: slug ?? v.slug ?? '', note: note ?? v.note ?? '' })
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <h2 className="text-base font-semibold">{t('settings.sections.booking-page')}</h2>
+        <p className="max-w-prose text-sm text-muted">{t('settings.bookingPage.help')}</p>
+      </div>
+      <Card className="flex flex-col gap-4">
+        {save.isSuccess && <Alert tone="ok">{t('common.saved')}</Alert>}
+        {error && !error.field('slug') && <Alert>{error.message}</Alert>}
+        <label className="flex min-h-touch items-start gap-3 text-sm">
+          <input type="checkbox" className="mt-0.5 size-4 rounded" checked={v.enabled} disabled={save.isPending} onChange={(e) => send(e.target.checked)} />
+          <span className="flex flex-col">
+            <span className="font-medium">{t('settings.bookingPage.enabled')}</span>
+            <span className="text-muted">{t('settings.bookingPage.enabledHint')}</span>
+          </span>
+        </label>
+        {v.url && v.enabled && (
+          <p className="text-sm">
+            {t('settings.bookingPage.link')}{' '}
+            <a className="font-medium break-all text-accent underline" href={v.url} target="_blank" rel="noopener noreferrer">{v.url}</a>
+          </p>
+        )}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={t('settings.bookingPage.slug')} value={slug ?? v.slug ?? ''} hint={t('settings.bookingPage.slugHint')} maxLength={50} onChange={(e) => setSlug(e.target.value)} error={error?.field('slug')} />
+          <Field label={t('settings.bookingPage.note')} value={note ?? v.note ?? ''} hint={t('settings.bookingPage.noteHint')} maxLength={300} onChange={(e) => setNote(e.target.value)} />
+        </div>
+        {v.powered_by && <p className="text-sm text-muted">{t('settings.bookingPage.poweredBy')}</p>}
+        <div>
+          <Button disabled={save.isPending} onClick={() => send(v.enabled)}>{t('common.save')}</Button>
+        </div>
+      </Card>
+    </div>
+  )
+}

@@ -124,11 +124,19 @@ thead th{border-top:0;font-size:14px}
 .foot a{display:inline-flex;align-items:center;min-height:44px;text-decoration:none}.foot a:hover{text-decoration:underline}
 .prose{max-width:760px;margin:0 auto;padding:40px 20px 64px}
 .prose h1{font-size:32px;margin-bottom:8px}.prose h2{font-size:21px;margin:32px 0 8px}.prose p,.prose li{color:var(--sub)}.prose p{margin:10px 0}
+.form{display:grid;gap:14px}.form label{display:grid;gap:6px;font-size:14px;font-weight:600}
+.form input,.form select,.form textarea{font:inherit;font-weight:400;min-height:48px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);width:100%}
+.form textarea{min-height:90px}.two{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
+.err{color:#b91c1c;font-size:13px;font-weight:500}@media (prefers-color-scheme:dark){.err{color:#fca5a5}}
+.ok{border:1px solid var(--ok);border-radius:12px;padding:16px;background:color-mix(in srgb,var(--ok) 10%,var(--bg))}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.powered{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:13px;color:var(--sub);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:0 12px}
 .draft{border:1px solid #d97706;background:color-mix(in srgb,#f59e0b 14%,var(--bg));color:var(--text);padding:10px 14px;border-radius:10px;font-size:14px;margin:12px 0 24px}
 </style>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
+@unless ($bare ?? false)
 <header>
   <div class="wrap bar">
     <a class="logo" href="/"><span class="mark" aria-hidden="true">{{ mb_substr($name, 0, 1) }}</span>{{ $name }}</a>
@@ -141,9 +149,11 @@ thead th{border-top:0;font-size:14px}
     @endif
   </div>
 </header>
+@endunless
 <main id="main">
 @yield('main')
 </main>
+@unless ($bare ?? false)
 <footer class="foot">
   <div class="wrap row">
     <span>© {{ date('Y') }} {{ $name }}</span>
@@ -155,5 +165,6 @@ thead th{border-top:0;font-size:14px}
     <a href="/login">Sign in</a>
   </div>
 </footer>
+@endunless
 </body>
 </html>

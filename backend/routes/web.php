@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Web\BookingPageController;
 use App\Http\Controllers\Web\LandingController;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -15,6 +16,9 @@ Route::withoutMiddleware([StartSession::class, EncryptCookies::class, AddQueuedC
         Route::get('/', [LandingController::class, 'index']);
         Route::get('/terms', [LandingController::class, 'legal']);
         Route::get('/privacy', [LandingController::class, 'legal']);
+        // A hotel's public booking page (off until the hotel turns it on).
+        Route::get('/h/{slug}', [BookingPageController::class, 'show'])->where('slug', '[a-z0-9-]{1,60}');
+        Route::post('/h/{slug}', [BookingPageController::class, 'store'])->where('slug', '[a-z0-9-]{1,60}');
         Route::get('/robots.txt', [LandingController::class, 'robots']);
         Route::get('/sitemap.xml', [LandingController::class, 'sitemap']);
     });

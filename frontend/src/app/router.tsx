@@ -24,6 +24,7 @@ const PlansPage = lazy(() => pages.plans().then((m) => ({ default: m.PlansPage }
 const PlatformSettingsPage = lazy(() => pages.platformSettings().then((m) => ({ default: m.PlatformSettingsPage })))
 const SwitchesPage = lazy(() => pages.switches().then((m) => ({ default: m.SwitchesPage })))
 const SupportInboxPage = lazy(() => pages.support().then((m) => ({ default: m.SupportInboxPage })))
+const BookingRequestsPage = lazy(() => import('@/pages/reservations/BookingRequestsPage').then((m) => ({ default: m.BookingRequestsPage })))
 const SignupsPage = lazy(() => pages.signups().then((m) => ({ default: m.SignupsPage })))
 const SystemPage = lazy(() => pages.system().then((m) => ({ default: m.SystemPage })))
 const TeamPage = lazy(() => pages.team().then((m) => ({ default: m.TeamPage })))
@@ -93,6 +94,7 @@ const SETTINGS_PAGES: Record<string, ReturnType<typeof section>> = {
   modules: section('ModulesSettings'),
   attendance: section('AttendanceSettings'),
   subscription: section('SubscriptionSettings'),
+  'booking-page': section('BookingPageSettings'),
 }
 const DesignSystemPage = lazy(() => pages.designSystem().then((m) => ({ default: m.DesignSystemPage })))
 
@@ -241,6 +243,7 @@ export const routes = [
                 children: [
                   { path: 'reservations', element: page(<ReservationsPage />) },
                   { path: 'reservations/:id', element: page(<ReservationPage />) },
+                  { path: 'booking-requests', element: page(<BookingRequestsPage />) },
                 ],
               },
               {

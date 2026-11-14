@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\Automation\NotificationController;
 use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\BrandingController;
 use App\Http\Controllers\Api\DemoController;
+use App\Http\Controllers\Api\Front\BookingRequestController;
 use App\Http\Controllers\Api\Front\FrontDeskController;
 use App\Http\Controllers\Api\Front\GuestController;
 use App\Http\Controllers\Api\Front\InvoiceController;
@@ -185,6 +186,8 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
             // Reservations.
             Route::middleware('permission:reservations.view')->group(function () {
                 Route::get('/reservations', [ReservationController::class, 'index']);
+                Route::get('/booking-requests', [BookingRequestController::class, 'index']);
+                Route::get('/booking-requests/{id}', [BookingRequestController::class, 'show']);
                 Route::get('/reservations/calendar', [ReservationController::class, 'calendar']);
                 Route::get('/reservations/lookups', [ReservationController::class, 'lookups']);
                 Route::get('/reservations/availability', [ReservationController::class, 'availability']);
@@ -195,6 +198,8 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
                 Route::post('/reservations/{id}/payments', [ReservationController::class, 'payment'])->middleware(['idempotent', 'one.at.a.time:reservation']); // payments.take / payments.refund checked inside
             });
             Route::post('/reservations', [ReservationController::class, 'store'])->middleware(['permission:reservations.create', 'idempotent']);
+            Route::post('/booking-requests/{id}/accept', [BookingRequestController::class, 'accept'])->middleware('permission:reservations.create');
+            Route::post('/booking-requests/{id}/decline', [BookingRequestController::class, 'decline'])->middleware('permission:reservations.create');
             Route::put('/reservations/{id}', [ReservationController::class, 'update'])->middleware(['permission:reservations.edit', 'one.at.a.time:reservation']);
             Route::post('/reservations/{id}/pay-later', [ReservationController::class, 'payLater'])->middleware(['permission:reservations.edit', 'idempotent', 'one.at.a.time:reservation']);
             Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->middleware(['permission:reservations.cancel', 'idempotent', 'one.at.a.time:reservation']);
@@ -336,6 +341,8 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
             // Settings (phase 2a)
             Route::prefix('settings')->group(function () {
                 Route::middleware('permission:settings.hotel')->group(function () {
+                    Route::get('/booking-page', [BookingRequestController::class, 'settings']);
+                    Route::put('/booking-page', [BookingRequestController::class, 'saveSettings']);
                     Route::get('/hotel', [HotelProfileController::class, 'show']);
                     Route::put('/hotel', [HotelProfileController::class, 'update']);
                     Route::post('/hotel/logo', [HotelProfileController::class, 'logo']);
