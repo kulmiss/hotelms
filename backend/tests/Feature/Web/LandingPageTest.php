@@ -67,6 +67,19 @@ class LandingPageTest extends TestCase
         $this->assertStringContainsString('<article class="prose" lang="en">', $legal);
     }
 
+    public function test_the_legal_drafts_cover_guest_messages_feedback_and_calendar_links(): void
+    {
+        $privacy = $this->get('/privacy')->assertOk()->getContent();
+        foreach (['Messages to guests', 'Guest feedback', 'Calendar links', 'no messages', 'own SMS account', 'never names, phone numbers or prices', 'stop working after 60 days'] as $text) {
+            $this->assertStringContainsString($text, $privacy, $text);
+        }
+        $terms = $this->get('/terms')->assertOk()->getContent();
+        foreach (['Messages to guests', 'never change a guest', 'nothing is cancelled automatically', 'mainly for apartments and guesthouses'] as $text) {
+            $this->assertStringContainsString($text, $terms, $text);
+        }
+        $this->assertStringContainsString('Draft – to be checked by a lawyer', $terms);
+    }
+
     public function test_every_website_string_has_an_amharic_translation(): void
     {
         $am = json_decode((string) file_get_contents(lang_path('am.json')), true);

@@ -168,7 +168,7 @@ screens of the demo hotel (WebP, 640/960/1280 wide). Speed budget checked in CI 
 `lighthouserc.json`): Lighthouse mobile ≥ 95 in all four categories, LCP ≤ 1.5 s. Tests: `Web/LandingPageTest`.
 Legal pages `/terms` and `/privacy` (`landing/terms.blade.php`, `landing/privacy.blade.php`), marked **"Draft – to be checked by a
 lawyer"**: the hotel is the data controller for its guests and the platform the processor; Free plan terms; security emails; sign-in
-and security log kept one year; 7-day removal of unconfirmed sign-ups; 90 days after closing. Change the date in
+and security log kept one year; 7-day removal of unconfirmed sign-ups; 90 days after closing. Also (14 Nov 2026): guest messages (sent in the hotel's name; opt-out; thank-you only with a yes; the hotel's own SMS account), guest feedback (never changed; shown only with the guest's permission; links expire after 60 days) and calendar links (stored encrypted; export links show dates only; clashes never cancel). Change the date in
 `LandingController::LEGAL_UPDATED` when the texts change.
 
 ## Guest messages
