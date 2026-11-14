@@ -24,6 +24,7 @@ backup script, systemd timer, Supervisor file).
 | `<DB_PASSWORD>` | Password of the database user `hotelms` (long, random) | – |
 | `<DB_ROOT_PASSWORD>` | MySQL root password (Docker option only) | – |
 | `<APP_KEY>` | Made at the first install (starts with `base64:`) | – |
+| `<BACKUP_KEY>` | Made at the first install by the deploy script (starts with `base64:`) – backups are encrypted with it | – |
 | `<MAIL_HOST>` `<MAIL_PORT>` `<MAIL_USER>` `<MAIL_PASSWORD>` | Your outgoing mail server (provider's SMTP or a mail service) | `smtp.example.et`, `587` |
 | `<SUPER_ADMIN_EMAIL>` | Your owner account | `owner@example.et` |
 | `<OFFSITE_REMOTE>` | rclone remote for the second backup copy (in Ethiopia) | `hotelms-offsite:hotelms-backups` |
@@ -334,7 +335,7 @@ ending with `create_idempotency_keys_table … DONE`, `Super Admin created: <SUP
 (**write the password down now**), the `storage:link` line, the four `… DONE` lines of `optimize`, and at the end
 `Done. Version in use: <date-time>`. `db:seed` also builds the demo hotel, so it can take a few minutes.
 
-Copy the `APP_KEY=` line to your password manager: `sudo grep ^APP_KEY= /var/www/shared/.env`.
+Copy the `APP_KEY=` and `BACKUP_KEY=` lines to your password manager: `sudo grep -E '^(APP|BACKUP)_KEY=' /var/www/shared/.env`.
 
 ### 5A.6 Start the scheduler
 
@@ -450,7 +451,7 @@ sudo hotelms-deploy ~/hotelms.zip
 
 **You should see** steps `1/8` … `8/8`: `Application key set successfully.`, migrations `… DONE`,
 `Super Admin created: <SUPER_ADMIN_EMAIL> / temporary password: …` (**write it down now**), the storage link, the
-`optimize` lines, `Done. Version in use: …`. Copy `APP_KEY`: `sudo grep ^APP_KEY= /var/www/shared/.env`.
+`optimize` lines, `Done. Version in use: …`. Copy both keys: `sudo grep -E '^(APP|BACKUP)_KEY=' /var/www/shared/.env`.
 *(This script was tested in a test folder: first install, update, a failed backup that stops safely, and rollback.)*
 
 ### 5B.5 Nginx site (manual)
@@ -554,6 +555,7 @@ script). Lines you may add are marked *(add)*.
 | `BACKUP_PATH` | `/var/backups/hotelms` | `/var/backups/hotelms` | Docker mounts this folder into the containers. |
 | `BACKUP_COPY_PATH` | empty (Part 10 copies off-server) | same | Or a second mounted disk. |
 | `BACKUP_KEEP_DAYS` | `30` | `30` | |
+| `BACKUP_KEY` | leave **empty** – the deploy script makes it once | same | Backups are encrypted with it; a live server makes no backup without it. Keep a copy; never lose it. |
 
 Protect it: `sudo chown www-data:www-data /var/www/shared/.env && sudo chmod 640 /var/www/shared/.env`
 (the deploy script does this at the first install). After any change: `php artisan optimize`
@@ -630,7 +632,7 @@ for the migration and cache steps (usually seconds). Each version stays in its o
 
    **Docker (A):** `sudo HOTELMS_MODE=docker /opt/hotelms-docker/deploy.sh ~/hotelms.zip`
 
-3. **You should see:** `3/8 Backup first` with `Backup /var/backups/hotelms/daily/….sql.gz: …`, `Application is now in
+3. **You should see:** `3/8 Backup first` with `Backup /var/backups/hotelms/daily/….sql.gz.enc: …, encrypted`, `Application is now in
    maintenance mode.`, the migrations (`Nothing to migrate.` or new `DONE` lines), `Application is now live.` and
    `Done. Version in use: <date-time>`.
    If the backup fails, the script **stops before changing anything** ("The backup failed – nothing was changed").
@@ -652,7 +654,8 @@ for the migration and cache steps (usually seconds). Each version stays in its o
   `/var/backups/hotelms/files`. On the 1st of each month the newest backup is checked; problems are emailed to the
   HotelMS owners.
 - By hand: `php artisan hotelms:backup` · check: `php artisan hotelms:backup --check` → `OK: … tables in …`.
-- **Backups are useless without the same `APP_KEY`.**
+- Every backup is **encrypted** with `BACKUP_KEY` (`….sql.gz.enc`; uploaded-file copies `….enc`), so the off-server
+  copy below holds only encrypted files. **Restoring needs both keys:** `BACKUP_KEY` and `APP_KEY`.
 
 ### 10.2 Copy them off the server every night (rclone)
 
@@ -811,7 +814,7 @@ Tested in the guide's workspace (Ubuntu 24.04, PHP 8.3.6), on a copy of the real
 
 From `docs/hosting.md` – at the first launch and at every big update.
 
-1. **Backup first:** `php artisan hotelms:backup`, then `php artisan hotelms:backup --check`. Keep a copy of `APP_KEY`.
+1. **Backup first:** `php artisan hotelms:backup`, then `php artisan hotelms:backup --check`. `BACKUP_KEY` is set (System → Backups: "encrypted"). Keep copies of `APP_KEY` and `BACKUP_KEY`.
    (The deploy script makes the backup itself for updates.)
 2. **New code on the server** (Part 5 or 9), then **migrate:** `php artisan migrate --force`, then
    `php artisan optimize` (the deploy script does both).
@@ -832,7 +835,7 @@ From `docs/hosting.md` – at the first launch and at every big update.
 | When | Look at | Good | If not |
 |---|---|---|---|
 | Right after | Super Admin → System; `curl -sI https://<YOUR_DOMAIN>/up` | all green; `HTTP/2 200` | Troubleshooting |
-| After 1 hour | Backups: a small backup at `:40` | a new `….sql.gz` in `/var/backups/hotelms/hourly/` (`sudo ls -l /var/backups/hotelms/hourly`) | scheduler |
+| After 1 hour | Backups: a small backup at `:40` | a new `….sql.gz.enc` in `/var/backups/hotelms/hourly/` (`sudo ls -l /var/backups/hotelms/hourly`) | scheduler |
 | After 1 hour | App log, Nginx error log (Part 11) | quiet | read the last lines |
 | First check-ins | Ask reception about speed and errors; `htop` | pages in about 1 s; CPU not stuck at 100 % | bigger VPS, Redis on |
 | Evening | `free -h`, `df -h /` | memory available, disk < 80 % | swap / more disk |

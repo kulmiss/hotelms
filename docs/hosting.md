@@ -106,9 +106,11 @@ Development (Docker): `docker compose exec backend php artisan migrate`.
 - Set `BACKUP_COPY_PATH` to a second disk or a folder synced to another location in Ethiopia.
 - Every night the uploaded files (payment proofs and the encrypted guest ID photos, in `storage/app/private`) are copied to `BACKUP_PATH/files` (and the second copy). Files the hotels deleted are removed there too. To restore them, copy that `files` folder back into `storage/app/private`.
 - On the 1st of every month the newest backup is opened and checked; if something is wrong the HotelMS team gets an email.
+- **Encrypted** (libsodium XChaCha20-Poly1305, streamed) with `BACKUP_KEY` – a key of its own, not `APP_KEY`: files end in `.sql.gz.enc`, the mirrored upload copies in `.enc`. Make the key once with `php artisan hotelms:backup-key`, put the line in `.env` and **keep a copy in your password manager**. A live server (`APP_ENV=production`) makes **no** backup without it (System and the watchdog turn red); in development an empty key gives plain `.sql.gz` files. Older plain backups can still be checked and restored.
 - By hand: `php artisan hotelms:backup` · check: `php artisan hotelms:backup --check`
-- **Restore** (replaces ALL data): `php artisan hotelms:backup --restore=/path/file.sql.gz`
-- The backups are useless without the same `APP_KEY` – keep it safe, separately.
+- **Restore** (replaces ALL data): `php artisan hotelms:backup --restore=/path/file.sql.gz.enc` (needs the same `BACKUP_KEY`)
+- A readable copy of one encrypted file (e.g. a payment proof from `files/`): `php artisan hotelms:backup --decrypt=/path/file.enc --to=/tmp/out` – delete it after use.
+- Restoring needs **both keys**: `BACKUP_KEY` to open the file, `APP_KEY` for the guest ID numbers, two-step secrets and ID photos inside it. Keep both safe, separately from the server.
 
 ## Rescue
 - Super Admin lost the phone for two-step sign-in: `php artisan hotelms:reset-two-factor owner@example.et`
@@ -116,7 +118,7 @@ Development (Docker): `docker compose exec backend php artisan migrate`.
 
 ## Go-live checklist (first launch and every big update)
 
-1. **Backup first:** `php artisan hotelms:backup` (and check it: `php artisan hotelms:backup --check`). Keep a copy of `APP_KEY`.
+1. **Backup first:** `php artisan hotelms:backup` (and check it: `php artisan hotelms:backup --check`). `BACKUP_KEY` is set (backups are encrypted; System → Backups says "encrypted"). Keep copies of `APP_KEY` and `BACKUP_KEY` in your password manager.
 2. **Put the new code on the server** (section 2a / 2b), then **migrate:** `php artisan migrate --force`, then `php artisan optimize`.
 3. **Cron:** the `schedule:run` line runs every minute (cPanel: section 2a step 6; VPS: `www-data` crontab). Check Super Admin → System: Scheduler green.
 4. **LICENSE:** the owner's name / company and email are filled in (no `[OWNER …]` placeholders).

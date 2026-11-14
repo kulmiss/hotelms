@@ -182,11 +182,15 @@ class Watchdog
         }
         if (! app()->environment('testing')) {
             $folder = app(Backups::class)->folder();
-            $files = glob($folder.'/daily/*.sql.gz') ?: [];
+            $files = app(Backups::class)->files('daily');
             $newest = $files ? max(array_map('filemtime', $files)) : null;
             if (! $newest || $newest < now()->subHours(26)->timestamp) {
                 $this->found('system', 'backup', 'critical', 'No backup in the last day', [['Newest daily backup', $newest ? date('d M Y H:i', $newest) : 'none'], ['Folder', $folder]],
-                    'If the server fails, data since the last backup is lost. Check the cron job and BACKUP_PATH.', '/admin/system');
+                    'If the server fails, data since the last backup is lost. Check the cron job, BACKUP_PATH and BACKUP_KEY.', '/admin/system');
+            }
+            if (app()->isProduction() && ! config('hotelms.backups.key')) {
+                $this->found('system', 'backup_key', 'critical', 'Backups have no encryption key', [['BACKUP_KEY', 'missing']],
+                    'A live server makes no backups without BACKUP_KEY. Run php artisan hotelms:backup-key, put the line in .env and keep a copy in your password manager.', '/admin/system');
             }
             $free = @disk_free_space(storage_path());
             if ($free !== false && $free < 1024 * 1024 * 1024) {

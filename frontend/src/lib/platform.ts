@@ -47,6 +47,8 @@ export type WatchFinding = {
   resolved_by: string | null
   muted_until: string | null
 }
+/** Newest backup of one kind (System health). */
+export type BackupFile = { file: string; at: string; size_kb: number; count: number; encrypted: boolean }
 /* ---------- Developer docs (the docs/ folder; Owner + tech team) ---------- */
 export type DocListItem = { name: string; title: string; hits?: number; snippet?: string }
 /** A deployment guide PDF (deploy-guide/pdf). */
@@ -145,7 +147,7 @@ export type SystemHealth = {
     cache: Check & { driver: string }
     scheduler: Check & { last_run: string | null }
     jobs: Check & { waiting: number; failed: number; recent_failures: { id: number; queue: string; at: string; error: string }[] }
-    backups: Check & { daily: { file: string; at: string; size_kb: number; count: number } | null; small: { file: string; at: string; size_kb: number; count: number } | null }
+    backups: Check & { daily: BackupFile | null; small: BackupFile | null; key: boolean }
     disk: Check & { free_mb: number | null }
   }
   errors: { at: string; level: string; message: string }[]

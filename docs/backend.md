@@ -86,6 +86,7 @@ Rate limits (`AppServiceProvider`): `login` (5/min per email+address, 30/min per
 | `Notify/Notifier`, `Notify/Telegram`, `Notify/MailSettings` | In-app bell, email, Telegram bot (polling, link by code); SMTP from Super Admin settings |
 | `Watchdog/WatchEvents`, `Watchdog/Watchdog` | Super Admin watchdog: password guessing, snooping, errors, cron/backup, mixed hotel data, money mismatches, double bookings, fraud signs |
 | `Backup/Backups` | Database backups (daily full, hourly small, monthly check, restore) and upload mirroring |
+| `Backup/BackupCipher` | Encrypted backup files (libsodium secretstream + gzip, streamed in 64 KB chunks) with `BACKUP_KEY`; `hotelms:backup-key` makes a key, `hotelms:backup --decrypt=` makes a readable copy |
 | `ActivityLogger` | The activity log (who, what, when, before/after) |
 | `DemoHotel`, `Demo/*` | The demo hotel |
 

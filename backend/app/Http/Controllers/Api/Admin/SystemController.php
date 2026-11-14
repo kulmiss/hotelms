@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\Backup\BackupCipher;
 use App\Services\Backup\Backups;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
@@ -73,14 +74,16 @@ class SystemController extends Controller
     private function backups(Backups $backups): array
     {
         $out = ['ok' => false];
-        foreach (['daily', 'small'] as $kind) {
-            $files = glob($backups->folder()."/{$kind}/*.sql.gz") ?: [];
-            rsort($files);
-            $newest = $files[0] ?? null;
-            $out[$kind] = $newest ? ['file' => basename($newest), 'at' => Carbon::createFromTimestamp((int) filemtime($newest))->toIso8601String(), 'size_kb' => (int) (filesize($newest) / 1024), 'count' => count($files)] : null;
+        // "small" = the hourly backups (folder hourly/).
+        foreach (['daily' => 'daily', 'small' => 'hourly'] as $kind => $folder) {
+            $files = $backups->files($folder);
+            $newest = $files ? end($files) : null;
+            $out[$kind] = $newest ? ['file' => basename($newest), 'at' => Carbon::createFromTimestamp((int) filemtime($newest))->toIso8601String(), 'size_kb' => (int) (filesize($newest) / 1024), 'count' => count($files), 'encrypted' => BackupCipher::isEncrypted($newest)] : null;
         }
-        $out['ok'] = $out['daily'] !== null && Carbon::parse($out['daily']['at'])->gt(now()->subHours(26));
-        $out['problem'] = $out['ok'] ? null : ($out['daily'] === null ? 'No daily backup yet.' : 'The newest daily backup is more than a day old.');
+        $out['key'] = (bool) config('hotelms.backups.key');
+        $noKey = ! $out['key'] && app()->isProduction();
+        $out['ok'] = ! $noKey && $out['daily'] !== null && Carbon::parse($out['daily']['at'])->gt(now()->subHours(26));
+        $out['problem'] = $out['ok'] ? null : ($noKey ? 'BACKUP_KEY is missing: no backups are made. Run php artisan hotelms:backup-key.' : ($out['daily'] === null ? 'No daily backup yet.' : 'The newest daily backup is more than a day old.'));
 
         return $out;
     }

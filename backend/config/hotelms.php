@@ -23,6 +23,9 @@ return [
         'path' => env('BACKUP_PATH', storage_path('app/backups')),
         'copy_path' => env('BACKUP_COPY_PATH'), // second location (e.g. a mounted disk elsewhere in Ethiopia)
         'keep_days' => (int) env('BACKUP_KEEP_DAYS', 30),
+        // Backups are encrypted with this key (php artisan hotelms:backup-key). NOT the APP_KEY: keep a copy
+        // in your password manager, away from the server. Without it, backups cannot be opened.
+        'key' => env('BACKUP_KEY'),
     ],
 
     'super_admin' => [

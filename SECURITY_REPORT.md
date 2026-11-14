@@ -221,6 +221,11 @@ What's missing is mostly **defence in depth**: the extra layers that limit the d
 - **Errors:** `APP_DEBUG=false` in the production example; JSON errors without traces; `expose_php = Off` in the server examples.
 - **Dependencies:** `composer audit` clean, `npm audit` clean (14 Nov); no unused packages found (Heroicons kept for the print pages, as you decided).
 
+## Progress (step 2 – owner OK and answers Q1–Q6 "yes", 14 Nov)
+| PR | Findings | Status |
+|---|---|---|
+| S1 Encrypted backups | H1 | done – `BACKUP_KEY`, `.sql.gz.enc`, no backup on a live server without the key, upload copies encrypted, `--decrypt`, System + watchdog warnings |
+
 ## Proposed fix PRs (step 2, after your OK)
 In order of importance. Each one is small, with tests, and speed measured before and after (page load, API time, first download).
 

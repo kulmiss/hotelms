@@ -2195,6 +2195,8 @@
     "lastRun": "Last run: {{when}}",
     "jobsLine": "{{waiting}} waiting · {{failed}} failed",
     "backupLine": "Newest: {{when}} · {{kb}} KB · {{count}} kept",
+    "backupEncrypted": "encrypted",
+    "backupPlain": "not encrypted (set BACKUP_KEY)",
     "freeSpace": "{{size}} free",
     "checks": {
       "database": "Database",

@@ -123,6 +123,12 @@ switch_to "$NEW"
 say "6/8 Database changes (php artisan migrate --force)"
 # APP_KEY is made once, at the first install, and never changed again (guest IDs, two-step and backups need it).
 grep -q '^APP_KEY=base64:' "$SHARED/.env" || artisan key:generate --force
+# BACKUP_KEY (backups are encrypted with it, never with APP_KEY) is made once too. A live server makes no backup without it.
+if ! grep -q '^BACKUP_KEY=base64:' "$SHARED/.env"; then
+    BACKUP_KEY="base64:$(openssl rand -base64 32)"
+    if grep -q '^BACKUP_KEY=' "$SHARED/.env"; then sed -i "s#^BACKUP_KEY=.*#BACKUP_KEY=$BACKUP_KEY#" "$SHARED/.env"; else echo "BACKUP_KEY=$BACKUP_KEY" >> "$SHARED/.env"; fi
+    say "A new BACKUP_KEY was made. Copy it to your password manager NOW: sudo grep ^BACKUP_KEY= $SHARED/.env"
+fi
 artisan migrate --force
 if [ "$FIRST" = 1 ]; then
     artisan db:seed --force                           # creates the Super Admin (and the demo hotel)
