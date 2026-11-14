@@ -97,6 +97,7 @@ class BookingPage
                 'powered_by' => ! $this->switches->on($hotel, 'feature.branding'),
                 'language' => (string) $this->settings->get('language', 'en'), // the hotel's default; ?lang= changes it
                 'reviews' => $this->settings->get(self::REVIEWS, false) ? $this->reviews() : null,
+                'menu_url' => ((array) $this->settings->get(GuestMessenger::INFO, []))['menu_url'] ?? null, // Settings → Guest messages
             ];
         });
     }

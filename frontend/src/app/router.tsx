@@ -65,6 +65,7 @@ const WhatsNewPage = lazy(() => pages.whatsNew().then((m) => ({ default: m.Whats
 const SubscriptionInvoicePage = lazy(() => pages.subscriptionInvoice().then((m) => ({ default: m.SubscriptionInvoicePage })))
 const ApprovalsPage = lazy(() => pages.approvals().then((m) => ({ default: m.ApprovalsPage })))
 const FeedbackPage = lazy(() => pages.feedback().then((m) => ({ default: m.FeedbackPage })))
+const RoomCardsPrintPage = lazy(() => pages.roomCards().then((m) => ({ default: m.RoomCardsPrintPage })))
 const FrontDeskModePage = lazy(() => pages.frontDeskMode().then((m) => ({ default: m.FrontDeskModePage })))
 const CashierPage = lazy(() => pages.cashier().then((m) => ({ default: m.CashierPage })))
 const HousekeepingPage = lazy(() => pages.housekeeping().then((m) => ({ default: m.HousekeepingPage })))
@@ -164,6 +165,10 @@ export const routes = [
           {
             element: <RequirePermission permission="invoices.print" />,
             children: [{ path: '/billing/:id/print', element: page(<InvoicePrintPage />) }],
+          },
+          {
+            element: <RequirePermission permission="settings.rooms" />,
+            children: [{ path: '/room-cards/print', element: page(<RoomCardsPrintPage />) }],
           },
           {
             element: <RequirePermission permission="reservations.view" />,

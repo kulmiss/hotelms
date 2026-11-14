@@ -32,6 +32,7 @@ export const pages = {
   roomSettings: () => import('@/pages/settings/RoomSections'),
   calendarSync: () => import('@/pages/settings/CalendarSyncSections'),
   guestMessages: () => import('@/pages/settings/GuestMessagesSections'),
+  roomCards: () => import('@/pages/settings/RoomCardsPrintPage'),
   setup: () => import('@/pages/setup/SetupPage'),
   guests: () => import('@/pages/guests/GuestsPage'),
   reservations: () => import('@/pages/reservations/ReservationsPage'),

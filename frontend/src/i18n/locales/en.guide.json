@@ -621,6 +621,15 @@
         "SMS: use your own AfroMessage account (or another provider). You pay them per SMS; send a test SMS to your phone first."
       ]
     },
+    "roomCards": {
+      "title": "Room cards with QR codes (Wi-Fi, menu, WhatsApp)",
+      "steps": [
+        "Settings → Guest messages → Guest information: fill in Wi-Fi, the menu link and reception's WhatsApp, then Save.",
+        "Tap Print room cards (QR). There is one card per room, four on a page.",
+        "Print, cut and put one card in each room. Guests scan the Wi-Fi code to join without typing.",
+        "Changed the Wi-Fi password? Print the cards again."
+      ]
+    },
     "activity": {
       "title": "Who did what (activity log)",
       "steps": [

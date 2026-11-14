@@ -24,6 +24,7 @@
   <h1 style="font-size:clamp(28px,5vw,40px)">{{ __('Book a room') }}</h1>
   <p class="lead">{{ $h['city'] ? $h['name'].', '.$h['city'].'.' : $h['name'].'.' }} {{ __('Send your dates – the hotel confirms by phone.') }}</p>
   @if ($p['note'])<p class="muted" style="margin-top:8px">{{ $p['note'] }}</p>@endif
+  @if (! empty($p['menu_url']))<p style="margin-top:12px"><a class="btn btn-outline btn-sm" href="{{ $p['menu_url'] }}" target="_blank" rel="noopener noreferrer">{{ __('See our restaurant menu') }}</a></p>@endif
 
   @if ($sent)
     <div class="ok" role="status" style="margin-top:24px"><strong>{{ __('Thank you! Your request was sent.') }}</strong><br>{{ __('The hotel will call you to confirm. Nothing is booked or paid until they do.') }}</div>

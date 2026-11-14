@@ -68,6 +68,7 @@ use App\Http\Controllers\Api\Settings\HotelSettingsController;
 use App\Http\Controllers\Api\Settings\ImportController;
 use App\Http\Controllers\Api\Settings\PaymentMethodController;
 use App\Http\Controllers\Api\Settings\RateRuleController;
+use App\Http\Controllers\Api\Settings\RoomCardsController;
 use App\Http\Controllers\Api\Settings\RoomController;
 use App\Http\Controllers\Api\Settings\RoomTypeController;
 use App\Http\Controllers\Api\Settings\TaxController;
@@ -407,6 +408,7 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
                     Route::delete('/cancellation-policies/{id}', [CancellationPolicyController::class, 'destroy']);
                 });
                 Route::middleware('permission:settings.rooms')->group(function () {
+                    Route::get('/room-cards', RoomCardsController::class);
                     Route::get('/calendar-sync', [CalendarSyncController::class, 'index']);
                     Route::post('/calendar-sync', [CalendarSyncController::class, 'store']);
                     Route::put('/calendar-sync/{id}', [CalendarSyncController::class, 'update']);

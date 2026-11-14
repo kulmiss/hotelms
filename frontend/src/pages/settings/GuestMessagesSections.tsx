@@ -8,7 +8,10 @@ import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { Select } from '@/components/ui/Select'
 import { Tabs } from '@/components/ui/Tabs'
+import { Link } from 'react-router'
+import { QrCodeIcon } from 'lucide-react'
 import { api, ApiError, post, put } from '@/lib/api'
+import { useCan } from '@/lib/hotel'
 
 type Template = { subject: string; body: string; custom: boolean }
 type Msg = { key: string; consent: 'unless_opt_out' | 'ticked'; en: Template; am: Template }
@@ -44,6 +47,7 @@ export function GuestMessagesSettings() {
 
 function InfoForm({ info }: { info: Info }) {
   const { t } = useTranslation()
+  const can = useCan()
   const qc = useQueryClient()
   const [f, setF] = useState(info)
   const save = useMutation({ mutationFn: () => put('/settings/guest-messages/info', f), onSuccess: () => void qc.invalidateQueries({ queryKey: KEY }) })
@@ -64,10 +68,16 @@ function InfoForm({ info }: { info: Info }) {
         {field('whatsapp', t('messages.settings.whatsapp'), { inputMode: 'tel', placeholder: '+251 9…' })}
         <div className="sm:col-span-2">{field('menu_url', t('messages.settings.menuUrl'), { inputMode: 'url', placeholder: 'https://…', hint: t('messages.settings.menuUrlHint') })}</div>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Button disabled={save.isPending} onClick={() => save.mutate()}>
           {t('common.save')}
         </Button>
+        {can('settings.rooms') && (
+          <Link to="/room-cards/print" className="inline-flex min-h-touch items-center gap-2 rounded-lg px-3 text-sm font-medium text-accent-text hover:underline">
+            <QrCodeIcon aria-hidden className="size-4" />
+            {t('roomCards.open')}
+          </Link>
+        )}
         {save.isSuccess && <span className="text-sm text-ok-text">{t('common.saved')}</span>}
       </div>
     </Card>

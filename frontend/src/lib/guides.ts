@@ -104,6 +104,7 @@ export const GUIDE: GuideSection[] = [
       { key: 'holidays', perm: 'settings.pricing' },
       { key: 'calendarSync', perm: 'settings.rooms' },
       { key: 'messageSettings', perm: 'settings.hotel' },
+      { key: 'roomCards', perm: 'settings.rooms' },
       { key: 'activity', perm: 'activity_log.view' },
       { key: 'plan', perm: 'subscription.view' },
     ],

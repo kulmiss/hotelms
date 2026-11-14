@@ -1,4 +1,17 @@
 {
+  "roomCards": {
+    "title": "Room cards",
+    "open": "Print room cards (QR)",
+    "help": "One card per room with QR codes for the Wi-Fi, the menu and reception's WhatsApp. Four cards fit on an A4 page.",
+    "nothing": "Fill in Wi-Fi, the menu link or the WhatsApp number in Settings → Guest messages first.",
+    "room": "Room {{number}}",
+    "wifi": "Wi-Fi",
+    "password": "Password: {{password}}",
+    "menu": "Restaurant menu",
+    "whatsapp": "Reception on WhatsApp",
+    "breakfast": "Breakfast: {{time}}",
+    "reception": "Reception: {{phone}}"
+  },
   "feedback": {
     "subtitle": "What guests say after their stay – in their own words, never changed.",
     "answers": "Answers",

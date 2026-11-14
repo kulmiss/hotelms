@@ -212,6 +212,17 @@ booking's **Messages** card (`Front/ReservationMessageController`, `components/m
   latest comments the guests allowed, as written, first name only.
 - Tests: `Hotel/GuestFeedbackTest`.
 
+## Restaurant menu link and room QR cards
+
+- The **menu link** (Settings → Guest messages → Guest information, `guest_info.menu_url`, https/http only) shows on the booking
+  page ("See our restaurant menu"), in the welcome message (`{menu_link}`) and on the room cards.
+- **Room cards** (`/room-cards/print`, `settings.rooms`; `Settings/RoomCardsController`, `pages/settings/RoomCardsPrintPage.tsx`):
+  one card per room, four per A4 page, black on white: QR codes for the **Wi-Fi** (`WIFI:T:WPA;S:…;P:…;;`, phones join when they
+  scan), the **menu** and **reception's WhatsApp** (`wa.me`), plus breakfast and the reception phone. QR codes are drawn in the
+  browser (`components/ui/QrCode.tsx`, no library). Empty items are left out.
+- Deeper restaurant integration: proposal only, `docs/drafts/restaurant-integration.md`.
+- Tests: `Hotel/RoomCardsTest`, `test/roomCards.test.tsx`.
+
 ## Calendar sync (Airbnb, Booking.com – iCal)
 
 Settings → Calendar sync (`settings.rooms`; `Settings/CalendarSyncController`, `pages/settings/CalendarSyncSections.tsx`).
