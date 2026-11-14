@@ -59,6 +59,10 @@ are encrypted, read with `PlatformSetting::secret()` (a value saved before encry
 (`MAIL_ALLOW_PRIVATE_HOST`); `SystemController::settingsCheck()` (System + watchdog); `/health` shows the version only
 to the HotelMS team.
 
+**Two-step sign-in** (owner Q1): always required for the HotelMS team (`config('hotelms.two_factor_team')`, only
+development and tests turn it off with `HOTELMS_TWO_FACTOR_TEAM=false`); for Hotel Admins by the Owner's switch
+`two_factor_admins` (on by default); for staff by the hotel's own setting.
+
 **Uploads** (`App\Support\SafeImage`, SECURITY_REPORT L4): payment proofs, guest ID photos and logos – more than 40
 megapixels refused (header only); JPEG / PNG / WebP up to 16 MP drawn again with GD (hidden data and metadata such as
 GPS removed; turned by EXIF orientation; JPEG only when the `exif` extension is there), HEIC and PDF kept as they are;

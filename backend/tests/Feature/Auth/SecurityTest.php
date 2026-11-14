@@ -290,4 +290,13 @@ class SecurityTest extends TestCase
         $this->artisan('hotelms:reset-two-factor', ['email' => 'admin@sheger.test'])->assertSuccessful();
         $this->assertNull($this->admin->fresh()->two_factor_confirmed_at);
     }
+
+    public function test_the_hotelms_team_always_needs_two_step_sign_in_even_with_the_switch_off(): void
+    {
+        config(['hotelms.two_factor_team' => true]); // as on a live server (tests turn it off for speed)
+        PlatformSetting::write('two_factor_admins', false); // the Owner's switch now covers Hotel Admins only
+        $team = User::factory()->superAdmin()->create(['platform_role' => 'support']);
+        $this->actingAs($team)->getJson('/api/v1/admin/hotels')->assertForbidden()->assertJsonPath('code', 'two_factor_setup_required');
+        $this->actingAs($this->admin)->getJson('/api/v1/branches')->assertOk(); // Hotel Admin: switch off = not required
+    }
 }

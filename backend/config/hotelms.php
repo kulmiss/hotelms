@@ -16,6 +16,9 @@ return [
     */
     // Default of the "two-step sign-in for admins" switch until the Super Admin changes it (tests turn it off).
     'two_factor_admins' => (bool) env('HOTELMS_TWO_FACTOR_ADMINS', true),
+    // The HotelMS team must always use two-step sign-in (owner Q1, 14 Nov). Not a switch in the app: only for
+    // development and tests (HOTELMS_TWO_FACTOR_TEAM=false). Never set it on a live server.
+    'two_factor_team' => (bool) env('HOTELMS_TWO_FACTOR_TEAM', true),
 
     // How long a second change to the same booking waits for the first one (OneAtATime middleware).
     'lock_wait_seconds' => (int) env('HOTELMS_LOCK_WAIT_SECONDS', 10),

@@ -432,8 +432,8 @@
       "botToken": "Bot token",
       "botTokenHint": "Kept secret. Leave as is to keep the current token; clear it to turn Telegram off.",
       "botUsername": "Bot username (without @)",
-      "twoFactorAdmins": "Two-step sign-in for admins",
-      "twoFactorAdminsHint": "The HotelMS team and every Hotel Admin must use a code from an app or email."
+      "twoFactorAdmins": "Two-step sign-in for Hotel Admins",
+      "twoFactorAdminsHint": "Every Hotel Admin must use a code from an app or email. The HotelMS team always must (this cannot be turned off)."
     },
     "reports": {
       "subtitle": "Income, customers and how each hotel is doing.",

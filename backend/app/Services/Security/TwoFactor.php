@@ -35,7 +35,11 @@ class TwoFactor
         if ($user->hotel?->is_demo) {
             return false;
         }
-        if ($user->is_super_admin || $user->isHotelAdmin()) {
+        // The HotelMS team always (owner Q1, 14 Nov – SECURITY_REPORT L7); Hotel Admins by the Owner's switch (on by default).
+        if ($user->is_super_admin) {
+            return (bool) config('hotelms.two_factor_team'); // no switch in the app; only development / tests turn it off in .env
+        }
+        if ($user->isHotelAdmin()) {
             return (bool) PlatformSetting::read('two_factor_admins');
         }
         if ($user->hotel) {

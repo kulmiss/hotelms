@@ -233,6 +233,7 @@ What's missing is mostly **defence in depth**: the extra layers that limit the d
 | S7 Rate limits | M5 | done – 300 calls a minute per person, downloads 20 a minute, reports 60 a minute (429); counters in files (no measurable cost) |
 | S8 Secrets and server checks | M6, L5, L8, L9 | done – Telegram token encrypted (migration), mail server inside the network refused (SSRF), System + watchdog check `.env` safety, no public version (needs migrate) |
 | S9 Uploads and guest IDs | L4, Q5 | done – pictures over 40 MP refused, JPEG/PNG/WebP drawn again (no hidden data, no GPS), shown with CSP sandbox; full ID number and ID photo only for check-in staff (Accountant sees the end) |
+| S11 Two-step for the HotelMS team | L7, Q1 | done – always required for the HotelMS team (no switch in the app); the Owner's switch now covers Hotel Admins only (on by default) |
 
 ## Proposed fix PRs (step 2, after your OK)
 In order of importance. Each one is small, with tests, and speed measured before and after (page load, API time, first download).
