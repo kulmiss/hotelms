@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Services\BookingPage;
 use App\Services\Landing\LandingContent;
+use App\Support\GuestThrottleKey;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -40,7 +41,7 @@ class BookingPageController extends Controller
         if (filled($request->input('website'))) {
             return redirect("/h/{$slug}?sent=1", 303); // a bot: the normal answer, nothing saved
         }
-        $key = 'booking-request|'.$request->ip();
+        $key = GuestThrottleKey::for('booking-request', $request);
         if (RateLimiter::tooManyAttempts($key, 10)) {
             return $this->render($slug, $page, false, ['form' => 'Too many requests from this network. Please call the hotel.'], $old, 429);
         }
