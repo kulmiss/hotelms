@@ -474,9 +474,9 @@
     "changeEmail": "Change email",
     "newEmail": "New email",
     "currentPassword": "Your current password",
-    "changeEmailHint": "You will sign in with the new email from now on. The old email gets a notice.",
+    "changeEmailHint": "We send a link to the new email. It is used for signing in once you open that link (within 24 hours); the old email then gets a notice.",
     "saveEmail": "Change email",
-    "emailChanged": "Email changed. Use the new one next time you sign in.",
+    "emailChanged": "A link is on its way to the new email. Open it to finish the change; until then you sign in with the old one.",
     "passwordTitle": "Password",
     "passwordBody": "Change the password you use to sign in."
   },
@@ -502,6 +502,8 @@
       "create": "Add staff member",
       "created": "{{name}} can now sign in",
       "createdBody": "Share these sign-in details. They must choose their own password the first time they sign in.",
+      "emailPending": "A link was sent to {{email}}. The new email works once the person opens it (within 24 hours); until then the old one is used.",
+      "emailWaiting": "Waiting for the link sent to {{email}}.",
       "access": "Access",
       "disable": "Disable account",
       "enable": "Enable account",
@@ -2707,6 +2709,12 @@
     "hours_other": "{{count}} hours",
     "leavingCol": "Leaving that day",
     "states": { "staying": "Staying", "arriving": "Arriving", "free": "Free" }
+  },
+  "confirmEmail": {
+    "title": "Confirm your new email",
+    "intro": "Tap the button to sign in with this email from now on.",
+    "button": "Confirm this email",
+    "done": "Done. Sign in with {{email}} from now on."
   },
   "weakPassword": {
     "message": "Your password is easier to guess than our new rules allow. It still works, but please change it.",

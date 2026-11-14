@@ -20,6 +20,12 @@ class SecurityNotices
     /** @var array<string, array{0: string, 1: string}> kind => [subject, text] */
     private const KINDS = [
         'locked' => ['Sign-in paused after wrong passwords', 'Someone typed a wrong password for your account many times, so signing in is paused for :minutes minutes.'],
+        'password_changed' => ['Your password was changed', 'The password of your account was changed.'],
+        'two_factor_on' => ['Two-step sign-in is on', 'Two-step sign-in was turned on for your account.'],
+        'two_factor_off' => ['Two-step sign-in was turned off', 'Two-step sign-in was turned off for your account. Signing in now needs only the password.'],
+        'recovery_codes' => ['New recovery codes', 'New recovery codes were made for your account. The old ones no longer work.'],
+        'new_device' => ['New sign-in to your account', 'Your account was used to sign in on a device it had not used before.'],
+        'email_changed' => ['Your sign-in email was changed', 'The sign-in email of your account was changed to :new. This address is no longer used for signing in.'],
     ];
 
     public function send(User $user, string $kind, ?Request $request = null, array $extra = [], ?string $to = null): void

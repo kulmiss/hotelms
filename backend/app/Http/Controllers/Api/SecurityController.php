@@ -10,6 +10,7 @@ use App\Services\HotelExport;
 use App\Services\HotelSettings;
 use App\Services\Modules\Attendance;
 use App\Services\Security\Devices;
+use App\Services\Security\SecurityNotices;
 use App\Services\Security\TwoFactor;
 use App\Support\HotelClock;
 use Illuminate\Http\JsonResponse;
@@ -53,6 +54,7 @@ class SecurityController extends Controller
             throw ValidationException::withMessages(['code' => 'That code is not right, or it expired. Try again.']);
         }
         $this->log->log('security.two_factor_on', "{$request->user()->name} turned on two-step sign-in", $request->user());
+        app(SecurityNotices::class)->send($request->user(), 'two_factor_on', $request);
 
         return response()->json(['recovery_codes' => $codes]);
     }
@@ -67,6 +69,7 @@ class SecurityController extends Controller
         }
         $this->twoFactor->disable($user);
         $this->log->log('security.two_factor_off', "{$user->name} turned off two-step sign-in", $user);
+        app(SecurityNotices::class)->send($user, 'two_factor_off', $request);
 
         return response()->json(['message' => 'Turned off.']);
     }
@@ -77,8 +80,10 @@ class SecurityController extends Controller
         $user = $request->user();
         $this->checkPassword($user, $data['password']);
         abort_unless($this->twoFactor->enabled($user), 422, 'Two-step sign-in is off.');
+        $codes = $this->twoFactor->newRecoveryCodes($user);
+        app(SecurityNotices::class)->send($user, 'recovery_codes', $request);
 
-        return response()->json(['recovery_codes' => $this->twoFactor->newRecoveryCodes($user)]);
+        return response()->json(['recovery_codes' => $codes]);
     }
 
     /** Your own PIN: unlocks a shared device and works at the attendance kiosk. */

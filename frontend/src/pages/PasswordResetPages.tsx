@@ -114,3 +114,39 @@ export function ResetPasswordPage() {
     </Frame>
   )
 }
+
+/** The link sent to a new sign-in email (SECURITY_REPORT M7): opening it makes the change. */
+export function ConfirmEmailPage() {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const confirm = useMutation({
+    meta: SILENT,
+    mutationFn: async () => {
+      await prepareSession()
+      return post<{ message: string; email: string }>('/auth/confirm-email', { token: params.get('token') ?? '' })
+    },
+  })
+  const error = confirm.error instanceof ApiError ? confirm.error : null
+
+  return (
+    <Frame title={t('confirmEmail.title')} intro={t('confirmEmail.intro')}>
+      {confirm.isSuccess ? (
+        <div className="flex flex-col gap-4">
+          <Alert tone="ok">{t('confirmEmail.done', { email: confirm.data.email })}</Alert>
+          <Button size="lg" onClick={() => navigate('/login', { replace: true })}>
+            {t('login.submit')}
+          </Button>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {error && <Alert>{error.field('token') ?? error.message}</Alert>}
+          {confirm.error && !error && <Alert>{t('common.serverUnreachable')}</Alert>}
+          <Button size="lg" disabled={confirm.isPending} onClick={() => confirm.mutate()}>
+            {t('confirmEmail.button')}
+          </Button>
+        </div>
+      )}
+    </Frame>
+  )
+}

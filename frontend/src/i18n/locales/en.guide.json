@@ -467,7 +467,8 @@
       "steps": [
         "Staff → Add staff.",
         "Type the name and email. Choose the role (what they can do) and their branch.",
-        "Tap Add staff member. The app makes a first password. Give it to the person; they change it the first time.",
+        "Tap Add staff member. The app makes a first password. Give it to the person; they change it the first time. The first password works for 7 days; after that, use Reset password.",
+        "Changing someone's email? The app sends a link to the new email. The new email works once the person opens that link.",
         "Forgot password? Open the person → Reset password.",
         "Someone left the hotel? Open the person → Disable account. Do not share accounts."
       ]

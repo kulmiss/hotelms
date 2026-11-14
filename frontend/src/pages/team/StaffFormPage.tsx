@@ -11,6 +11,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { TempPassword } from '@/components/ui/TempPassword'
 import { ApiError } from '@/lib/api'
 import { useMe } from '@/lib/auth'
+import { toast } from '@/lib/toast'
 import { cn } from '@/lib/cn'
 import {
   useCan,
@@ -63,8 +64,10 @@ function StaffForm({ member }: { member?: StaffMember }) {
       { name: f.name, email: f.email, phone: f.phone || null, role_id: Number(f.role_id), branch_ids: f.branch_ids },
       {
         onSuccess: (res) => {
-          if (!member) setCreated(res as NewStaffResult)
-          else navigate('/staff')
+          if (!member) return setCreated(res as NewStaffResult)
+          // A new email is used only after the person opens the link sent to it (SECURITY_REPORT M7).
+          if ((res as { email_change?: string }).email_change === 'pending') toast(t('team.staff.emailPending', { email: f.email.trim() }), 'ok', 8000)
+          navigate('/staff')
         },
       },
     )
@@ -92,7 +95,15 @@ function StaffForm({ member }: { member?: StaffMember }) {
           <div className="sm:col-span-2">
             <Field label={t('profile.name')} value={f.name} disabled={!editable} onChange={(e) => setF({ ...f, name: e.target.value })} error={error?.field('name')} />
           </div>
-          <Field label={t('team.staff.email')} type="email" value={f.email} disabled={!editable} onChange={(e) => setF({ ...f, email: e.target.value })} error={error?.field('email')} />
+          <Field
+            label={t('team.staff.email')}
+            type="email"
+            value={f.email}
+            disabled={!editable}
+            hint={member?.pending_email ? t('team.staff.emailWaiting', { email: member.pending_email }) : undefined}
+            onChange={(e) => setF({ ...f, email: e.target.value })}
+            error={error?.field('email')}
+          />
           <Field label={t('profile.phone')} type="tel" inputMode="tel" value={f.phone} disabled={!editable} onChange={(e) => setF({ ...f, phone: e.target.value })} error={error?.field('phone')} />
         </Card>
 

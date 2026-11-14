@@ -65,6 +65,15 @@ SecLists / NCSC, MIT – checked in about 20 ms without the internet), also not 
 end, and not the person's email name + numbers. Existing passwords keep working: when the password used at sign-in
 is weaker than these rules, `/me` → `security.password_weak` is true and the app shows a note asking to change it.
 
+**"Was this you?" emails** (`Security\SecurityNotices`, SECURITY_REPORT M7) go to the person for: a sign-in pause, a
+password change (also by reset link), two-step on / off, new recovery codes, a sign-in on a new device (staff; admins
+already got `NewDeviceMail`), and a changed sign-in email (to the **old** address). Never from demo hotels.
+**Email changes** (`Security\EmailChanges`): a new sign-in email – the Owner's own, or a staff member's changed by a
+manager – waits in `users.pending_email` until the link sent to it is opened (`POST /auth/confirm-email`, 24 hours,
+token stored as sha256); demo hotels change at once. **Temporary passwords** work for 7 days
+(`users.temporary_password_expires_at`, set by the `User` model whenever `must_change_password` is set; the Owner's own
+first password never runs out).
+
 ## Services map (`app/Services/`)
 
 | Service | Responsibility |

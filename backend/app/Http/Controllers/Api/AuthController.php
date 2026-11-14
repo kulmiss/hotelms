@@ -9,6 +9,7 @@ use App\Services\ActivityLogger;
 use App\Services\Impersonation;
 use App\Services\Modules\Attendance;
 use App\Services\Security\Devices;
+use App\Services\Security\EmailChanges;
 use App\Services\Security\SecurityNotices;
 use App\Services\Security\TwoFactor;
 use App\Services\Watchdog\WatchEvents;
@@ -99,6 +100,9 @@ class AuthController extends Controller
         if (! $user->isActive()) {
             throw ValidationException::withMessages(['email' => 'This account is disabled. Please contact your hotel admin.']);
         }
+        if ($user->temporaryPasswordExpired()) {
+            throw ValidationException::withMessages(['email' => 'This temporary password has expired (it works for 7 days). Ask your manager to send you a new one.']);
+        }
 
         $token = $this->devices->token($request);
         $this->devices->check($user, $token, $request);
@@ -180,6 +184,15 @@ class AuthController extends Controller
         $request->session()->forget(self::WEAK); // the note was about the other person's password
 
         return $this->complete($request, $user, false, $token);
+    }
+
+    /** Opens the link sent to a new sign-in email (SECURITY_REPORT M7). No sign-in needed: the link is the proof. */
+    public function confirmEmail(Request $request, EmailChanges $changes): JsonResponse
+    {
+        $data = $request->validate(['token' => ['required', 'string', 'size:48']]);
+        $user = $changes->confirm($data['token']);
+
+        return response()->json(['message' => 'Your sign-in email is now '.$user->email.'.', 'email' => $user->email]);
     }
 
     /** The app locked the screen (idle or "Lock screen"): from now on the server answers only the lock screen. */
