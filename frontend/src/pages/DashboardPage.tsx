@@ -1,7 +1,7 @@
 import { Link, useSearchParams } from 'react-router'
 import { useIsFetching, useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { RefreshCw, TriangleAlertIcon } from 'lucide-react'
+import { Circle, CircleCheck, RefreshCw, TriangleAlertIcon } from 'lucide-react'
 import { SmartHints } from '@/components/ui/SmartHints'
 import { Badge } from '@/components/ui/Badge'
 import { Button, buttonClass } from '@/components/ui/Button'
@@ -17,6 +17,7 @@ import { DASH_RANGES, useDashFilters, useRefreshDashboard, type DashFilters } fr
 import { date } from '@/lib/format'
 import { today } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
+import { useDismissGettingStarted, useGettingStarted } from '@/lib/setup'
 import { useSmart } from '@/lib/smart'
 import { mainNav, NAV_MODULES } from '@/app/navigation'
 import { useTasks } from '@/lib/modules'
@@ -63,7 +64,7 @@ export function DashboardPage() {
         </div>
         {allowed && <DashFiltersBar f={f} setF={setF} />}
       </div>
-      <FinishSetupCard />
+      <GettingStartedCard />
       <SmartHints hints={smart.data?.data} />
 
       {allowed && (
@@ -214,6 +215,44 @@ function ApiStatus() {
 }
 
 /** Shown to the Hotel Admin while setup steps are left or were skipped. */
+/** "Getting started": a short checklist for a new hotel's admin, until everything is done or it is hidden. */
+function GettingStartedCard() {
+  const { t } = useTranslation()
+  const me = useMe()
+  const admin = !!me.data?.role?.is_hotel_admin && !me.data.impersonation
+  const q = useGettingStarted(admin)
+  const dismiss = useDismissGettingStarted()
+  const g = q.data
+  if (!admin || !g || g.dismissed || g.done === g.total) return <FinishSetupCard />
+  return (
+    <Card className="flex flex-col gap-4 border-primary/40">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <h2 className="leading-none font-semibold">{t('gettingStarted.title')}</h2>
+          <p className="text-sm text-muted">{t('gettingStarted.progress', { done: g.done, total: g.total })}</p>
+        </div>
+        <Button variant="ghost" disabled={dismiss.isPending} onClick={() => dismiss.mutate()}>
+          {t('gettingStarted.hide')}
+        </Button>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-sunken">
+        <div className="h-full rounded-full bg-accent" style={{ width: `${(g.done / g.total) * 100}%` }} />
+      </div>
+      <ul className="grid gap-1 sm:grid-cols-2">
+        {g.items.map((i) => (
+          <li key={i.key}>
+            <Link to={i.link} className="flex min-h-touch items-center gap-3 rounded-md px-2 text-sm hover:bg-sunken">
+              {i.done ? <CircleCheck className="size-4 shrink-0 text-ok-text" aria-hidden /> : <Circle className="size-4 shrink-0 text-muted" aria-hidden />}
+              <span className={i.done ? 'text-muted line-through' : 'font-medium'}>{t(`gettingStarted.items.${i.key}`)}</span>
+              <span className="sr-only">{i.done ? t('gettingStarted.done') : t('gettingStarted.todo')}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  )
+}
+
 function FinishSetupCard() {
   const { t } = useTranslation()
   const me = useMe()

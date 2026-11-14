@@ -490,6 +490,15 @@
         "Lost a phone? Tap Sign out next to it."
       ]
     },
+    "gettingStarted": {
+      "title": "Getting started (new hotel)",
+      "steps": [
+        "A new hotel first goes through the setup: rooms, prices, payments.",
+        "Then the dashboard shows \"Getting started\": a short list of first things to do.",
+        "Tap a line to open that page. A done line gets a tick.",
+        "Tap \"Hide\" when you don't need the list any more."
+      ]
+    },
     "plan": {
       "title": "Your plan and limits",
       "steps": [

@@ -117,6 +117,13 @@ staff only; people who have it keep it), `feature.custom_reports`, `feature.bran
 A hotel switch or `limit.*` switch overrides the plan for one hotel. Over a limit = refusal with `PlanLimits::message` (WhatsApp /
 email from platform settings `whatsapp`, `support_email`); nothing is removed. No online billing. Tests: `Admin/BalancedPlansTest`.
 
+## Getting started (new hotels)
+
+After the first sign-in a Hotel Admin goes through the setup walkthrough (`/setup`, `HotelSetup`). Then the dashboard shows a
+"Getting started" checklist (`GettingStarted`: setup, rooms, logo, a staff member, first booking, first check-in, first payment,
+two-step sign-in), each known from the hotel's own data. "Hide" stores `getting_started_dismissed` in the hotel settings; it also goes
+away when all is done. `GET /getting-started`, `POST /getting-started/dismiss` (Hotel Admin only). Tests: `Hotel/GettingStartedTest`.
+
 ## Hotel sign-up
 
 Super Admin → Settings → Sign-up (Owner only): **Off** (default; the website says "Contact us") / **Approval** / **Open**.

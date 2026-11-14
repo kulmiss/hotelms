@@ -26,6 +26,7 @@ export const GUIDE: GuideSection[] = [
     key: 'desk',
     topics: [
       { key: 'dashboard', perm: 'dashboard.view' },
+      { key: 'gettingStarted', perm: 'settings.hotel' },
       { key: 'roomBoard', pic: true, perm: 'frontdesk.view' },
       { key: 'todayLists', perm: 'frontdesk.view' },
       { key: 'walkIn', pic: true, perm: 'frontdesk.walk_in' },

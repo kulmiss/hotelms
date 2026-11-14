@@ -137,6 +137,8 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
             Route::get('/branches', [BranchController::class, 'index']);
             Route::put('/setup/steps/{step}', [SetupController::class, 'mark']);
             Route::post('/setup/finish', [SetupController::class, 'finish']);
+            Route::get('/getting-started', [SetupController::class, 'gettingStarted']);
+            Route::post('/getting-started/dismiss', [SetupController::class, 'dismissGettingStarted']);
 
             Route::middleware('permission:roles.manage')->group(function () {
                 Route::get('/permissions', [PermissionController::class, 'index']);

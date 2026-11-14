@@ -40,7 +40,7 @@ class AccessMatrixTest extends TestCase
         'GET api/v1/me/security', 'POST api/v1/me/security/devices/sign-out-others', 'POST api/v1/me/security/devices/{id}/sign-out', 'PUT api/v1/me/security/pin',
         'POST api/v1/me/security/recovery-codes', 'POST api/v1/me/security/two-factor', 'POST api/v1/me/security/two-factor/confirm', 'POST api/v1/me/security/two-factor/disable',
         'GET api/v1/telegram', 'POST api/v1/telegram/link', 'DELETE api/v1/telegram/link', 'POST api/v1/telegram/test',
-        'POST api/v1/impersonation/stop', 'GET api/v1/setup', 'POST api/v1/setup/finish', 'PUT api/v1/setup/steps/{step}',
+        'POST api/v1/impersonation/stop', 'GET api/v1/setup', 'POST api/v1/setup/finish', 'PUT api/v1/setup/steps/{step}', 'GET api/v1/getting-started', 'POST api/v1/getting-started/dismiss',
         'GET api/v1/search', 'GET api/v1/smart/{place}', 'GET api/v1/whats-new', 'GET api/v1/notifications', 'POST api/v1/notifications/read',
         'GET api/v1/support', 'POST api/v1/support', 'GET api/v1/support/{id}', 'POST api/v1/support/{id}/messages',
         'GET api/v1/branches', 'GET api/v1/alert-events', 'POST api/v1/alert-events/{id}/ack',
