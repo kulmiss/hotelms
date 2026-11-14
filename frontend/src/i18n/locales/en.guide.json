@@ -23,9 +23,10 @@
       "title": "Sign in and sign out",
       "steps": [
         "Open the app. Type your email and your password. Tap Sign in.",
-        "The first time, the app asks you to make a new password. Choose one only you know.",
+        "The first time, the app asks you to make a new password. Choose one only you know: at least 10 letters and numbers, not an easy one like Password123.",
         "If the app asks for a code, open your code app (or your email) and type the 6 numbers.",
         "Forgot your password? Tap \"Forgot password?\" on the sign-in page, or ask your manager.",
+        "Typed a wrong password 10 times? Signing in waits 15 minutes. Use Forgot password, or wait.",
         "To sign out: tap your picture at the top right, then Sign out.",
         "A page says \"You can't open this page\"? Your role does not allow it. Tap Go to the start page, and ask your manager if you need it."
       ]
@@ -73,7 +74,7 @@
       "steps": [
         "Tap your picture at the top right → My profile.",
         "Change your name or phone, then tap Save.",
-        "Tap Change password to choose a new password.",
+        "Tap Change password to choose a new password (at least 10 letters and numbers). A yellow note at the top says your password is easy to guess? Change it here.",
         "Link Telegram if you want to get reports and alerts on your phone.", "Light or dark screen: tap the sun button at the top right."
       ]
     },

@@ -32,6 +32,12 @@ QR Code generator library – https://www.nayuki.io/page/qr-code-generator-libra
   follows the library's way of building QR codes (byte mode, level M), rewritten in
   shorter TypeScript.
 
+Common passwords list – SecLists (https://github.com/danielmiessler/SecLists),
+  Passwords/Common-Credentials/100k-most-used-passwords-NCSC.txt
+  Copyright (c) 2018 Daniel Miessler – MIT License
+  What is used: backend/resources/security/common-passwords.txt.gz (lower case, duplicates and
+  entries under 4 characters removed), to refuse easy-to-guess new passwords.
+
 2. Packages bundled into the web app (installed with npm, not copied)
 ---------------------------------------------------------------------
 
@@ -57,7 +63,7 @@ is in vendor/<package>/LICENSE.
 3. Licence texts
 ----------------
 
-MIT License (shadcn-admin, shadcn/ui, Project Nayuki's QR Code generator, Radix UI, cmdk, clsx, tailwind-merge, tw-animate-css,
+MIT License (shadcn-admin, shadcn/ui, Project Nayuki's QR Code generator, SecLists, Radix UI, cmdk, clsx, tailwind-merge, tw-animate-css,
 Heroicons and the other MIT packages above, with the copyright lines given above)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

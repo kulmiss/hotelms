@@ -52,6 +52,17 @@ Order for hotel routes: `auth:sanctum` → `active` → `device` → `tenant` �
 
 Rate limits (`AppServiceProvider`): `login` (5/min per email+address, 30/min per address), `two-factor`
 (per session and per address; plus 10 wrong codes per person per 15 min in `AuthController`), `pin` (per hotel).
+**Per account** (`AuthController::countFailure`, SECURITY_REPORT M2): 10 wrong passwords for one email within an hour,
+from any address, pause signing in to that email for 15 minutes, then 30, then 60 (same day). The same happens for
+emails without an account, and an unknown email is checked against a dummy hash, so neither the answer nor its time
+tells whether an account exists. A pause is a `login_locked` watch event and sends the person a "Was this you?" email
+(`Security\SecurityNotices`, never from demo hotels).
+
+**New passwords** (`App\Support\PasswordRules::forNew`, owner Q2 14 Nov): at least 10 characters with letters and
+numbers, not on the list of the ~96,500 most common passwords (`resources/security/common-passwords.txt.gz`, from
+SecLists / NCSC, MIT – checked in about 20 ms without the internet), also not with numbers or signs added at the
+end, and not the person's email name + numbers. Existing passwords keep working: when the password used at sign-in
+is weaker than these rules, `/me` → `security.password_weak` is true and the app shows a note asking to change it.
 
 ## Services map (`app/Services/`)
 

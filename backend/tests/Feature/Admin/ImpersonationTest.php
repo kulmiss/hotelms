@@ -87,7 +87,7 @@ class ImpersonationTest extends TestCase
             ->postJson("/api/v1/admin/hotels/{$this->hotel->id}/impersonate", ['reason' => 'Help']);
 
         $this->continueAs($this->hotelAdmin)->putJson('/api/v1/me/password', [
-            'current_password' => 'password', 'password' => 'NewPass-2026', 'password_confirmation' => 'NewPass-2026',
+            'current_password' => 'password', 'password' => 'Blue-Nile-Kettle-42', 'password_confirmation' => 'Blue-Nile-Kettle-42',
         ])->assertForbidden()->assertJsonPath('code', 'impersonating');
     }
 

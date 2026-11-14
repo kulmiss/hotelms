@@ -14,12 +14,12 @@ use App\Services\HotelSetup;
 use App\Services\Impersonation;
 use App\Services\Security\TwoFactor;
 use App\Services\Switches;
+use App\Support\PasswordRules;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class MeController extends Controller
@@ -99,6 +99,8 @@ class MeController extends Controller
             'two_factor_setup_required' => ! $supporting && ! $tf->enabled($user) && $tf->required($user),
             'screen_lock_minutes' => $supporting ? 0 : $lock,
             'has_pin' => $user->attendance_pin !== null,
+            // The password used at sign-in is weaker than today's rules: a note asks to change it (not forced).
+            'password_weak' => ! $supporting && $request->hasSession() && (bool) $request->session()->get(AuthController::WEAK),
         ];
     }
 
@@ -161,7 +163,7 @@ class MeController extends Controller
 
         $data = $request->validate([
             'current_password' => ['required', 'string'],
-            'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
+            'password' => PasswordRules::forNew($user->email),
         ]);
 
         if (! Hash::check($data['current_password'], $user->password)) {
@@ -176,6 +178,7 @@ class MeController extends Controller
             'password' => $data['password'],
             'must_change_password' => false,
         ])->save();
+        $request->session()->forget(AuthController::WEAK);
 
         return response()->json(['message' => 'Password changed.']);
     }

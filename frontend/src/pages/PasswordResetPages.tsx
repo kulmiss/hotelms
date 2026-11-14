@@ -106,7 +106,7 @@ export function ResetPasswordPage() {
           {reset.error && !error && <Alert>{t('common.serverUnreachable')}</Alert>}
           <Field label={t('reset.password')} hint={t('reset.passwordHint')} type="password" autoComplete="new-password" autoFocus value={password} onChange={(e) => setPassword(e.target.value)} error={error?.field('password')} />
           <Field label={t('reset.confirm')} type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
-          <Button type="submit" size="lg" disabled={reset.isPending || password.length < 8 || password !== confirm}>
+          <Button type="submit" size="lg" disabled={reset.isPending || password.length < 10 || password !== confirm}>
             {t('reset.save')}
           </Button>
         </form>

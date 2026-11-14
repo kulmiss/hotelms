@@ -327,7 +327,7 @@ function Strength({ password }: { password: string }) {
   const { t } = useTranslation()
   if (!password) return null
   const kinds = [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter((r) => r.test(password)).length
-  const score = Math.min(3, (password.length >= 8 ? 1 : 0) + (password.length >= 12 ? 1 : 0) + (kinds >= 3 ? 1 : 0))
+  const score = Math.min(3, (password.length >= 10 ? 1 : 0) + (password.length >= 14 ? 1 : 0) + (kinds >= 3 ? 1 : 0))
   const label = ['weak', 'weak', 'good', 'strong'][score]
   return (
     <div className="flex items-center gap-2" aria-live="polite">

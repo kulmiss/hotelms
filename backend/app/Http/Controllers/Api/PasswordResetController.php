@@ -7,13 +7,13 @@ use App\Mail\PasswordResetMail;
 use App\Models\User;
 use App\Models\UserDevice;
 use App\Services\ActivityLogger;
+use App\Support\PasswordRules;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password as Broker;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -45,7 +45,7 @@ class PasswordResetController extends Controller
         $data = $request->validate([
             'token' => ['required', 'string'],
             'email' => ['required', 'email'],
-            'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
+            'password' => PasswordRules::forNew(is_string($request->input('email')) ? $request->input('email') : null),
         ]);
 
         $status = Broker::broker()->reset($data, function (User $user, string $password) {

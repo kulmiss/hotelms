@@ -196,5 +196,5 @@ export type Me = {
   switches?: Record<string, boolean>
   emergency?: { maintenance: boolean; read_only: boolean } | null
   banners?: { id: number; message: string; tone: 'info' | 'warn' | 'danger' }[]
-  security?: { two_factor: 'app' | 'email' | null; two_factor_setup_required: boolean; screen_lock_minutes: number; has_pin: boolean }
+  security?: { two_factor: 'app' | 'email' | null; two_factor_setup_required: boolean; screen_lock_minutes: number; has_pin: boolean; password_weak?: boolean }
 }

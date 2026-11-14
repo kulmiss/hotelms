@@ -130,7 +130,7 @@
     "current": "Current password",
     "new": "New password",
     "confirm": "Repeat new password",
-    "rules": "At least 8 characters, with letters and numbers.",
+    "rules": "At least 10 characters, with letters and numbers. Not an easy-to-guess password (like Password123).",
     "mismatch": "The two passwords don't match.",
     "submit": "Save password"
   },
@@ -1987,7 +1987,7 @@
     "newTitle": "Set a new password",
     "newIntro": "Choose a new password for your account.",
     "password": "New password",
-    "passwordHint": "At least 8 characters, with letters and numbers.",
+    "passwordHint": "At least 10 characters, with letters and numbers. Not an easy-to-guess password (like Password123).",
     "confirm": "Type it again",
     "save": "Save new password",
     "done": "Password changed. You can sign in now."
@@ -2707,6 +2707,10 @@
     "hours_other": "{{count}} hours",
     "leavingCol": "Leaving that day",
     "states": { "staying": "Staying", "arriving": "Arriving", "free": "Free" }
+  },
+  "weakPassword": {
+    "message": "Your password is easier to guess than our new rules allow. It still works, but please change it.",
+    "change": "Change password"
   },
   "idPhoto": {
     "title": "ID / passport photo",

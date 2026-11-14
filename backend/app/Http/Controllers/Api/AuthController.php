@@ -8,8 +8,10 @@ use App\Services\ActivityLogger;
 use App\Services\Impersonation;
 use App\Services\Modules\Attendance;
 use App\Services\Security\Devices;
+use App\Services\Security\SecurityNotices;
 use App\Services\Security\TwoFactor;
 use App\Services\Watchdog\WatchEvents;
+use App\Support\PasswordRules;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,7 +26,36 @@ class AuthController extends Controller
 
     private const PENDING_MINUTES = 10;
 
+    /** Session key: the password used at sign-in is weaker than today's rules (shown as a note). */
+    public const WEAK = 'password.weak';
+
+    private const FAILS = 'login-fails|';
+
+    private const LOCK = 'login-lock|';
+
+    private const LOCKS_TODAY = 'login-locks|';
+
+    /** A bcrypt hash of a random text: checked when the email has no account, so both answers take as long. */
+    private const DUMMY_HASH = '$2y$12$9RM3L172I0KbTCFkkUXT6uvh4GkqX.pXACNSX3Q0TUx.NbIcRWapq';
+
     public function __construct(private Devices $devices, private TwoFactor $twoFactor) {}
+
+    /** 10 wrong passwords in an hour pause this email: 15, 30, then 60 minutes; the person is emailed. */
+    private function countFailure(Request $request, string $email, ?User $user): void
+    {
+        RateLimiter::hit(self::FAILS.$email, 3600);
+        if (RateLimiter::attempts(self::FAILS.$email) < 10) {
+            return;
+        }
+        RateLimiter::clear(self::FAILS.$email);
+        $locks = RateLimiter::hit(self::LOCKS_TODAY.$email, 86400);
+        $minutes = min(60, 15 * 2 ** ($locks - 1));
+        RateLimiter::hit(self::LOCK.$email, $minutes * 60);
+        app(WatchEvents::class)->record('login_locked', $request, 429, $email);
+        if ($user) {
+            app(SecurityNotices::class)->send($user, 'locked', $request, ['minutes' => $minutes]);
+        }
+    }
 
     /**
      * Web sign-in (Sanctum cookie session). With two-step sign-in on, the answer is
@@ -38,12 +69,28 @@ class AuthController extends Controller
             'remember' => ['sometimes', 'boolean'],
         ]);
 
+        $email = mb_strtolower($credentials['email']);
+        // Per account, from every address (SECURITY_REPORT M2): after 10 wrong passwords, signing in to this
+        // email pauses 15 minutes, then 30, then 60. The same for emails without an account, so the
+        // answer never tells whether an account exists.
+        if (RateLimiter::tooManyAttempts(self::LOCK.$email, 1)) {
+            $minutes = (int) ceil(RateLimiter::availableIn(self::LOCK.$email) / 60);
+            throw ValidationException::withMessages(['email' => "Too many wrong passwords for this email. Try again in {$minutes} minutes, or use Forgot password."]);
+        }
+
         $user = User::where('email', $credentials['email'])->first();
 
         if (! $user || ! Auth::guard('web')->validate(['email' => $credentials['email'], 'password' => $credentials['password']])) {
-            app(WatchEvents::class)->record('login_failed', $request, 422, mb_strtolower($credentials['email']));
+            if (! $user) {
+                Hash::check($credentials['password'], self::DUMMY_HASH); // as slow as a real check (SECURITY_REPORT L1)
+            }
+            app(WatchEvents::class)->record('login_failed', $request, 422, $email);
+            $this->countFailure($request, $email, $user);
             throw ValidationException::withMessages(['email' => __('auth.failed')]);
         }
+        RateLimiter::clear(self::FAILS.$email);
+        // A password from before the stricter rules (14 Nov 2026) keeps working; the app asks to change it.
+        $request->session()->put(self::WEAK, PasswordRules::isWeak($credentials['password'], $user->email));
 
         if (! $user->isActive()) {
             throw ValidationException::withMessages(['email' => 'This account is disabled. Please contact your hotel admin.']);
@@ -124,6 +171,7 @@ class AuthController extends Controller
         $token = $this->devices->token($request);
         $this->devices->check($user, $token, $request);
         app(ActivityLogger::class)->log('security.pin_switch', "{$user->name} took over the device from {$current->name}", $user);
+        $request->session()->forget(self::WEAK); // the note was about the other person's password
 
         return $this->complete($request, $user, false, $token);
     }
