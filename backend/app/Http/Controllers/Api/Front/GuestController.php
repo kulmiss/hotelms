@@ -143,6 +143,8 @@ class GuestController extends Controller
             'date_of_birth' => ['nullable', 'date', 'before:today'],
             'guest_type_id' => ['nullable', 'integer', Rule::in(GuestType::pluck('id')->all())],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'messages_opt_out' => ['sometimes', 'boolean'], // "no messages, please"
+            'language' => ['nullable', Rule::in(['en', 'am'])], // messages in this language (empty = the hotel's)
         ];
     }
 

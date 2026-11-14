@@ -1,12 +1,16 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { put, type Me } from './api'
+import { put, type CalendarMode, type Me } from './api'
 import { ME_KEY } from './auth'
+import { applyPreferences } from './preferences'
 
 export function useUpdateProfile() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (input: { name: string; phone: string | null }) => put<Me>('/me', input),
-    onSuccess: (me) => qc.setQueryData(ME_KEY, me),
+    mutationFn: (input: { name: string; phone: string | null; calendar?: CalendarMode | null; language?: 'en' | 'am' | null }) => put<Me>('/me', input),
+    onSuccess: (me) => {
+      applyPreferences(me)
+      qc.setQueryData(ME_KEY, me)
+    },
   })
 }
 

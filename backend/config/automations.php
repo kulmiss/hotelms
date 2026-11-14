@@ -15,7 +15,10 @@ return [
     'booking_confirmation' => ['group' => 'bookings', 'default' => true, 'to' => ['guest']],
     'deposit_reminder' => ['group' => 'bookings', 'default' => true, 'to' => ['reservations.edit'], 'options' => ['hours' => 3]],
     'booking_expired' => ['group' => 'bookings', 'default' => true, 'to' => ['creator']],
-    'arrival_reminder' => ['group' => 'bookings', 'default' => false, 'to' => ['guest']],
+    'arrival_reminder' => ['group' => 'bookings', 'default' => true, 'to' => ['guest']], // the day-before message (Settings → Guest messages)
+    'guest_welcome' => ['group' => 'bookings', 'default' => true, 'to' => ['guest']], // at check-in: Wi-Fi, breakfast, menu, WhatsApp
+    'low_rating' => ['group' => 'bookings', 'default' => true, 'to' => ['feedback.view'], 'urgent' => true], // a guest gave 3 stars or less
+    'guest_thank_you' => ['group' => 'bookings', 'default' => true, 'to' => ['guest']], // at check-out, only when the guest said yes
     'no_show_suggestion' => ['group' => 'bookings', 'default' => true, 'to' => ['reservations.no_show'], 'options' => ['hours' => 4]],
     'welcome_back' => ['group' => 'bookings', 'default' => true, 'to' => ['frontdesk.check_in']],
     'guest_birthday' => ['group' => 'bookings', 'default' => true, 'to' => ['frontdesk.view']],

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['hotel_id', 'reservation_id', 'room_type_id', 'room_id', 'check_in_at', 'check_out_at', 'blocked_until', 'actual_check_in_at', 'actual_check_out_at', 'adults', 'children', 'total_amount', 'status'])]
+#[Fillable(['hotel_id', 'reservation_id', 'room_type_id', 'room_id', 'check_in_at', 'check_out_at', 'blocked_until', 'actual_check_in_at', 'actual_check_out_at', 'adults', 'children', 'total_amount', 'price_override', 'status'])]
 class ReservationRoom extends Model
 {
     use BelongsToHotel, LogsActivity;
@@ -20,7 +20,7 @@ class ReservationRoom extends Model
         return [
             'check_in_at' => 'datetime', 'check_out_at' => 'datetime', 'blocked_until' => 'datetime',
             'actual_check_in_at' => 'datetime', 'actual_check_out_at' => 'datetime',
-            'total_amount' => 'decimal:2', 'adults' => 'integer', 'children' => 'integer',
+            'total_amount' => 'decimal:2', 'price_override' => 'decimal:2', 'adults' => 'integer', 'children' => 'integer',
         ];
     }
 

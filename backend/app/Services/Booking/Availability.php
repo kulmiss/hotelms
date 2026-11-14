@@ -2,6 +2,7 @@
 
 namespace App\Services\Booking;
 
+use App\Models\IcalBlock;
 use App\Models\Reservation;
 use App\Models\ReservationRoom;
 use App\Models\Room;
@@ -13,6 +14,7 @@ use Illuminate\Support\Collection;
  * Which rooms are free for a time range (overbooking is blocked, workflows.md Q10).
  * A booking holds its room from check-in until "blocked_until" (check-out plus
  * cleaning time for hourly / day-use stays). Rooms that are out of order are not offered.
+ * Busy dates imported from Airbnb, Booking.com… (iCal) hold a room, or one room of a type, the same way.
  */
 class Availability
 {
@@ -31,6 +33,8 @@ class Availability
             ->selectRaw('room_type_id, count(*) as c')->groupBy('room_type_id')->pluck('c', 'room_type_id');
         $holds = $this->overlapping($from, $until, $ignoreReservationId)
             ->whereIn('room_type_id', $types->pluck('id'))->get(['room_type_id', 'check_in_at', 'blocked_until'])
+            ->concat($this->blocks($from, $until)->whereIn('room_type_id', $types->pluck('id'))->get()
+                ->map(fn (IcalBlock $b) => (object) ['room_type_id' => $b->room_type_id, 'check_in_at' => $b->starts_at, 'blocked_until' => $b->ends_at]))
             ->groupBy('room_type_id');
 
         return $types->map(function (RoomType $type) use ($totals, $holds, $from, $until) {
@@ -54,7 +58,8 @@ class Availability
      */
     public function freeRooms(int $branchId, ?int $roomTypeId, CarbonInterface $from, CarbonInterface $until, ?int $ignoreReservationId = null): Collection
     {
-        $taken = $this->overlapping($from, $until, $ignoreReservationId)->whereNotNull('room_id')->pluck('room_id');
+        $taken = $this->overlapping($from, $until, $ignoreReservationId)->whereNotNull('room_id')->pluck('room_id')
+            ->concat($this->blocks($from, $until)->whereNotNull('room_id')->pluck('room_id'));
 
         return Room::where('branch_id', $branchId)
             ->when($roomTypeId, fn ($q) => $q->where('room_type_id', $roomTypeId))
@@ -67,7 +72,15 @@ class Availability
     public function roomIsFree(Room $room, CarbonInterface $from, CarbonInterface $until, ?int $ignoreReservationId = null): bool
     {
         return ! in_array($room->status, self::UNSELLABLE, true)
-            && ! $this->overlapping($from, $until, $ignoreReservationId)->where('room_id', $room->id)->exists();
+            && ! $this->overlapping($from, $until, $ignoreReservationId)->where('room_id', $room->id)->exists()
+            && ! $this->blocks($from, $until)->where('room_id', $room->id)->exists();
+    }
+
+    /** Imported busy dates (iCal) that touch [from, until). */
+    public function blocks(CarbonInterface $from, CarbonInterface $until)
+    {
+        return IcalBlock::query()->where('starts_at', '<', $until)->where('ends_at', '>', $from)
+            ->whereHas('feed', fn ($q) => $q->where('is_active', true));
     }
 
     /** Bookings that hold a room at some moment of [from, until). */
@@ -84,7 +97,7 @@ class Availability
      * Most holds at the same moment inside the range (a sweep over start/end times),
      * so two bookings on different nights of the range only use one room.
      *
-     * @param  Collection<int, ReservationRoom>  $holds
+     * @param  Collection<int, ReservationRoom|object>  $holds
      */
     private function peak(Collection $holds, CarbonInterface $from, CarbonInterface $until): int
     {

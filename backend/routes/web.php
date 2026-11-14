@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Web\BookingPageController;
+use App\Http\Controllers\Web\FeedbackPageController;
+use App\Http\Controllers\Web\IcalExportController;
 use App\Http\Controllers\Web\LandingController;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -19,6 +21,11 @@ Route::withoutMiddleware([StartSession::class, EncryptCookies::class, AddQueuedC
         // A hotel's public booking page (off until the hotel turns it on).
         Route::get('/h/{slug}', [BookingPageController::class, 'show'])->where('slug', '[a-z0-9-]{1,60}');
         Route::post('/h/{slug}', [BookingPageController::class, 'store'])->where('slug', '[a-z0-9-]{1,60}');
+        // A guest's feedback page (secret link per stay).
+        Route::get('/f/{secret}', [FeedbackPageController::class, 'show'])->where('secret', '[A-Za-z0-9]{40}');
+        Route::post('/f/{secret}', [FeedbackPageController::class, 'store'])->where('secret', '[A-Za-z0-9]{40}');
+        // A room's secret calendar link for Airbnb, Booking.com… (calendar sync).
+        Route::get('/ical/{secret}.ics', [IcalExportController::class, 'show'])->where('secret', '[A-Za-z0-9]{40}');
         Route::get('/robots.txt', [LandingController::class, 'robots']);
         Route::get('/sitemap.xml', [LandingController::class, 'sitemap']);
     });

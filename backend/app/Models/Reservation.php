@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable([
     'hotel_id', 'branch_id', 'code', 'guest_id', 'source', 'stay_type', 'open_stay', 'check_in_at', 'check_out_at', 'adults', 'children',
     'status', 'expires_at', 'cancellation_policy_id', 'policy_snapshot', 'currency', 'subtotal', 'discount_percent', 'discount_amount', 'tax_total',
-    'total', 'deposit_required', 'paid_total', 'cancellation_fee', 'notes', 'created_by', 'checked_in_by', 'checked_out_by', 'pay_later_by', 'pay_later_at', 'cancelled_at', 'cancel_reason', 'cancelled_by',
+    'total', 'deposit_required', 'paid_total', 'cancellation_fee', 'notes', 'feedback_consent', 'created_by', 'checked_in_by', 'checked_out_by', 'pay_later_by', 'pay_later_at', 'cancelled_at', 'cancel_reason', 'cancelled_by',
 ])]
 class Reservation extends Model
 {
@@ -31,7 +31,7 @@ class Reservation extends Model
     protected function casts(): array
     {
         return [
-            'open_stay' => 'boolean', 'check_in_at' => 'datetime', 'check_out_at' => 'datetime', 'expires_at' => 'datetime', 'cancelled_at' => 'datetime', 'pay_later_at' => 'datetime',
+            'open_stay' => 'boolean', 'feedback_consent' => 'boolean', 'check_in_at' => 'datetime', 'check_out_at' => 'datetime', 'expires_at' => 'datetime', 'cancelled_at' => 'datetime', 'pay_later_at' => 'datetime',
             'policy_snapshot' => 'array', 'adults' => 'integer', 'children' => 'integer',
             'subtotal' => 'decimal:2', 'discount_percent' => 'decimal:2', 'discount_amount' => 'decimal:2', 'tax_total' => 'decimal:2', 'total' => 'decimal:2',
             'deposit_required' => 'decimal:2', 'paid_total' => 'decimal:2', 'cancellation_fee' => 'decimal:2',
