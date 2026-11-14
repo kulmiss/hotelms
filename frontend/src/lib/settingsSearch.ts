@@ -10,6 +10,7 @@ export const SETTINGS_SECTIONS = [
   { key: 'rooms', permission: 'settings.rooms' },
   { key: 'import', permission: 'settings.rooms' },
   { key: 'rate-rules', permission: 'settings.pricing' },
+  { key: 'holidays', permission: 'settings.pricing' },
   { key: 'guest-types', permission: 'settings.pricing' },
   { key: 'currencies', permission: 'settings.exchange_rates' },
   { key: 'taxes', permission: 'settings.money' },
@@ -44,6 +45,7 @@ const SOURCES: Record<string, string[]> = {
   rooms: ['settings.rooms'],
   import: ['import'],
   'rate-rules': ['settings.rates'],
+  holidays: ['settings.holidays'],
   'guest-types': ['settings.guestTypes'],
   currencies: ['settings.currencies'],
   taxes: ['settings.taxes'],
@@ -71,7 +73,8 @@ const SYNONYMS: Record<string, string> = {
   modules: 'housekeeping cashier shifts attendance features',
   subscription: 'plan pay paid until billing upgrade',
   'booking-page': 'online booking website link guests request',
-  'rate-rules': 'price weekend season discount corporate',
+  'rate-rules': 'price weekend season discount corporate long stay early bird last minute minimum stay',
+  holidays: 'holiday genna timket fasika meskel eid ethiopian calendar',
   cancellation: 'no-show refund policy fee',
 }
 

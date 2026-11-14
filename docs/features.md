@@ -9,7 +9,10 @@ Each section says the rule, the code and the tests. Backend paths are under `bac
 
 | Rule | Code | Tests |
 |---|---|---|
-| Prices: base price + rate rules (weekend, season, guest type) per night; taxes inclusive/added | `Services/PriceCalculator`, `Booking/StayQuote`, `Billing/TaxCalculator` | `Hotel/SettingsTest`, `Front/ReservationsTest` |
+| Prices (Q28): base price → one **night rule** (weekend, season, holiday from the hotel's list, guest type; highest priority wins) → one **stay rule** on top of every night (long stay ≥ N nights, early booking ≥ N days before, last minute ≤ N days before; % or amount only; counted from the day the booking was made, kept on edits). Line name e.g. "Weekend · Long stay"; the per-night lines show in the booking form, the bill (`Night (Weekend)`) and the booking page. Stay rules and the **minimum stay** of a season/holiday are off on Free (`feature.smart_pricing`; old rules stop counting, nothing is deleted). Taxes inclusive/added | `Services/PriceCalculator`, `Booking/StayQuote`, `Billing/TaxCalculator`, `Settings/RateRuleController` | `Unit/PriceCalculatorTest`, `Hotel/SmartPricingTest`, `Front/ReservationsTest` |
+| **Minimum stay** of a season or holiday: a shorter booking is refused; staff with `reservations.override_price` may tick "Book anyway" (logged `reservation.short_stay`); the booking page refuses it and asks the guest to call | `PriceCalculator::minStayProblem`, `ReservationService::plan`, `BookingPage::request` | `SmartPricingTest`, `Web/BookingPageTest` |
+| **Price set by hand** (per room, per night): permission `reservations.override_price` (Hotel Admin + Branch Manager by default) and a reason; logged `reservation.price_override` with the normal price; saved on `reservation_rooms.price_override` so an edit keeps it (also by staff without the permission) | `ReservationService::plan`, `logOverrides`, `StayQuote::overridden`; `ReservationFormPage` | `SmartPricingTest` |
+| **Holidays** (Settings → Holidays, `holidays` table): the hotel's list, EC date shown; "Add Ethiopian holidays" adds the next 3 years: Genna 7 Jan, Timket 19 Jan, others from their EC date (Adwa Yekatit 23, Patriots Miyazya 27, Ginbot 20, Enkutatash Meskerem 1, Meskel Meskerem 17), Fasika by the Julian computus + Siklet, Eid al-Fitr / Eid al-Adha / Mawlid as **expected** forecasts to check (`EthiopianHolidays::MOON`, add a year there each year) | `Services/Pricing/EthiopianHolidays`, `Settings/HolidayController`; `RoomSections.tsx` `HolidaysSettings` | `SmartPricingTest`, `test/pricing.test.tsx` |
 | **No overbooking** (Q10); a room is blocked until `blocked_until` (check-out + hourly cleaning gap) | `Booking/Availability`, `ReservationService::preview` | `ReservationsTest` |
 | Deposit (Q1): fixed / % / first night; `pending` until paid; pending bookings expire (Q2) | `ReservationService`, `reservations:expire` | `ReservationsTest` |
 | Pay at check-out: staff with `payments.pay_later`, when the hotel allows it | `ReservationService::payLater` | `ReservationsTest` |
@@ -146,8 +149,7 @@ links keep it, a switch EN / አማ in the header, `hreflang` links and a canoni
 are translated). Terms/Privacy stay English with an Amharic note until the lawyer has checked them. The website loads one
 small font file only for Amharic (`public/landing/fonts`, just the letters of these pages, ~15 KB, preloaded, `font-display:
 optional`, CSP `font-src 'self'`); other letters (e.g. in a hotel name) use the phone's own Ethiopic font. When `lang/am.json`
-gets new letters, make the file again with:
-`pyftsubset frontend/public/fonts/noto-sans-ethiopic-400.woff2 --text-file=<all text of lang/am*> --flavor=woff2 --output-file=backend/public/landing/fonts/noto-sans-ethiopic-400.woff2`.
+gets new letters, make the file again with `python3 scripts/landing-font.py` (needs `pip install fonttools brotli`).
 Lighthouse checks `/` and `/?lang=am`. Tests: `Web/LandingPageTest` (Amharic page, every `__()` text has a translation with the
 same `:placeholders`), `Web/BookingPageTest` (Amharic by link and by hotel default, Amharic errors).
 

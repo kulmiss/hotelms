@@ -16,6 +16,7 @@ use App\Models\ReservationRoom;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use App\Services\Billing\CurrencyConverter;
 use App\Services\Billing\InvoiceService;
 use App\Services\HotelSettings;
@@ -97,6 +98,7 @@ class ReservationService
                 'pay_later_at' => $payLater ? now() : null,
             ]);
             $this->saveRooms($reservation, $plan);
+            $this->logOverrides($reservation, $plan, null);
 
             return $reservation->fresh();
         });
@@ -138,8 +140,10 @@ class ReservationService
             }
             $reservation->update($changes);
 
+            $before = $reservation->rooms()->orderBy('id')->pluck('price_override')->all();
             $reservation->rooms()->each(fn (ReservationRoom $r) => $r->delete());
             $this->saveRooms($reservation, $plan);
+            $this->logOverrides($reservation, $plan, $before);
             $this->confirmIfPaid($reservation->refresh());
 
             return $reservation->fresh();
@@ -428,8 +432,24 @@ class ReservationService
                 }
                 $usedRooms[] = $room->id;
             }
-            $price = $this->quote->price($hotel, $type, $stayType, $stayType === 'nightly' ? $priceFrom : $times['in'], $times['out'], $guestTypeId);
-            $rooms[] = ['type' => $type, 'room' => $room, 'adults' => $adults, 'children' => $children, 'total' => $price['total'], 'lines' => $price['lines']];
+            $from = $stayType === 'nightly' ? $priceFrom : $times['in'];
+            $price = $this->quote->price($hotel, $type, $stayType, $from, $times['out'], $guestTypeId, $existing?->created_at);
+            $short = $this->quote->minStayProblem($hotel, $type, $stayType, $from, $times['out']);
+            if ($short && ! (! empty($data['allow_short_stay']) && $user->hasPermission('reservations.override_price'))) {
+                throw ValidationException::withMessages(["rooms.$i.room_type_id" => "{$short['name']}: stays of at least {$short['nights']} nights."]);
+            }
+            $override = isset($r['price_override']) && $r['price_override'] !== '' && $r['price_override'] !== null ? Money::round((string) $r['price_override']) : null;
+            if ($override !== null) {
+                $kept = $existing && $this->sameOverride($existing, $i, $override);
+                if (! $kept && ! $user->hasPermission('reservations.override_price')) {
+                    throw ValidationException::withMessages(["rooms.$i.price_override" => 'You may not change the price by hand.']);
+                }
+                if (! $kept && ! $preview && blank($data['price_override_reason'] ?? null)) {
+                    throw ValidationException::withMessages(['price_override_reason' => 'Write why the price is changed.']);
+                }
+                $price = ['calculated' => $price['total']] + $this->quote->overridden($price['lines'], $override);
+            }
+            $rooms[] = ['type' => $type, 'room' => $room, 'adults' => $adults, 'children' => $children, 'total' => $price['total'], 'lines' => $price['lines'], 'override' => $override, 'calculated' => $price['calculated'] ?? null, 'short' => $short];
         }
 
         // No overbooking (Q10): enough rooms of each type for the whole stay.
@@ -471,7 +491,11 @@ class ReservationService
                 'children' => $r['children'],
                 'total' => $r['total'],
                 'lines' => $r['lines'],
+                'price_override' => $r['override'],
+                'calculated_total' => $r['calculated'],
+                'min_stay' => $r['short'],
             ], $rooms),
+            'price_override_reason' => $data['price_override_reason'] ?? null,
             'subtotal' => $subtotal,
             'discount_percent' => $discount,
             'discount_amount' => $discountAmount,
@@ -482,11 +506,41 @@ class ReservationService
         ];
     }
 
+    /** Room $i of the booking already had this price set by hand (an edit that keeps it needs no permission). */
+    private function sameOverride(Reservation $existing, int $i, string $override): bool
+    {
+        $old = $existing->rooms()->orderBy('id')->pluck('price_override')->values()->get($i);
+
+        return $old !== null && Money::compare((string) $old, $override) === 0;
+    }
+
+    /**
+     * Every price set by hand and every shorter stay than the minimum goes to the activity log (owner, 14 Nov 2026).
+     *
+     * @param  array<string, mixed>  $plan
+     * @param  list<mixed>|null  $before  price_override of each room before an edit
+     */
+    private function logOverrides(Reservation $reservation, array $plan, ?array $before): void
+    {
+        foreach ($plan['rooms'] as $i => $r) {
+            $old = $before[$i] ?? null;
+            if ($r['price_override'] !== null && ($old === null || Money::compare((string) $old, (string) $r['price_override']) !== 0)) {
+                app(ActivityLogger::class)->log('reservation.price_override', "Price set by hand on {$reservation->code}: {$r['room_type']} at {$r['price_override']} per night (was {$r['calculated_total']} in all)", $reservation, [
+                    'room' => $i + 1, 'per_night' => $r['price_override'], 'calculated_total' => $r['calculated_total'], 'total' => $r['total'], 'reason' => $plan['price_override_reason'],
+                ]);
+            }
+            if ($r['min_stay']) {
+                app(ActivityLogger::class)->log('reservation.short_stay', "Shorter stay than the minimum on {$reservation->code}: {$r['min_stay']['name']} ({$r['min_stay']['nights']} nights)", $reservation, ['room' => $i + 1] + $r['min_stay']);
+            }
+        }
+    }
+
     /** @param  array<string, mixed>  $plan */
     private function saveRooms(Reservation $reservation, array $plan): void
     {
         foreach ($plan['rooms'] as $r) {
             $rr = $reservation->rooms()->create([
+                'price_override' => $r['price_override'],
                 'room_type_id' => $r['room_type_id'],
                 'room_id' => $r['room_id'],
                 'check_in_at' => $plan['check_in_at_utc'],

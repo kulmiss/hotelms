@@ -43,6 +43,41 @@
     </div>
   @endif
 
+  @if ($types->isNotEmpty())
+    <h2 class="title" style="font-size:22px;margin-top:40px" id="prices">{{ __('Price for your dates') }}</h2>
+    {{-- A GET form with dates and room only: no personal data in the link. --}}
+    <form class="form card" method="get" action="/h/{{ $slug }}#prices" style="margin-top:16px">
+      <input type="hidden" name="lang" value="{{ $lang }}">
+      <div class="two">
+        <label>{{ __('Arrival') }} <input type="date" name="check_in" required min="{{ now()->toDateString() }}" value="{{ $val('check_in') }}"></label>
+        <label>{{ __('Departure') }} <input type="date" name="check_out" required min="{{ now()->addDay()->toDateString() }}" value="{{ $val('check_out') }}"></label>
+      </div>
+      <label>{{ __('Room') }}
+        <select name="room_type_id">
+          @foreach ($types as $t)<option value="{{ $t['id'] }}" @selected(($old['room_type_id'] ?? null) == $t['id'])>{{ $t['name'] }}{{ $multi ? ' ('.$t['branch'].')' : '' }}</option>@endforeach
+        </select>
+      </label>
+      <button class="btn btn-outline" type="submit">{{ __('See prices') }}</button>
+      @isset($errors['quote'])<p class="err" role="alert">{{ $errors['quote'] }}</p>@endisset
+      @if ($quote)
+        <div class="table" role="region" aria-label="{{ __('Price night by night') }}" tabindex="0">
+          <table style="min-width:0">
+            <caption class="skip">{{ __('Price night by night') }}</caption>
+            <thead><tr><th scope="col">{{ __('Night') }}</th><th scope="col" style="text-align:right">{{ __('Price') }}</th></tr></thead>
+            <tbody>
+              @foreach ($quote['nights'] as $n)
+                <tr><td>{{ \Illuminate\Support\Carbon::parse($n['date'])->translatedFormat('D j M Y') }}@if ($lang === 'am') · {{ \App\Support\EthiopianDate::format($n['date'], 'am') }}@endif @if ($n['rule'])<small class="muted">· {{ $n['rule'] }}</small>@endif</td><td style="text-align:right">{{ $quote['currency'] }} {{ number_format((float) $n['amount'], 2) }}</td></tr>
+              @endforeach
+              <tr><th scope="row">{{ __('Total for :room', ['room' => $quote['type']]) }}</th><td style="text-align:right;font-weight:700">{{ $quote['currency'] }} {{ number_format((float) $quote['total'], 2) }}</td></tr>
+            </tbody>
+          </table>
+        </div>
+        @if ($quote['min_stay'])<p class="err">{{ __(':name: stays of at least :n nights. Please call the hotel for a shorter stay.', ['name' => $quote['min_stay']['name'], 'n' => $quote['min_stay']['nights']]) }}</p>@endif
+        <p class="muted" style="font-size:13px">{{ __('Taxes may be added. The hotel confirms the final price.') }}</p>
+      @endif
+    </form>
+  @endif
+
   <h2 class="title" style="font-size:22px;margin-top:40px">{{ __('Your request') }}</h2>
   <form class="form card" method="post" action="/h/{{ $slug }}?lang={{ $lang }}" style="margin-top:16px" novalidate>
     @isset($errors['form'])<p class="err" role="alert">{{ $errors['form'] }}</p>@endisset

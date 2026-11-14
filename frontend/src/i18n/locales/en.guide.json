@@ -170,6 +170,15 @@
         "Tap Book. If the hotel asks for a deposit, the booking waits until the deposit is paid."
       ]
     },
+    "priceByHand": {
+      "title": "Change a price by hand",
+      "steps": [
+        "In the booking form, write the price per night next to the room.",
+        "Write why (e.g. regular guest). The change goes to the activity log.",
+        "A season needs a longer stay? Tick \"Book anyway\" if your manager agrees.",
+        "Only people with the permission see this (Hotel Admin and Branch Manager at first)."
+      ]
+    },
     "freeRooms": {
       "title": "Is a room free on a date?",
       "steps": [
@@ -549,6 +558,26 @@
         "Booking rules: deposit, fees, the time a night starts, ID photo.",
         "Money: currencies, exchange rates, taxes, payment methods.",
         "Each page has a short help text at the top."
+      ]
+    },
+    "prices": {
+      "title": "Prices: weekends, seasons, long stays",
+      "steps": [
+        "Settings → Prices and rules → Add rule.",
+        "Weekdays, Season (dates) or Holidays change the price of a night. When two match, the higher priority wins.",
+        "Long stay (e.g. 7 nights or more), Early booking (e.g. 30 days before) and Last minute (e.g. 1 day before) give a discount on every night. Use a minus, e.g. -10 %.",
+        "A season or holiday can have a minimum stay, e.g. 3 nights at Timket.",
+        "Try the prices at the bottom of the page: it shows every night and why it costs that.",
+        "Long stay, early booking, last minute and minimum stay come with the Starter plan and up."
+      ]
+    },
+    "holidays": {
+      "title": "Holidays (Genna, Fasika, Eid…)",
+      "steps": [
+        "Settings → Holidays → Add Ethiopian holidays. The holidays of the next 3 years are added.",
+        "Eid and Mawlid follow the moon. Check their dates when they are announced and change them if needed.",
+        "Add your own days too, e.g. a big local festival.",
+        "Then add a price rule of the type Holidays, e.g. +20 %."
       ]
     },
     "activity": {

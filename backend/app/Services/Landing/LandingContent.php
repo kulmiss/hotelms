@@ -170,6 +170,8 @@ class LandingContent
                 $row('Housekeeping', fn (Plan $p) => $yes(in_array('housekeeping', $p->modules ?? [], true))),
                 $row('Two-step sign-in, offline view', fn () => '✓'),
                 $row('Cashier shift close', fn (Plan $p) => $yes(in_array('cashier_close', $p->modules ?? [], true))),
+                $row('Weekend, season and holiday prices', fn () => '✓'),
+                $row('Long-stay, early-bird and last-minute prices, minimum stay', fn (Plan $p) => $yes($this->on($p, 'feature.smart_pricing'))),
                 $row('Several currencies', fn (Plan $p) => $yes($this->on($p, 'feature.multi_currency'))),
                 $row('Telegram and daily report', fn (Plan $p) => $yes($this->on($p, 'feature.telegram'))),
                 $row('Full reports and Excel export', fn (Plan $p) => $yes($this->on($p, 'feature.full_reports'))),

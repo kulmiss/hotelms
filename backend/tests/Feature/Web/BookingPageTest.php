@@ -9,6 +9,7 @@ use App\Models\FeatureSwitch;
 use App\Models\Guest;
 use App\Models\Hotel;
 use App\Models\Plan;
+use App\Models\RateRule;
 use App\Models\RoomType;
 use App\Models\User;
 use App\Services\HotelDefaults;
@@ -16,6 +17,7 @@ use App\Services\HotelSettings;
 use App\Services\Switches;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -116,6 +118,27 @@ class BookingPageTest extends TestCase
         $this->assertStringContainsString('<html lang="en">', $en);
         $this->assertStringNotContainsString('noto-sans-ethiopic', $en);
         $this->get("/h/{$slug}?lang=xx")->assertOk(); // unknown: the default, never an error
+    }
+
+    public function test_guests_see_the_price_night_by_night_and_the_minimum_stay(): void
+    {
+        $slug = $this->turnOn();
+        app(TenantContext::class)->runAs($this->hotel, fn () => RateRule::create(['name' => 'Weekend', 'rule_type' => 'weekend', 'days_of_week' => [6, 7], 'adjustment' => 'amount', 'value' => '500', 'priority' => 10, 'is_active' => true]));
+        $sat = now()->next(Carbon::SATURDAY)->toDateString();
+        $mon = now()->next(Carbon::SATURDAY)->addDays(2)->toDateString();
+        $r = $this->get("/h/{$slug}?check_in={$sat}&check_out={$mon}&room_type_id={$this->type->id}")->assertOk();
+        $r->assertSee('Price night by night')->assertSee('ETB 3,000.00')->assertSee('ETB 6,000.00')->assertSee('Weekend');
+        $this->assertStringContainsString('value="'.$sat.'"', $r->getContent()); // the request form keeps the dates
+        $this->assertEmpty($r->headers->getCookies());
+        $this->get("/h/{$slug}?check_in=2020-01-01&check_out=2020-01-02")->assertOk()->assertSee('Choose an arrival from today');
+
+        // Minimum stay: Starter and up.
+        app(TenantContext::class)->runAs($this->hotel, fn () => RateRule::create(['name' => 'High season', 'rule_type' => 'season', 'start_date' => now()->toDateString(), 'end_date' => now()->addMonth()->toDateString(), 'adjustment' => 'percent', 'value' => '0', 'min_stay' => 3, 'priority' => 1, 'is_active' => true]));
+        $this->get("/h/{$slug}?check_in={$sat}&check_out={$mon}&room_type_id={$this->type->id}")->assertDontSee('stays of at least');
+        $this->hotel->update(['plan_id' => Plan::where('code', 'starter')->value('id')]);
+        app(Switches::class)->flush();
+        $this->get("/h/{$slug}?check_in={$sat}&check_out={$mon}&room_type_id={$this->type->id}")->assertSee('High season: stays of at least 3 nights.');
+        $this->post("/h/{$slug}", $this->body(['check_in' => $sat, 'check_out' => $mon]))->assertStatus(422)->assertSee('stays of at least 3 nights');
     }
 
     public function test_bad_input_and_bots_are_refused_without_saving(): void

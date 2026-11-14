@@ -298,6 +298,9 @@ class ReservationController extends Controller
             'rooms.*.room_id' => ['nullable', 'integer'],
             'rooms.*.adults' => ['nullable', 'integer', 'between:1,20'],
             'rooms.*.children' => ['nullable', 'integer', 'between:0,20'],
+            'rooms.*.price_override' => ['nullable', 'decimal:0,2', 'min:0', 'max:99999999'], // per night, permission reservations.override_price
+            'price_override_reason' => ['nullable', 'string', 'max:200'],
+            'allow_short_stay' => ['nullable', 'boolean'],
             'discount_percent' => ['nullable', 'decimal:0,2', 'between:0,100'],
             'cancellation_policy_id' => ['nullable', 'integer'],
         ];

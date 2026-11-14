@@ -31,8 +31,11 @@ class BookingPageController extends Controller
         $hotel = $this->pages->find($slug) ?? abort(404);
         $page = $this->pages->page($hotel);
         PublicLocale::apply($request, $page['language']);
+        // "See prices": dates and room only (never personal data in a link).
+        $quote = $request->has('check_in') ? $this->pages->quote($hotel, $request->query('room_type_id'), $request->query('check_in'), $request->query('check_out')) : null;
+        $old = $quote ? ['check_in' => $request->query('check_in'), 'check_out' => $request->query('check_out'), 'room_type_id' => $request->query('room_type_id')] : [];
 
-        return $this->render($slug, $page, $request->query('sent') === '1', [], []);
+        return $this->render($slug, $page, $request->query('sent') === '1', $request->has('check_in') && ! $quote ? ['quote' => __('Choose an arrival from today and a departure after it.')] : [], $old, 200, $quote);
     }
 
     public function store(Request $request, string $slug): BaseResponse
@@ -91,12 +94,12 @@ class BookingPageController extends Controller
     }
 
     /** @param array<string, string> $errors @param array<string, mixed> $old */
-    private function render(string $slug, array $page, bool $sent, array $errors, array $old, int $status = 200): Response
+    private function render(string $slug, array $page, bool $sent, array $errors, array $old, int $status = 200, ?array $quote = null): Response
     {
         $c = $this->content->page();
         $html = view('landing.booking', [
             'c' => $c, 'url' => rtrim((string) config('app.url'), '/'), 'p' => $page, 'slug' => $slug, 'sent' => $sent,
-            'errors' => $errors, 'old' => $old, 'token' => Crypt::encryptString((string) now()->timestamp),
+            'errors' => $errors, 'old' => $old, 'token' => Crypt::encryptString((string) now()->timestamp), 'quote' => $quote,
         ]);
 
         return response($html, $status, ['Content-Type' => 'text/html; charset=UTF-8', 'Content-Security-Policy' => self::CSP, 'Cache-Control' => 'no-store']);

@@ -51,7 +51,8 @@ in the claude.ai Project.
 | `cancellation_policies` **H** | free_until_hours, penalty_type (nights, percent, fixed), penalty_value, applies_to_no_show, is_default | |
 | `room_types` **H** | branch_id, base/max capacity, nightly_price, day_use_price, hourly_price, amenities | |
 | `rooms` **H** | branch_id, room_type_id, number, floor, status (available, occupied, dirty, cleaning, maintenance, out_of_order) | |
-| `guest_types` **H**, `rate_rules` **H** | rule_type (weekend, season, guest_type…), dates, days_of_week, adjustment, value, priority | Prices |
+| `guest_types` **H**, `rate_rules` **H** | rule_type (weekend, season, holiday, guest_type; long_stay, early_bird, last_minute), dates, days_of_week, min_nights, days_before, min_stay, adjustment, value, priority | Prices |
+| `holidays` **H** | name, date, kind (fixed, calculated, expected, own), is_active | The hotel's holiday list ("holiday" rules) |
 | `imports` **H** | type, rows_count, created_ids, undone_at | Excel/CSV imports (undo possible) |
 | `number_sequences` **H** | key, last | Booking codes and bill numbers per year |
 
@@ -64,7 +65,7 @@ in the claude.ai Project.
 | `guests` **H** | names, phone, email, nationality, id_type, id_number (encrypted), id_number_hash (search), is_blacklisted | Shared by all branches. List shows masked ID numbers |
 | `guest_id_photos` **H** | guest_id, path (encrypted file), mime | Optional ID/passport photo |
 | `reservations` **H** | branch_id, code, guest_id, source, stay_type (nightly, day_use, hourly), check_in_at, check_out_at, status (pending, confirmed, checked_in, checked_out, cancelled, no_show), policy_snapshot, subtotal, discount, tax_total, total, deposit_required, paid_total, pay_later_* | The booking |
-| `reservation_rooms` **H** | room_type_id, room_id (null until assigned), check_in_at, check_out_at, **blocked_until** (check-out + cleaning gap), actual_check_in/out_at, total_amount, status | One per booked room; availability works on these |
+| `reservation_rooms` **H** | room_type_id, room_id (null until assigned), check_in_at, check_out_at, **blocked_until** (check-out + cleaning gap), actual_check_in/out_at, total_amount, price_override (per night, set by hand), status | One per booked room; availability works on these |
 | `reservation_room_rates` | date (hotel-local), label (Night, +N hours…), amount, rate_rule_id | The price of each night |
 | `reservation_guests` | | Extra people in a room |
 | `invoices` **H** | number, reservation_id, reservation_room_id (split bills), subtotal, discount_total, tax_total, total, paid_total, balance, status (open, partially_paid, paid, outstanding, void), outstanding_approved_*, voided_* | The bill; opens at check-in |
