@@ -24,7 +24,8 @@ describe('developer docs in the app', () => {
   })
 
   it('lists the deployment guide PDFs, shows one in the page and offers the download', async () => {
-    vi.stubGlobal('URL', { ...URL, createObjectURL: () => 'blob:guide', revokeObjectURL: () => undefined })
+    // jsdom has no object URLs; add them for this test only (the URL class itself must stay).
+    const created = Object.assign(URL, { createObjectURL: vi.fn(() => 'blob:guide'), revokeObjectURL: vi.fn() })
     mockApi({
       'GET /me': { body: tech() },
       'GET /admin/docs': { body: { ...list, pdfs: [{ name: 'index', size: 290_000, updated_at: '2026-11-09T10:00:00+03:00' }, { name: 'vps', size: 860_000, updated_at: '2026-11-09T10:00:00+03:00' }] } },
@@ -38,6 +39,6 @@ describe('developer docs in the app', () => {
     expect(screen.getByRole('link', { name: 'Download' })).toHaveAttribute('href', '/api/v1/admin/docs/pdf/vps')
     expect(screen.getByRole('link', { name: 'Open in a new tab' })).toHaveAttribute('href', 'blob:guide')
     expect(screen.getByRole('link', { name: /Which option to choose/ })).toBeInTheDocument()
-    vi.unstubAllGlobals()
+    expect(created.createObjectURL).toHaveBeenCalled()
   })
 })
