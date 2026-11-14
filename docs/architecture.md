@@ -93,9 +93,11 @@ Other rules:
 ## Languages
 
 - Every UI string goes through `t()`; English text is in `frontend/src/i18n/locales/en.json`
-  (staff guides in `en.guide.json`). Amharic comes after v1.
+  (staff guides in `en.guide.json`). Amharic (`am.json`, `am.guide.json`, loaded only when used; marked "needs native review")
+  – see features.md → Amharic. A new English key needs its Amharic too (a test checks the keys match).
 - Backend messages shown to users are plain English sentences (no codes). Laravel validation
-  wording is adjusted in `backend/lang/en/validation.php`.
+  wording is adjusted in `backend/lang/en/validation.php`. The public pages (website, booking page) also have Amharic:
+  `backend/lang/am.json` and `backend/lang/am/validation.php`, chosen by `?lang=am` (no cookie).
 - **Easy words** (owner): Arriving/Leaving (not arrivals/departures), "Don't charge" (not waive), "Cancel bill" (not void).
 
 ## Design rules (owner)

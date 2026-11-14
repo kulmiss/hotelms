@@ -20,7 +20,7 @@ use Laravel\Sanctum\HasApiTokens;
  * Users are looked up by email across the whole platform (one login page),
  * so this model is not tenant-scoped. Staff lists must filter by hotel_id.
  */
-#[Fillable(['hotel_id', 'role_id', 'name', 'email', 'phone', 'password', 'status', 'must_change_password'])]
+#[Fillable(['hotel_id', 'role_id', 'name', 'email', 'phone', 'calendar', 'language', 'password', 'status', 'must_change_password'])]
 #[Hidden(['password', 'remember_token', 'attendance_pin', 'two_factor_secret', 'two_factor_recovery_codes', 'pending_email_token'])]
 class User extends Authenticatable
 {

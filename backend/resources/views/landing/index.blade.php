@@ -22,37 +22,37 @@
     ];
     $i = fn (string $n) => '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">'.$icons[$n].'</svg>';
     $features = [
-        ['grid', 'Room board and front desk', 'Every room and its status on one screen. Walk-ins, check-in and check-out in a few taps.'],
-        ['calendar', 'Bookings your way', 'Nights, day use and hourly stays, deposits, cancellations and no-shows with your own rules.'],
-        ['receipt', 'Bills and payments', 'Bills with VAT and your TIN, split bills, cash, bank and mobile money, photos of payment slips.'],
-        ['sparkles', 'Housekeeping', 'Dirty rooms become cleaning tasks automatically; staff mark them done from a phone.'],
-        ['chart', 'Reports', 'Occupancy, revenue, payments and taxes for any day or month, and a daily summary.'],
-        ['users', 'Staff and permissions', 'Each person sees only what their role allows. Every change is in the activity log.'],
-        ['phone', 'Phone and tablet ready', 'Big buttons for touch screens. The latest bookings stay viewable when the internet drops.'],
-        ['building', 'More than one property', 'Run several branches from one account and compare them (bigger plans).'],
-        ['shield', 'Safe by default', 'Two-step sign-in, sign-in alerts, and each hotel\'s data kept apart from all others.'],
+        ['grid', __('Room board and front desk'), __('Every room and its status on one screen. Walk-ins, check-in and check-out in a few taps.')],
+        ['calendar', __('Bookings your way'), __('Nights, day use and hourly stays, deposits, cancellations and no-shows with your own rules.')],
+        ['receipt', __('Bills and payments'), __('Bills with VAT and your TIN, split bills, cash, bank and mobile money, photos of payment slips.')],
+        ['sparkles', __('Housekeeping'), __('Dirty rooms become cleaning tasks automatically; staff mark them done from a phone.')],
+        ['chart', __('Reports'), __('Occupancy, revenue, payments and taxes for any day or month, and a daily summary.')],
+        ['users', __('Staff and permissions'), __('Each person sees only what their role allows. Every change is in the activity log.')],
+        ['phone', __('Phone and tablet ready'), __('Big buttons for touch screens. The latest bookings stay viewable when the internet drops.')],
+        ['building', __('More than one property'), __('Run several branches from one account and compare them (bigger plans).')],
+        ['shield', __('Safe by default'), __('Two-step sign-in, sign-in alerts, and each hotel\'s data kept apart from all others.')],
     ];
 @endphp
-@extends('landing.layout', ['title' => $c['platform_name'].' – hotel software for Ethiopia, free to start', 'description' => \Illuminate\Support\Str::limit($c['subline'], 155), 'preload' => $hero])
+@extends('landing.layout', ['title' => $c['platform_name'].' – '.__('hotel software for Ethiopia, free to start'), 'description' => \Illuminate\Support\Str::limit(__($c['subline']), 155), 'preload' => $hero])
 
 @section('main')
 <section class="hero">
   <div class="wrap">
-    <span class="eyebrow">Hotel management for Ethiopia</span>
-    <h1>{{ $c['headline'] }}</h1>
-    <p class="lead">{{ $c['subline'] }}</p>
+    <span class="eyebrow">{{ __('Hotel management for Ethiopia') }}</span>
+    <h1>{{ __($c['headline']) }}</h1>
+    <p class="lead">{{ __($c['subline']) }}</p>
     <div class="ctas">
       @if ($open)
-        <a class="btn btn-primary" href="/register">Register your hotel free</a>
+        <a class="btn btn-primary" href="/register">{{ __('Register your hotel free') }}</a>
       @elseif ($contact)
-        <a class="btn btn-primary" href="{{ $contact }}" rel="noopener">Contact us{{ $c['whatsapp'] ? ' on WhatsApp' : '' }}</a>
+        <a class="btn btn-primary" href="{{ $contact }}" rel="noopener">{{ $c['whatsapp'] ? __('Contact us on WhatsApp') : __('Contact us') }}</a>
       @endif
-      <a class="btn btn-outline" href="{{ $c['demo'] ? '/login' : '#screens' }}">See demo</a>
+      <a class="btn btn-outline" href="{{ $c['demo'] ? '/login' : '#screens' }}">{{ __('See demo') }}</a>
     </div>
-    <p class="note">Free plan for small hotels · No card needed · Upgrade only when you grow</p>
+    <p class="note">{{ __('Free plan for small hotels · No card needed · Upgrade only when you grow') }}</p>
     <div class="device">
       <div class="top" aria-hidden="true"><i></i><i></i><i></i></div>
-      <img src="{{ $hero['src'] }}"@if (! empty($hero['srcset'])) srcset="{{ $hero['srcset'] }}" sizes="(max-width: 1160px) calc(100vw - 40px), 1120px"@endif width="{{ $hero['w'] }}" height="{{ $hero['h'] }}" alt="{{ $hero['alt'] }}" fetchpriority="high">
+      <img src="{{ $hero['src'] }}"@if (! empty($hero['srcset'])) srcset="{{ $hero['srcset'] }}" sizes="(max-width: 1160px) calc(100vw - 40px), 1120px"@endif width="{{ $hero['w'] }}" height="{{ $hero['h'] }}" alt="{{ __($hero['alt']) }}" fetchpriority="high">
     </div>
   </div>
 </section>
@@ -61,10 +61,10 @@
 <div class="trust">
   <div class="wrap">
     <ul>
-      <li>{!! $i('check') !!} Prices in birr, VAT and TIN on bills</li>
-      <li>{!! $i('check') !!} Works on phones and weak internet</li>
-      <li>{!! $i('check') !!} Encrypted daily backups</li>
-      <li>{!! $i('check') !!} Your guest data is yours</li>
+      <li>{!! $i('check') !!} {{ __('Prices in birr, VAT and TIN on bills') }}</li>
+      <li>{!! $i('check') !!} {{ __('Works on phones and weak internet') }}</li>
+      <li>{!! $i('check') !!} {{ __('Encrypted daily backups') }}</li>
+      <li>{!! $i('check') !!} {{ __('Your guest data is yours') }}</li>
     </ul>
   </div>
 </div>
@@ -73,9 +73,9 @@
 @if ($c['sections']['features'])
 <section id="features">
   <div class="wrap">
-    <span class="eyebrow">Features</span>
-    <h2 class="title">Everything the front desk needs, nothing it doesn't</h2>
-    <p class="lead">Made for busy reception desks: clear screens, few clicks, and the same app on the computer and the phone.</p>
+    <span class="eyebrow">{{ __('Features') }}</span>
+    <h2 class="title">{{ __('Everything the front desk needs, nothing it doesn\'t') }}</h2>
+    <p class="lead">{{ __('Made for busy reception desks: clear screens, few clicks, and the same app on the computer and the phone.') }}</p>
     <div class="grid">
       @foreach ($features as [$icon, $title, $text])
         <div class="card"><span class="badge-ico">{!! $i($icon) !!}</span><h3>{{ $title }}</h3><p>{{ $text }}</p></div>
@@ -88,12 +88,12 @@
 @if ($c['sections']['how'])
 <section id="how" style="background:var(--muted)">
   <div class="wrap">
-    <span class="eyebrow">How it works</span>
-    <h2 class="title">Ready in an afternoon</h2>
+    <span class="eyebrow">{{ __('How it works') }}</span>
+    <h2 class="title">{{ __('Ready in an afternoon') }}</h2>
     <ol class="steps">
-      <li class="card"><h3>{{ $open ? 'Register free' : 'Contact us' }}</h3><p>{{ $open ? 'Your hotel name, your email and a password. Confirm your email and you are in.' : 'We create your hotel account and send you the sign-in.' }}</p></li>
-      <li class="card"><h3>Set up your rooms</h3><p>A short walkthrough: room types, prices, taxes and payment methods. Import rooms from Excel if you like.</p></li>
-      <li class="card"><h3>Start working</h3><p>Take bookings, check guests in and out, and add your staff with the right permissions.</p></li>
+      <li class="card"><h3>{{ $open ? __('Register free') : __('Contact us') }}</h3><p>{{ $open ? __('Your hotel name, your email and a password. Confirm your email and you are in.') : __('We create your hotel account and send you the sign-in.') }}</p></li>
+      <li class="card"><h3>{{ __('Set up your rooms') }}</h3><p>{{ __('A short walkthrough: room types, prices, taxes and payment methods. Import rooms from Excel if you like.') }}</p></li>
+      <li class="card"><h3>{{ __('Start working') }}</h3><p>{{ __('Take bookings, check guests in and out, and add your staff with the right permissions.') }}</p></li>
     </ol>
   </div>
 </section>
@@ -102,18 +102,18 @@
 @if ($c['sections']['gallery'])
 <section id="screens">
   <div class="wrap">
-    <span class="eyebrow">Screens</span>
-    <h2 class="title">See it before you start</h2>
-    <p class="lead">Real screens from our demo hotel.</p>
+    <span class="eyebrow">{{ __('Screens') }}</span>
+    <h2 class="title">{{ __('See it before you start') }}</h2>
+    <p class="lead">{{ __('Real screens from our demo hotel.') }}</p>
     <div class="gallery">
       @foreach ($c['pictures']['gallery'] as $n => $pic)
         <figure class="shot{{ empty($pic['phone']) && $n === 0 ? ' wide' : '' }}">
           @if (! empty($pic['phone']))
-            <div class="phone"><img src="{{ $pic['src'] }}" width="{{ $pic['w'] }}" height="{{ $pic['h'] }}" alt="{{ $pic['alt'] }}" loading="lazy" decoding="async"></div>
+            <div class="phone"><img src="{{ $pic['src'] }}" width="{{ $pic['w'] }}" height="{{ $pic['h'] }}" alt="{{ __($pic['alt']) }}" loading="lazy" decoding="async"></div>
           @else
-            <div class="device"><div class="top" aria-hidden="true"><i></i><i></i><i></i></div><img src="{{ $pic['src'] }}"@if (! empty($pic['srcset'])) srcset="{{ $pic['srcset'] }}" sizes="(max-width: 860px) calc(100vw - 40px), 560px"@endif width="{{ $pic['w'] }}" height="{{ $pic['h'] }}" alt="{{ $pic['alt'] }}" loading="lazy" decoding="async"></div>
+            <div class="device"><div class="top" aria-hidden="true"><i></i><i></i><i></i></div><img src="{{ $pic['src'] }}"@if (! empty($pic['srcset'])) srcset="{{ $pic['srcset'] }}" sizes="(max-width: 860px) calc(100vw - 40px), 560px"@endif width="{{ $pic['w'] }}" height="{{ $pic['h'] }}" alt="{{ __($pic['alt']) }}" loading="lazy" decoding="async"></div>
           @endif
-          <figcaption>{{ $pic['caption'] ?? '' }}</figcaption>
+          <figcaption>{{ __($pic['caption'] ?? '') }}</figcaption>
         </figure>
       @endforeach
     </div>
@@ -124,54 +124,54 @@
 @if ($c['sections']['plans'] && $c['plans'])
 <section id="plans" style="background:var(--muted)">
   <div class="wrap center">
-    <span class="eyebrow">Plans</span>
-    <h2 class="title">Start free. Grow when you are ready.</h2>
-    <p class="lead">The daily work is in every plan. Bigger plans add rooms, staff, properties and extras.</p>
+    <span class="eyebrow">{{ __('Plans') }}</span>
+    <h2 class="title">{{ __('Start free. Grow when you are ready.') }}</h2>
+    <p class="lead">{{ __('The daily work is in every plan. Bigger plans add rooms, staff, properties and extras.') }}</p>
     <input class="cy" type="radio" name="cycle" id="cy-m" checked>
     <input class="cy" type="radio" name="cycle" id="cy-y">
-    <div class="cycle" role="group" aria-label="Billing period"><label for="cy-m">Monthly</label><label for="cy-y">Yearly · {{ $c['plans'][1]['free_months'] ?? 2 }} months free</label></div>
+    <div class="cycle" role="group" aria-label="{{ __('Billing period') }}"><label for="cy-m">{{ __('Monthly') }}</label><label for="cy-y">{{ __('Yearly · :n months free', ['n' => $c['plans'][1]['free_months'] ?? 2]) }}</label></div>
     <div class="plans">
       @foreach ($c['plans'] as $p)
         <div class="card plan{{ $p['recommended'] ? ' rec' : '' }}">
-          @if ($p['recommended'])<span class="tag">Recommended</span>@endif
+          @if ($p['recommended'])<span class="tag">{{ __('Recommended') }}</span>@endif
           <div>
             <h3 style="margin:0;font-size:19px">{{ $p['name'] }}</h3>
-            <p class="muted" style="font-size:14px">{{ $p['description'] }}</p>
+            <p class="muted" style="font-size:14px">{{ __((string) $p['description']) }}</p>
           </div>
           <div class="price">
             @if ($p['free'])
-              Free <small>forever</small>
+              {{ __('Free') }} <small>{{ __('forever') }}</small>
             @else
               <span class="pm">{{ $p['currency'] }} {{ $p['monthly'] }}</span><span class="py">{{ $p['currency'] }} {{ $p['yearly'] }}</span>
-              <small class="mo">/ month</small><small class="yr">/ year</small>
+              <small class="mo">{{ __('/ month') }}</small><small class="yr">{{ __('/ year') }}</small>
             @endif
           </div>
           <ul>
-            @foreach ($p['points'] as $point)<li>{!! $i('check') !!}<span>{{ $point }}</span></li>@endforeach
+            @foreach ($p['points'] as $point)<li>{!! $i('check') !!}<span>{{ __($point) }}</span></li>@endforeach
           </ul>
           @if ($p['free'] && $open)
-            <a class="btn {{ $p['recommended'] ? 'btn-primary' : 'btn-outline' }}" href="/register">Register free</a>
+            <a class="btn {{ $p['recommended'] ? 'btn-primary' : 'btn-outline' }}" href="/register">{{ __('Register free') }}</a>
           @elseif ($contact)
-            <a class="btn {{ $p['recommended'] ? 'btn-primary' : 'btn-outline' }}" href="{{ $contact }}" rel="noopener">{{ $p['free'] ? 'Contact us' : 'Choose '.$p['name'] }}</a>
+            <a class="btn {{ $p['recommended'] ? 'btn-primary' : 'btn-outline' }}" href="{{ $contact }}" rel="noopener">{{ $p['free'] ? __('Contact us') : __('Choose :plan', ['plan' => $p['name']]) }}</a>
           @endif
         </div>
       @endforeach
     </div>
     <details class="compare">
-      <summary>Compare all plans</summary>
+      <summary>{{ __('Compare all plans') }}</summary>
       <div class="table">
         <table>
-          <caption class="skip">What each plan includes</caption>
-          <thead><tr><th scope="col">Included</th>@foreach ($c['compare']['plans'] as $n)<th scope="col">{{ $n }}</th>@endforeach</tr></thead>
+          <caption class="skip">{{ __('What each plan includes') }}</caption>
+          <thead><tr><th scope="col">{{ __('Included') }}</th>@foreach ($c['compare']['plans'] as $n)<th scope="col">{{ $n }}</th>@endforeach</tr></thead>
           <tbody>
             @foreach ($c['compare']['rows'] as $row)
-              <tr><th scope="row" style="font-weight:500">{{ $row['label'] }}</th>@foreach ($row['values'] as $v)<td>{{ $v }}</td>@endforeach</tr>
+              <tr><th scope="row" style="font-weight:500">{{ __($row['label']) }}</th>@foreach ($row['values'] as $v)<td>{{ __($v) }}</td>@endforeach</tr>
             @endforeach
           </tbody>
         </table>
       </div>
     </details>
-    <p class="note">Prices in birr. No online payment: we send an invoice. Changing plans never deletes data.</p>
+    <p class="note">{{ __('Prices in birr. No online payment: we send an invoice. Changing plans never deletes data.') }}</p>
   </div>
 </section>
 @endif
@@ -179,14 +179,14 @@
 @if ($c['sections']['security'])
 <section id="security">
   <div class="wrap">
-    <span class="eyebrow">Security and privacy</span>
-    <h2 class="title">Your hotel's data, kept safe</h2>
-    <p class="lead">Your hotel decides about its guests' data; we keep it safe for you.</p>
+    <span class="eyebrow">{{ __('Security and privacy') }}</span>
+    <h2 class="title">{{ __('Your hotel\'s data, kept safe') }}</h2>
+    <p class="lead">{{ __('Your hotel decides about its guests\' data; we keep it safe for you.') }}</p>
     <div class="sec">
-      <div class="card"><span class="badge-ico">{!! $i('lock') !!}</span><h3>Two-step sign-in</h3><p>A code from an app or email, alerts for new devices, and a screen lock for shared computers.</p></div>
-      <div class="card"><span class="badge-ico">{!! $i('database') !!}</span><h3>Encrypted backups</h3><p>Backups every night and every hour, encrypted. Guest ID photos are stored encrypted too.</p></div>
-      <div class="card"><span class="badge-ico">{!! $i('eye') !!}</span><h3>No ads, no tracking</h3><p>We never sell data or show ads. This website sets no cookies.</p></div>
-      <div class="card"><span class="badge-ico">{!! $i('download') !!}</span><h3>Yours to take</h3><p>Download all your hotel's data at any time. Sign-ins are logged and kept for one year.</p></div>
+      <div class="card"><span class="badge-ico">{!! $i('lock') !!}</span><h3>{{ __('Two-step sign-in') }}</h3><p>{{ __('A code from an app or email, alerts for new devices, and a screen lock for shared computers.') }}</p></div>
+      <div class="card"><span class="badge-ico">{!! $i('database') !!}</span><h3>{{ __('Encrypted backups') }}</h3><p>{{ __('Backups every night and every hour, encrypted. Guest ID photos are stored encrypted too.') }}</p></div>
+      <div class="card"><span class="badge-ico">{!! $i('eye') !!}</span><h3>{{ __('No ads, no tracking') }}</h3><p>{{ __('We never sell data or show ads. This website sets no cookies.') }}</p></div>
+      <div class="card"><span class="badge-ico">{!! $i('download') !!}</span><h3>{{ __('Yours to take') }}</h3><p>{{ __('Download all your hotel\'s data at any time. Sign-ins are logged and kept for one year.') }}</p></div>
     </div>
   </div>
 </section>
@@ -195,8 +195,8 @@
 @if ($c['sections']['testimonials'])
 <section id="stories" style="background:var(--muted)">
   <div class="wrap">
-    <span class="eyebrow">Hotels using {{ $c['platform_name'] }}</span>
-    <h2 class="title">What hotels say</h2>
+    <span class="eyebrow">{{ __('Hotels using :name', ['name' => $c['platform_name']]) }}</span>
+    <h2 class="title">{{ __('What hotels say') }}</h2>
     <div class="grid">
       @foreach ($c['testimonials'] as $t)
         <blockquote class="card quote" style="margin:0"><p>“{{ $t['quote'] }}”</p><footer>{{ $t['name'] }}@if (! empty($t['hotel'])), {{ $t['hotel'] }}@endif</footer></blockquote>
@@ -209,12 +209,12 @@
 @if ($c['sections']['faq'] && $c['faq'])
 <section id="faq">
   <div class="wrap center">
-    <span class="eyebrow">Questions</span>
-    <h2 class="title">Good to know</h2>
+    <span class="eyebrow">{{ __('Questions') }}</span>
+    <h2 class="title">{{ __('Good to know') }}</h2>
     <div class="faq">
       @foreach ($c['faq'] as $q)
         @if (filled($q['q'] ?? null))
-          <details><summary>{{ $q['q'] }}</summary><div><p>{{ $q['a'] ?? '' }}</p></div></details>
+          <details><summary>{{ __($q['q']) }}</summary><div><p>{{ __($q['a'] ?? '') }}</p></div></details>
         @endif
       @endforeach
     </div>
@@ -226,12 +226,12 @@
 <section>
   <div class="wrap">
     <div class="band">
-      <h2 class="title">Try it with your own rooms</h2>
-      <p class="lead" style="margin:12px auto 24px">Set up in an afternoon. Free for small hotels.</p>
+      <h2 class="title">{{ __('Try it with your own rooms') }}</h2>
+      <p class="lead" style="margin:12px auto 24px">{{ __('Set up in an afternoon. Free for small hotels.') }}</p>
       @if ($open)
-        <a class="btn" href="/register">Register your hotel free</a>
+        <a class="btn" href="/register">{{ __('Register your hotel free') }}</a>
       @elseif ($contact)
-        <a class="btn" href="{{ $contact }}" rel="noopener">Contact us{{ $c['whatsapp'] ? ' on WhatsApp' : '' }}</a>
+        <a class="btn" href="{{ $contact }}" rel="noopener">{{ $c['whatsapp'] ? __('Contact us on WhatsApp') : __('Contact us') }}</a>
       @endif
     </div>
   </div>

@@ -93,7 +93,7 @@ function BookingForm({ existing, fromRequest }: { existing?: ReservationDetail; 
   const [hours, setHours] = useState(() => (existing?.stay_type === 'hourly' ? Math.round((Date.parse(existing.check_out_at) - Date.parse(existing.check_in_at)) / 3_600_000) : 3))
   const [rooms, setRooms] = useState<RoomInput[]>(
     () =>
-      existing?.rooms.map((r) => ({ room_type_id: r.room_type_id, room_id: r.room_id, adults: r.adults, children: r.children })) ??
+      existing?.rooms.map((r) => ({ room_type_id: r.room_type_id, room_id: r.room_id, adults: r.adults, children: r.children, price_override: r.price_override ?? null })) ??
       (fromRequest?.room_type ? [{ room_type_id: fromRequest.room_type.id, adults: fromRequest.adults, children: fromRequest.children }] : []),
   )
   const [guest, setGuest] = useState<Guest | null>(existing?.guest ?? null)
@@ -105,6 +105,11 @@ function BookingForm({ existing, fromRequest }: { existing?: ReservationDetail; 
       (fromRequest ? [`${t('bookingRequests.fromWeb')}: ${fromRequest.name}, ${fromRequest.phone}${fromRequest.email ? `, ${fromRequest.email}` : ''}`, fromRequest.note].filter(Boolean).join('\n') : ''),
   )
   const [pickBy, setPickBy] = useState<'types' | 'rooms'>('types') // choose room types, or the actual rooms
+  // Price set by hand and shorter stays than a season's minimum (permission reservations.override_price; logged).
+  const mayOverride = can('reservations.override_price')
+  const [overrideReason, setOverrideReason] = useState('')
+  const [allowShort, setAllowShort] = useState(false)
+  const anyOverride = rooms.some((r) => r.price_override)
   const preset = useGuest(Number(params.get('guest') ?? 0))
   const chosenGuest = guest ?? (preset.data && !preset.data.data.is_blacklisted ? preset.data.data : null)
 
@@ -129,7 +134,19 @@ function BookingForm({ existing, fromRequest }: { existing?: ReservationDetail; 
   const types = availability.data?.data ?? []
 
   const input: BookingInput | null =
-    stay && rooms.length ? { ...stay, guest_id: chosenGuest?.id ?? null, rooms, discount_percent: discount || '0', cancellation_policy_id: policyId, source, notes: notes || null } : null
+    stay && rooms.length
+      ? {
+          ...stay,
+          guest_id: chosenGuest?.id ?? null,
+          rooms,
+          discount_percent: discount || '0',
+          cancellation_policy_id: policyId,
+          source,
+          notes: notes || null,
+          ...(anyOverride ? { price_override_reason: overrideReason || null } : {}),
+          ...(allowShort ? { allow_short_stay: true } : {}),
+        }
+      : null
   const debouncedInput = useDebounced(input, 300)
   const quote = useQuote(debouncedInput, existing?.id)
   const save = useSaveReservation(existing?.id)
@@ -317,6 +334,19 @@ function BookingForm({ existing, fromRequest }: { existing?: ReservationDetail; 
                       </div>
                       <Stepper label={t('reservations.form.adults')} value={r.adults} min={1} max={type?.max_capacity ?? 20} onChange={(v) => setRoom(i, { adults: v })} />
                       <Stepper label={t('reservations.form.children')} value={r.children} min={0} max={Math.max(0, (type?.max_capacity ?? 20) - r.adults)} onChange={(v) => setRoom(i, { children: v })} />
+                      {(mayOverride || r.price_override) && (
+                        <div className="w-40">
+                          <Field
+                            label={t('pricing.override.label')}
+                            inputMode="decimal"
+                            placeholder={t('pricing.override.placeholder')}
+                            value={r.price_override ?? ''}
+                            disabled={!mayOverride}
+                            onChange={(e) => setRoom(i, { price_override: e.target.value.replace(/[^0-9.]/g, '') || null })}
+                            error={quoteError?.field(`rooms.${i}.price_override`) ?? saveError?.field(`rooms.${i}.price_override`)}
+                          />
+                        </div>
+                      )}
                       <Button variant="ghost" aria-label={t('reservations.form.remove')} onClick={() => setRooms(rooms.filter((_, j) => j !== i))}>
                         <XIcon aria-hidden className="size-4" />
                       </Button>
@@ -360,6 +390,11 @@ function BookingForm({ existing, fromRequest }: { existing?: ReservationDetail; 
                 ))}
               </Select>
             )}
+            {anyOverride && mayOverride && (
+              <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
+                <Field label={t('pricing.override.reason')} hint={t('pricing.override.reasonHint')} value={overrideReason} onChange={(e) => setOverrideReason(e.target.value)} error={saveError?.field('price_override_reason')} />
+              </div>
+            )}
             <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
               <Field label={t('reservations.form.notes')} value={notes} onChange={(e) => setNotes(e.target.value)} />
             </div>
@@ -371,6 +406,15 @@ function BookingForm({ existing, fromRequest }: { existing?: ReservationDetail; 
           <h2 className="text-sm font-semibold">{t('reservations.form.summary')}</h2>
           {!rooms.length && <p className="text-sm text-muted">{t('reservations.form.pickRooms')}</p>}
           {quoteError && <Alert>{Object.values(quoteError.errors)[0]?.[0] ?? quoteError.message}</Alert>}
+          {mayOverride && (allowShort || Object.keys(quoteError?.errors ?? {}).some((k) => /^rooms\.\d+\.room_type_id$/.test(k))) && (
+            <label className="flex min-h-touch items-start gap-2 text-sm">
+              <input type="checkbox" className="mt-0.5 size-4" checked={allowShort} onChange={(e) => setAllowShort(e.target.checked)} />
+              <span className="flex flex-col">
+                {t('pricing.shortStay.option')}
+                <span className="text-xs text-muted">{t('pricing.shortStay.hint')}</span>
+              </span>
+            </label>
+          )}
           {quote.data && rooms.length > 0 && <QuoteSummary q={payLater ? { ...quote.data.data, deposit_required: '0' } : quote.data.data} />}
           {!existing && lookups.data?.pay_later && (
             <label className="flex min-h-touch items-start gap-2 text-sm">
@@ -411,7 +455,7 @@ function Stepper({ label, value, min, max, onChange }: { label: string; value: n
   )
 }
 
-export function QuoteSummary({ q }: { q: { currency: string; rooms: { room_type: string; room_number: string | null; total: string; lines: { date: string; label: string; amount: string; rule_name: string | null }[] }[]; subtotal: string; discount_percent: string; discount_amount: string; tax_total: string; total: string; deposit_required: string; policy_name?: string | null } }) {
+export function QuoteSummary({ q }: { q: { currency: string; rooms: { room_type: string; room_number: string | null; total: string; lines: { date: string; label: string; amount: string; rule_name: string | null }[]; calculated_total?: string | null; min_stay?: { name: string; nights: number } | null }[]; subtotal: string; discount_percent: string; discount_amount: string; tax_total: string; total: string; deposit_required: string; policy_name?: string | null } }) {
   const { t } = useTranslation()
   const c = q.currency
   return (
@@ -429,13 +473,15 @@ export function QuoteSummary({ q }: { q: { currency: string; rooms: { room_type:
             {r.lines.map((l, j) => (
               <li key={j} className="flex justify-between gap-2">
                 <span>
-                  {l.date} · {l.label}
+                  {date(l.date)} · {l.label}
                   {l.rule_name && <Badge tone="accent">{l.rule_name}</Badge>}
                 </span>
                 <span className="tabular-nums">{money(l.amount, c)}</span>
               </li>
             ))}
           </ul>
+          {r.calculated_total && <p className="mt-1 text-xs text-muted">{t('pricing.override.was', { amount: money(r.calculated_total, c) })}</p>}
+          {r.min_stay && <p className="mt-1 text-xs text-warn-text">{t('pricing.shortStay.note', { name: r.min_stay.name, n: r.min_stay.nights })}</p>}
         </details>
       ))}
       <Line label={t('reservations.subtotal')} value={money(q.subtotal, c)} />

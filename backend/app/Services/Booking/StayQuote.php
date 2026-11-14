@@ -75,12 +75,14 @@ class StayQuote
      *
      * @return array{total: string, lines: list<array{date: string, label: string, amount: string, rate_rule_id: ?int, rule_name: ?string}>}
      */
-    public function price(Hotel $hotel, RoomType $type, string $stayType, Carbon $in, Carbon $out, ?int $guestTypeId): array
+    public function price(Hotel $hotel, RoomType $type, string $stayType, Carbon $in, Carbon $out, ?int $guestTypeId, ?Carbon $bookedAt = null): array
     {
         $localIn = HotelClock::local($in, $hotel);
 
         if ($stayType === 'nightly') {
-            $stay = $this->prices->stay($type, $localIn->copy()->startOfDay(), HotelClock::local($out, $hotel)->startOfDay(), $guestTypeId);
+            // Early-bird / last-minute count from the day the booking was made (hotel time).
+            $bookedOn = HotelClock::local($bookedAt ?? now(), $hotel)->startOfDay();
+            $stay = $this->prices->stay($type, $localIn->copy()->startOfDay(), HotelClock::local($out, $hotel)->startOfDay(), $guestTypeId, $bookedOn);
             $lines = array_map(fn ($n) => [
                 'date' => $n['date'], 'label' => 'Night', 'amount' => $n['amount'],
                 'rate_rule_id' => $n['rule']['id'] ?? null, 'rule_name' => $n['rule']['name'] ?? null,
@@ -105,6 +107,34 @@ class StayQuote
         $amount = Money::mul((string) $type->hourly_price, (string) $hours);
 
         return ['total' => $amount, 'lines' => [['date' => $localIn->toDateString(), 'label' => "{$hours} hours", 'amount' => $amount, 'rate_rule_id' => null, 'rule_name' => null]]];
+    }
+
+    /**
+     * A stay shorter than the minimum of a season or holiday it touches (not on the Free plan).
+     *
+     * @return array{name: string, nights: int}|null
+     */
+    public function minStayProblem(Hotel $hotel, RoomType $type, string $stayType, Carbon $in, Carbon $out): ?array
+    {
+        if ($stayType !== 'nightly') {
+            return null;
+        }
+
+        return $this->prices->minStayProblem($type, HotelClock::local($in, $hotel)->startOfDay(), HotelClock::local($out, $hotel)->startOfDay());
+    }
+
+    /**
+     * The same nights at a price set by hand (permission reservations.override_price).
+     *
+     * @param  list<array{date: string, label: string, amount: string, rate_rule_id: ?int, rule_name: ?string}>  $lines
+     * @return array{total: string, lines: list<array{date: string, label: string, amount: string, rate_rule_id: ?int, rule_name: ?string}>}
+     */
+    public function overridden(array $lines, string $perNight): array
+    {
+        $amount = Money::round($perNight);
+        $lines = array_map(fn ($l) => ['amount' => $amount, 'rate_rule_id' => null, 'rule_name' => 'Price set by hand'] + $l, $lines);
+
+        return ['total' => Money::sum(array_column($lines, 'amount')), 'lines' => $lines];
     }
 
     /** Taxes added on top of a room amount (taxes "included in the price" add nothing). */

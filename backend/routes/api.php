@@ -58,6 +58,7 @@ use App\Http\Controllers\Api\Settings\ChargeTypeController;
 use App\Http\Controllers\Api\Settings\CurrencyController;
 use App\Http\Controllers\Api\Settings\ExchangeRateController;
 use App\Http\Controllers\Api\Settings\GuestTypeController;
+use App\Http\Controllers\Api\Settings\HolidayController;
 use App\Http\Controllers\Api\Settings\HotelProfileController;
 use App\Http\Controllers\Api\Settings\HotelSettingsController;
 use App\Http\Controllers\Api\Settings\ImportController;
@@ -410,6 +411,11 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
                     Route::put('/rate-rules/{id}', [RateRuleController::class, 'update']);
                     Route::delete('/rate-rules/{id}', [RateRuleController::class, 'destroy']);
                     Route::get('/price-preview', [RateRuleController::class, 'preview']);
+                    Route::get('/holidays', [HolidayController::class, 'index']);
+                    Route::post('/holidays', [HolidayController::class, 'store']);
+                    Route::post('/holidays/ethiopian', [HolidayController::class, 'preset']);
+                    Route::put('/holidays/{id}', [HolidayController::class, 'update']);
+                    Route::delete('/holidays/{id}', [HolidayController::class, 'destroy']);
                 });
                 Route::middleware('permission:settings.modules')->group(function () {
                     Route::get('/modules', [HotelSettingsController::class, 'modules']);

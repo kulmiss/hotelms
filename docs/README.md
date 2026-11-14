@@ -16,6 +16,7 @@ Read in this order the first time:
 | 7 | [features.md](features.md) | Each feature: business rules, where the code is, what tests cover it |
 | 8 | [recipes.md](recipes.md) | Step-by-step: add a setting, permission, page, report, automation, migration… |
 | 9 | [hosting.md](hosting.md) | Put it online (cPanel or VPS), updates, backups, speed |
+| 10 | [i18n/README.md](i18n/README.md) | Amharic: the review list for a native speaker and how to put fixes back |
 
 **Product decisions** (why things work the way they do) live in the claude.ai Project "HotelMS":
 `decisions.md`, `workflows.md` (business rules Q1–Q15), `permissions.md`, `database-schema.md`,
