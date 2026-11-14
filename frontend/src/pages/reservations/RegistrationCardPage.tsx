@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { LoadFailed } from '@/components/ui/LoadFailed'
 import { api } from '@/lib/api'
 import type { PrintHotel } from '@/lib/desk'
-import { date, money } from '@/lib/format'
+import { printDate, money } from '@/lib/format'
 import { localDate, localTime, type ReservationDetail } from '@/lib/front'
 
 type Card = {
@@ -59,14 +59,14 @@ export function RegistrationCardPage() {
           {row(t('regCard.idNumber'), g?.id_number)}
           {row(t('regCard.phone'), g?.phone)}
           {row(t('regCard.email'), g?.email)}
-          {row(t('regCard.birth'), g?.date_of_birth ? date(g.date_of_birth) : null)}
+          {row(t('regCard.birth'), g?.date_of_birth ? printDate(g.date_of_birth) : null)}
           {row(t('regCard.address'), null)}
         </div>
 
         <h2 className="mt-5 mb-1 text-[13px] font-semibold">{t('regCard.stay')}</h2>
         <div className="grid grid-cols-2 gap-x-6">
-          {row(t('regCard.arrival'), `${date(localDate(r.check_in_at))} ${localTime(r.check_in_at)}`)}
-          {row(t('regCard.departure'), `${date(localDate(r.check_out_at))} ${localTime(r.check_out_at)}`)}
+          {row(t('regCard.arrival'), `${printDate(localDate(r.check_in_at))} ${localTime(r.check_in_at)}`)}
+          {row(t('regCard.departure'), `${printDate(localDate(r.check_out_at))} ${localTime(r.check_out_at)}`)}
           {row(t('regCard.rooms'), r.rooms.map((x) => [x.room_number, x.room_type].filter(Boolean).join(' · ')).join(', '))}
           {row(t('regCard.people'), t('regCard.peopleLine', { adults: t('reservations.adultsCount', { count: r.adults }), children: t('reservations.childrenCount', { count: r.children }) }))}
           {row(t('regCard.stayType'), t(`reservations.stayTypes.${r.stay_type}`))}

@@ -500,6 +500,16 @@
         "If you have no room, tap \"Decline\" (call the guest to tell them)."
       ]
     },
+    "ethiopianCalendar": {
+      "title": "Ethiopian calendar",
+      "steps": [
+        "Open My profile → My calendar. Choose Gregorian, Ethiopian, or both.",
+        "With \"both\", every date shows the two calendars, e.g. 14 Nov 2026 · 5 Hidar 2019.",
+        "To type a date in the Ethiopian calendar, tap \"Type in Ethiopian calendar\" under the date box.",
+        "Printed bills always show the Gregorian date too.",
+        "The admin sets the hotel's default in Settings → Hotel profile → Calendar."
+      ]
+    },
     "gettingStarted": {
       "title": "Getting started (new hotel)",
       "steps": [

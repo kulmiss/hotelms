@@ -117,6 +117,16 @@ staff only; people who have it keep it), `feature.custom_reports`, `feature.bran
 A hotel switch or `limit.*` switch overrides the plan for one hotel. Over a limit = refusal with `PlanLimits::message` (WhatsApp /
 email from platform settings `whatsapp`, `support_email`); nothing is removed. No online billing. Tests: `Admin/BalancedPlansTest`.
 
+## Ethiopian calendar
+
+Settings → Hotel profile → Calendar (hotel default) and My profile → My calendar (each person; empty = hotel default):
+Gregorian only / Ethiopian only / both. The database and API always use Gregorian; EC is display and input only.
+`lib/ethiopian.ts` and `App\Support\EthiopianDate` (same Julian-Day maths, Pagume 5/6, leap year = EC year % 4 == 3; tests
+check known dates and every day 1900–2100 both ways). `lib/format.ts` `date()`/`dateTime()` follow the mode (set when `/me`
+loads); prints use `printDate()` (Gregorian always, EC in brackets). Every `Field type="date"` becomes an EC day/month/year
+picker in "Ethiopian only" and gets a "Type in Ethiopian calendar" switch in "both". The calendars show EC day numbers.
+Tests: `Unit/EthiopianDateTest`, `Hotel/CalendarSettingTest`, `ethiopian.test.ts`, `ecDateField.test.tsx`.
+
 ## Public website
 
 `/` is a page made by Laravel (`Web/LandingController`, `resources/views/landing/*`, `Services/Landing/LandingContent`): plain

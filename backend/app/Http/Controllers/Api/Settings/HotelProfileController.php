@@ -34,11 +34,13 @@ class HotelProfileController extends Controller
             'invoice_prefix' => ['required', 'alpha_dash', 'max:10'],
             'invoice_footer' => ['nullable', 'string', 'max:300'],
             'receipt_paper' => ['sometimes', 'in:a4,receipt'],
+            'calendar' => ['sometimes', 'in:'.implode(',', HotelSettings::CALENDARS)],
         ]);
 
-        $request->user()->hotel->update(collect($data)->except(['invoice_prefix', 'invoice_footer', 'receipt_paper'])->all());
+        $request->user()->hotel->update(collect($data)->except(['invoice_prefix', 'invoice_footer', 'receipt_paper', 'calendar'])->all());
         $this->settings->put(['invoice_prefix' => strtoupper($data['invoice_prefix']), 'invoice_footer' => $data['invoice_footer'] ?? null]
-            + (isset($data['receipt_paper']) ? ['receipt_paper' => $data['receipt_paper']] : []));
+            + (isset($data['receipt_paper']) ? ['receipt_paper' => $data['receipt_paper']] : [])
+            + (isset($data['calendar']) ? ['calendar' => $data['calendar']] : []));
 
         return response()->json(['data' => $this->present($request)]);
     }
