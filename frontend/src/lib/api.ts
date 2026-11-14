@@ -196,10 +196,12 @@ export type Me = {
     phone: string | null
     /** Own choice; null = the hotel's default (Ethiopian calendar, owner 14 Nov 2026). */
     calendar?: CalendarMode | null
+    /** Own choice; null = the hotel's default (en / am). */
+    language?: 'en' | 'am' | null
     is_super_admin: boolean
     must_change_password: boolean
   }
-  hotel: { id: number; name: string; status: string; default_currency: string; timezone: string; is_demo?: boolean; demo_ends_at?: string | null; modules?: string[]; setup?: SetupSummary | null; calendar?: CalendarMode } | null
+  hotel: { id: number; name: string; status: string; default_currency: string; timezone: string; is_demo?: boolean; demo_ends_at?: string | null; modules?: string[]; setup?: SetupSummary | null; calendar?: CalendarMode; language?: 'en' | 'am' } | null
   branches: { id: number; name: string }[]
   role: { id: number; name: string; is_hotel_admin: boolean; max_discount_percent: string } | null
   permissions: string[]

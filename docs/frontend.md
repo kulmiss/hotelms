@@ -16,7 +16,7 @@
 | `components/billing`, `payments`, `guests`, `print`, `support` | Pieces shared by several screens (add charge, payment proof, ID photo, print header, support chat) |
 | `pages/<area>/` | Screens: `desk/` (room board, walk-in, front desk mode), `reservations/`, `guests/`, `billing/`, `modules/` (cashier, housekeeping, shifts, attendance), `reports/`, `settings/`, `setup/`, `team/`, `admin/` (Super Admin), `help/`, `security/`, `approvals/`, `subscription/` |
 | `lib/` | Data hooks and helpers per area (below) |
-| `i18n/` | `index.ts`; `locales/en.json` (all screen text), `locales/en.guide.json` (staff guides) |
+| `i18n/` | `index.ts` (`setLanguage`, Amharic loaded on demand); `locales/en.json` (all screen text), `locales/en.guide.json` (staff guides), `am.json` / `am.guide.json` (Amharic, same keys) |
 | `index.css` | Tailwind v4 theme in the **shadcn-admin** look (slate OKLCH tokens, radius 0.625rem; our token names map to shadcn's – see the comment at the top), `.panel` (= shadcn card), touch sizes, focus ring, print rules. Template notice: `THIRD_PARTY_NOTICES`; plan: `MIGRATION_PLAN.md` |
 | `test/` | Vitest + Testing Library; `mockApi.ts` (fake API + `makeMe`), `renderApp.tsx` |
 
@@ -100,7 +100,7 @@ with a message and forms keep what was typed. The copy belongs to the signed-in 
 
 1. Add the page in `pages/<area>/`, the import in `app/prefetch.ts`, the route in `app/router.tsx`, the menu item (if any) in `app/navigation.ts` with its `permission`.
 2. Data: a hook in `lib/<area>.ts`.
-3. Text: keys in `i18n/locales/en.json` (check there is no duplicate key – a test does not catch it).
+3. Text: keys in `i18n/locales/en.json` (check there is no duplicate key – a test does not catch it), and the same key in `am.json` (Amharic; `amharic.test.tsx` fails when it is missing).
 4. UI: kit components and colour tokens only; `min-h-touch` targets; light and dark.
 5. A test in `test/` for any rule on the screen.
 6. If staff use it: a topic in the staff guide (`lib/guides.ts` + `en.guide.json`).

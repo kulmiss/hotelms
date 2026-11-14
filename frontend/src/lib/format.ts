@@ -14,18 +14,21 @@ import { formatEthiopian } from './ethiopian'
  * Which calendar dates are shown in (the person's choice, else the hotel's; set when /me loads).
  * Gregorian only / Ethiopian only / both (owner, 14 Nov 2026). The server always stores Gregorian.
  */
+/** Gregorian months in Amharic (short forms used in Ethiopia). */
+const AM_MONTHS = ['ጃንዩ', 'ፌብሩ', 'ማርች', 'ኤፕሪ', 'ሜይ', 'ጁን', 'ጁላይ', 'ኦገስ', 'ሴፕቴ', 'ኦክቶ', 'ኖቬም', 'ዲሴም']
+
 let calendar: CalendarMode = 'gregorian'
 let calendarLang = 'en'
-export function setCalendarMode(mode: CalendarMode | null | undefined, lang = 'en') {
+export function setCalendarMode(mode: CalendarMode | null | undefined, lang?: string) {
   calendar = mode === 'ethiopian' || mode === 'both' ? mode : 'gregorian'
-  calendarLang = lang
+  if (lang) calendarLang = lang === 'am' ? 'am' : 'en'
 }
 export const calendarMode = () => calendar
 
 /** "2026-11-30" → "30 Nov 2026" (dates stay as written; no timezone shifts). */
 export function gregorianDate(value: string): string {
   const [y, m, d] = value.slice(0, 10).split('-').map(Number)
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const months = calendarLang === 'am' ? AM_MONTHS : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   return `${d} ${months[m - 1]} ${y}`
 }
 
@@ -34,7 +37,7 @@ export function date(value: string | null | undefined): string {
   if (!value) return '—'
   if (calendar === 'gregorian') return gregorianDate(value)
   const ec = formatEthiopian(value.slice(0, 10), calendarLang)
-  return calendar === 'ethiopian' ? `${ec} EC` : `${gregorianDate(value)} · ${ec}`
+  return calendar === 'ethiopian' ? `${ec} ${calendarLang === 'am' ? 'ዓ.ም.' : 'EC'}` : `${gregorianDate(value)} · ${ec}`
 }
 
 /** On printed bills and cards: the Gregorian date is always there (tax papers), the Ethiopian one next to it when chosen. */
@@ -53,7 +56,7 @@ export function dateTime(iso: string | null | undefined): string {
   if (!iso) return '—'
   const d = new Date(iso)
   const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
-  if (calendar === 'gregorian') return d.toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  if (calendar === 'gregorian' && calendarLang !== 'am') return d.toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
   return `${date(localDay(d))}, ${time}`
 }
 

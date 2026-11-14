@@ -59,12 +59,14 @@ class LandingContent
     /** Everything the page needs (cached a minute; cleared when Super Admin saves). @return array<string, mixed> */
     public function page(): array
     {
-        return Cache::remember(self::CACHE, 60, fn () => $this->build());
+        return Cache::remember(self::CACHE.':'.app()->getLocale(), 60, fn () => $this->build());
     }
 
     public static function forget(): void
     {
-        Cache::forget(self::CACHE);
+        foreach (['en', 'am'] as $lang) {
+            Cache::forget(self::CACHE.':'.$lang);
+        }
     }
 
     /** @return array<string, mixed> */
@@ -139,8 +141,8 @@ class LandingContent
             'monthly' => number_format($monthly), 'yearly' => number_format($monthly * $months), 'free_months' => (int) $p->yearly_free_months,
             'points' => array_values(array_filter([
                 $this->limit($p->max_rooms, 'room'), $this->limit($p->max_staff, 'staff account'),
-                $p->max_branches === null ? 'Unlimited properties' : ($p->max_branches > 1 ? "{$p->max_branches} properties" : null),
-                $p->max_storage_mb ? $this->size($p->max_storage_mb).' of files' : null,
+                $p->max_branches === null ? 'Unlimited properties' : ($p->max_branches > 1 ? __(':n properties', ['n' => $p->max_branches]) : null),
+                $p->max_storage_mb ? __(':size of files', ['size' => $this->size($p->max_storage_mb)]) : null,
                 $this->on($p, 'feature.full_reports') ? 'Full reports and Excel export' : 'Daily reports',
                 $this->on($p, 'feature.telegram') ? 'Telegram daily report' : null,
                 in_array('shifts', $p->modules ?? [], true) ? 'Shifts and attendance' : null,
@@ -192,7 +194,13 @@ class LandingContent
 
     private function limit(?int $n, string $what): string
     {
-        return $n === null ? 'Unlimited '.($what === 'staff account' ? 'staff' : $what.'s') : "Up to {$n} {$what}".($n === 1 ? '' : 's');
+        if ($n === null) {
+            return $what === 'staff account' ? __('Unlimited staff') : __('Unlimited rooms');
+        }
+
+        return $what === 'staff account'
+            ? trans_choice('{1} Up to :n staff account|[2,*] Up to :n staff accounts', $n, ['n' => $n])
+            : trans_choice('{1} Up to :n room|[2,*] Up to :n rooms', $n, ['n' => $n]);
     }
 
     private function size(int $mb): string

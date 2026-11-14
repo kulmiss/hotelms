@@ -12,6 +12,7 @@ use App\Models\Plan;
 use App\Models\RoomType;
 use App\Models\User;
 use App\Services\HotelDefaults;
+use App\Services\HotelSettings;
 use App\Services\Switches;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -75,7 +76,7 @@ class BookingPageTest extends TestCase
         $slug = $this->turnOn();
         $receptionist = User::factory()->withRole($this->hotel, 'receptionist')->create();
         $receptionist->branches()->attach($this->branch);
-        $this->post("/h/{$slug}", $this->body())->assertRedirect("/h/{$slug}?sent=1");
+        $this->post("/h/{$slug}", $this->body())->assertRedirect("/h/{$slug}?sent=1&lang=en");
         $this->get("/h/{$slug}?sent=1")->assertSee('Your request was sent.');
 
         $req = BookingRequest::withoutGlobalScope('hotel')->firstOrFail();
@@ -90,10 +91,37 @@ class BookingPageTest extends TestCase
         $this->postJson("/api/v1/booking-requests/{$req->id}/decline")->assertJsonValidationErrors('status'); // once
     }
 
+    public function test_the_page_speaks_amharic_by_link_or_by_the_hotel_default(): void
+    {
+        $slug = $this->turnOn();
+        $r = $this->get("/h/{$slug}?lang=am")->assertOk();
+        $html = $r->getContent();
+        $this->assertStringContainsString('<html lang="am">', $html);
+        $this->assertStringContainsString('ክፍል ያስይዙ', $html);
+        $this->assertStringContainsString('action="/h/'.$slug.'?lang=am"', $html);
+        $this->assertStringContainsString('hreflang="en"', $html);
+        $this->assertStringContainsString('noto-sans-ethiopic-400.woff2', $html); // the font, only for Amharic
+        $this->assertStringContainsString("font-src 'self'", $r->headers->get('Content-Security-Policy'));
+        $this->assertEmpty($r->headers->getCookies());
+
+        // Amharic errors, and the answer page stays in Amharic.
+        $this->post("/h/{$slug}?lang=am", $this->body(['check_in' => now()->subDay()->toDateString()]))->assertStatus(422)->assertSee('ዛሬን ወይም ከዚያ በኋላ ያለ ቀን ይምረጡ።');
+        $this->post("/h/{$slug}?lang=am", $this->body(['name' => '']))->assertStatus(422)->assertSee('ስም ያስፈልጋል።');
+        $this->post("/h/{$slug}?lang=am", $this->body())->assertRedirect("/h/{$slug}?sent=1&lang=am");
+
+        // A hotel whose default is Amharic: Amharic without ?lang, English with ?lang=en.
+        app(TenantContext::class)->runAs($this->hotel, fn () => app(HotelSettings::class)->put(['language' => 'am']));
+        $this->assertStringContainsString('<html lang="am">', $this->get("/h/{$slug}")->getContent());
+        $en = $this->get("/h/{$slug}?lang=en")->getContent();
+        $this->assertStringContainsString('<html lang="en">', $en);
+        $this->assertStringNotContainsString('noto-sans-ethiopic', $en);
+        $this->get("/h/{$slug}?lang=xx")->assertOk(); // unknown: the default, never an error
+    }
+
     public function test_bad_input_and_bots_are_refused_without_saving(): void
     {
         $slug = $this->turnOn();
-        $this->post("/h/{$slug}", $this->body(['website' => 'spam']))->assertRedirect("/h/{$slug}?sent=1");
+        $this->post("/h/{$slug}", $this->body(['website' => 'spam']))->assertRedirect("/h/{$slug}?sent=1&lang=en");
         $this->post("/h/{$slug}", $this->body(['form_token' => Crypt::encryptString((string) now()->timestamp)]))->assertStatus(422)->assertSee('check the form');
         $this->post("/h/{$slug}", $this->body(['check_in' => now()->subDay()->toDateString()]))->assertStatus(422)->assertSee('Choose today or a later day.');
         $this->post("/h/{$slug}", $this->body(['phone' => 'call me']))->assertStatus(422);

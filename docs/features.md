@@ -127,6 +127,30 @@ loads); prints use `printDate()` (Gregorian always, EC in brackets). Every `Fiel
 picker in "Ethiopian only" and gets a "Type in Ethiopian calendar" switch in "both". The calendars show EC day numbers.
 Tests: `Unit/EthiopianDateTest`, `Hotel/CalendarSettingTest`, `ethiopian.test.ts`, `ecDateField.test.tsx`.
 
+## Amharic (አማርኛ)
+
+English is the default. The language comes from My profile → My language, else Settings → Hotel profile → Language (hotel
+default, also used later for guest messages), else English; before sign-in a switch on the sign-in and password pages (remembered
+on the device in `localStorage` `hotelms.lang`), and a `?lang=am` link from the website opens the app in Amharic.
+`frontend/src/i18n/locales/am.json` + `am.guide.json` are loaded only when Amharic is used (separate download); a string missing
+there shows in English. Both files are machine-made and marked **needs native review** (`_meta` in `am.json`); the list for the
+reviewer is `docs/i18n/am-review.csv` (file, key, English, Amharic, status, note – opens in Excel). After a native speaker
+corrects it, put the fixes back in the two JSON files. Dates: Amharic month names (ጃንዩ… / መስከረም…) and "ዓ.ም." for EC.
+Font: Noto Sans Ethiopic (OFL), the main Ethiopic block only (U+1200–137F, ~45 KB per weight), downloaded only when Ethiopic
+letters are on screen. Tests: `amharic.test.tsx` (same keys and `{{placeholders}}` as English, the switch, dates).
+
+Public pages (website, Terms/Privacy, booking page) use Laravel translations: `backend/lang/am.json` (English text as key) and
+`backend/lang/am/validation.php`. No cookie, so the language is in the link (`App\Support\PublicLocale`): `?lang=am` / `?lang=en`,
+links keep it, a switch EN / አማ in the header, `hreflang` links and a canonical per language. The website is English without
+`?lang`; a booking page uses the hotel's default language. Texts Super Admin changes are shown as typed (only the built-in texts
+are translated). Terms/Privacy stay English with an Amharic note until the lawyer has checked them. The website loads one
+small font file only for Amharic (`public/landing/fonts`, just the letters of these pages, ~15 KB, preloaded, `font-display:
+optional`, CSP `font-src 'self'`); other letters (e.g. in a hotel name) use the phone's own Ethiopic font. When `lang/am.json`
+gets new letters, make the file again with:
+`pyftsubset frontend/public/fonts/noto-sans-ethiopic-400.woff2 --text-file=<all text of lang/am*> --flavor=woff2 --output-file=backend/public/landing/fonts/noto-sans-ethiopic-400.woff2`.
+Lighthouse checks `/` and `/?lang=am`. Tests: `Web/LandingPageTest` (Amharic page, every `__()` text has a translation with the
+same `:placeholders`), `Web/BookingPageTest` (Amharic by link and by hotel default, Amharic errors).
+
 ## Public website
 
 `/` is a page made by Laravel (`Web/LandingController`, `resources/views/landing/*`, `Services/Landing/LandingContent`): plain

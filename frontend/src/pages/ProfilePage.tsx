@@ -120,12 +120,13 @@ function ProfileForm({ me }: { me: Me }) {
   const [name, setName] = useState(me.user.name)
   const [phone, setPhone] = useState(me.user.phone ?? '')
   const [calendar, setCalendar] = useState<string>(me.user.calendar ?? '')
+  const [language, setLanguage] = useState<string>(me.user.language ?? '')
   const error = update.error instanceof ApiError ? update.error : null
   const owner = me.user.is_super_admin && me.platform?.role === 'owner' && !me.impersonation
 
   function submit(e: FormEvent) {
     e.preventDefault()
-    update.mutate({ name, phone: phone || null, ...(me.hotel ? { calendar: (calendar || null) as CalendarMode | null } : {}) })
+    update.mutate({ name, phone: phone || null, ...(me.hotel ? { calendar: (calendar || null) as CalendarMode | null, language: (language || null) as 'en' | 'am' | null } : {}) })
   }
 
   return (
@@ -143,6 +144,13 @@ function ProfileForm({ me }: { me: Me }) {
         />
         {owner && <ChangeEmail />}
         <Field label={t('profile.phone')} type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} error={error?.field('phone')} />
+        {me.hotel && (
+          <Select label={t('language.mine')} value={language} onChange={(e) => setLanguage(e.target.value)} error={error?.field('language')}>
+            <option value="">{t('language.hotelDefault', { choice: t(`language.names.${me.hotel.language ?? 'en'}`) })}</option>
+            <option value="en">{t('language.names.en')}</option>
+            <option value="am">{t('language.names.am')}</option>
+          </Select>
+        )}
         {me.hotel && (
           <Select label={t('calendar.mine')} hint={t('calendar.mineHint')} value={calendar} onChange={(e) => setCalendar(e.target.value)} error={error?.field('calendar')}>
             <option value="">{t('calendar.hotelDefault', { choice: t(`calendar.modes.${me.hotel.calendar ?? 'gregorian'}`) })}</option>

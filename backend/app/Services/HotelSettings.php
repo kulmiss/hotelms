@@ -38,7 +38,10 @@ class HotelSettings
         'invoice_footer' => null,
         'receipt_paper' => 'a4', // a4 or receipt (80mm) – the default when printing (decisions.md W9)
         'calendar' => 'gregorian', // gregorian, ethiopian or both – staff can choose their own (owner, 14 Nov 2026)
+        'language' => 'en', // en or am: the default for staff and guest messages
     ];
+
+    public const LANGUAGES = ['en', 'am'];
 
     public const CALENDARS = ['gregorian', 'ethiopian', 'both'];
 

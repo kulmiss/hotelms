@@ -36,7 +36,8 @@
       "title": "Locked screen and PIN",
       "steps": [
         "If nobody uses the app for some minutes, the screen locks. This keeps guest data safe.",
-        "To open it again, type your password.", "Leaving the desk? Lock it yourself: tap your picture at the top right → Lock screen.",
+        "To open it again, type your password.",
+        "Leaving the desk? Lock it yourself: tap your picture at the top right → Lock screen.",
         "On a shared computer, another person can type their own 4-number PIN. Then the app opens for them.",
         "Set your PIN in My profile (picture at the top right → My profile). A PIN your manager set works only for clock-in; to open a shared computer, set your own."
       ]
@@ -76,7 +77,8 @@
         "Tap your picture at the top right → My profile.",
         "Change your name or phone, then tap Save.",
         "Tap Change password to choose a new password (at least 10 letters and numbers). A yellow note at the top says your password is easy to guess? Change it here.",
-        "Link Telegram if you want to get reports and alerts on your phone.", "Light or dark screen: tap the sun button at the top right."
+        "Link Telegram if you want to get reports and alerts on your phone.",
+        "Light or dark screen: tap the sun button at the top right."
       ]
     },
     "branch": {
@@ -508,6 +510,16 @@
         "To type a date in the Ethiopian calendar, tap \"Type in Ethiopian calendar\" under the date box.",
         "Printed bills always show the Gregorian date too.",
         "The admin sets the hotel's default in Settings → Hotel profile → Calendar."
+      ]
+    },
+    "amharic": {
+      "title": "Amharic (አማርኛ)",
+      "steps": [
+        "Open My profile → My language. Choose English or አማርኛ.",
+        "Before you sign in, tap English or አማርኛ at the top of the sign-in page.",
+        "The admin sets the hotel's language in Settings → Hotel profile → Language. New staff and guest messages use it.",
+        "The Amharic words are new. If a word is wrong, tell your manager or send us a message from Help → Ask us.",
+        "Your hotel's booking page has EN / አማ at the top for guests."
       ]
     },
     "gettingStarted": {

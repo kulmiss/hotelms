@@ -2815,6 +2815,13 @@
     "original": "Use the original",
     "save": "Save website"
   },
+  "language": {
+    "mine": "My language",
+    "hotelDefault": "Hotel default ({{choice}})",
+    "hotel": "Language",
+    "hotelHint": "The language for new staff and for guest messages. Each person can change it in My profile.",
+    "names": { "en": "English", "am": "አማርኛ (Amharic)" }
+  },
   "calendar": {
     "day": "Day",
     "month": "Month",

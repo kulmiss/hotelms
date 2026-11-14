@@ -38,4 +38,16 @@ class CalendarSettingTest extends TestCase
         app(HotelDefaults::class)->apply($other);
         $this->actingAs(User::factory()->withRole($other, 'hotel_admin')->create())->getJson('/api/v1/me')->assertJsonPath('hotel.calendar', 'gregorian');
     }
+
+    public function test_language_hotel_default_and_own_choice(): void
+    {
+        $hotel = Hotel::factory()->create();
+        app(HotelDefaults::class)->apply($hotel);
+        $admin = User::factory()->withRole($hotel, 'hotel_admin')->create();
+        $this->actingAs($admin)->getJson('/api/v1/me')->assertJsonPath('hotel.language', 'en')->assertJsonPath('user.language', null);
+        $profile = $this->getJson('/api/v1/settings/hotel')->json('data');
+        $this->putJson('/api/v1/settings/hotel', ['language' => 'am'] + $profile)->assertOk()->assertJsonPath('data.language', 'am');
+        $this->putJson('/api/v1/settings/hotel', ['language' => 'fr'] + $profile)->assertJsonValidationErrors('language');
+        $this->putJson('/api/v1/me', ['language' => 'en'])->assertOk()->assertJsonPath('user.language', 'en')->assertJsonPath('hotel.language', 'am');
+    }
 }

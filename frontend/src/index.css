@@ -2,6 +2,25 @@
 @import 'tw-animate-css';
 @import '@fontsource-variable/inter';
 
+/* Amharic (Ge'ez script): Noto Sans Ethiopic, SIL OFL (public/fonts/OFL-noto-sans-ethiopic.txt).
+   unicode-range = the browser downloads it only when Ethiopic letters are on the page. */
+@font-face {
+  font-family: 'Noto Sans Ethiopic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(/fonts/noto-sans-ethiopic-400.woff2) format('woff2');
+  unicode-range: U+1200-137F;
+}
+@font-face {
+  font-family: 'Noto Sans Ethiopic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500 700;
+  src: url(/fonts/noto-sans-ethiopic-600.woff2) format('woff2');
+  unicode-range: U+1200-137F;
+}
+
 /* Dark mode is controlled by the .dark class on <html> (see lib/theme.tsx). */
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -166,7 +185,7 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Inter Variable', 'Noto Sans Ethiopic', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   /* Controls: 36px with a mouse, 44px on touch screens (see :root below). */
   --spacing-touch: var(--touch);
   --animate-page-in: page-in 200ms ease-out both;

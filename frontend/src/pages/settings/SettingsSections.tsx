@@ -81,6 +81,7 @@ type Profile = {
   invoice_footer: string | null
   receipt_paper: 'a4' | 'receipt'
   calendar?: 'gregorian' | 'ethiopian' | 'both'
+  language?: 'en' | 'am'
 }
 
 export function ProfileSettings() {
@@ -126,6 +127,10 @@ function ProfileForm({ initial }: { initial: Profile }) {
           <Select label={t('settings.profile.paper')} hint={t('settings.profile.paperHint')} value={f.receipt_paper ?? 'a4'} onChange={(e) => setF({ ...f, receipt_paper: e.target.value as Profile['receipt_paper'] })}>
             <option value="a4">{t('billing.paper.a4')}</option>
             <option value="receipt">{t('billing.paper.receipt')}</option>
+          </Select>
+          <Select label={t('language.hotel')} hint={t('language.hotelHint')} value={f.language ?? 'en'} onChange={(e) => setF({ ...f, language: e.target.value as Profile['language'] })}>
+            <option value="en">{t('language.names.en')}</option>
+            <option value="am">{t('language.names.am')}</option>
           </Select>
           <Select label={t('calendar.hotel')} hint={t('calendar.hotelHint')} value={f.calendar ?? 'gregorian'} onChange={(e) => setF({ ...f, calendar: e.target.value as Profile['calendar'] })}>
             {(['gregorian', 'ethiopian', 'both'] as const).map((m) => <option key={m} value={m}>{t(`calendar.modes.${m}`)}</option>)}

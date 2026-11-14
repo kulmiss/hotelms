@@ -1,6 +1,6 @@
 import { wipeOfflineCopy } from './offline'
 import { SILENT } from './toast'
-import { setCalendarMode } from './format'
+import { applyPreferences } from './preferences'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, ApiError, post, prepareSession, put, type Me } from './api'
 
@@ -13,7 +13,7 @@ export function useMe() {
     queryFn: async (): Promise<Me | null> => {
       try {
         const me = await api<Me>('/me')
-        setCalendarMode(me.user.calendar ?? me.hotel?.calendar)
+        applyPreferences(me)
         return me
       } catch (e) {
         if (e instanceof ApiError && e.status === 401) return null

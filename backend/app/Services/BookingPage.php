@@ -87,6 +87,7 @@ class BookingPage
                 ])->values()->all(),
                 'note' => $this->settings->get(self::NOTE),
                 'powered_by' => ! $this->switches->on($hotel, 'feature.branding'),
+                'language' => (string) $this->settings->get('language', 'en'), // the hotel's default; ?lang= changes it
             ];
         });
     }
@@ -98,7 +99,7 @@ class BookingPage
             $branch = Branch::find($data['branch_id']);
             $type = isset($data['room_type_id']) ? RoomType::where('branch_id', $branch?->id)->find($data['room_type_id']) : null;
             if (! $branch || (isset($data['room_type_id']) && ! $type)) {
-                throw ValidationException::withMessages(['room_type_id' => 'Choose a room from the list.']);
+                throw ValidationException::withMessages(['room_type_id' => __('Choose a room from the list.')]);
             }
             $r = BookingRequest::create([
                 'branch_id' => $branch->id, 'room_type_id' => $type?->id, 'check_in' => $data['check_in'], 'check_out' => $data['check_out'],

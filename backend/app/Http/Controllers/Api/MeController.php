@@ -42,6 +42,7 @@ class MeController extends Controller
                 'email' => $user->email,
                 'phone' => $user->phone,
                 'calendar' => $user->calendar,
+                'language' => $user->language,
                 'is_super_admin' => $user->is_super_admin,
                 'must_change_password' => $user->must_change_password,
             ],
@@ -71,6 +72,7 @@ class MeController extends Controller
                 'default_currency' => $hotel->default_currency,
                 'timezone' => $hotel->timezone,
                 'calendar' => app(TenantContext::class)->runAs($hotel, fn () => app(HotelSettings::class)->get('calendar', 'gregorian')),
+                'language' => app(TenantContext::class)->runAs($hotel, fn () => app(HotelSettings::class)->get('language', 'en')),
                 'is_demo' => $hotel->is_demo,
                 // A "Try the demo" visit: when it ends (the screen counts down).
                 'demo_ends_at' => $request->hasSession() && $request->session()->get('demo_until') ? now()->setTimestamp((int) $request->session()->get('demo_until'))->toIso8601String() : null,
@@ -124,6 +126,7 @@ class MeController extends Controller
             'name' => ['sometimes', 'required', 'string', 'max:120'],
             'phone' => ['nullable', 'string', 'max:30'],
             'calendar' => ['sometimes', 'nullable', 'in:'.implode(',', HotelSettings::CALENDARS)],
+            'language' => ['sometimes', 'nullable', 'in:'.implode(',', HotelSettings::LANGUAGES)],
         ]);
 
         $request->user()->update($data);

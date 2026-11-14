@@ -28,6 +28,7 @@ export const GUIDE: GuideSection[] = [
       { key: 'dashboard', perm: 'dashboard.view' },
       { key: 'gettingStarted', perm: 'settings.hotel' },
       { key: 'ethiopianCalendar', perm: 'dashboard.view' },
+      { key: 'amharic', perm: 'dashboard.view' },
       { key: 'roomBoard', pic: true, perm: 'frontdesk.view' },
       { key: 'todayLists', perm: 'frontdesk.view' },
       { key: 'walkIn', pic: true, perm: 'frontdesk.walk_in' },
