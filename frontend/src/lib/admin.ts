@@ -75,6 +75,8 @@ export type PlatformSettings = {
   support_phone: string | null
   /** WhatsApp number for "Upgrade" and "Contact us" links. */
   whatsapp?: string | null
+  signup_mode?: 'off' | 'approval' | 'open'
+  signup_trial?: boolean
   demo_public: boolean
   /** How long one "Try the demo" visit lasts. */
   demo_minutes?: number
@@ -281,3 +283,28 @@ export type HotelHealth = {
 }
 export const usePlatformReport = () => useQuery({ queryKey: ['admin', 'reports', 'platform'], queryFn: () => api<{ data: PlatformReport }>('/admin/reports/platform') })
 export const useHotelHealth = () => useQuery({ queryKey: ['admin', 'reports', 'health'], queryFn: () => api<{ data: HotelHealth[]; counts: Record<string, number> | [] }>('/admin/reports/hotel-health') })
+
+/** Hotels that registered themselves (Super Admin → Pending hotels). */
+export type Signup = {
+  id: number
+  name: string
+  city: string | null
+  phone: string | null
+  email: string | null
+  owner_name: string | null
+  rooms: number | null
+  signup_status: 'unverified' | 'pending' | 'approved' | 'rejected'
+  created_at: string | null
+  email_confirmed: boolean | null
+  decided_at: string | null
+  reason: string | null
+}
+export const useSignups = (status: string) =>
+  useQuery({
+    queryKey: ['admin', 'signups', status],
+    queryFn: () => api<{ data: Signup[]; counts: Record<string, number>; mode: string }>(`/admin/signups?status=${status}`),
+  })
+export const useDecideSignup = () =>
+  useAdminMutation(({ id, approve, reason }: { id: number; approve: boolean; reason?: string }) =>
+    post<{ message: string }>(`/admin/signups/${id}/${approve ? 'approve' : 'reject'}`, approve ? {} : { reason }),
+  )

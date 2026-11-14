@@ -21,12 +21,19 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'name', 'legal_name', 'tin', 'vat_number', 'email', 'phone', 'address', 'city', 'logo_path',
     'default_currency', 'timezone', 'status', 'plan_id', 'subscription_ends_at',
     'trial_ends_at', 'trial_plan_id', 'billing_cycle', 'custom_price', 'suspended_at', 'suspend_reason', 'is_demo',
+    'signup_status', 'signup', 'signup_decided_at', 'signup_decided_by', 'signup_reason',
 ])]
 class Hotel extends Model
 {
     use HasFactory, LogsActivity, SoftDeletes;
 
     public const STATUSES = ['trial', 'active', 'grace', 'suspended'];
+
+    /** Registered itself and is not (yet) allowed to work: email not confirmed, waiting for approval, or refused. */
+    public function signupLocked(): bool
+    {
+        return in_array($this->signup_status, ['unverified', 'pending', 'rejected'], true);
+    }
 
     protected function casts(): array
     {
@@ -38,6 +45,8 @@ class Hotel extends Model
             'custom_price' => 'decimal:2',
             'suspended_at' => 'datetime',
             'is_demo' => 'boolean',
+            'signup' => 'array',
+            'signup_decided_at' => 'datetime',
         ];
     }
 

@@ -10,7 +10,7 @@ import { Field } from '@/components/ui/Field'
 import { ApiError, post, prepareSession } from '@/lib/api'
 import { BrandMark, useBrand } from '@/lib/brand'
 
-function Frame({ title, intro, children }: { title: string; intro: string; children: ReactNode }) {
+export function Frame({ title, intro, children }: { title: string; intro: string; children: ReactNode }) {
   const brand = useBrand()
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-y-4 px-4 py-8">

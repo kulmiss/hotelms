@@ -11,6 +11,9 @@ export type Branding = {
   support_phone: string | null
   logo_url: string | null
   demo_public?: boolean
+  whatsapp?: string | null
+  /** Hotel sign-up: off / approval / open (Super Admin → Settings → Sign-up). */
+  signup_mode?: 'off' | 'approval' | 'open'
 }
 
 const FALLBACK: Branding = {
@@ -86,4 +89,11 @@ export function BrandMark({ className, ...props }: ImgHTMLAttributes<HTMLImageEl
       <span className="text-[0.6em] leading-none">{name.slice(0, 1).toUpperCase()}</span>
     </span>
   )
+}
+
+/** Contact link used when sign-up is off ("Contact us" on WhatsApp, else email). */
+export function contactHref(raw: { whatsapp?: string | null; support_email: string | null }): string | null {
+  const wa = raw.whatsapp?.replace(/[^0-9]/g, '')
+  if (wa) return `https://wa.me/${wa}`
+  return raw.support_email ? `mailto:${raw.support_email}` : null
 }

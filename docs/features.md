@@ -117,6 +117,17 @@ staff only; people who have it keep it), `feature.custom_reports`, `feature.bran
 A hotel switch or `limit.*` switch overrides the plan for one hotel. Over a limit = refusal with `PlanLimits::message` (WhatsApp /
 email from platform settings `whatsapp`, `support_email`); nothing is removed. No online billing. Tests: `Admin/BalancedPlansTest`.
 
+## Hotel sign-up
+
+Super Admin → Settings → Sign-up (Owner only): **Off** (default; the website says "Contact us") / **Approval** / **Open**.
+A new hotel gets the Free plan (a trial only when "Give new hotels a free trial" is on), one branch and the owner as Hotel Admin
+with their own password. `hotels.signup_status`: `unverified` → (`pending` →) `approved`, or `rejected`; `null` = made by the team.
+Sign-in is refused until the email is confirmed (`email_unverified`, with "Send the link again"), while waiting (`signup_pending`)
+and when refused (`signup_rejected`). Pending hotels: approve, or refuse with a reason; both are emailed. Security log:
+`signup`, `signup_verified`, `signup_approved`, `signup_rejected`. No captcha, no cookies before the form is sent: hidden field +
+form time + rate limit. Code: `Services/Signup/SelfSignup`, `SignupController`, `pages/SignupPages.tsx`,
+`pages/admin/SignupsPage.tsx`. Tests: `Auth/SelfSignupTest`.
+
 ## Super Admin (HotelMS team)
 
 Command center, hotels (create with plan/trial, suspend, close, reopen, notes, live data with a reason, log in as hotel),

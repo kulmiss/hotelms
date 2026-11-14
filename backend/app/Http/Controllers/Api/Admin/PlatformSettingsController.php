@@ -19,7 +19,7 @@ use Throwable;
 class PlatformSettingsController extends Controller
 {
     /** Settings only the Owner may change (besides the mail server). */
-    private const OWNER_ONLY = ['platform_name', 'brand_color', 'login_message', 'email_from_name', 'email_footer', 'telegram_bot_token', 'telegram_bot_username', 'two_factor_admins'];
+    private const OWNER_ONLY = ['platform_name', 'brand_color', 'login_message', 'email_from_name', 'email_footer', 'telegram_bot_token', 'telegram_bot_username', 'two_factor_admins', 'signup_mode', 'signup_trial'];
 
     public function show(): JsonResponse
     {
@@ -35,6 +35,8 @@ class PlatformSettingsController extends Controller
             'whatsapp' => ['sometimes', 'nullable', 'string', 'max:30', 'regex:/^\+?[0-9 ]{6,20}$/'],
             'demo_public' => ['sometimes', 'boolean'],
             'demo_minutes' => ['sometimes', 'integer', 'between:5,480'],
+            'signup_mode' => ['sometimes', 'in:off,approval,open'],
+            'signup_trial' => ['sometimes', 'boolean'],
             'two_factor_admins' => ['sometimes', 'boolean'],
             'default_trial_days' => ['sometimes', 'integer', 'between:0,365'],
             'default_trial_plan_id' => ['sometimes', 'nullable', 'exists:plans,id'],

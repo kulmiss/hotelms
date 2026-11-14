@@ -30,7 +30,7 @@ class AccessMatrixTest extends TestCase
     private const PUBLIC = [
         'GET api/v1/health', 'GET api/v1/branding', 'GET api/v1/branding/manifest', 'POST api/v1/auth/login', 'POST api/v1/demo/login',
         'POST api/v1/auth/two-factor', 'POST api/v1/auth/forgot-password', 'POST api/v1/auth/reset-password', 'POST api/v1/auth/two-factor/resend',
-        'POST api/v1/auth/confirm-email',
+        'POST api/v1/auth/confirm-email', 'GET api/v1/signup', 'POST api/v1/signup', 'POST api/v1/signup/verify', 'POST api/v1/signup/resend',
     ];
 
     /** Signed in, and the controller decides (own data, or a permission checked inside – each has its own test). */

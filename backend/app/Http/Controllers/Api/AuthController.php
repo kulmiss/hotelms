@@ -15,6 +15,7 @@ use App\Services\Security\SecurityNotices;
 use App\Services\Security\TwoFactor;
 use App\Services\Watchdog\WatchEvents;
 use App\Support\PasswordRules;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -103,6 +104,10 @@ class AuthController extends Controller
         if (! $user->isActive()) {
             throw ValidationException::withMessages(['email' => 'This account is disabled. Please contact your hotel admin.']);
         }
+        // A hotel that registered itself (owner, 14 Nov 2026): email confirmed first, then (in Approval mode) approved.
+        if ($user->hotel?->signupLocked()) {
+            $this->signupLocked($user);
+        }
         if ($user->temporaryPasswordExpired()) {
             throw ValidationException::withMessages(['email' => 'This temporary password has expired (it works for 7 days). Ask your manager to send you a new one.']);
         }
@@ -121,6 +126,17 @@ class AuthController extends Controller
         }
 
         return $this->complete($request, $user, $request->boolean('remember'), $token);
+    }
+
+    private function signupLocked(User $user): never
+    {
+        [$code, $message] = match (true) {
+            $user->hotel->signup_status === 'rejected' => ['signup_rejected', 'This sign-up was not approved. Check your email, or contact us.'],
+            $user->email_verified_at === null => ['email_unverified', 'Please confirm your email first: open the link we sent you.'],
+            default => ['signup_pending', 'Your hotel is waiting for approval. We will email you, usually within one working day.'],
+        };
+
+        throw new HttpResponseException(response()->json(['message' => $message, 'code' => $code, 'errors' => ['email' => [$message]]], 422));
     }
 
     /** Second step: a code from the app or email, or a recovery code. */

@@ -94,6 +94,7 @@ export const devNav: NavItem[] = [
 export const adminNav: NavItem[] = [
   { key: 'commandCenter', path: '/admin', icon: House, phase: 1 },
   { key: 'hotels', path: '/admin/hotels', icon: Building2, group: 'customers', phase: 1 },
+  { key: 'signups', path: '/admin/signups', icon: BadgeCheck, group: 'customers', phase: 8, permission: 'hotels.create' },
   { key: 'support', path: '/admin/support', icon: LifeBuoy, group: 'customers', phase: 8, permission: 'support.answer' },
   { key: 'platformReports', path: '/admin/reports', icon: ChartColumn, group: 'customers', phase: 1 },
   { key: 'plans', path: '/admin/plans', icon: Tag, group: 'billing', phase: 1 },

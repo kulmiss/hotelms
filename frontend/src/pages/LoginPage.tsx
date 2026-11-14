@@ -9,6 +9,7 @@ import { ApiError } from '@/lib/api'
 import { useDemoLogin, useLogin, useMe, useResendCode, useTwoFactorLogin } from '@/lib/auth'
 import { BrandMark, useBrand } from '@/lib/brand'
 import { clearDemoOver, isDemoOver } from '@/lib/demo'
+import { ResendLink } from './SignupPages'
 
 export function LoginPage() {
   const { t } = useTranslation()
@@ -63,6 +64,7 @@ export function LoginPage() {
         ) : (
         <form className="flex flex-col gap-y-6" onSubmit={submit} noValidate>
           {fieldError && <Alert>{fieldError}</Alert>}
+          {error?.code === 'email_unverified' && <ResendLink email={email} />}
           {generalError && <Alert>{generalError}</Alert>}
           <Field
             label={t('login.email')}
@@ -96,6 +98,11 @@ export function LoginPage() {
           <Link to="/forgot-password" className="text-center text-sm font-medium text-muted hover:opacity-75">
             {t('login.forgot')}
           </Link>
+          {brand.raw.signup_mode && brand.raw.signup_mode !== 'off' && (
+            <Link to="/register" className="text-center text-sm font-medium text-accent hover:opacity-75">
+              {t('signup.registerLink')}
+            </Link>
+          )}
         </form>
         )}
       </Card>

@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\PlatformActivityController;
 use App\Http\Controllers\Api\Admin\PlatformContentController;
 use App\Http\Controllers\Api\Admin\PlatformReportController;
 use App\Http\Controllers\Api\Admin\PlatformSettingsController;
+use App\Http\Controllers\Api\Admin\SignupController as AdminSignupController;
 use App\Http\Controllers\Api\Admin\SubscriptionPaymentController;
 use App\Http\Controllers\Api\Admin\SupportController as AdminSupportController;
 use App\Http\Controllers\Api\Admin\SwitchController;
@@ -63,6 +64,7 @@ use App\Http\Controllers\Api\Settings\RateRuleController;
 use App\Http\Controllers\Api\Settings\RoomController;
 use App\Http\Controllers\Api\Settings\RoomTypeController;
 use App\Http\Controllers\Api\Settings\TaxController;
+use App\Http\Controllers\Api\SignupController;
 use App\Http\Controllers\Api\SmartController;
 use App\Http\Controllers\Api\SupportController;
 use App\Http\Controllers\Api\WhatsNewController;
@@ -83,6 +85,11 @@ Route::post('/auth/forgot-password', [PasswordResetController::class, 'send'])->
 Route::post('/auth/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:login');
 Route::post('/auth/two-factor/resend', [AuthController::class, 'resendCode'])->middleware('throttle:two-factor');
 Route::post('/auth/confirm-email', [AuthController::class, 'confirmEmail'])->middleware('throttle:login');
+// Hotels register themselves (Super Admin → Settings → Sign-up).
+Route::get('/signup', [SignupController::class, 'form']);
+Route::post('/signup', [SignupController::class, 'store'])->middleware('throttle:signup');
+Route::post('/signup/verify', [SignupController::class, 'verify'])->middleware('throttle:login');
+Route::post('/signup/resend', [SignupController::class, 'resend'])->middleware('throttle:login');
 
 Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant', 'session.rules', 'heavy'])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
@@ -497,6 +504,9 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
             Route::get('/settings', [PlatformSettingsController::class, 'show']);
 
             Route::middleware('platform:hotels.create')->group(function () {
+                Route::get('/signups', [AdminSignupController::class, 'index']);
+                Route::post('/signups/{id}/approve', [AdminSignupController::class, 'approve']);
+                Route::post('/signups/{id}/reject', [AdminSignupController::class, 'reject']);
                 Route::post('/hotels', [AdminHotelController::class, 'store']);
                 Route::put('/hotels/{hotel}', [AdminHotelController::class, 'update']);
                 Route::post('/hotels/{hotel}/trial', [AdminHotelController::class, 'setTrial']);

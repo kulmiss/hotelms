@@ -25,6 +25,10 @@ lists the route groups; the file itself is the exact, complete list (with each r
 
 Public: `GET /health`, `GET /branding`, `GET /branding/manifest`, `POST /auth/login`, `/auth/two-factor`, `/auth/forgot-password`,
 `/auth/reset-password`, `/auth/confirm-email {token}` (the link sent to a new sign-in email), `/demo/login` (only when the public demo is on).
+Sign-up: `GET /signup` (mode + form time), `POST /signup` (limit `signup`: 5 an hour, 20 a day per address; honeypot `website`,
+`form_token` at least 4 s and at most 2 h old; an email that has an account gets the same answer), `POST /signup/verify {token}`,
+`POST /signup/resend {email}` (quiet answer). Super Admin: `GET /admin/signups?status=`, `POST /admin/signups/{id}/approve`,
+`POST /admin/signups/{id}/reject {reason}` (`platform:hotels.create`).
 Sign-in limits: 10 wrong passwords for one email pause it 15 → 30 → 60 min (`422`, same for unknown emails); a sign-in ends after
 12 hours (`401 code: session_expired`, not for "Remember me" – staff only, 30 days); a locked screen answers `423 code: screen_locked`
 to everything but `POST /auth/unlock`, `/auth/pin-switch`, `/auth/logout`, `/auth/lock` and `GET /me`.

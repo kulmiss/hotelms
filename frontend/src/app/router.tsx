@@ -24,6 +24,7 @@ const PlansPage = lazy(() => pages.plans().then((m) => ({ default: m.PlansPage }
 const PlatformSettingsPage = lazy(() => pages.platformSettings().then((m) => ({ default: m.PlatformSettingsPage })))
 const SwitchesPage = lazy(() => pages.switches().then((m) => ({ default: m.SwitchesPage })))
 const SupportInboxPage = lazy(() => pages.support().then((m) => ({ default: m.SupportInboxPage })))
+const SignupsPage = lazy(() => pages.signups().then((m) => ({ default: m.SignupsPage })))
 const SystemPage = lazy(() => pages.system().then((m) => ({ default: m.SystemPage })))
 const TeamPage = lazy(() => pages.team().then((m) => ({ default: m.TeamPage })))
 const PlatformActivityPage = lazy(() => pages.platformActivity().then((m) => ({ default: m.PlatformActivityPage })))
@@ -31,6 +32,8 @@ const HelpPage = lazy(() => pages.help().then((m) => ({ default: m.HelpPage })))
 const PlatformReportsPage = lazy(() => pages.platformReports().then((m) => ({ default: m.PlatformReportsPage })))
 const ForgotPasswordPage = lazy(() => import('@/pages/PasswordResetPages').then((m) => ({ default: m.ForgotPasswordPage })))
 const ResetPasswordPage = lazy(() => import('@/pages/PasswordResetPages').then((m) => ({ default: m.ResetPasswordPage })))
+const RegisterPage = lazy(() => import('@/pages/SignupPages').then((m) => ({ default: m.RegisterPage })))
+const VerifyEmailPage = lazy(() => import('@/pages/SignupPages').then((m) => ({ default: m.VerifyEmailPage })))
 const ConfirmEmailPage = lazy(() => import('@/pages/PasswordResetPages').then((m) => ({ default: m.ConfirmEmailPage })))
 const TwoStepPage = lazy(() => pages.twoStep().then((m) => ({ default: m.TwoStepPage })))
 const DevicesPage = lazy(() => pages.devices().then((m) => ({ default: m.DevicesPage })))
@@ -134,6 +137,8 @@ export const routes = [
       { path: '/forgot-password', element: page(<ForgotPasswordPage />) },
       { path: '/reset-password', element: page(<ResetPasswordPage />) },
       { path: '/confirm-email', element: page(<ConfirmEmailPage />) },
+      { path: '/register', element: page(<RegisterPage />) },
+      { path: '/verify-email', element: page(<VerifyEmailPage />) },
       {
         element: <RequireAuth />,
         children: [
@@ -286,6 +291,7 @@ export const routes = [
                   { path: 'reports', element: page(<PlatformReportsPage />) },
                   { path: 'switches', element: page(<SwitchesPage />) },
                   { path: 'support', element: page(<SupportInboxPage />) },
+                  { path: 'signups', element: page(<SignupsPage />) },
                   { path: 'system', element: page(<SystemPage />) },
                   { path: 'team', element: page(<TeamPage />) },
                   { path: 'activity', element: page(<PlatformActivityPage />) },

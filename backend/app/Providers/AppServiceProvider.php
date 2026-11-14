@@ -62,6 +62,11 @@ class AppServiceProvider extends ServiceProvider
         // live screens poll every few seconds – far below this. One stolen session cannot pull data endlessly.
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(300)->by('api|'.($request->user()?->id ?? $request->ip()))
             ->response(fn () => response()->json(['message' => 'Too many requests in a short time. Wait a minute and try again.', 'code' => 'too_many'], 429)));
+        // Hotel sign-up (no captcha, no cookies): 5 an hour and 20 a day from one address.
+        RateLimiter::for('signup', fn (Request $request) => [
+            Limit::perHour(5)->by('signup|'.$request->ip()),
+            Limit::perDay(20)->by('signup-day|'.$request->ip()),
+        ]);
         RateLimiter::for('login', fn (Request $request) => [
             Limit::perMinute(5)->by(strtolower(is_string($request->input('email')) ? $request->input('email') : '').'|'.$request->ip()),
             Limit::perMinute(30)->by('login-ip|'.$request->ip()),
