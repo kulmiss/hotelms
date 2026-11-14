@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PlatformSetting;
 use App\Services\ActivityLogger;
+use App\Services\Landing\LandingContent;
 use App\Services\Notify\MailSettings;
 use App\Support\SafeHost;
 use App\Support\SafeImage;
@@ -96,6 +97,8 @@ class PlatformSettingsController extends Controller
                 'new' => $hide(array_intersect_key($data, array_flip($changed))),
             ]);
         }
+
+        LandingContent::forget(); // name, colour, contacts and sign-up mode show on the website
 
         return response()->json(['data' => $this->present()]);
     }

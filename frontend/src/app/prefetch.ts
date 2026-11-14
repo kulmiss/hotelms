@@ -61,7 +61,7 @@ export const pages = {
 }
 
 const byPath: Record<string, () => Promise<unknown>> = {
-  '/': pages.dashboard,
+  '/dashboard': pages.dashboard,
   '/admin': pages.adminDashboard,
   '/admin/hotels': pages.hotels,
   '/admin/plans': pages.plans,

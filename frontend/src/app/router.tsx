@@ -100,6 +100,12 @@ const DesignSystemPage = lazy(() => pages.designSystem().then((m) => ({ default:
 const page = (node: ReactNode) => <Suspense fallback={<ProgressBar />}>{node}</Suspense>
 
 /** The HotelMS team goes to the Super Admin area; hotel staff to their hotel. */
+/** "/" inside the app: the dashboard, keeping ?tab=… and other choices. */
+function ToDashboard() {
+  const { search } = useLocation()
+  return <Navigate to={`/dashboard${search}`} replace />
+}
+
 function HomeRedirect() {
   const me = useMe()
   const can = useCan()
@@ -169,7 +175,9 @@ export const routes = [
             path: '/',
             element: <AppShell />,
             children: [
-              { index: true, element: <HomeRedirect /> },
+              // "/" is the public website on the server; inside the app it opens the dashboard.
+              { index: true, element: <ToDashboard /> },
+              { path: 'dashboard', element: <HomeRedirect /> },
               ...mainNav
                 .filter((item) => !item.built)
                 .map((item) => ({ path: item.path.slice(1), element: <PlaceholderPage item={item} /> })),

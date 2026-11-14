@@ -56,7 +56,7 @@ export type NavItem = {
 export const REPORTS_PERMISSIONS = ['reports.revenue', 'reports.occupancy', 'reports.payments', 'reports.outstanding', 'reports.tax', 'reports.guests', 'reports.cancellations', 'reports.branch_compare', 'reports.my_shift', 'reports.my_work', 'reports.forecast', 'reports.audit', 'reports.accounting_export', 'reports.targets_manage', 'reports.custom', 'reports.schedule', 'alerts.manage']
 
 export const mainNav: NavItem[] = [
-  { key: 'dashboard', path: '/', icon: House, phase: 6, built: true },
+  { key: 'dashboard', path: '/dashboard', icon: House, phase: 6, built: true },
   { key: 'roomBoard', path: '/rooms', icon: LayoutGrid, group: 'frontDesk', phase: 4, permission: 'frontdesk.view', built: true },
   { key: 'chargeRoom', path: '/charge', icon: ShoppingBag, group: 'frontDesk', phase: 4, permission: 'charges.room', built: true },
   { key: 'reservations', path: '/reservations', icon: CalendarDays, group: 'frontDesk', phase: 3, permission: 'reservations.view', built: true },

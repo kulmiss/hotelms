@@ -26,7 +26,7 @@ export function LoginPage() {
   const [remember, setRemember] = useState(true)
   const [step, setStep] = useState<{ method: 'app' | 'email'; email?: string | null } | null>(null)
 
-  const from = (location.state as { from?: string } | null)?.from ?? '/'
+  const from = (location.state as { from?: string } | null)?.from ?? '/dashboard'
 
   if (me.data) return <Navigate to={from} replace />
 

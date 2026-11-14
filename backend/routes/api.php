@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Admin\HotelController as AdminHotelController;
 use App\Http\Controllers\Api\Admin\HotelInsightController;
 use App\Http\Controllers\Api\Admin\HotelUserController;
 use App\Http\Controllers\Api\Admin\ImpersonationController;
+use App\Http\Controllers\Api\Admin\LandingContentController;
 use App\Http\Controllers\Api\Admin\PlanController as AdminPlanController;
 use App\Http\Controllers\Api\Admin\PlatformActivityController;
 use App\Http\Controllers\Api\Admin\PlatformContentController;
@@ -495,6 +496,9 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
             Route::middleware('platform:content.manage')->group(function () {
                 Route::get('/content', [PlatformContentController::class, 'content']);
                 Route::put('/content', [PlatformContentController::class, 'saveContent']);
+                Route::get('/landing', [LandingContentController::class, 'show']);
+                Route::put('/landing', [LandingContentController::class, 'update']);
+                Route::post('/landing/picture', [LandingContentController::class, 'picture']);
             });
             Route::middleware('platform:team.manage')->group(function () {
                 Route::get('/team', [TeamController::class, 'index']);

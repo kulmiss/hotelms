@@ -1,6 +1,6 @@
 # The web app (React build, copied here by deploy/package.sh as app.html + assets/)
-# and the API live on the same domain. "/" opens the app when it is there.
-DirectoryIndex app.html index.php
+# and the API live on the same domain. "/" is the public website (made by Laravel); the app starts at /dashboard.
+DirectoryIndex index.php
 
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options "nosniff"
@@ -59,6 +59,10 @@ DirectoryIndex app.html index.php
 
     # API, sign-in cookie and health check: Laravel.
     RewriteCond %{REQUEST_URI} ^/(api|sanctum|up)(/|$)
+    RewriteRule ^ index.php [L]
+
+    # The public website: home page, terms, privacy, robots.txt and sitemap (Laravel, no cookies).
+    RewriteCond %{REQUEST_URI} ^/(terms|privacy|robots\.txt|sitemap\.xml)?$
     RewriteRule ^ index.php [L]
 
     # Any other page of the web app (e.g. /reservations/12): the React app, when it is installed.

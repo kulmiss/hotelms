@@ -9,6 +9,7 @@ import { Select } from '@/components/ui/Select'
 import { ApiError } from '@/lib/api'
 import { useContent, useSaveContent, type PlatformContent } from '@/lib/platform'
 import { TextArea } from '@/pages/help/HelpPage'
+import { WebsiteContent } from './WebsiteContent'
 
 const errorOf = (e: unknown) => (e instanceof ApiError ? (Object.values(e.errors)[0]?.[0] ?? e.message) : e ? String(e) : null)
 
@@ -30,7 +31,8 @@ export function ContentPage() {
   }
 
   return (
-    <form onSubmit={submit} className="mx-auto flex max-w-4xl flex-col gap-6">
+    <div className="flex flex-col gap-6">
+    <form onSubmit={submit} className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       <PageHeader title={t('nav.content')} subtitle={t('content.subtitle')} />
       {save.error && <Alert>{errorOf(save.error)}</Alert>}
       <Card className="flex flex-col gap-3">
@@ -67,5 +69,7 @@ export function ContentPage() {
         </Button>
       </div>
     </form>
+    <WebsiteContent />
+    </div>
   )
 }

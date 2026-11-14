@@ -17,7 +17,7 @@ export function NoAccessPage() {
       <h1 className="text-lg font-semibold">{t('noAccess.title')}</h1>
       <p className="text-sm text-muted">{t('noAccess.text')}</p>
       <div className="mt-6 flex gap-4">
-        <Link to="/" className={buttonClass()}>
+        <Link to="/dashboard" className={buttonClass()}>
           {t('noAccess.back')}
         </Link>
       </div>

@@ -117,6 +117,20 @@ staff only; people who have it keep it), `feature.custom_reports`, `feature.bran
 A hotel switch or `limit.*` switch overrides the plan for one hotel. Over a limit = refusal with `PlanLimits::message` (WhatsApp /
 email from platform settings `whatsapp`, `support_email`); nothing is removed. No online billing. Tests: `Admin/BalancedPlansTest`.
 
+## Public website
+
+`/` is a page made by Laravel (`Web/LandingController`, `resources/views/landing/*`, `Services/Landing/LandingContent`): plain
+HTML + inline CSS, **no script, no cookies, no tracking, no outside files**, its own CSP (`default-src 'none'`). Light/dark from the
+device. Sections: hero (real demo screenshot in a device frame), short true promises, features, how it works, screens, plan cards
+from the database (`is_public` plans; Pro highlighted; monthly/yearly toggle in CSS; comparison table from the plans' real limits and
+switches), security and privacy, questions, hidden reviews, final invitation, footer (WhatsApp, email, Terms, Privacy, security.txt).
+"Register" only when sign-up is not Off, else "Contact us" (WhatsApp / email). Super Admin → Content → Website edits headline,
+subline, sections, questions, real reviews and pictures (`/api/v1/admin/landing`, `platform:content.manage`). A visitor who is
+signed in (read from their session cookie, no new cookie) goes to `/dashboard`. The app's dashboard moved to `/dashboard`; `/` inside
+the app opens it. `/robots.txt`, `/sitemap.xml`, Open Graph picture `public/landing/og.png`. Pictures in `public/landing/` are real
+screens of the demo hotel (WebP, 640/960/1280 wide). Speed budget checked in CI (`.github/workflows/lighthouse.yml`,
+`lighthouserc.json`): Lighthouse mobile ≥ 95 in all four categories, LCP ≤ 1.5 s. Tests: `Web/LandingPageTest`.
+
 ## Getting started (new hotels)
 
 After the first sign-in a Hotel Admin goes through the setup walkthrough (`/setup`, `HotelSetup`). Then the dashboard shows a

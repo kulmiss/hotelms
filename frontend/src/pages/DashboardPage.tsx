@@ -159,7 +159,7 @@ function QuickLinks() {
   const me = useMe()
   const can = useCan()
   const modules = me.data?.hotel?.modules ?? []
-  const items = mainNav.filter((item) => item.path !== '/' && can(item.permission) && (!item.module || modules.includes(NAV_MODULES[item.module])))
+  const items = mainNav.filter((item) => item.path !== '/dashboard' && can(item.permission) && (!item.module || modules.includes(NAV_MODULES[item.module])))
   if (!items.length) return null
   return (
     <div className="flex flex-col gap-3">

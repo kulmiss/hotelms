@@ -12,7 +12,7 @@ export function NotFoundPage() {
       </span>
       <h1 className="font-medium">{t('notFound.title')}</h1>
       <div className="mt-6 flex gap-4">
-        <Link to="/" className={buttonClass()}>
+        <Link to="/dashboard" className={buttonClass()}>
           {t('notFound.back')}
         </Link>
       </div>
