@@ -7,18 +7,54 @@ export function money(amount: string | number | null | undefined, currency = 'ET
   return `${sign}${currency} ${digits}.${cents.padEnd(2, '0').slice(0, 2)}`
 }
 
+import type { CalendarMode } from './api'
+import { formatEthiopian } from './ethiopian'
+
+/**
+ * Which calendar dates are shown in (the person's choice, else the hotel's; set when /me loads).
+ * Gregorian only / Ethiopian only / both (owner, 14 Nov 2026). The server always stores Gregorian.
+ */
+let calendar: CalendarMode = 'gregorian'
+let calendarLang = 'en'
+export function setCalendarMode(mode: CalendarMode | null | undefined, lang = 'en') {
+  calendar = mode === 'ethiopian' || mode === 'both' ? mode : 'gregorian'
+  calendarLang = lang
+}
+export const calendarMode = () => calendar
+
 /** "2026-11-30" → "30 Nov 2026" (dates stay as written; no timezone shifts). */
-export function date(value: string | null | undefined): string {
-  if (!value) return '—'
+export function gregorianDate(value: string): string {
   const [y, m, d] = value.slice(0, 10).split('-').map(Number)
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   return `${d} ${months[m - 1]} ${y}`
 }
 
+/** A date in the chosen calendar: "30 Nov 2026", "21 Hidar 2019 EC" or "30 Nov 2026 · 21 Hidar 2019". */
+export function date(value: string | null | undefined): string {
+  if (!value) return '—'
+  if (calendar === 'gregorian') return gregorianDate(value)
+  const ec = formatEthiopian(value.slice(0, 10), calendarLang)
+  return calendar === 'ethiopian' ? `${ec} EC` : `${gregorianDate(value)} · ${ec}`
+}
+
+/** On printed bills and cards: the Gregorian date is always there (tax papers), the Ethiopian one next to it when chosen. */
+export function printDate(value: string | null | undefined): string {
+  if (!value) return '—'
+  return calendar === 'gregorian' ? gregorianDate(value) : `${gregorianDate(value)} (${formatEthiopian(value.slice(0, 10), calendarLang)})`
+}
+
+/** The local calendar day of a moment ("2026-11-06" in the viewer's clock). */
+function localDay(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 /** A moment in time in the viewer's clock: "6 Nov 2026, 15:07" (same look on every screen). */
 export function dateTime(iso: string | null | undefined): string {
   if (!iso) return '—'
-  return new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  const d = new Date(iso)
+  const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+  if (calendar === 'gregorian') return d.toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return `${date(localDay(d))}, ${time}`
 }
 
 /** Free disk space: "950 GB free" rather than "975970 MB". */

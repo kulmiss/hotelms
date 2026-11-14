@@ -20,6 +20,7 @@
     <li>Sign-ins and security events (time, device, network address): to protect accounts and find misuse. Kept for <strong>one year</strong>, then deleted.</li>
     <li>The activity log of changes in the hotel (who did what, when): so the hotel can check its own work.</li>
     <li>The hotel's work data, including guest data: only to provide the service to that hotel.</li>
+    <li>Requests from a hotel's booking page: what the guest typed, for the hotel to answer. We keep no network address or cookie of guests; only a short-lived counter that limits how many requests one network can send.</li>
   </ul>
   <p>We never sell data, never show ads, and never use a hotel's guest data for our own purposes.</p>
 

@@ -17,6 +17,7 @@ use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 /** A hotel's public booking page (owner, 14 Nov 2026, "2a"): off by default, requests only, no cookies, "Powered by" on Free. */
@@ -79,6 +80,9 @@ class BookingPageTest extends TestCase
 
         $req = BookingRequest::withoutGlobalScope('hotel')->firstOrFail();
         $this->assertSame([$this->hotel->id, 'new', 'Abebe Kebede', $this->type->id], [$req->hotel_id, $req->status, $req->name, $req->room_type_id]);
+        // No network address is kept for guests.
+        $this->assertFalse(Schema::hasColumn('booking_requests', 'ip'));
+        $this->assertStringNotContainsString('127.0.0.1', json_encode(DB::table('booking_requests')->first()));
         $this->assertTrue(AppNotification::where('user_id', $receptionist->id)->where('source', 'booking_request')->exists());
 
         $this->actingAs($receptionist)->getJson('/api/v1/booking-requests')->assertOk()->assertJsonPath('data.0.name', 'Abebe Kebede')->assertJsonPath('new', 1);

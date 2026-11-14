@@ -18,6 +18,7 @@ use App\Services\Security\SecurityNotices;
 use App\Services\Security\TwoFactor;
 use App\Services\Switches;
 use App\Support\PasswordRules;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -40,6 +41,7 @@ class MeController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'phone' => $user->phone,
+                'calendar' => $user->calendar,
                 'is_super_admin' => $user->is_super_admin,
                 'must_change_password' => $user->must_change_password,
             ],
@@ -68,6 +70,7 @@ class MeController extends Controller
                 'status' => $hotel->status,
                 'default_currency' => $hotel->default_currency,
                 'timezone' => $hotel->timezone,
+                'calendar' => app(TenantContext::class)->runAs($hotel, fn () => app(HotelSettings::class)->get('calendar', 'gregorian')),
                 'is_demo' => $hotel->is_demo,
                 // A "Try the demo" visit: when it ends (the screen counts down).
                 'demo_ends_at' => $request->hasSession() && $request->session()->get('demo_until') ? now()->setTimestamp((int) $request->session()->get('demo_until'))->toIso8601String() : null,
@@ -118,8 +121,9 @@ class MeController extends Controller
     public function update(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
+            'name' => ['sometimes', 'required', 'string', 'max:120'],
             'phone' => ['nullable', 'string', 'max:30'],
+            'calendar' => ['sometimes', 'nullable', 'in:'.implode(',', HotelSettings::CALENDARS)],
         ]);
 
         $request->user()->update($data);

@@ -10,7 +10,8 @@ import { LoadFailed } from '@/components/ui/LoadFailed'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { useMe } from '@/lib/auth'
 import { cn } from '@/lib/cn'
-import { date } from '@/lib/format'
+import { EC_MONTHS, toEthiopian } from '@/lib/ethiopian'
+import { calendarMode, date } from '@/lib/format'
 import { addDays, localDate, localTime, sleepingOn as sleeping, STATUS_TONES, today, useCalendar, type ReservationStatus } from '@/lib/front'
 
 const CELL: Record<ReservationStatus, string> = {
@@ -81,7 +82,10 @@ export function RoomCalendarPage() {
             const arriving = night && localDate(night.check_in_at) === d
             return (
               <div key={d} className={cn('flex min-h-24 flex-col gap-1 border-b border-r border-border p-1.5', d === today() && 'ring-2 ring-primary ring-inset')}>
-                <span className={cn('text-xs font-semibold', d === today() ? 'text-accent-text' : 'text-text')}>{Number(d.slice(8, 10))}</span>
+                <span className={cn('text-xs font-semibold', d === today() ? 'text-accent-text' : 'text-text')}>
+                  {calendarMode() === 'ethiopian' ? toEthiopian(d).day : Number(d.slice(8, 10))}
+                  {calendarMode() === 'both' && <span className="ml-1 font-normal text-muted">{ecShort(d)}</span>}
+                </span>
                 {leaving && (
                   <Link to={`/reservations/${leaving.reservation_id}`} className="truncate text-xs text-muted hover:underline">
                     ← {t('roomCal.leaves', { guest: leaving.guest ?? leaving.code })}
@@ -142,5 +146,19 @@ function shiftMonth(first: string, n: number): string {
 }
 
 function monthName(first: string): string {
-  return new Date(`${first}T00:00:00`).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+  const greg = new Date(`${first}T00:00:00`).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+  if (calendarMode() === 'gregorian') return greg
+  // A Gregorian month spans two Ethiopian months: "November 2026 · Tikimt – Hidar 2019".
+  const [y, m] = first.split('-').map(Number)
+  const last = `${first.slice(0, 8)}${String(new Date(y, m, 0).getDate()).padStart(2, '0')}`
+  const a = toEthiopian(first)
+  const b = toEthiopian(last)
+  const ec = `${EC_MONTHS[a.month - 1]}${a.month !== b.month ? ` – ${EC_MONTHS[b.month - 1]}` : ''} ${b.year}`
+  return `${greg} · ${ec}`
+}
+
+/** "5 Hid." – the Ethiopian day next to the Gregorian one. */
+function ecShort(d: string): string {
+  const ec = toEthiopian(d)
+  return `${ec.day} ${EC_MONTHS[ec.month - 1].slice(0, 3)}.`
 }

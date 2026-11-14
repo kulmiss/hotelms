@@ -2815,6 +2815,21 @@
     "original": "Use the original",
     "save": "Save website"
   },
+  "calendar": {
+    "day": "Day",
+    "month": "Month",
+    "year": "Year (EC)",
+    "ecHint": "Pick the day, month and year in the Ethiopian calendar.",
+    "outOfRange": "outside the allowed dates",
+    "useEthiopian": "Type in Ethiopian calendar",
+    "useGregorian": "Type in Gregorian calendar",
+    "mine": "My calendar",
+    "mineHint": "How dates are shown to you. Dates are always saved the same way.",
+    "hotelDefault": "Hotel default ({{choice}})",
+    "hotel": "Calendar",
+    "hotelHint": "How dates are shown in this hotel. Each person can change it in My profile.",
+    "modes": { "gregorian": "Gregorian only", "ethiopian": "Ethiopian only", "both": "Both (Gregorian and Ethiopian)" }
+  },
   "gettingStarted": {
     "title": "Getting started",
     "progress": "{{done}} of {{total}} done",

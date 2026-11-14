@@ -80,6 +80,7 @@ type Profile = {
   invoice_prefix: string
   invoice_footer: string | null
   receipt_paper: 'a4' | 'receipt'
+  calendar?: 'gregorian' | 'ethiopian' | 'both'
 }
 
 export function ProfileSettings() {
@@ -125,6 +126,9 @@ function ProfileForm({ initial }: { initial: Profile }) {
           <Select label={t('settings.profile.paper')} hint={t('settings.profile.paperHint')} value={f.receipt_paper ?? 'a4'} onChange={(e) => setF({ ...f, receipt_paper: e.target.value as Profile['receipt_paper'] })}>
             <option value="a4">{t('billing.paper.a4')}</option>
             <option value="receipt">{t('billing.paper.receipt')}</option>
+          </Select>
+          <Select label={t('calendar.hotel')} hint={t('calendar.hotelHint')} value={f.calendar ?? 'gregorian'} onChange={(e) => setF({ ...f, calendar: e.target.value as Profile['calendar'] })}>
+            {(['gregorian', 'ethiopian', 'both'] as const).map((m) => <option key={m} value={m}>{t(`calendar.modes.${m}`)}</option>)}
           </Select>
         </div>
         {/* Live invoice header preview */}

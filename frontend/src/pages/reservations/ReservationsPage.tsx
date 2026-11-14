@@ -15,7 +15,8 @@ import { Tabs } from '@/components/ui/Tabs'
 import { useMe } from '@/lib/auth'
 import { useCurrentBranch } from '@/lib/branch'
 import { cn } from '@/lib/cn'
-import { date, money } from '@/lib/format'
+import { EC_MONTHS, toEthiopian } from '@/lib/ethiopian'
+import { calendarMode, date, money } from '@/lib/format'
 import { addDays, daysBetween, listFileUrl, localDate, localTime, STATUS_TONES, today, useCalendar, useReservations, sleepingOn, type CalendarData, type ReservationStatus, type ReservationSummary } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { useDebounced } from '@/lib/useDebounced'
@@ -343,7 +344,8 @@ function ReservationCalendar() {
                   onClick={() => setDay(day === d ? null : d)}
                   className={cn('border-l border-border px-1 py-2 text-center transition duration-75 pointer-coarse:min-h-11 hover:bg-surface hover:text-accent-text', d === today() && 'bg-accent/10 text-accent-text', (wd === 0 || wd === 6) && 'text-text', day === d && 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent')}
                 >
-                  {t(`common.weekdays.${wd === 0 ? 7 : wd}`)} {Number(d.slice(8, 10))}
+                  {t(`common.weekdays.${wd === 0 ? 7 : wd}`)} {calendarMode() === 'ethiopian' ? toEthiopian(d).day : Number(d.slice(8, 10))}
+                  {calendarMode() === 'both' && <span className="block font-normal text-muted">{toEthiopian(d).day} {EC_MONTHS[toEthiopian(d).month - 1].slice(0, 3)}.</span>}
                 </button>
               )
             })}
