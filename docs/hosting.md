@@ -62,6 +62,8 @@ server {
     add_header X-Content-Type-Options nosniff always;
     add_header X-Frame-Options DENY always;
     add_header Referrer-Policy strict-origin-when-cross-origin always;
+    add_header Permissions-Policy "camera=(self), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()" always;
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
     client_max_body_size 10m;
     gzip on;
     gzip_comp_level 5;
@@ -70,7 +72,8 @@ server {
     location ~ ^/(api|sanctum|up)(/|$) { try_files $uri /index.php?$query_string; }
     location /assets/ { expires 1y; add_header Cache-Control "public, immutable" always; add_header X-Content-Type-Options nosniff always; }
     # The app page and the offline copy (service worker): never cached, or staff keep an old version (as .htaccess does).
-    location = /app.html { add_header Cache-Control "no-cache" always; add_header X-Content-Type-Options nosniff always; add_header X-Frame-Options DENY always; add_header Referrer-Policy strict-origin-when-cross-origin always; }
+    # + the Content-Security-Policy (its hash must match the <script> in frontend/index.html; deploy/check-csp.sh checks it).
+    location = /app.html { add_header Cache-Control "no-cache" always; add_header X-Content-Type-Options nosniff always; add_header X-Frame-Options DENY always; add_header Referrer-Policy strict-origin-when-cross-origin always; add_header Permissions-Policy "camera=(self), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()" always; add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always; add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-z/AEeak/K/SDD4clgB/AxZmh9ukx5WqWeS32LG/Ze8M='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; frame-src blob:; worker-src 'self'; manifest-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always; }
     location = /sw.js { add_header Cache-Control "no-cache" always; add_header X-Content-Type-Options nosniff always; }
     # Uploaded logos: pictures only, never run as a page.
     location /storage/ { add_header Content-Security-Policy "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox" always; add_header X-Content-Type-Options nosniff always; }
@@ -101,6 +104,14 @@ Development (Docker): `docker compose exec backend php artisan migrate`.
 - After every update run `php artisan optimize` (above). Never leave `APP_DEBUG=true` on a live server: it is slow and shows internals.
 - Text is compressed (gzip/brotli) and the hashed files in `assets/` are cached for a year by `public/.htaccess` (`app.html` and `sw.js` never); on Nginx use the `gzip on;` lines in the VPS config above.
 
+## Security headers
+Sent by `public/.htaccess` (Apache / cPanel) and the Nginx example; Laravel adds the same safe defaults to every API answer (`App\Http\Middleware\SecurityHeaders`).
+- **App page (`app.html`): a strict Content-Security-Policy.** Scripts only from the site itself plus the one inline theme script in `frontend/index.html`, allowed by its `sha256` hash; no plugins (`object-src 'none'`), no framing (`frame-ancestors 'none'`), data only from the site (`connect-src 'self'`), the guide PDFs from `blob:`. Styles may be inline (the charts need it). **When you change that inline script, the hash changes:** `./deploy/check-csp.sh` prints the new one and fails until `.htaccess`, the Nginx example and the snippet above match (CI runs it in the Package job).
+- **API answers:** `Content-Security-Policy: default-src 'none'; frame-ancestors 'none'` on JSON (files keep their own headers).
+- **Everywhere:** `Strict-Transport-Security: max-age=63072000; includeSubDomains` (HTTPS only, 2 years – not "preload"; add that only on purpose, it is hard to undo), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (no microphone, location, payment, USB; camera only for this site).
+- **CORS** (`config/cors.php`): only `APP_URL` / `FRONTEND_URL`, with the sign-in cookie; every other origin gets no access.
+- **`/.well-known/security.txt`** (from `frontend/public/`): how to report a security problem (info@kulmiss.com). It has an `Expires` date: renew it before **14 Nov 2027**.
+
 ## Backups
 - Every night a full backup, every hour a small one (without logs) – in `BACKUP_PATH` (kept 30 days / 48 hours).
 - Set `BACKUP_COPY_PATH` to a second disk or a folder synced to another location in Ethiopia.
@@ -122,6 +133,7 @@ Development (Docker): `docker compose exec backend php artisan migrate`.
 2. **Put the new code on the server** (section 2a / 2b), then **migrate:** `php artisan migrate --force`, then `php artisan optimize`.
 3. **Cron:** the `schedule:run` line runs every minute (cPanel: section 2a step 6; VPS: `www-data` crontab). Check Super Admin → System: Scheduler green.
 4. **LICENSE:** the owner's name / company and email are filled in (no `[OWNER …]` placeholders).
+   **Headers:** `curl -sI https://<domain>/` shows `Content-Security-Policy` and `Strict-Transport-Security`; `https://<domain>/.well-known/security.txt` opens.
 5. **What's new:** publish the note for staff (Super Admin → Releases; draft in `docs/drafts/`).
 6. **Code:** the final PR `ui/shadcn-admin → main` is merged; the server runs `main`.
 7. **Smoke test:** sign in as each role on a phone and a computer; take a test payment in the demo hotel.

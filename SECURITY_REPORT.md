@@ -225,6 +225,7 @@ What's missing is mostly **defence in depth**: the extra layers that limit the d
 | PR | Findings | Status |
 |---|---|---|
 | S1 Encrypted backups | H1 | done – `BACKUP_KEY`, `.sql.gz.enc`, no backup on a live server without the key, upload copies encrypted, `--decrypt`, System + watchdog warnings |
+| S2 Security headers | M1, L2, L3, L10 | done – strict CSP on the app page (hash checked in CI, checked in headless Chrome on 16 screens incl. prints: no violations), CSP on API answers, HSTS 2 years + Permissions-Policy on every file, strict CORS, `security.txt` |
 
 ## Proposed fix PRs (step 2, after your OK)
 In order of importance. Each one is small, with tests, and speed measured before and after (page load, API time, first download).
