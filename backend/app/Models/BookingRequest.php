@@ -8,14 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /** A guest's request from the hotel's public booking page; reception books it or declines it. */
-#[Fillable(['hotel_id', 'branch_id', 'room_type_id', 'check_in', 'check_out', 'adults', 'children', 'name', 'phone', 'email', 'note', 'status', 'reservation_id', 'handled_by', 'handled_at', 'ip'])]
+#[Fillable(['hotel_id', 'branch_id', 'room_type_id', 'check_in', 'check_out', 'adults', 'children', 'name', 'phone', 'email', 'note', 'feedback_consent', 'language', 'status', 'reservation_id', 'handled_by', 'handled_at'])]
 class BookingRequest extends Model
 {
     use BelongsToHotel;
 
     protected function casts(): array
     {
-        return ['check_in' => 'date', 'check_out' => 'date', 'handled_at' => 'datetime'];
+        return ['check_in' => 'date', 'check_out' => 'date', 'handled_at' => 'datetime', 'feedback_consent' => 'boolean'];
     }
 
     /** @return BelongsTo<Branch, $this> */

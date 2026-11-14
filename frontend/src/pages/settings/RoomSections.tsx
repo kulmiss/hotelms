@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import i18n from '@/i18n'
 import { SmartHints } from '@/components/ui/SmartHints'
 import { useSmart } from '@/lib/smart'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -12,7 +13,8 @@ import { ResourceList } from '@/components/ui/ResourceList'
 import { Select, SelectBox } from '@/components/ui/Select'
 import { api, ApiError, post } from '@/lib/api'
 import { useMe } from '@/lib/auth'
-import { money } from '@/lib/format'
+import { date, money } from '@/lib/format'
+import { formatEthiopian } from '@/lib/ethiopian'
 import { useSettingsList } from '@/lib/settings'
 import { ImportRooms } from './ImportSections'
 
@@ -337,7 +339,10 @@ export function RateRulesSettings() {
     const x = roomTypes.data?.data.find((y) => y.id === id)
     return x ? typeName(x) : t('settings.rates.allTypes')
   }
-  const ruleTypes = ['weekend', 'season', 'guest_type'].map((v) => ({ value: v, label: t(`settings.rates.types.${v}`) }))
+  // Long-stay, early-bird, last-minute and minimum stay: Starter and up (switch smart_pricing).
+  const smart = me?.switches?.smart_pricing !== false
+  const stayTypes = ['long_stay', 'early_bird', 'last_minute']
+  const ruleTypes = ['weekend', 'season', 'holiday', 'guest_type', ...(smart ? stayTypes : [])].map((v) => ({ value: v, label: t(`settings.rates.types.${v}`) }))
   const adjustments = ['percent', 'amount', 'fixed_price'].map((v) => ({ value: v, label: t(`settings.rates.adjustments.${v}`) }))
   const describe = (r: Record<string, unknown>) => {
     const v = Number(r.value)
@@ -347,7 +352,13 @@ export function RateRulesSettings() {
   }
   const when = (r: Record<string, unknown>) => {
     if (r.rule_type === 'weekend') return ((r.days_of_week as number[]) ?? []).map((d) => t(`common.weekdays.${d}`)).join(', ')
-    if (r.rule_type === 'season') return `${String(r.start_date).slice(0, 10)} → ${String(r.end_date).slice(0, 10)}`
+    const range = r.start_date ? ` · ${date(String(r.start_date).slice(0, 10))} → ${date(String(r.end_date ?? r.start_date).slice(0, 10))}` : ''
+    const min = r.min_stay ? ` · ${t('settings.rates.minStayShort', { n: r.min_stay })}` : ''
+    if (r.rule_type === 'season') return `${date(String(r.start_date).slice(0, 10))} → ${date(String(r.end_date).slice(0, 10))}${min}`
+    if (r.rule_type === 'holiday') return `${t('settings.rates.onHolidays')}${min}`
+    if (r.rule_type === 'long_stay') return t('settings.rates.whenLong', { n: r.min_nights }) + range
+    if (r.rule_type === 'early_bird') return t('settings.rates.whenEarly', { n: r.days_before }) + range
+    if (r.rule_type === 'last_minute') return t('settings.rates.whenLast', { n: r.days_before }) + range
     return guestTypes.data?.data.find((g) => g.id === r.guest_type_id)?.name ?? '—'
   }
 
@@ -358,7 +369,7 @@ export function RateRulesSettings() {
         title={t('settings.sections.rate-rules')}
         description={t('settings.rates.help')}
         addLabel={t('settings.rates.add')}
-        defaults={{ name: '', rule_type: 'weekend', room_type_id: me?.role?.is_hotel_admin ? '' : String(roomTypes.data?.data[0]?.id ?? ''), days_of_week: [5, 6], start_date: '', end_date: '', guest_type_id: '', adjustment: 'percent', value: '', priority: 10, is_active: true }}
+        defaults={{ name: '', rule_type: 'weekend', room_type_id: me?.role?.is_hotel_admin ? '' : String(roomTypes.data?.data[0]?.id ?? ''), days_of_week: [5, 6], start_date: '', end_date: '', guest_type_id: '', min_nights: '', days_before: '', min_stay: '', adjustment: 'percent', value: '', priority: 10, is_active: true }}
         columns={[
           { label: t('settings.rates.name'), render: (r) => <span className="font-medium">{String(r.name)}</span> },
           { label: t('settings.rates.when'), render: when },
@@ -371,8 +382,11 @@ export function RateRulesSettings() {
           { name: 'name', label: t('settings.rates.name') },
           { name: 'rule_type', label: t('settings.rates.type'), type: 'select', options: ruleTypes },
           { name: 'days_of_week', label: t('settings.rates.days'), type: 'days', wide: true, showIf: (v) => v.rule_type === 'weekend' },
-          { name: 'start_date', label: t('settings.rates.from'), type: 'date', showIf: (v) => v.rule_type === 'season' },
-          { name: 'end_date', label: t('settings.rates.to'), type: 'date', showIf: (v) => v.rule_type === 'season' },
+          { name: 'start_date', label: t('settings.rates.from'), type: 'date', nullable: true, showIf: (v) => v.rule_type === 'season' || stayTypes.includes(String(v.rule_type)), hint: t('settings.rates.arrivalHint') },
+          { name: 'end_date', label: t('settings.rates.to'), type: 'date', nullable: true, showIf: (v) => v.rule_type === 'season' || stayTypes.includes(String(v.rule_type)) },
+          { name: 'min_nights', label: t('settings.rates.minNights'), type: 'number', nullable: true, showIf: (v) => v.rule_type === 'long_stay' },
+          { name: 'days_before', label: t('settings.rates.daysBefore'), type: 'number', nullable: true, hint: t('settings.rates.daysBeforeHint'), showIf: (v) => v.rule_type === 'early_bird' || v.rule_type === 'last_minute' },
+          { name: 'min_stay', label: t('settings.rates.minStay'), type: 'number', nullable: true, hint: t('settings.rates.minStayHint'), showIf: (v) => smart && (v.rule_type === 'season' || v.rule_type === 'holiday') },
           {
             name: 'guest_type_id',
             label: t('settings.rates.guestType'),
@@ -387,14 +401,60 @@ export function RateRulesSettings() {
             nullable: true,
             options: [...allTypesOption, ...(roomTypes.data?.data ?? []).map((x) => ({ value: String(x.id), label: typeName(x) }))],
           },
-          { name: 'adjustment', label: t('settings.rates.adjustment'), type: 'select', options: adjustments },
+          { name: 'adjustment', label: t('settings.rates.adjustment'), type: 'select', options: adjustments, hint: t('settings.rates.adjustmentHint') },
           { name: 'value', label: t('settings.rates.value'), type: 'decimal', hint: t('settings.rates.valueHint') },
           { name: 'priority', label: t('settings.rates.priority'), type: 'number', hint: t('settings.rates.priorityHint') },
           { name: 'is_active', label: t('common.active'), type: 'checkbox' },
         ]}
       />
+      {!smart && <p className="text-sm text-muted">{t('settings.rates.planNote')}</p>}
       <PricePreview types={roomTypes.data?.data ?? []} typeName={typeName} guestTypes={guestTypes.data?.data ?? []} />
     </div>
+  )
+}
+
+/** The hotel's holiday list: "Holiday" price rules apply on these nights (owner, 14 Nov 2026). */
+export function HolidaysSettings() {
+  const { t } = useTranslation()
+  const qc = useQueryClient()
+  const preset = useMutation({
+    mutationFn: () => api<{ added: number }>('/settings/holidays/ethiopian', { method: 'POST' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['settings', '/settings/holidays'] }),
+  })
+  const kinds = ['fixed', 'calculated', 'expected', 'own'].map((v) => ({ value: v, label: t(`settings.holidays.kinds.${v}`) }))
+  return (
+    <ResourceList
+      endpoint="/settings/holidays"
+      title={t('settings.sections.holidays')}
+      description={t('settings.holidays.help')}
+      addLabel={t('settings.holidays.add')}
+      defaults={{ name: '', date: '', kind: 'own', is_active: true }}
+      header={
+        <Card className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex max-w-xl flex-col gap-1">
+            <h3 className="text-sm font-semibold">{t('settings.holidays.preset')}</h3>
+            <p className="text-sm text-muted">{t('settings.holidays.presetHelp')}</p>
+            {preset.data && <p className="text-sm text-ok-text" role="status">{t('settings.holidays.presetDone', { count: preset.data.added })}</p>}
+          </div>
+          <Button variant="secondary" disabled={preset.isPending} onClick={() => preset.mutate()}>
+            {t('settings.holidays.presetButton')}
+          </Button>
+        </Card>
+      }
+      columns={[
+        { label: t('settings.holidays.date'), render: (r) => <span className="tabular-nums">{date(String(r.date).slice(0, 10))}</span>, value: (r) => String(r.date) },
+        { label: t('settings.holidays.ec'), render: (r) => formatEthiopian(String(r.date).slice(0, 10), i18n.language), value: (r) => String(r.date) },
+        { label: t('settings.holidays.name'), render: (r) => <span className="font-medium">{String(r.name)}</span> },
+        { label: t('settings.holidays.kind'), render: (r) => <Badge tone={r.kind === 'expected' ? 'warn' : 'grey'}>{t(`settings.holidays.kinds.${String(r.kind)}`)}</Badge> },
+        { label: t('common.active'), render: (r) => (r.is_active ? <Badge tone="ok">{t('common.on')}</Badge> : <Badge tone="grey">{t('common.off')}</Badge>) },
+      ]}
+      fields={[
+        { name: 'name', label: t('settings.holidays.name') },
+        { name: 'date', label: t('settings.holidays.date'), type: 'date' },
+        { name: 'kind', label: t('settings.holidays.kind'), type: 'select', options: kinds },
+        { name: 'is_active', label: t('common.active'), type: 'checkbox' },
+      ]}
+    />
   )
 }
 

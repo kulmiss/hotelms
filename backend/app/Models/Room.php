@@ -17,6 +17,14 @@ class Room extends Model
 
     public const STATUSES = ['available', 'occupied', 'dirty', 'cleaning', 'maintenance', 'out_of_order'];
 
+    /** The secret of the calendar export link never goes out with the room (Settings → Calendar sync shows the link). */
+    protected $hidden = ['ical_token', 'ical_secret'];
+
+    protected function casts(): array
+    {
+        return ['ical_secret' => 'encrypted'];
+    }
+
     /** @return BelongsTo<RoomType, $this> */
     public function roomType(): BelongsTo
     {

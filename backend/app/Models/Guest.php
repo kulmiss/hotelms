@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /** Guests are shared by all branches of a hotel. */
-#[Fillable(['hotel_id', 'guest_type_id', 'first_name', 'last_name', 'phone', 'email', 'nationality', 'id_type', 'id_number', 'gender', 'date_of_birth', 'notes', 'is_blacklisted', 'blacklist_reason'])]
+#[Fillable(['hotel_id', 'guest_type_id', 'first_name', 'last_name', 'phone', 'email', 'nationality', 'id_type', 'id_number', 'gender', 'date_of_birth', 'notes', 'is_blacklisted', 'blacklist_reason', 'messages_opt_out', 'language'])]
 class Guest extends Model
 {
     use BelongsToHotel, LogsActivity, SoftDeletes;
@@ -23,7 +23,7 @@ class Guest extends Model
 
     protected function casts(): array
     {
-        return ['date_of_birth' => 'date:Y-m-d', 'is_blacklisted' => 'boolean', 'id_number' => 'encrypted', 'notes' => 'encrypted'];
+        return ['date_of_birth' => 'date:Y-m-d', 'is_blacklisted' => 'boolean', 'messages_opt_out' => 'boolean', 'id_number' => 'encrypted', 'notes' => 'encrypted'];
     }
 
     protected $hidden = ['id_number_hash'];

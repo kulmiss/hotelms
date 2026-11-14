@@ -40,7 +40,7 @@ trait LogsActivity
         'AlertEvent' => 'Alert', 'AlertRule' => 'Alert rule', 'Attendance' => 'Attendance', 'Branch' => 'Branch', 'CancellationPolicy' => 'Cancellation policy',
         'CashierSession' => 'Cashier shift', 'ChargeType' => 'Charge', 'CustomReport' => 'Own report', 'ExchangeRate' => 'Exchange rate', 'Guest' => 'Guest',
         'GuestType' => 'Guest type', 'Hotel' => 'Hotel', 'HotelCurrency' => 'Currency', 'HotelModule' => 'Module', 'HotelSetting' => 'Setting',
-        'HousekeepingTask' => 'Cleaning task', 'Import' => 'Import', 'Invoice' => 'Bill', 'InvoiceItem' => 'Bill line', 'Payment' => 'Payment',
+        'HousekeepingTask' => 'Cleaning task', 'IcalFeed' => 'Calendar link', 'Holiday' => 'Holiday', 'Import' => 'Import', 'Invoice' => 'Bill', 'InvoiceItem' => 'Bill line', 'Payment' => 'Payment',
         'PaymentMethod' => 'Payment method', 'Plan' => 'Plan', 'RateRule' => 'Price rule', 'ReportSchedule' => 'Scheduled report', 'ReportTarget' => 'Target',
         'Reservation' => 'Booking', 'ReservationRoom' => 'Booked room', 'Role' => 'Role', 'Room' => 'Room', 'RoomType' => 'Room type',
         'SavedView' => 'Saved view', 'Shift' => 'Shift', 'ShiftAssignment' => 'Roster', 'Tax' => 'Tax', 'User' => 'Staff member',
@@ -68,6 +68,8 @@ trait LogsActivity
             'password', 'remember_token', 'attendance_pin', 'two_factor_secret', 'two_factor_recovery_codes', 'updated_at', 'created_at', 'last_login_at',
             // Bookkeeping by the system itself (checked every few minutes): not a change anyone made.
             'last_checked_at', 'next_run_at', 'last_run_at', 'last_sent_at', 'last_error', 'last_seen_at', 'last_fired_at', 'fired_count',
+            // Calendar sync: secrets never go to the log, and the sync's own bookkeeping is not a change.
+            'ical_token', 'ical_secret', 'url', 'last_synced_at', 'last_status', 'events_count', 'conflicts',
         ]));
     }
 }

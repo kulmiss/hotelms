@@ -64,6 +64,8 @@ const ContentPage = lazy(() => pages.content().then((m) => ({ default: m.Content
 const WhatsNewPage = lazy(() => pages.whatsNew().then((m) => ({ default: m.WhatsNewPage })))
 const SubscriptionInvoicePage = lazy(() => pages.subscriptionInvoice().then((m) => ({ default: m.SubscriptionInvoicePage })))
 const ApprovalsPage = lazy(() => pages.approvals().then((m) => ({ default: m.ApprovalsPage })))
+const FeedbackPage = lazy(() => pages.feedback().then((m) => ({ default: m.FeedbackPage })))
+const RoomCardsPrintPage = lazy(() => pages.roomCards().then((m) => ({ default: m.RoomCardsPrintPage })))
 const FrontDeskModePage = lazy(() => pages.frontDeskMode().then((m) => ({ default: m.FrontDeskModePage })))
 const CashierPage = lazy(() => pages.cashier().then((m) => ({ default: m.CashierPage })))
 const HousekeepingPage = lazy(() => pages.housekeeping().then((m) => ({ default: m.HousekeepingPage })))
@@ -81,7 +83,9 @@ const SETTINGS_PAGES: Record<string, ReturnType<typeof section>> = {
   'room-types': section('RoomTypesSettings', pages.roomSettings),
   rooms: section('RoomsSettings', pages.roomSettings),
   import: section('ImportSettings', pages.roomSettings),
+  'calendar-sync': section('CalendarSyncSettings', pages.calendarSync),
   'rate-rules': section('RateRulesSettings', pages.roomSettings),
+  holidays: section('HolidaysSettings', pages.roomSettings),
   'guest-types': section('GuestTypesSettings', pages.roomSettings),
   currencies: section('CurrenciesSettings'),
   taxes: section('TaxesSettings'),
@@ -95,6 +99,7 @@ const SETTINGS_PAGES: Record<string, ReturnType<typeof section>> = {
   attendance: section('AttendanceSettings'),
   subscription: section('SubscriptionSettings'),
   'booking-page': section('BookingPageSettings'),
+  'guest-messages': section('GuestMessagesSettings', pages.guestMessages),
 }
 const DesignSystemPage = lazy(() => pages.designSystem().then((m) => ({ default: m.DesignSystemPage })))
 
@@ -160,6 +165,10 @@ export const routes = [
           {
             element: <RequirePermission permission="invoices.print" />,
             children: [{ path: '/billing/:id/print', element: page(<InvoicePrintPage />) }],
+          },
+          {
+            element: <RequirePermission permission="settings.rooms" />,
+            children: [{ path: '/room-cards/print', element: page(<RoomCardsPrintPage />) }],
           },
           {
             element: <RequirePermission permission="reservations.view" />,
@@ -320,6 +329,10 @@ export const routes = [
               {
                 element: <RequirePermission permission="approvals.decide" />,
                 children: [{ path: 'approvals', element: page(<ApprovalsPage />) }],
+              },
+              {
+                element: <RequirePermission permission="feedback.view" />,
+                children: [{ path: 'feedback', element: page(<FeedbackPage />) }],
               },
               // Developer page: only while developing, never on a hotel's live site.
               ...(import.meta.env.DEV ? [{ path: 'design-system', element: page(<DesignSystemPage />) }] : []),

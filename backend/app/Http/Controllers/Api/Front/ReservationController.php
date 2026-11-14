@@ -8,6 +8,7 @@ use App\Http\Presenters\ReservationPresenter;
 use App\Models\CancellationPolicy;
 use App\Models\Guest;
 use App\Models\HotelCurrency;
+use App\Models\IcalBlock;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Reservation;
@@ -171,7 +172,7 @@ class ReservationController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $data = $request->validate($this->bookingRules() + ['source' => ['nullable', Rule::in(Reservation::SOURCES)], 'notes' => ['nullable', 'string', 'max:1000'], 'pay_later' => ['nullable', 'boolean']], self::DATE_MESSAGES);
+        $data = $request->validate($this->bookingRules() + ['source' => ['nullable', Rule::in(Reservation::SOURCES)], 'notes' => ['nullable', 'string', 'max:1000'], 'pay_later' => ['nullable', 'boolean'], 'feedback_consent' => ['nullable', 'boolean']], self::DATE_MESSAGES);
         $reservation = $this->service->create($data, $request->user());
 
         return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)], 201);
@@ -180,7 +181,7 @@ class ReservationController extends Controller
     public function update(Request $request, string $id): JsonResponse
     {
         $reservation = $this->find($request, $id);
-        $data = $request->validate($this->bookingRules(false) + ['source' => ['nullable', Rule::in(Reservation::SOURCES)], 'notes' => ['nullable', 'string', 'max:1000']], self::DATE_MESSAGES);
+        $data = $request->validate($this->bookingRules(false) + ['source' => ['nullable', Rule::in(Reservation::SOURCES)], 'notes' => ['nullable', 'string', 'max:1000'], 'feedback_consent' => ['nullable', 'boolean']], self::DATE_MESSAGES);
         $reservation = $this->service->update($reservation, $data, $request->user());
 
         return response()->json(['data' => ReservationPresenter::detail($reservation, $request->user()->hotel)]);
@@ -266,9 +267,21 @@ class ReservationController extends Controller
                 'check_in_at' => HotelClock::iso($rr->check_in_at, $hotel), 'check_out_at' => HotelClock::iso($rr->check_out_at, $hotel),
             ]);
 
+        // Busy dates from Airbnb, Booking.com… (calendar sync), on their room or on the room type.
+        $roomIds = $rooms->pluck('id');
+        $blocks = app(Availability::class)->blocks($from->copy()->utc(), $to->copy()->utc())->with('feed:id,name')
+            ->where(fn ($q) => $q->whereIn('room_id', $roomIds)->orWhere(fn ($w) => $w->whereNull('room_id')->whereIn('room_type_id', $rooms->pluck('room_type_id')->unique())))
+            ->when($data['room_id'] ?? null, fn ($q, $room) => $q->where('room_id', (int) $room))
+            ->get()
+            ->map(fn (IcalBlock $b) => [
+                'id' => $b->id, 'source' => $b->feed?->name, 'summary' => $b->summary, 'room_id' => $b->room_id, 'room_type_id' => $b->room_type_id,
+                'check_in_at' => HotelClock::iso($b->starts_at, $hotel), 'check_out_at' => HotelClock::iso($b->ends_at, $hotel),
+            ])->values();
+
         return response()->json([
             'from' => $from->toDateString(),
             'days' => $days,
+            'blocks' => $blocks,
             'rooms' => $rooms->map(fn (Room $r) => ['id' => $r->id, 'number' => $r->number, 'floor' => $r->floor, 'status' => $r->status, 'room_type_id' => $r->room_type_id, 'room_type' => $r->roomType?->name]),
             'bookings' => $bookings,
         ]);
@@ -298,6 +311,9 @@ class ReservationController extends Controller
             'rooms.*.room_id' => ['nullable', 'integer'],
             'rooms.*.adults' => ['nullable', 'integer', 'between:1,20'],
             'rooms.*.children' => ['nullable', 'integer', 'between:0,20'],
+            'rooms.*.price_override' => ['nullable', 'decimal:0,2', 'min:0', 'max:99999999'], // per night, permission reservations.override_price
+            'price_override_reason' => ['nullable', 'string', 'max:200'],
+            'allow_short_stay' => ['nullable', 'boolean'],
             'discount_percent' => ['nullable', 'decimal:0,2', 'between:0,100'],
             'cancellation_policy_id' => ['nullable', 'integer'],
         ];
