@@ -4,15 +4,22 @@
     [$r, $g, $b] = sscanf($brand, '#%02x%02x%02x');
     $onBrand = (0.299 * $r + 0.587 * $g + 0.114 * $b) > 160 ? '#0b0f19' : '#ffffff';
     $name = $c['platform_name'] ?: 'HotelMS';
+    $lang = app()->getLocale();
+    $u = fn (string $p) => \App\Support\PublicLocale::url($p);
+    $here = $path ?? '/';
 @endphp
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ $lang }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ $title }}</title>
 <meta name="description" content="{{ $description }}">
-<link rel="canonical" href="{{ $url }}{{ $path ?? '/' }}">
+@if ($noindex ?? false)<meta name="robots" content="noindex">
+@endif<link rel="canonical" href="{{ $url }}{{ $u($here) }}">
+<link rel="alternate" hreflang="en" href="{{ $url }}{{ \App\Support\PublicLocale::switchTo($here, 'en') }}">
+<link rel="alternate" hreflang="am" href="{{ $url }}{{ \App\Support\PublicLocale::switchTo($here, 'am') }}">
+<link rel="alternate" hreflang="x-default" href="{{ $url }}{{ $here }}">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0b0f19" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
@@ -20,21 +27,27 @@
 <meta property="og:site_name" content="{{ $name }}">
 <meta property="og:title" content="{{ $title }}">
 <meta property="og:description" content="{{ $description }}">
-<meta property="og:url" content="{{ $url }}{{ $path ?? '/' }}">
+<meta property="og:url" content="{{ $url }}{{ $u($here) }}">
+<meta property="og:locale" content="{{ $lang === 'am' ? 'am_ET' : 'en_US' }}">
 <meta property="og:image" content="{{ $url }}/landing/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
+@if ($lang === 'am')<link rel="preload" as="font" type="font/woff2" href="/landing/fonts/noto-sans-ethiopic-400.woff2" crossorigin>@endif
 <link rel="icon" href="/landing/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/landing/apple-touch-icon.png">
 @isset($preload)<link rel="preload" as="image" href="{{ $preload['src'] }}"@if (! empty($preload['srcset'])) imagesrcset="{{ $preload['srcset'] }}" imagesizes="(max-width: 1160px) calc(100vw - 40px), 1120px"@endif fetchpriority="high">@endisset
 <style>
+{{-- Amharic only: one small font (just the letters of these pages, preloaded; bold is drawn from it). "optional": never a late swap. --}}
+@if ($lang === 'am')
+@font-face{font-family:"Noto Sans Ethiopic";font-style:normal;font-weight:400;font-display:optional;src:url(/landing/fonts/noto-sans-ethiopic-400.woff2) format("woff2");unicode-range:U+1200-137F}
+@endif
 :root{--bg:#fff;--card:#fff;--muted:#f1f5f9;--text:#0b1220;--sub:#475569;--line:#e2e8f0;--brand:{{ $brand }};--on-brand:{{ $onBrand }};--ok:#15803d;--shadow:0 1px 2px rgb(15 23 42/.06),0 1px 3px rgb(15 23 42/.08)}
 @media (prefers-color-scheme:dark){:root{--bg:#0b0f19;--card:#111827;--muted:#1e293b;--text:#f1f5f9;--sub:#a3b1c6;--line:#283548;--ok:#4ade80;--shadow:0 1px 2px rgb(0 0 0/.4)}}
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Ethiopic","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 Inter,"Noto Sans Ethiopic",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Nyala","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
 img{max-width:100%;height:auto;display:block}
 a{color:inherit}
 h1,h2,h3{line-height:1.2;letter-spacing:-.02em;margin:0}
@@ -131,21 +144,24 @@ thead th{border-top:0;font-size:14px}
 .ok{border:1px solid var(--ok);border-radius:12px;padding:16px;background:color-mix(in srgb,var(--ok) 10%,var(--bg))}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .powered{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:13px;color:var(--sub);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:0 12px}
+.lang{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:10px}.lang a{min-height:38px;min-width:38px;display:inline-flex;align-items:center;justify-content:center;padding:0 8px;border-radius:7px;font-size:13px;font-weight:600;text-decoration:none;color:var(--sub)}.lang a[aria-current]{background:var(--muted);color:var(--text)}
+@media (pointer:coarse){.lang a{min-height:44px;min-width:44px}}
 .draft{border:1px solid #d97706;background:color-mix(in srgb,#f59e0b 14%,var(--bg));color:var(--text);padding:10px 14px;border-radius:10px;font-size:14px;margin:12px 0 24px}
 </style>
 </head>
 <body>
-<a class="skip" href="#main">Skip to content</a>
+<a class="skip" href="#main">{{ __('Skip to content') }}</a>
 @unless ($bare ?? false)
 <header>
   <div class="wrap bar">
-    <a class="logo" href="/"><span class="mark" aria-hidden="true">{{ mb_substr($name, 0, 1) }}</span>{{ $name }}</a>
-    <nav class="nav" aria-label="Main">
-      <a href="/#features">Features</a><a href="/#plans">Plans</a><a href="/#security">Security</a><a href="/#faq">Questions</a>
+    <a class="logo" href="{{ $u('/') }}"><span class="mark" aria-hidden="true">{{ mb_substr($name, 0, 1) }}</span>{{ $name }}</a>
+    <nav class="nav" aria-label="{{ __('Main') }}">
+      <a href="{{ $u('/#features') }}">{{ __('Features') }}</a><a href="{{ $u('/#plans') }}">{{ __('Plans') }}</a><a href="{{ $u('/#security') }}">{{ __('Security') }}</a><a href="{{ $u('/#faq') }}">{{ __('Questions') }}</a>
     </nav>
-    <a class="btn btn-outline btn-sm signin" href="/login">Sign in</a>
+    @include('landing.lang-switch', ['path' => $here])
+    <a class="btn btn-outline btn-sm signin" href="{{ $u('/login') }}">{{ __('Sign in') }}</a>
     @if ($c['signup_mode'] !== 'off')
-      <a class="btn btn-primary btn-sm" href="/register">Register free</a>
+      <a class="btn btn-primary btn-sm" href="{{ $u('/register') }}">{{ __('Register free') }}</a>
     @endif
   </div>
 </header>
@@ -159,10 +175,10 @@ thead th{border-top:0;font-size:14px}
     <span>© {{ date('Y') }} {{ $name }}</span>
     @if ($c['whatsapp'])<a href="{{ $c['whatsapp']['href'] }}" rel="noopener">WhatsApp {{ $c['whatsapp']['label'] }}</a>@endif
     @if ($c['email'])<a href="mailto:{{ $c['email'] }}">{{ $c['email'] }}</a>@endif
-    <a href="/terms">Terms</a>
-    <a href="/privacy">Privacy</a>
-    <a href="/.well-known/security.txt">Security</a>
-    <a href="/login">Sign in</a>
+    <a href="{{ $u('/terms') }}">{{ __('Terms') }}</a>
+    <a href="{{ $u('/privacy') }}">{{ __('Privacy') }}</a>
+    <a href="/.well-known/security.txt">{{ __('Security') }}</a>
+    <a href="{{ $u('/login') }}">{{ __('Sign in') }}</a>
   </div>
 </footer>
 @endunless

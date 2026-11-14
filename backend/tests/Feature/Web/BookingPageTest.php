@@ -9,14 +9,18 @@ use App\Models\FeatureSwitch;
 use App\Models\Guest;
 use App\Models\Hotel;
 use App\Models\Plan;
+use App\Models\RateRule;
 use App\Models\RoomType;
 use App\Models\User;
 use App\Services\HotelDefaults;
+use App\Services\HotelSettings;
 use App\Services\Switches;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 /** A hotel's public booking page (owner, 14 Nov 2026, "2a"): off by default, requests only, no cookies, "Powered by" on Free. */
@@ -74,11 +78,14 @@ class BookingPageTest extends TestCase
         $slug = $this->turnOn();
         $receptionist = User::factory()->withRole($this->hotel, 'receptionist')->create();
         $receptionist->branches()->attach($this->branch);
-        $this->post("/h/{$slug}", $this->body())->assertRedirect("/h/{$slug}?sent=1");
+        $this->post("/h/{$slug}", $this->body())->assertRedirect("/h/{$slug}?sent=1&lang=en");
         $this->get("/h/{$slug}?sent=1")->assertSee('Your request was sent.');
 
         $req = BookingRequest::withoutGlobalScope('hotel')->firstOrFail();
         $this->assertSame([$this->hotel->id, 'new', 'Abebe Kebede', $this->type->id], [$req->hotel_id, $req->status, $req->name, $req->room_type_id]);
+        // No network address is kept for guests.
+        $this->assertFalse(Schema::hasColumn('booking_requests', 'ip'));
+        $this->assertStringNotContainsString('127.0.0.1', json_encode(DB::table('booking_requests')->first()));
         $this->assertTrue(AppNotification::where('user_id', $receptionist->id)->where('source', 'booking_request')->exists());
 
         $this->actingAs($receptionist)->getJson('/api/v1/booking-requests')->assertOk()->assertJsonPath('data.0.name', 'Abebe Kebede')->assertJsonPath('new', 1);
@@ -86,10 +93,58 @@ class BookingPageTest extends TestCase
         $this->postJson("/api/v1/booking-requests/{$req->id}/decline")->assertJsonValidationErrors('status'); // once
     }
 
+    public function test_the_page_speaks_amharic_by_link_or_by_the_hotel_default(): void
+    {
+        $slug = $this->turnOn();
+        $r = $this->get("/h/{$slug}?lang=am")->assertOk();
+        $html = $r->getContent();
+        $this->assertStringContainsString('<html lang="am">', $html);
+        $this->assertStringContainsString('ክፍል ያስይዙ', $html);
+        $this->assertStringContainsString('action="/h/'.$slug.'?lang=am"', $html);
+        $this->assertStringContainsString('hreflang="en"', $html);
+        $this->assertStringContainsString('noto-sans-ethiopic-400.woff2', $html); // the font, only for Amharic
+        $this->assertStringContainsString("font-src 'self'", $r->headers->get('Content-Security-Policy'));
+        $this->assertEmpty($r->headers->getCookies());
+
+        // Amharic errors, and the answer page stays in Amharic.
+        $this->post("/h/{$slug}?lang=am", $this->body(['check_in' => now()->subDay()->toDateString()]))->assertStatus(422)->assertSee('ዛሬን ወይም ከዚያ በኋላ ያለ ቀን ይምረጡ።');
+        $this->post("/h/{$slug}?lang=am", $this->body(['name' => '']))->assertStatus(422)->assertSee('ስም ያስፈልጋል።');
+        $this->post("/h/{$slug}?lang=am", $this->body())->assertRedirect("/h/{$slug}?sent=1&lang=am");
+
+        // A hotel whose default is Amharic: Amharic without ?lang, English with ?lang=en.
+        app(TenantContext::class)->runAs($this->hotel, fn () => app(HotelSettings::class)->put(['language' => 'am']));
+        $this->assertStringContainsString('<html lang="am">', $this->get("/h/{$slug}")->getContent());
+        $en = $this->get("/h/{$slug}?lang=en")->getContent();
+        $this->assertStringContainsString('<html lang="en">', $en);
+        $this->assertStringNotContainsString('noto-sans-ethiopic', $en);
+        $this->get("/h/{$slug}?lang=xx")->assertOk(); // unknown: the default, never an error
+    }
+
+    public function test_guests_see_the_price_night_by_night_and_the_minimum_stay(): void
+    {
+        $slug = $this->turnOn();
+        app(TenantContext::class)->runAs($this->hotel, fn () => RateRule::create(['name' => 'Weekend', 'rule_type' => 'weekend', 'days_of_week' => [6, 7], 'adjustment' => 'amount', 'value' => '500', 'priority' => 10, 'is_active' => true]));
+        $sat = now()->next(Carbon::SATURDAY)->toDateString();
+        $mon = now()->next(Carbon::SATURDAY)->addDays(2)->toDateString();
+        $r = $this->get("/h/{$slug}?check_in={$sat}&check_out={$mon}&room_type_id={$this->type->id}")->assertOk();
+        $r->assertSee('Price night by night')->assertSee('ETB 3,000.00')->assertSee('ETB 6,000.00')->assertSee('Weekend');
+        $this->assertStringContainsString('value="'.$sat.'"', $r->getContent()); // the request form keeps the dates
+        $this->assertEmpty($r->headers->getCookies());
+        $this->get("/h/{$slug}?check_in=2020-01-01&check_out=2020-01-02")->assertOk()->assertSee('Choose an arrival from today');
+
+        // Minimum stay: Starter and up.
+        app(TenantContext::class)->runAs($this->hotel, fn () => RateRule::create(['name' => 'High season', 'rule_type' => 'season', 'start_date' => now()->toDateString(), 'end_date' => now()->addMonth()->toDateString(), 'adjustment' => 'percent', 'value' => '0', 'min_stay' => 3, 'priority' => 1, 'is_active' => true]));
+        $this->get("/h/{$slug}?check_in={$sat}&check_out={$mon}&room_type_id={$this->type->id}")->assertDontSee('stays of at least');
+        $this->hotel->update(['plan_id' => Plan::where('code', 'starter')->value('id')]);
+        app(Switches::class)->flush();
+        $this->get("/h/{$slug}?check_in={$sat}&check_out={$mon}&room_type_id={$this->type->id}")->assertSee('High season: stays of at least 3 nights.');
+        $this->post("/h/{$slug}", $this->body(['check_in' => $sat, 'check_out' => $mon]))->assertStatus(422)->assertSee('stays of at least 3 nights');
+    }
+
     public function test_bad_input_and_bots_are_refused_without_saving(): void
     {
         $slug = $this->turnOn();
-        $this->post("/h/{$slug}", $this->body(['website' => 'spam']))->assertRedirect("/h/{$slug}?sent=1");
+        $this->post("/h/{$slug}", $this->body(['website' => 'spam']))->assertRedirect("/h/{$slug}?sent=1&lang=en");
         $this->post("/h/{$slug}", $this->body(['form_token' => Crypt::encryptString((string) now()->timestamp)]))->assertStatus(422)->assertSee('check the form');
         $this->post("/h/{$slug}", $this->body(['check_in' => now()->subDay()->toDateString()]))->assertStatus(422)->assertSee('Choose today or a later day.');
         $this->post("/h/{$slug}", $this->body(['phone' => 'call me']))->assertStatus(422);

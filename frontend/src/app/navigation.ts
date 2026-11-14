@@ -26,6 +26,7 @@ import {
   SlidersHorizontal,
   SlidersVertical,
   Sparkles,
+  Star,
   Tag,
   UserPlus,
   Users,
@@ -72,6 +73,7 @@ export const mainNav: NavItem[] = [
   { key: 'roles', path: '/roles', icon: ShieldCheck, group: 'team', phase: 1, permission: 'roles.manage', built: true },
   { key: 'activityLog', path: '/activity-log', icon: ClipboardList, group: 'team', phase: 1, permission: 'activity_log.view', built: true },
   { key: 'approvals', path: '/approvals', icon: BadgeCheck, group: 'insights', phase: 8, permission: 'approvals.decide', built: true },
+  { key: 'feedback', path: '/feedback', icon: Star, group: 'insights', phase: 8, permission: 'feedback.view', built: true },
   { key: 'reports', path: '/reports', icon: ChartColumn, group: 'insights', phase: 6, built: true, permission: REPORTS_PERMISSIONS },
   {
     key: 'settings',

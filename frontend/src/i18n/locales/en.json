@@ -1,4 +1,180 @@
 {
+  "feedback": {
+    "subtitle": "What guests say after their stay – in their own words, never changed.",
+    "answers": "Answers",
+    "answersN_one": "{{count}} answer",
+    "answersN_other": "{{count}} answers",
+    "ratings": {
+      "overall": "Overall",
+      "cleanliness": "Cleanliness",
+      "staff": "Staff",
+      "comfort": "Comfort",
+      "value": "Value"
+    },
+    "dashboardPlan": "Trends, per room and per staff come with the Starter plan and up.",
+    "list": "Answers",
+    "onlyLow_one": "Only 3 stars or less ({{count}})",
+    "onlyLow_other": "Only 3 stars or less ({{count}})",
+    "none": "No feedback yet.",
+    "low": "Low rating",
+    "room": "room {{number}}",
+    "publicOk": "May be shown",
+    "checkedInBy": "checked in by {{name}}",
+    "replyBy": "Note by {{name}}:",
+    "reply": "Reply note",
+    "replyHint": "For your team (e.g. \"Called the guest, fixed the shower\"). The guest's words stay as they are.",
+    "addReply": "Add a reply note",
+    "editReply": "Change the reply note",
+    "trend": "By month",
+    "perRoom": "Per room",
+    "roomCol": "Room",
+    "perStaff": "Per staff",
+    "person": "Person",
+    "roles": {
+      "check_in": "check-in",
+      "check_out": "check-out"
+    },
+    "showOnPage": "Show guest stars on the booking page",
+    "showOnPageHint": "The average of all answers, and the latest comments of guests who allowed it (first name only, as they wrote them)."
+  },
+  "messages": {
+    "title": "Messages to the guest",
+    "which": "Message",
+    "language": "Language",
+    "guestDefault": "The guest's",
+    "guestLanguage": "Language for messages",
+    "hotelLanguage": "Hotel's language",
+    "optOut": "No messages, please",
+    "optOutHint": "The guest gets no confirmation, reminder or welcome message.",
+    "guestOptedOut": "This guest asked for no messages.",
+    "consent": "The guest says yes to a thank-you with a feedback form after the stay",
+    "consentHint": "Ask the guest. Leave it empty when they say no or you did not ask.",
+    "needsYes": "needs the guest's yes",
+    "onlyWithYes": "Only when the guest said yes",
+    "tapHint": "WhatsApp and SMS open on this device with the text ready: check it and tap Send. They cost nothing extra.",
+    "none": "No messages yet.",
+    "automatic": "automatic",
+    "keys": {
+      "confirmation": "Booking confirmation",
+      "pre_arrival": "Day before arrival",
+      "welcome": "Welcome (Wi-Fi, breakfast, contacts)",
+      "thank_you": "Thank-you with feedback link",
+      "request_received": "Booking request received",
+      "request_declined": "Booking request declined"
+    },
+    "channels": {
+      "email": "Email",
+      "sms": "SMS (account)",
+      "whatsapp": "WhatsApp",
+      "sms_app": "SMS app"
+    },
+    "status": {
+      "sent": "Sent",
+      "failed": "Not sent",
+      "opened": "Opened to send",
+      "skipped": "Skipped"
+    },
+    "settings": {
+      "help": "Messages to guests: by email (all plans), by SMS with your own SMS account (paid plans), or by a tap on WhatsApp or the SMS app (free). Guests who say no get nothing; the thank-you only goes with their yes.",
+      "info": "Guest information",
+      "infoHelp": "Goes into the welcome message and the room cards. Empty lines are left out.",
+      "wifiName": "Wi-Fi name",
+      "wifiPassword": "Wi-Fi password",
+      "breakfast": "Breakfast",
+      "whatsapp": "Reception's WhatsApp number",
+      "menuUrl": "Restaurant menu link",
+      "menuUrlHint": "A web page or PDF of your menu. Shown on the booking page and the room cards too.",
+      "auto": "Sent by themselves",
+      "autoHelp": "Choose which messages go out automatically, by email or SMS.",
+      "autoSmsPlan": "Automatic SMS comes with the Starter plan and up. WhatsApp and SMS by a tap work on every plan.",
+      "texts": "Texts",
+      "textsHelp": "Change the words in English and Amharic. {words} in braces are filled in for each guest.",
+      "ownText": "Your text",
+      "defaultText": "Default text",
+      "subject": "Subject (email)",
+      "body": "Text",
+      "length_one": "{{count}} letter. One SMS holds about 160 English or 70 Amharic letters.",
+      "length_other": "{{count}} letters. One SMS holds about 160 English or 70 Amharic letters.",
+      "placeholders": "You can use:",
+      "reset": "Back to the default text",
+      "sms": "SMS account",
+      "smsHelp": "Use your own SMS account: you pay your provider for each SMS, HotelMS charges nothing. AfroMessage works in Ethiopia; any other provider with a web address works too.",
+      "provider": "Provider",
+      "providers": {
+        "none": "No SMS account",
+        "http": "Other (web address)"
+      },
+      "token": "API token",
+      "tokenSaved": "Saved – type a new one to change it",
+      "tokenHint": "From your provider's account. Stored encrypted and never shown again.",
+      "sender": "Sender name",
+      "identifier": "Identifier ID (if you have several)",
+      "url": "Address",
+      "urlHint": "Use {to} and {message} where the number and the text go.",
+      "method": "Method",
+      "bodyJson": "Body (JSON)",
+      "testPhone": "Your phone number",
+      "test": "Send a test SMS",
+      "testSent": "Sent. Check your phone.",
+      "whatsappApi": "Automatic WhatsApp (WhatsApp Business Cloud API) is not included yet: Meta charges per conversation and needs a verified business. WhatsApp by a tap is free."
+    }
+  },
+  "calendarSync": {
+    "help": "Paste the calendar (iCal) link of each listing from Airbnb, Booking.com or another site. Their busy dates block the room here, so it is not booked twice. Links are read every {{minutes}} minutes, and the other sites read ours every few hours: a booking can take that long to show on the other side.",
+    "bookingCom": "Booking.com allows calendar links mainly for apartments, holiday homes and guesthouses (not for most hotels). Airbnb and VRBO allow them for every listing.",
+    "limit": "Rooms in calendar sync: {{used}} of {{max}} (your plan).",
+    "notInPlan": "Calendar sync comes with the Starter plan (up to 10 rooms) and Pro (all rooms). Help → Ask us to upgrade.",
+    "add": "Add a calendar link",
+    "name": "Site",
+    "url": "Calendar link (iCal / .ics)",
+    "urlHint": "Airbnb: Calendar → Availability → Connect calendars → Export. Booking.com: Rates & availability → Sync calendars.",
+    "for": "For",
+    "rooms": "Rooms",
+    "roomTypes": "Any room of a type",
+    "anyRoomOf": "any {{type}} room",
+    "room": "room {{number}}",
+    "addButton": "Add and read now",
+    "added_one": "Saved. {{count}} busy date was read.",
+    "added_other": "Saved. {{count}} busy dates were read.",
+    "status": {
+      "ok": "Synced",
+      "error": "Problem",
+      "never": "Not read yet"
+    },
+    "clashes_one": "{{count}} clash",
+    "clashes_other": "{{count}} clashes",
+    "clashHelp": "Nothing was cancelled. Move one of the guests to another room, or close the dates on the other site.",
+    "lastSync_one": "Read {{time}} · {{count}} busy date",
+    "lastSync_other": "Read {{time}} · {{count}} busy dates",
+    "syncNow": "Sync now",
+    "pause": "Pause",
+    "resume": "Turn on",
+    "remove": "Remove {{name}}",
+    "removeConfirm": "Remove this link? Its busy dates are removed too.",
+    "export": "Your calendar links (export)",
+    "exportHelp": "Give a room's link to Airbnb or Booking.com (\"Import calendar\"), so they see the dates booked here. The link shows only busy dates, never guest names. Keep it secret; Reset makes a new one.",
+    "makeLink": "Make link",
+    "copy": "Copy",
+    "copied": "Copied",
+    "reset": "Reset",
+    "resetConfirm": "Make a new link? The old one stops working: give the new one to the other sites.",
+    "stop": "Turn off",
+    "onCalendar": "{{source}} · not available"
+  },
+  "pricing": {
+    "override": {
+      "label": "Price per night (by hand)",
+      "placeholder": "Normal price",
+      "reason": "Why is the price changed?",
+      "reasonHint": "Needed when you set a price by hand. It goes to the activity log.",
+      "was": "Normal price: {{amount}}"
+    },
+    "shortStay": {
+      "option": "Book anyway (shorter than the minimum stay)",
+      "hint": "Only with the permission to change prices. It goes to the activity log.",
+      "note": "Shorter than the minimum: {{name}} ({{n}} nights)"
+    }
+  },
   "common": {
     "loading": "Loading…",
     "breadcrumb": "Where you are",
@@ -36,6 +212,7 @@
     "removedToast": "Removed"
   },
   "nav": {
+    "feedback": "Guest feedback",
     "main": "Main",
     "dashboard": "Dashboard",
     "roomBoard": "Room board",
@@ -613,6 +790,7 @@
     "reservations.cancel": "Cancel a booking",
     "reservations.no_show": "Mark no-show",
     "reservations.change_policy": "Use a different cancellation policy",
+    "reservations.override_price": "Change a room price by hand, or allow a shorter stay than the minimum",
     "guests.view": "Guest list and profiles",
     "guests.create_edit": "Add and edit guests",
     "guests.blacklist": "Blacklist / unblacklist",
@@ -708,9 +886,31 @@
     "resetting": "Resetting…"
   },
   "settings": {
+    "holidays": {
+      "help": "Your holiday list. A price rule of the type \"Holidays\" changes the price on these nights. Ethiopian dates are shown next to each day.",
+      "add": "Add holiday",
+      "name": "Name",
+      "date": "Date",
+      "ec": "Ethiopian date",
+      "kind": "Kind",
+      "kinds": {
+        "fixed": "Fixed day",
+        "calculated": "Calculated",
+        "expected": "Expected – check the announcement",
+        "own": "Own"
+      },
+      "preset": "Ethiopian holidays",
+      "presetHelp": "Add the public holidays of the next 3 years: Genna, Timket, Fasika, Meskel, Eid and the others. Eid and Mawlid follow the moon: check their dates when they are announced. You can change or remove any day.",
+      "presetButton": "Add Ethiopian holidays",
+      "presetDone_one": "{{count}} holiday added.",
+      "presetDone_other": "{{count}} holidays added."
+    },
     "subtitle": "How your hotel works: profile, money, rules and features.",
     "search": { "label": "Search settings", "placeholder": "Search settings, e.g. VAT", "none": "No setting found." },
     "sections": {
+      "guest-messages": "Guest messages",
+      "calendar-sync": "Calendar sync (Airbnb, Booking.com)",
+      "holidays": "Holidays",
       "profile": "Hotel profile",
       "branches": "Branches",
       "room-types": "Room types",
@@ -954,11 +1154,28 @@
       "name": "Name"
     },
     "rates": {
+      "minNights": "From how many nights",
+      "daysBefore": "Days before arrival",
+      "daysBeforeHint": "Early booking: at least this many days. Last minute: at most this many days (0 = the same day).",
+      "minStay": "Minimum stay (nights)",
+      "minStayHint": "A stay that touches these days must be at least this long. Empty = no minimum.",
+      "minStayShort": "min. {{n}} nights",
+      "arrivalHint": "Long stay, early booking, last minute: for arrivals between these days (empty = always).",
+      "adjustmentHint": "Long stay, early booking and last minute change each night by a percent or an amount. They come on top of the night's own rule.",
+      "onHolidays": "On the holidays of your list",
+      "whenLong": "{{n}} nights or more",
+      "whenEarly": "Booked {{n}}+ days before",
+      "whenLast": "Booked up to {{n}} days before",
+      "planNote": "Long-stay, early-booking and last-minute prices and a minimum stay come with the Starter plan and up.",
       "help": "Change the room price on weekends, in seasons or for guest types. When several rules match a night, only the one with the highest priority is used.",
       "add": "Add rule",
       "name": "Name",
       "type": "Rule type",
       "types": {
+        "holiday": "Holidays (from the list)",
+        "long_stay": "Long stay",
+        "early_bird": "Early booking",
+        "last_minute": "Last minute",
         "weekend": "Weekdays",
         "season": "Season (dates)",
         "guest_type": "Guest type"
@@ -2081,6 +2298,9 @@
         "attendance": "Attendance"
       },
       "feature": {
+        "feedback_dashboard": "Guest feedback dashboard",
+        "smart_pricing": "Long-stay, early and last-minute prices, minimum stay",
+        "auto_sms": "Automatic SMS to guests",
         "hourly_stays": "Hourly stays",
         "day_use": "Day use",
         "multi_currency": "More than one currency",
@@ -2093,6 +2313,7 @@
         "beta": "Beta features"
       },
       "limit": {
+        "ical_rooms": "Rooms in calendar sync",
         "rooms": "Rooms",
         "branches": "Branches",
         "staff": "Staff"
@@ -2102,6 +2323,9 @@
         "read_only": "Read only (no changes saved)"
       },
       "automation": {
+        "low_rating": "Low guest rating",
+        "guest_welcome": "Welcome message at check-in",
+        "guest_thank_you": "Thank-you message at check-out",
         "booking_confirmation": "Booking confirmation to the guest",
         "deposit_reminder": "Collect the deposit",
         "booking_expired": "Booking expired",
@@ -2469,6 +2693,18 @@
       "percent": "Percent"
     },
     "items": {
+      "low_rating": {
+        "name": "Low guest rating",
+        "what": "A guest gives 3 stars or less: managers are told at once, with the comment."
+      },
+      "guest_welcome": {
+        "name": "Welcome message to the guest",
+        "what": "At check-in the guest gets Wi-Fi, breakfast, the menu and reception's WhatsApp (Settings → Guest messages)."
+      },
+      "guest_thank_you": {
+        "name": "Thank-you message to the guest",
+        "what": "At check-out, only when the guest said yes: a thank-you with the feedback link."
+      },
       "booking_confirmation": {
         "name": "Booking confirmation to the guest",
         "what": "When a booking is confirmed, the guest gets an email with the dates and amount."
@@ -2814,6 +3050,28 @@
     "replace": "Replace",
     "original": "Use the original",
     "save": "Save website"
+  },
+  "language": {
+    "mine": "My language",
+    "hotelDefault": "Hotel default ({{choice}})",
+    "hotel": "Language",
+    "hotelHint": "The language for new staff and for guest messages. Each person can change it in My profile.",
+    "names": { "en": "English", "am": "አማርኛ (Amharic)" }
+  },
+  "calendar": {
+    "day": "Day",
+    "month": "Month",
+    "year": "Year (EC)",
+    "ecHint": "Pick the day, month and year in the Ethiopian calendar.",
+    "outOfRange": "outside the allowed dates",
+    "useEthiopian": "Type in Ethiopian calendar",
+    "useGregorian": "Type in Gregorian calendar",
+    "mine": "My calendar",
+    "mineHint": "How dates are shown to you. Dates are always saved the same way.",
+    "hotelDefault": "Hotel default ({{choice}})",
+    "hotel": "Calendar",
+    "hotelHint": "How dates are shown in this hotel. Each person can change it in My profile.",
+    "modes": { "gregorian": "Gregorian only", "ethiopian": "Ethiopian only", "both": "Both (Gregorian and Ethiopian)" }
   },
   "gettingStarted": {
     "title": "Getting started",

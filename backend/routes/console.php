@@ -23,6 +23,7 @@ Schedule::command('reports:automation')->everyMinute()->withoutOverlapping();
 Schedule::command('subscriptions:invoices')->dailyAt('07:10')->withoutOverlapping();
 Schedule::command('automations:run')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('reports:automation --alerts')->everyFifteenMinutes()->withoutOverlapping();
+Schedule::command('ical:sync')->everyFifteenMinutes()->withoutOverlapping(); // Airbnb / Booking.com calendar links
 
 // Queued work, if any (no always-on worker needed).
 Schedule::command('queue:work --stop-when-empty --max-time=50')->everyMinute()->withoutOverlapping();

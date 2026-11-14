@@ -111,7 +111,7 @@ export const useExtend = (id: number) => useDeskAction((v: { check_out?: string;
 export const useApproveBalance = (id: number) => useDeskAction(() => post<{ data: ReservationDetail }>(`/reservations/${id}/approve-balance`))
 export const useRoomStatus = () => useDeskAction((v: { id: number; status: string }) => post(`/rooms/${v.id}/status`, { status: v.status }))
 export const useWalkIn = () =>
-  useMoneyAction((v: { branch_id: number; stay_type: string; check_out?: string | null; hours?: number | null; guest_id?: number | null; quick_guest?: { name: string; phone: string }; rooms: { room_type_id: number; room_id: number; adults: number; children: number }[]; discount_percent?: string; payment?: PaymentFields; pay_later?: boolean; open_stay?: boolean }, h: Record<string, string>) =>
+  useMoneyAction((v: { branch_id: number; stay_type: string; check_out?: string | null; hours?: number | null; guest_id?: number | null; quick_guest?: { name: string; phone: string }; rooms: { room_type_id: number; room_id: number; adults: number; children: number }[]; discount_percent?: string; payment?: PaymentFields; pay_later?: boolean; open_stay?: boolean; feedback_consent?: boolean }, h: Record<string, string>) =>
     post<{ data: ReservationDetail }>('/front-desk/walk-in', v, h),
   )
 

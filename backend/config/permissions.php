@@ -48,6 +48,7 @@ return [
             'reservations.cancel' => [$BM, $RC],
             'reservations.no_show' => [$BM, $RC],
             'reservations.change_policy' => [$BM],
+            'reservations.override_price' => [$BM], // change a room's price by hand, or allow a stay shorter than the minimum (logged)
         ],
         'guests' => [
             'guests.view' => [$BM, $RC, $AC],
@@ -109,6 +110,7 @@ return [
             'alerts.manage' => [],
             'automations.manage' => [],
             'approvals.decide' => [$BM],
+            'feedback.view' => [$BM], // guest feedback: read, reply note, low-rating alerts
             'reports.accounting_export' => [$AC],
         ],
         'settings' => [

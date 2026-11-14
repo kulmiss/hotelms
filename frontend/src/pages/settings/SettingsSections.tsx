@@ -80,6 +80,8 @@ type Profile = {
   invoice_prefix: string
   invoice_footer: string | null
   receipt_paper: 'a4' | 'receipt'
+  calendar?: 'gregorian' | 'ethiopian' | 'both'
+  language?: 'en' | 'am'
 }
 
 export function ProfileSettings() {
@@ -125,6 +127,13 @@ function ProfileForm({ initial }: { initial: Profile }) {
           <Select label={t('settings.profile.paper')} hint={t('settings.profile.paperHint')} value={f.receipt_paper ?? 'a4'} onChange={(e) => setF({ ...f, receipt_paper: e.target.value as Profile['receipt_paper'] })}>
             <option value="a4">{t('billing.paper.a4')}</option>
             <option value="receipt">{t('billing.paper.receipt')}</option>
+          </Select>
+          <Select label={t('language.hotel')} hint={t('language.hotelHint')} value={f.language ?? 'en'} onChange={(e) => setF({ ...f, language: e.target.value as Profile['language'] })}>
+            <option value="en">{t('language.names.en')}</option>
+            <option value="am">{t('language.names.am')}</option>
+          </Select>
+          <Select label={t('calendar.hotel')} hint={t('calendar.hotelHint')} value={f.calendar ?? 'gregorian'} onChange={(e) => setF({ ...f, calendar: e.target.value as Profile['calendar'] })}>
+            {(['gregorian', 'ethiopian', 'both'] as const).map((m) => <option key={m} value={m}>{t(`calendar.modes.${m}`)}</option>)}
           </Select>
         </div>
         {/* Live invoice header preview */}
@@ -697,7 +706,7 @@ export function SubscriptionSettings() {
 
 /* ------------------------------------------------------------- booking page */
 
-type BookingPageSettings = { enabled: boolean; slug: string | null; url: string | null; note: string | null; powered_by: boolean }
+type BookingPageSettings = { enabled: boolean; slug: string | null; url: string | null; note: string | null; powered_by: boolean; reviews?: boolean }
 
 /** The hotel's public booking page: guests send requests, reception books them (owner, 14 Nov 2026). */
 export function BookingPageSettings() {
@@ -709,7 +718,7 @@ export function BookingPageSettings() {
   const [note, setNote] = useState<string | null>(null)
   if (!v) return null
   const error = save.error instanceof ApiError ? save.error : null
-  const send = (enabled: boolean) => save.mutate({ enabled, slug: slug ?? v.slug ?? '', note: note ?? v.note ?? '' })
+  const send = (enabled: boolean, reviews = v.reviews ?? false) => save.mutate({ enabled, slug: slug ?? v.slug ?? '', note: note ?? v.note ?? '', reviews })
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
@@ -736,6 +745,13 @@ export function BookingPageSettings() {
           <Field label={t('settings.bookingPage.slug')} value={slug ?? v.slug ?? ''} hint={t('settings.bookingPage.slugHint')} maxLength={50} onChange={(e) => setSlug(e.target.value)} error={error?.field('slug')} />
           <Field label={t('settings.bookingPage.note')} value={note ?? v.note ?? ''} hint={t('settings.bookingPage.noteHint')} maxLength={300} onChange={(e) => setNote(e.target.value)} />
         </div>
+        <label className="flex min-h-touch items-start gap-3 text-sm">
+          <input type="checkbox" className="mt-0.5 size-4 rounded" checked={!!v.reviews} disabled={save.isPending} onChange={(e) => send(v.enabled, e.target.checked)} />
+          <span className="flex flex-col">
+            <span className="font-medium">{t('feedback.showOnPage')}</span>
+            <span className="text-muted">{t('feedback.showOnPageHint')}</span>
+          </span>
+        </label>
         {v.powered_by && <p className="text-sm text-muted">{t('settings.bookingPage.poweredBy')}</p>}
         <div>
           <Button disabled={save.isPending} onClick={() => send(v.enabled)}>{t('common.save')}</Button>

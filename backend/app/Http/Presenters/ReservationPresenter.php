@@ -105,6 +105,7 @@ class ReservationPresenter
             // Only the end of the ID number here (owner, 2026-11-08); the full number is on the guest's own page and the registration card.
             'guest' => $r->guest ? ['id_number' => Guest::maskId($r->guest->id_number)] + $r->guest->toArray() : null,
             'notes' => $r->notes,
+            'feedback_consent' => (bool) $r->feedback_consent,
             'subtotal' => $r->subtotal,
             'discount_percent' => $r->discount_percent,
             'discount_amount' => $r->discount_amount,
@@ -129,6 +130,7 @@ class ReservationPresenter
                 'adults' => $rr->adults,
                 'children' => $rr->children,
                 'total' => $rr->total_amount,
+                'price_override' => $rr->price_override,
                 'status' => $rr->status,
                 'lines' => $rr->rates->map(fn ($l) => ['date' => $l->date->toDateString(), 'label' => $l->label, 'amount' => $l->amount, 'rule_name' => $l->rule_name])->values(),
                 'guests' => $rr->guests->map(fn ($g) => ['id' => $g->id, 'name' => $g->full_name])->values(),
