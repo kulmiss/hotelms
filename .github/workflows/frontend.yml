@@ -20,7 +20,7 @@ concurrency:
 jobs:
   frontend:
     name: Frontend (React)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest moves to Ubuntu 26 (Oct 2026); move on purpose, after a test run
     defaults:
       run:
         working-directory: frontend
