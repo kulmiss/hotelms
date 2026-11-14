@@ -14,6 +14,7 @@ use App\Models\Reservation;
 use App\Models\Room;
 use App\Models\User;
 use App\Models\UserDevice;
+use App\Services\Messages\GuestMessenger;
 use App\Support\HotelClock;
 use App\Support\Money;
 use App\Support\Tenancy\TenantContext;
@@ -68,7 +69,7 @@ class AutomationEvents
             match ($r->status) {
                 'confirmed' => $this->confirmed($hotel, $r),
                 'checked_in' => $this->checkedIn($hotel, $r),
-                'checked_out' => $this->rules->fire($hotel, 'checked_out', RuleEngine::bookingFacts($r, $hotel), $r),
+                'checked_out' => $this->checkedOut($hotel, $r),
                 'cancelled', 'no_show' => $this->cancelled($hotel, $r),
                 default => null,
             };
@@ -78,18 +79,18 @@ class AutomationEvents
     private function confirmed(Hotel $hotel, Reservation $r): void
     {
         $this->rules->fire($hotel, 'booking_confirmed', RuleEngine::bookingFacts($r, $hotel), $r);
-        // 1. Confirmation to the guest (email; SMS / WhatsApp later).
-        $guest = $r->guest;
-        if ($guest?->email && $this->a->enabled($hotel, 'booking_confirmation') && $this->a->once($hotel, 'booking_confirmation', "r{$r->id}")) {
-            $in = HotelClock::local($r->check_in_at, $hotel);
-            $out = HotelClock::local($r->check_out_at, $hotel);
-            $this->mail($guest->email, $hotel, "Booking confirmed: {$r->code}", [
-                "Dear {$guest->full_name}, your booking is confirmed.",
-                'Arrive: '.$in->format('D d M Y, H:i'),
-                'Leave: '.$out->format('D d M Y, H:i'),
-                "Total: {$r->currency} ".Money::round((string) $r->total).", paid: {$r->currency} ".Money::round((string) $r->paid_total),
-                $hotel->phone ? "Questions? Call us on {$hotel->phone}." : 'We look forward to welcoming you.',
-            ]);
+        // 1. Confirmation to the guest (Settings → Guest messages: email, SMS on paid plans).
+        if ($r->guest && $this->a->enabled($hotel, 'booking_confirmation') && $this->a->once($hotel, 'booking_confirmation', "r{$r->id}")) {
+            app(GuestMessenger::class)->sendAuto($hotel, $r, 'confirmation');
+        }
+    }
+
+    private function checkedOut(Hotel $hotel, Reservation $r): void
+    {
+        $this->rules->fire($hotel, 'checked_out', RuleEngine::bookingFacts($r, $hotel), $r);
+        // Thank-you with the feedback link: only when the guest said yes.
+        if ($r->guest && $r->feedback_consent && $this->a->enabled($hotel, 'guest_thank_you') && $this->a->once($hotel, 'guest_thank_you', "r{$r->id}")) {
+            app(GuestMessenger::class)->sendAuto($hotel, $r, 'thank_you');
         }
     }
 
@@ -97,6 +98,10 @@ class AutomationEvents
     {
         $this->rules->fire($hotel, 'checked_in', RuleEngine::bookingFacts($r, $hotel), $r);
         $guest = $r->guest;
+        // Welcome message to the guest: Wi-Fi, breakfast, menu, reception's WhatsApp.
+        if ($guest && $this->a->enabled($hotel, 'guest_welcome') && $this->a->once($hotel, 'guest_welcome', "r{$r->id}")) {
+            app(GuestMessenger::class)->sendAuto($hotel, $r, 'welcome');
+        }
         $name = $guest?->full_name ?? '';
         $link = "/reservations/{$r->id}";
 

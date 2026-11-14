@@ -6,6 +6,7 @@ name: Package
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - 'deploy/**'
       - 'frontend/**'
@@ -26,6 +27,8 @@ concurrency:
 
 jobs:
   package:
+    # Draft PRs (the lower ones in a stack) are not tested; the top PR is (owner, 14 Nov 2026).
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     name: Package (deploy/package.sh)
     runs-on: ubuntu-24.04 # pinned: ubuntu-latest moves to Ubuntu 26 (Oct 2026); move on purpose, after a test run
     steps:

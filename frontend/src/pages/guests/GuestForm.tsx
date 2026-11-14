@@ -89,6 +89,22 @@ export function GuestForm({ guest, compact = false, onSaved, onCancel }: { guest
           <Field label={t('guests.notes')} value={val('notes')} onChange={set('notes')} error={error?.field('notes')} />
         </div>
       )}
+      {!compact && (
+        <>
+          <Select label={t('messages.guestLanguage')} value={val('language')} onChange={set('language')}>
+            <option value="">{t('messages.hotelLanguage')}</option>
+            <option value="en">English</option>
+            <option value="am">አማርኛ</option>
+          </Select>
+          <label className="flex min-h-touch items-start gap-2 self-end text-sm">
+            <input type="checkbox" className="mt-0.5 size-4" checked={!!f.messages_opt_out} onChange={(e) => setF({ ...f, messages_opt_out: e.target.checked })} />
+            <span className="flex flex-col">
+              {t('messages.optOut')}
+              <span className="text-xs text-muted">{t('messages.optOutHint')}</span>
+            </span>
+          </label>
+        </>
+      )}
       <div className="flex justify-end gap-2 sm:col-span-2">
         {onCancel && (
           <Button variant="ghost" onClick={onCancel}>

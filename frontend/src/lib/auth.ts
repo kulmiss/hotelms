@@ -1,5 +1,6 @@
 import { wipeOfflineCopy } from './offline'
 import { SILENT } from './toast'
+import { applyPreferences } from './preferences'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, ApiError, post, prepareSession, put, type Me } from './api'
 
@@ -11,7 +12,9 @@ export function useMe() {
     queryKey: ME_KEY,
     queryFn: async (): Promise<Me | null> => {
       try {
-        return await api<Me>('/me')
+        const me = await api<Me>('/me')
+        applyPreferences(me)
+        return me
       } catch (e) {
         if (e instanceof ApiError && e.status === 401) return null
         throw e

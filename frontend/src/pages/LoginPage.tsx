@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { ApiError } from '@/lib/api'
 import { useDemoLogin, useLogin, useMe, useResendCode, useTwoFactorLogin } from '@/lib/auth'
+import { LanguageSwitch } from '@/components/ui/LanguageSwitch'
 import { BrandMark, useBrand } from '@/lib/brand'
 import { clearDemoOver, isDemoOver } from '@/lib/demo'
 import { ResendLink } from './SignupPages'
@@ -48,7 +49,8 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-y-4 px-4 py-8">
+    <div className="relative flex min-h-svh flex-col items-center justify-center gap-y-4 px-4 py-8">
+      <LanguageSwitch className="absolute top-3 right-3" />
       <span className="mb-2 flex items-center justify-center gap-x-2 text-xl font-medium">
         <BrandMark className="size-8" />
         {brand.name}

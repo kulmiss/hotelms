@@ -81,7 +81,9 @@ const SETTINGS_PAGES: Record<string, ReturnType<typeof section>> = {
   'room-types': section('RoomTypesSettings', pages.roomSettings),
   rooms: section('RoomsSettings', pages.roomSettings),
   import: section('ImportSettings', pages.roomSettings),
+  'calendar-sync': section('CalendarSyncSettings', pages.calendarSync),
   'rate-rules': section('RateRulesSettings', pages.roomSettings),
+  holidays: section('HolidaysSettings', pages.roomSettings),
   'guest-types': section('GuestTypesSettings', pages.roomSettings),
   currencies: section('CurrenciesSettings'),
   taxes: section('TaxesSettings'),
@@ -95,6 +97,7 @@ const SETTINGS_PAGES: Record<string, ReturnType<typeof section>> = {
   attendance: section('AttendanceSettings'),
   subscription: section('SubscriptionSettings'),
   'booking-page': section('BookingPageSettings'),
+  'guest-messages': section('GuestMessagesSettings', pages.guestMessages),
 }
 const DesignSystemPage = lazy(() => pages.designSystem().then((m) => ({ default: m.DesignSystemPage })))
 

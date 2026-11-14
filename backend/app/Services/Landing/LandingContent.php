@@ -59,12 +59,14 @@ class LandingContent
     /** Everything the page needs (cached a minute; cleared when Super Admin saves). @return array<string, mixed> */
     public function page(): array
     {
-        return Cache::remember(self::CACHE, 60, fn () => $this->build());
+        return Cache::remember(self::CACHE.':'.app()->getLocale(), 60, fn () => $this->build());
     }
 
     public static function forget(): void
     {
-        Cache::forget(self::CACHE);
+        foreach (['en', 'am'] as $lang) {
+            Cache::forget(self::CACHE.':'.$lang);
+        }
     }
 
     /** @return array<string, mixed> */
@@ -139,8 +141,8 @@ class LandingContent
             'monthly' => number_format($monthly), 'yearly' => number_format($monthly * $months), 'free_months' => (int) $p->yearly_free_months,
             'points' => array_values(array_filter([
                 $this->limit($p->max_rooms, 'room'), $this->limit($p->max_staff, 'staff account'),
-                $p->max_branches === null ? 'Unlimited properties' : ($p->max_branches > 1 ? "{$p->max_branches} properties" : null),
-                $p->max_storage_mb ? $this->size($p->max_storage_mb).' of files' : null,
+                $p->max_branches === null ? 'Unlimited properties' : ($p->max_branches > 1 ? __(':n properties', ['n' => $p->max_branches]) : null),
+                $p->max_storage_mb ? __(':size of files', ['size' => $this->size($p->max_storage_mb)]) : null,
                 $this->on($p, 'feature.full_reports') ? 'Full reports and Excel export' : 'Daily reports',
                 $this->on($p, 'feature.telegram') ? 'Telegram daily report' : null,
                 in_array('shifts', $p->modules ?? [], true) ? 'Shifts and attendance' : null,
@@ -168,6 +170,15 @@ class LandingContent
                 $row('Housekeeping', fn (Plan $p) => $yes(in_array('housekeeping', $p->modules ?? [], true))),
                 $row('Two-step sign-in, offline view', fn () => '✓'),
                 $row('Cashier shift close', fn (Plan $p) => $yes(in_array('cashier_close', $p->modules ?? [], true))),
+                $row('Weekend, season and holiday prices', fn () => '✓'),
+                $row('Long-stay, early-bird and last-minute prices, minimum stay', fn (Plan $p) => $yes($this->on($p, 'feature.smart_pricing'))),
+                $row('Guest messages: email, WhatsApp and SMS by a tap', fn () => '✓'),
+                $row('Automatic SMS (your own SMS account)', fn (Plan $p) => $yes($this->on($p, 'feature.auto_sms'))),
+                $row('Calendar sync (Airbnb, Booking.com)', function (Plan $p) {
+                    $n = $this->number($p, 'limit.ical_rooms');
+
+                    return $n === 0 ? '–' : ($n === null ? '✓' : trans_choice('{1} Up to :n room|[2,*] Up to :n rooms', $n, ['n' => $n]));
+                }),
                 $row('Several currencies', fn (Plan $p) => $yes($this->on($p, 'feature.multi_currency'))),
                 $row('Telegram and daily report', fn (Plan $p) => $yes($this->on($p, 'feature.telegram'))),
                 $row('Full reports and Excel export', fn (Plan $p) => $yes($this->on($p, 'feature.full_reports'))),
@@ -190,9 +201,25 @@ class LandingContent
         return $row ? (bool) $row->value : (bool) (Switches::registry()[$key]['default'] ?? true);
     }
 
+    /** A plan's number switch (a limit): plan level, then everyone; null = no limit. */
+    private function number(Plan $p, string $key): ?int
+    {
+        $rows = $this->switchRows ??= FeatureSwitch::active()->whereIn('level', ['everyone', 'plan'])->orderByDesc('id')->get();
+        $row = $rows->first(fn (FeatureSwitch $r) => $r->key === $key && $r->level === 'plan' && (int) $r->target_id === $p->id)
+            ?? $rows->first(fn (FeatureSwitch $r) => $r->key === $key && $r->level === 'everyone');
+
+        return $row && $row->value !== null ? (int) $row->value : null;
+    }
+
     private function limit(?int $n, string $what): string
     {
-        return $n === null ? 'Unlimited '.($what === 'staff account' ? 'staff' : $what.'s') : "Up to {$n} {$what}".($n === 1 ? '' : 's');
+        if ($n === null) {
+            return $what === 'staff account' ? __('Unlimited staff') : __('Unlimited rooms');
+        }
+
+        return $what === 'staff account'
+            ? trans_choice('{1} Up to :n staff account|[2,*] Up to :n staff accounts', $n, ['n' => $n])
+            : trans_choice('{1} Up to :n room|[2,*] Up to :n rooms', $n, ['n' => $n]);
     }
 
     private function size(int $mb): string

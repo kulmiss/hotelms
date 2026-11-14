@@ -9,6 +9,7 @@ use App\Models\Invoice;
 use App\Models\Reservation;
 use App\Models\Room;
 use App\Models\User;
+use App\Services\Messages\GuestMessenger;
 use App\Services\Reports\Insights;
 use App\Support\HotelClock;
 use App\Support\Money;
@@ -103,13 +104,8 @@ class AutomationSchedule
         $n = 0;
         Reservation::whereIn('status', ['pending', 'confirmed'])->whereBetween('check_in_at', [$from, $from->copy()->addDay()])->with(['guest', 'branch'])->get()
             ->each(function (Reservation $r) use (&$n) {
-                if ($r->guest?->email && $this->a->once($this->hotel, 'arrival_reminder', "r{$r->id}")) {
-                    $this->events->mail($r->guest->email, $this->hotel, "See you tomorrow: {$r->code}", [
-                        "Dear {$r->guest->full_name}, we look forward to welcoming you tomorrow.",
-                        'Check-in from '.HotelClock::local($r->check_in_at, $this->hotel)->format('H:i').' at '.($r->branch?->name ?? $this->hotel->name).'.',
-                        $r->branch?->address ?? $this->hotel->address ?? '',
-                        $this->hotel->phone ? "Questions? Call us on {$this->hotel->phone}." : '',
-                    ]);
+                if ($r->guest && $this->a->once($this->hotel, 'arrival_reminder', "r{$r->id}")) {
+                    app(GuestMessenger::class)->sendAuto($this->hotel, $r, 'pre_arrival'); // Settings → Guest messages
                     $n++;
                 }
             });

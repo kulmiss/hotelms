@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Branch;
 use App\Models\GuestType;
+use App\Models\Holiday;
 use App\Models\Hotel;
 use App\Models\Plan;
 use App\Models\RateRule;
@@ -11,15 +12,16 @@ use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\User;
 use App\Services\Demo\DemoHistory;
+use App\Services\Pricing\EthiopianHolidays;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
-
 /**
  * The demo hotel for sales meetings and "Try the demo" (decisions.md W11).
  * Rebuilt from scratch every night so visitors' changes disappear.
  * Each later phase adds its own sample data here (rooms, bookings, …).
  */
+use Illuminate\Support\Facades\DB;
+
 class DemoHotel
 {
     public const PASSWORD = 'demo1234';
@@ -154,5 +156,11 @@ class DemoHotel
         }
         RateRule::create(['name' => 'Weekend', 'rule_type' => 'weekend', 'days_of_week' => [5, 6], 'adjustment' => 'percent', 'value' => '10.00', 'priority' => 10, 'is_active' => true]);
         RateRule::create(['name' => 'Corporate discount', 'rule_type' => 'guest_type', 'guest_type_id' => $guestTypes['Corporate']->id, 'adjustment' => 'percent', 'value' => '-15.00', 'priority' => 20, 'is_active' => true]);
+        // Seasons and pricing (owner, 14 Nov 2026): the Ethiopian holidays with a holiday price, and a long-stay discount.
+        foreach (EthiopianHolidays::upcoming('en') as $h) {
+            Holiday::create($h + ['is_active' => true]);
+        }
+        RateRule::create(['name' => 'Holiday', 'rule_type' => 'holiday', 'adjustment' => 'percent', 'value' => '20.00', 'priority' => 15, 'is_active' => true]);
+        RateRule::create(['name' => 'Long stay (7+ nights)', 'rule_type' => 'long_stay', 'min_nights' => 7, 'adjustment' => 'percent', 'value' => '-10.00', 'priority' => 10, 'is_active' => true]);
     }
 }

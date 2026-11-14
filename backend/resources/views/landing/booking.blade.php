@@ -4,9 +4,10 @@
     $multi = count($p['branches']) > 1;
     $val = fn (string $k, $d = '') => e((string) ($old[$k] ?? $d));
     $err = fn (string $k) => isset($errors[$k]) ? '<span class="err" id="e-'.$k.'">'.e($errors[$k]).'</span>' : '';
-    $desc = 'Ask '.$h['name'].($h['city'] ? ' in '.$h['city'] : '').' for a room: choose your dates and send a booking request.';
+    $desc = $h['city'] ? __('Ask :hotel in :city for a room: choose your dates and send a booking request.', ['hotel' => $h['name'], 'city' => $h['city']]) : __('Ask :hotel for a room: choose your dates and send a booking request.', ['hotel' => $h['name']]);
+    $lang = app()->getLocale();
 @endphp
-@extends('landing.layout', ['title' => 'Book a room – '.$h['name'], 'description' => $desc, 'path' => '/h/'.$slug, 'bare' => true])
+@extends('landing.layout', ['title' => __('Book a room').' – '.$h['name'], 'description' => $desc, 'path' => '/h/'.$slug, 'bare' => true, 'langDefault' => $p['language']])
 
 @section('main')
 <header style="border-bottom:1px solid var(--line)">
@@ -15,39 +16,75 @@
       @if ($h['logo'])<img src="{{ $h['logo'] }}" alt="" width="32" height="32" style="width:32px;height:32px;object-fit:contain;border-radius:8px">@endif
       {{ $h['name'] }}
     </span>
-    @if ($h['phone'])<a class="btn btn-outline btn-sm" href="tel:{{ preg_replace('/[^0-9+]/', '', $h['phone']) }}">Call {{ $h['phone'] }}</a>@endif
+    @if ($h['phone'])<a class="btn btn-outline btn-sm" href="tel:{{ preg_replace('/[^0-9+]/', '', $h['phone']) }}">{{ __('Call :phone', ['phone' => $h['phone']]) }}</a>@endif
+    @include('landing.lang-switch', ['path' => '/h/'.$slug])
   </div>
 </header>
 <div class="wrap" style="padding-top:32px;padding-bottom:48px;max-width:860px">
-  <h1 style="font-size:clamp(28px,5vw,40px)">Book a room</h1>
-  <p class="lead">{{ $h['city'] ? $h['name'].', '.$h['city'].'.' : $h['name'].'.' }} Send your dates – the hotel confirms by phone.</p>
+  <h1 style="font-size:clamp(28px,5vw,40px)">{{ __('Book a room') }}</h1>
+  <p class="lead">{{ $h['city'] ? $h['name'].', '.$h['city'].'.' : $h['name'].'.' }} {{ __('Send your dates – the hotel confirms by phone.') }}</p>
   @if ($p['note'])<p class="muted" style="margin-top:8px">{{ $p['note'] }}</p>@endif
 
   @if ($sent)
-    <div class="ok" role="status" style="margin-top:24px"><strong>Thank you! Your request was sent.</strong><br>The hotel will call you to confirm. Nothing is booked or paid until they do.</div>
+    <div class="ok" role="status" style="margin-top:24px"><strong>{{ __('Thank you! Your request was sent.') }}</strong><br>{{ __('The hotel will call you to confirm. Nothing is booked or paid until they do.') }}</div>
   @endif
 
   @if ($types->isNotEmpty())
-    <h2 class="title" style="font-size:22px;margin-top:36px">Rooms</h2>
+    <h2 class="title" style="font-size:22px;margin-top:36px">{{ __('Rooms') }}</h2>
     <div class="grid" style="margin-top:16px">
       @foreach ($types as $t)
         <div class="card">
           <h3 style="margin-top:0">{{ $t['name'] }}</h3>
           @if ($multi)<p style="font-size:13px">{{ $t['branch'] }}</p>@endif
-          @if ($t['price'])<p style="color:var(--text);font-weight:700;font-size:18px;margin-top:6px">{{ $t['currency'] }} {{ $t['price'] }} <small class="muted" style="font-weight:500;font-size:13px">/ night</small></p>@endif
-          <p style="margin-top:6px">Up to {{ $t['max'] }} {{ $t['max'] == 1 ? 'guest' : 'guests' }}@if ($t['amenities']) · {{ implode(', ', $t['amenities']) }}@endif</p>
+          @if ($t['price'])<p style="color:var(--text);font-weight:700;font-size:18px;margin-top:6px">{{ $t['currency'] }} {{ $t['price'] }} <small class="muted" style="font-weight:500;font-size:13px">{{ __('/ night') }}</small></p>@endif
+          <p style="margin-top:6px">{{ trans_choice('{1} Up to :n guest|[2,*] Up to :n guests', (int) $t['max'], ['n' => $t['max']]) }}@if ($t['amenities']) · {{ implode(', ', $t['amenities']) }}@endif</p>
         </div>
       @endforeach
     </div>
   @endif
 
-  <h2 class="title" style="font-size:22px;margin-top:40px">Your request</h2>
-  <form class="form card" method="post" action="/h/{{ $slug }}" style="margin-top:16px" novalidate>
+  @if ($types->isNotEmpty())
+    <h2 class="title" style="font-size:22px;margin-top:40px" id="prices">{{ __('Price for your dates') }}</h2>
+    {{-- A GET form with dates and room only: no personal data in the link. --}}
+    <form class="form card" method="get" action="/h/{{ $slug }}#prices" style="margin-top:16px">
+      <input type="hidden" name="lang" value="{{ $lang }}">
+      <div class="two">
+        <label>{{ __('Arrival') }} <input type="date" name="check_in" required min="{{ now()->toDateString() }}" value="{{ $val('check_in') }}"></label>
+        <label>{{ __('Departure') }} <input type="date" name="check_out" required min="{{ now()->addDay()->toDateString() }}" value="{{ $val('check_out') }}"></label>
+      </div>
+      <label>{{ __('Room') }}
+        <select name="room_type_id">
+          @foreach ($types as $t)<option value="{{ $t['id'] }}" @selected(($old['room_type_id'] ?? null) == $t['id'])>{{ $t['name'] }}{{ $multi ? ' ('.$t['branch'].')' : '' }}</option>@endforeach
+        </select>
+      </label>
+      <button class="btn btn-outline" type="submit">{{ __('See prices') }}</button>
+      @isset($errors['quote'])<p class="err" role="alert">{{ $errors['quote'] }}</p>@endisset
+      @if ($quote)
+        <div class="table" role="region" aria-label="{{ __('Price night by night') }}" tabindex="0">
+          <table style="min-width:0">
+            <caption class="skip">{{ __('Price night by night') }}</caption>
+            <thead><tr><th scope="col">{{ __('Night') }}</th><th scope="col" style="text-align:right">{{ __('Price') }}</th></tr></thead>
+            <tbody>
+              @foreach ($quote['nights'] as $n)
+                <tr><td>{{ \Illuminate\Support\Carbon::parse($n['date'])->translatedFormat('D j M Y') }}@if ($lang === 'am') · {{ \App\Support\EthiopianDate::format($n['date'], 'am') }}@endif @if ($n['rule'])<small class="muted">· {{ $n['rule'] }}</small>@endif</td><td style="text-align:right">{{ $quote['currency'] }} {{ number_format((float) $n['amount'], 2) }}</td></tr>
+              @endforeach
+              <tr><th scope="row">{{ __('Total for :room', ['room' => $quote['type']]) }}</th><td style="text-align:right;font-weight:700">{{ $quote['currency'] }} {{ number_format((float) $quote['total'], 2) }}</td></tr>
+            </tbody>
+          </table>
+        </div>
+        @if ($quote['min_stay'])<p class="err">{{ __(':name: stays of at least :n nights. Please call the hotel for a shorter stay.', ['name' => $quote['min_stay']['name'], 'n' => $quote['min_stay']['nights']]) }}</p>@endif
+        <p class="muted" style="font-size:13px">{{ __('Taxes may be added. The hotel confirms the final price.') }}</p>
+      @endif
+    </form>
+  @endif
+
+  <h2 class="title" style="font-size:22px;margin-top:40px">{{ __('Your request') }}</h2>
+  <form class="form card" method="post" action="/h/{{ $slug }}?lang={{ $lang }}" style="margin-top:16px" novalidate>
     @isset($errors['form'])<p class="err" role="alert">{{ $errors['form'] }}</p>@endisset
     <input type="hidden" name="form_token" value="{{ $token }}">
-    <div class="hp" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off"></label></div>
+    <div class="hp" aria-hidden="true"><label>{{ __('Website') }} <input name="website" tabindex="-1" autocomplete="off"></label></div>
     @if ($multi)
-      <label>Hotel / branch
+      <label>{{ __('Hotel / branch') }}
         <select name="branch_id" required>
           @foreach ($p['branches'] as $b)<option value="{{ $b['id'] }}" @selected(($old['branch_id'] ?? null) == $b['id'])>{{ $b['name'] }}{{ $b['city'] ? ' – '.$b['city'] : '' }}</option>@endforeach
         </select>{!! $err('branch_id') !!}
@@ -55,35 +92,36 @@
     @else
       <input type="hidden" name="branch_id" value="{{ $p['branches'][0]['id'] ?? '' }}">
     @endif
-    <label>Room
+    <label>{{ __('Room') }}
       <select name="room_type_id">
-        <option value="">Any room</option>
+        <option value="">{{ __('Any room') }}</option>
         @foreach ($types as $t)<option value="{{ $t['id'] }}" @selected(($old['room_type_id'] ?? null) == $t['id'])>{{ $t['name'] }}{{ $multi ? ' ('.$t['branch'].')' : '' }}</option>@endforeach
       </select>{!! $err('room_type_id') !!}
     </label>
     <div class="two">
-      <label>Arrival <input type="date" name="check_in" required min="{{ now()->toDateString() }}" value="{{ $val('check_in') }}" @isset($errors['check_in']) aria-describedby="e-check_in" aria-invalid="true" @endisset>{!! $err('check_in') !!}</label>
-      <label>Departure <input type="date" name="check_out" required min="{{ now()->addDay()->toDateString() }}" value="{{ $val('check_out') }}" @isset($errors['check_out']) aria-describedby="e-check_out" aria-invalid="true" @endisset>{!! $err('check_out') !!}</label>
+      <label>{{ __('Arrival') }} <input type="date" name="check_in" required min="{{ now()->toDateString() }}" value="{{ $val('check_in') }}" @isset($errors['check_in']) aria-describedby="e-check_in" aria-invalid="true" @endisset>{!! $err('check_in') !!}</label>
+      <label>{{ __('Departure') }} <input type="date" name="check_out" required min="{{ now()->addDay()->toDateString() }}" value="{{ $val('check_out') }}" @isset($errors['check_out']) aria-describedby="e-check_out" aria-invalid="true" @endisset>{!! $err('check_out') !!}</label>
     </div>
     <div class="two">
-      <label>Adults <input type="number" name="adults" min="1" max="20" required value="{{ $val('adults', '1') }}">{!! $err('adults') !!}</label>
-      <label>Children <input type="number" name="children" min="0" max="20" value="{{ $val('children', '0') }}">{!! $err('children') !!}</label>
+      <label>{{ __('Adults') }} <input type="number" name="adults" min="1" max="20" required value="{{ $val('adults', '1') }}">{!! $err('adults') !!}</label>
+      <label>{{ __('Children') }} <input type="number" name="children" min="0" max="20" value="{{ $val('children', '0') }}">{!! $err('children') !!}</label>
     </div>
-    <label>Your name <input name="name" autocomplete="name" required value="{{ $val('name') }}">{!! $err('name') !!}</label>
+    <label>{{ __('Your name') }} <input name="name" autocomplete="name" required value="{{ $val('name') }}">{!! $err('name') !!}</label>
     <div class="two">
-      <label>Phone <input type="tel" name="phone" autocomplete="tel" inputmode="tel" required placeholder="+251 9…" value="{{ $val('phone') }}">{!! $err('phone') !!}</label>
-      <label>Email (optional) <input type="email" name="email" autocomplete="email" value="{{ $val('email') }}">{!! $err('email') !!}</label>
+      <label>{{ __('Phone') }} <input type="tel" name="phone" autocomplete="tel" inputmode="tel" required placeholder="+251 9…" value="{{ $val('phone') }}">{!! $err('phone') !!}</label>
+      <label>{{ __('Email (optional)') }} <input type="email" name="email" autocomplete="email" value="{{ $val('email') }}">{!! $err('email') !!}</label>
     </div>
-    <label>Message (optional) <textarea name="note" maxlength="500">{{ $val('note') }}</textarea>{!! $err('note') !!}</label>
-    <button class="btn btn-primary" type="submit">Send request</button>
-    <p class="muted" style="font-size:13px">Your details go only to {{ $h['name'] }}, to answer your request. See the <a href="/privacy">privacy policy</a>.</p>
+    <label>{{ __('Message (optional)') }} <textarea name="note" maxlength="500">{{ $val('note') }}</textarea>{!! $err('note') !!}</label>
+    <label style="display:flex;gap:10px;align-items:flex-start;font-weight:400;min-height:44px"><input type="checkbox" name="feedback_consent" value="1" style="width:20px;min-height:20px;margin-top:2px" @checked(($old['feedback_consent'] ?? null) === '1')> <span>{{ __('After my stay, send me a thank-you with a short feedback form.') }}</span></label>
+    <button class="btn btn-primary" type="submit">{{ __('Send request') }}</button>
+    <p class="muted" style="font-size:13px">{{ __('Your details go only to :hotel, to answer your request. With an email address you get a message that it arrived.', ['hotel' => $h['name']]) }} <a href="{{ \App\Support\PublicLocale::url('/privacy') }}">{{ __('Privacy policy') }}</a></p>
   </form>
 </div>
 <footer class="foot">
   <div class="wrap row">
     <span>© {{ date('Y') }} {{ $h['name'] }}</span>
     @if ($h['email'])<a href="mailto:{{ $h['email'] }}">{{ $h['email'] }}</a>@endif
-    @if ($p['powered_by'])<a class="powered" href="/">Powered by {{ $c['platform_name'] ?: 'HotelMS' }}</a>@endif
+    @if ($p['powered_by'])<a class="powered" href="{{ \App\Support\PublicLocale::url('/') }}">{{ __('Powered by :name', ['name' => $c['platform_name'] ?: 'HotelMS']) }}</a>@endif
   </div>
 </footer>
 @endsection

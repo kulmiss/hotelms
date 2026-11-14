@@ -55,6 +55,7 @@ export function WalkInPage() {
   const [reference, setReference] = useState('')
   const [proof, setProof] = useState<Proof | null>(null)
   const [payLater, setPayLater] = useState(false)
+  const [consent, setConsent] = useState(false) // thank-you with the feedback link: only with the guest's yes
   const free = useFreeRooms(branchId || null, true, { stay_type: stayType, check_out: checkOut, hours })
   const walkIn = useWalkIn()
 
@@ -100,6 +101,7 @@ export function WalkInPage() {
         ...(stayType === 'nightly' && openStay ? { open_stay: true } : {}),
         ...(quick ? { quick_guest: { name: quickName.trim(), phone: quickPhone.trim() } } : { guest_id: guest?.id }),
         rooms: chosen.map((r) => ({ room_type_id: r.room_type_id, room_id: r.id, adults: 1, children: 0 })),
+        feedback_consent: consent,
         ...(payLater ? { pay_later: true } : { payment: { payment_method_id: methodId || lookups.data?.payment_methods[0]?.id || 0, amount: pay, reference: reference || undefined, proof_id: proof?.id } }),
       },
       { onSuccess: (res) => navigate(`/reservations/${res.data.id}`, { replace: true }) },
@@ -277,6 +279,15 @@ export function WalkInPage() {
           {!chosen.length && <p className="text-sm text-muted">{t('desk.pickRoomFirst')}</p>}
           {quoteError && <Alert>{Object.values(quoteError.errors)[0]?.[0] ?? quoteError.message}</Alert>}
           {q && chosen.length > 0 && <QuoteSummary q={{ ...q, deposit_required: '0' }} />}
+          {q && (
+            <label className="flex min-h-touch items-start gap-2 border-t border-border pt-3 text-sm">
+              <input type="checkbox" className="mt-0.5" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+              <span className="flex flex-col">
+                {t('messages.consent')}
+                <span className="text-xs text-muted">{t('messages.consentHint')}</span>
+              </span>
+            </label>
+          )}
           {q && lookups.data?.pay_later && (
             <label className="flex min-h-touch items-start gap-2 border-t border-border pt-3 text-sm">
               <input type="checkbox" className="mt-0.5" checked={payLater} onChange={(e) => setPayLater(e.target.checked)} />

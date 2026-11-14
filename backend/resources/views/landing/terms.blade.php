@@ -2,7 +2,10 @@
 @extends('landing.layout', ['title' => "Terms of use – {$name}", 'description' => "The rules for using {$name}: plans, the Free plan, your data, security and ending the service.", 'path' => '/terms'])
 
 @section('main')
-<article class="prose">
+@if (app()->getLocale() !== 'en')
+<p class="draft" role="note" style="max-width:720px;margin:24px auto 0">{{ __('This text is in English only for now. An Amharic version will follow after the lawyer has checked it.') }}</p>
+@endif
+<article class="prose" lang="en">
   <h1>Terms of use</h1>
   <p>Last changed: {{ $updated }}</p>
   <p class="draft" role="note"><strong>Draft – to be checked by a lawyer.</strong> This text explains how the service works today. It will be reviewed before it becomes final.</p>

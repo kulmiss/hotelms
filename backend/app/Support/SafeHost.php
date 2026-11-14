@@ -15,6 +15,13 @@ class SafeHost
         if (config('hotelms.mail_allow_private_host')) {
             return true;
         }
+
+        return self::isPublic($host);
+    }
+
+    /** On the internet (calendar links: always, no setting allows the server's own network). */
+    public static function isPublic(string $host): bool
+    {
         $host = strtolower(trim($host, ' .[]'));
         if ($host === '' || $host === 'localhost' || str_ends_with($host, '.localhost') || str_ends_with($host, '.local') || str_ends_with($host, '.internal')) {
             return false;
@@ -26,7 +33,7 @@ class SafeHost
             }
         }
         if ($ips === []) {
-            return true; // not found now (no internet, a new name): checked again each time mail is sent (MailSettings)
+            return true; // not found now (no internet, a new name): checked again each time it is used
         }
         foreach ($ips as $ip) {
             if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
