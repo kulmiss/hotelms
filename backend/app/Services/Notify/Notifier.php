@@ -29,6 +29,9 @@ class Notifier
         if ($hotel->is_demo) {
             return [];
         }
+        if (! $hotel->maySendMessages()) {
+            return ['This hotel is not confirmed yet, so nothing is sent.'];
+        }
         $problems = [];
         $url = $link ? rtrim((string) config('app.frontend_url'), '/').$link : null;
 

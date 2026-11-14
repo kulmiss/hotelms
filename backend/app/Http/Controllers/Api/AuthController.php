@@ -264,6 +264,9 @@ class AuthController extends Controller
         // The session belongs to this person now (also after a PIN switch from someone else).
         $request->session()->put('password_hash_web', $user->getAuthPassword());
         $user->forceFill(['last_login_at' => now()])->save();
+        if ($user->hotel?->inactive_since) {
+            $user->hotel->forceFill(['inactive_since' => null])->save(); // in use again
+        }
         $this->devices->signedIn($user, $token, $request);
         app(SecurityLog::class)->record('login_ok', $user, $request);
 

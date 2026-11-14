@@ -59,6 +59,9 @@ class DashboardController extends Controller
                 'staff_online' => DB::table('user_devices')->whereIn('hotel_id', $ids)->where('status', 'active')->where('last_seen_at', '>=', now()->subMinutes(15))->distinct()->count('user_id'),
                 'open_support' => SupportRequest::withoutGlobalScope('hotel')->where('status', 'open')->count(),
             ],
+            // Free hotels nobody used for 90 days, and sign-ups waiting (owner, 14 Nov 2026).
+            'inactive_free' => Hotel::query()->whereNotNull('inactive_since')->orderBy('inactive_since')->limit(10)->get(['id', 'name', 'inactive_since']),
+            'pending_signups' => Hotel::query()->where('signup_status', 'pending')->count(),
             'trials_ending_soon' => Hotel::query()->where('is_demo', false)->where('status', 'trial')
                 ->whereBetween('trial_ends_at', [now()->toDateString(), now()->addDays(7)->toDateString()])
                 ->orderBy('trial_ends_at')->get(['id', 'name', 'trial_ends_at']),

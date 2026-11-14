@@ -105,6 +105,9 @@ export type AdminDashboard = {
   hotels: { total: number; by_status: Record<string, number> }
   income_this_month: Record<string, string>
   trials_ending_soon: { id: number; name: string; trial_ends_at: string }[]
+  /** Free hotels nobody signed in to for 90 days (flagged daily; nothing is deleted). */
+  inactive_free?: { id: number; name: string; inactive_since: string }[]
+  pending_signups?: number
   needs_attention: { id: number; name: string; status: string; subscription_ends_at: string | null; trial_ends_at: string | null }[]
   today?: { bookings: number; money: Record<string, string>; occupancy: number; occupied: number; rooms: number; staff_online: number; open_support: number }
   top_hotels?: { id: number; name: string; currency: string; total: string; payments: number }[]

@@ -273,6 +273,9 @@ class AutomationEvents
     /** @param list<string> $lines */
     public function mail(string $to, Hotel $hotel, string $title, array $lines): void
     {
+        if (! $hotel->maySendMessages()) {
+            return; // not confirmed (or approved) yet
+        }
         try {
             Mail::to($to)->send(new ReportMail($hotel->name, $title, $lines));
         } catch (Throwable $e) {

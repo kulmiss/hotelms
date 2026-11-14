@@ -30,6 +30,7 @@ class HotelController extends Controller
             'plan_id' => ['nullable', 'integer'],
             'search' => ['nullable', 'string', 'max:100'],
             'closed' => ['nullable', 'boolean'],
+            'inactive' => ['nullable', 'boolean'],
         ]);
 
         $hotels = Hotel::query()
@@ -45,6 +46,7 @@ class HotelController extends Controller
             })
             ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($request->input('plan_id'), fn ($q, $plan) => $q->where('plan_id', $plan))
+            ->when($request->boolean('inactive'), fn ($q) => $q->whereNotNull('inactive_since'))
             ->orderBy('name')
             ->paginate(max(1, min((int) $request->input('per_page', 25), 100)));
 

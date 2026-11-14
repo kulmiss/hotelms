@@ -32,6 +32,7 @@ Schedule::command('hotelms:backup')->dailyAt('01:15')->withoutOverlapping();
 Schedule::command('hotelms:backup --small')->hourlyAt(40)->withoutOverlapping();
 Schedule::command('hotelms:backup --check')->monthlyOn(1, '06:00');
 Schedule::command('hotelms:purge-closed-hotels')->dailyAt('03:30')->withoutOverlapping();
+Schedule::command('hotelms:signup-cleanup')->dailyAt('03:45')->withoutOverlapping();
 
 // The demo hotel starts fresh every night.
 Schedule::command('demo:reset')->dailyAt('02:30')->withoutOverlapping();

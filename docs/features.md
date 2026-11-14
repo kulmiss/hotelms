@@ -125,8 +125,12 @@ with their own password. `hotels.signup_status`: `unverified` → (`pending` →
 Sign-in is refused until the email is confirmed (`email_unverified`, with "Send the link again"), while waiting (`signup_pending`)
 and when refused (`signup_rejected`). Pending hotels: approve, or refuse with a reason; both are emailed. Security log:
 `signup`, `signup_verified`, `signup_approved`, `signup_rejected`. No captcha, no cookies before the form is sent: hidden field +
-form time + rate limit. Code: `Services/Signup/SelfSignup`, `SignupController`, `pages/SignupPages.tsx`,
-`pages/admin/SignupsPage.tsx`. Tests: `Auth/SelfSignupTest`.
+form time + rate limit. Safety: no email or Telegram for a hotel until it is confirmed (and approved) – `Hotel::maySendMessages()` in `Notifier` and
+`AutomationEvents::mail`. Daily `hotelms:signup-cleanup` (03:45, `Signup/SignupCleanup`): removes sign-ups not confirmed in 7 days
+(never one with guests or bookings), flags Free hotels nobody signed in to for 90 days (`hotels.inactive_since`; Command center +
+Hotels `?inactive=1`; cleared at the next sign-in). Guest data is never deleted automatically.
+Code: `Services/Signup/SelfSignup`, `SignupController`, `pages/SignupPages.tsx`,
+`pages/admin/SignupsPage.tsx`. Tests: `Auth/SelfSignupTest`, `Auth/SignupSafetyTest`.
 
 ## Super Admin (HotelMS team)
 

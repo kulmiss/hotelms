@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'name', 'legal_name', 'tin', 'vat_number', 'email', 'phone', 'address', 'city', 'logo_path',
     'default_currency', 'timezone', 'status', 'plan_id', 'subscription_ends_at',
     'trial_ends_at', 'trial_plan_id', 'billing_cycle', 'custom_price', 'suspended_at', 'suspend_reason', 'is_demo',
-    'signup_status', 'signup', 'signup_decided_at', 'signup_decided_by', 'signup_reason',
+    'signup_status', 'signup', 'signup_decided_at', 'signup_decided_by', 'signup_reason', 'inactive_since',
 ])]
 class Hotel extends Model
 {
@@ -33,6 +33,12 @@ class Hotel extends Model
     public function signupLocked(): bool
     {
         return in_array($this->signup_status, ['unverified', 'pending', 'rejected'], true);
+    }
+
+    /** Email and Telegram go out only for hotels that are confirmed (and approved in Approval mode), never for the demo. */
+    public function maySendMessages(): bool
+    {
+        return ! $this->is_demo && ! $this->signupLocked();
     }
 
     protected function casts(): array
@@ -47,6 +53,7 @@ class Hotel extends Model
             'is_demo' => 'boolean',
             'signup' => 'array',
             'signup_decided_at' => 'datetime',
+            'inactive_since' => 'datetime',
         ];
     }
 
