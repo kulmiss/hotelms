@@ -172,6 +172,11 @@ class LandingContent
                 $row('Cashier shift close', fn (Plan $p) => $yes(in_array('cashier_close', $p->modules ?? [], true))),
                 $row('Weekend, season and holiday prices', fn () => '✓'),
                 $row('Long-stay, early-bird and last-minute prices, minimum stay', fn (Plan $p) => $yes($this->on($p, 'feature.smart_pricing'))),
+                $row('Calendar sync (Airbnb, Booking.com)', function (Plan $p) {
+                    $n = $this->number($p, 'limit.ical_rooms');
+
+                    return $n === 0 ? '–' : ($n === null ? '✓' : trans_choice('{1} Up to :n room|[2,*] Up to :n rooms', $n, ['n' => $n]));
+                }),
                 $row('Several currencies', fn (Plan $p) => $yes($this->on($p, 'feature.multi_currency'))),
                 $row('Telegram and daily report', fn (Plan $p) => $yes($this->on($p, 'feature.telegram'))),
                 $row('Full reports and Excel export', fn (Plan $p) => $yes($this->on($p, 'feature.full_reports'))),
@@ -192,6 +197,16 @@ class LandingContent
             ?? $rows->first(fn (FeatureSwitch $r) => $r->key === $key && $r->level === 'everyone');
 
         return $row ? (bool) $row->value : (bool) (Switches::registry()[$key]['default'] ?? true);
+    }
+
+    /** A plan's number switch (a limit): plan level, then everyone; null = no limit. */
+    private function number(Plan $p, string $key): ?int
+    {
+        $rows = $this->switchRows ??= FeatureSwitch::active()->whereIn('level', ['everyone', 'plan'])->orderByDesc('id')->get();
+        $row = $rows->first(fn (FeatureSwitch $r) => $r->key === $key && $r->level === 'plan' && (int) $r->target_id === $p->id)
+            ?? $rows->first(fn (FeatureSwitch $r) => $r->key === $key && $r->level === 'everyone');
+
+        return $row && $row->value !== null ? (int) $row->value : null;
     }
 
     private function limit(?int $n, string $what): string

@@ -267,7 +267,7 @@ function ReservationCalendar() {
   if (data) {
     const types = [...new Map(data.rooms.map((r) => [r.room_type_id, r.room_type])).entries()]
     for (const [typeId, typeName] of types) {
-      if (data.bookings.some((b) => b.room_id === null && b.room_type_id === typeId)) {
+      if (data.bookings.some((b) => b.room_id === null && b.room_type_id === typeId) || (data.blocks ?? []).some((b) => b.room_id === null && b.room_type_id === typeId)) {
         rows.push({ key: `t${typeId}`, label: t('reservations.unassigned'), sub: typeName ?? '', roomId: null, typeId })
       }
       for (const r of data.rooms.filter((x) => x.room_type_id === typeId)) rows.push({ key: `r${r.id}`, label: r.number, sub: typeName ?? '', roomId: r.id, typeId })
@@ -295,6 +295,13 @@ function ReservationCalendar() {
     })
     return { placed, lines: Math.max(1, lineEnds.length) }
   }
+
+  // Busy dates from other sites (calendar sync): striped bars, not links.
+  const blocksFor = (row: Row) =>
+    (data?.blocks ?? [])
+      .filter((b) => (row.roomId ? b.room_id === row.roomId : b.room_id === null && b.room_type_id === row.typeId))
+      .map((b) => ({ b, start: Math.max(0, daysBetween(from, localDate(b.check_in_at)) + 0.5), end: Math.min(DAYS, daysBetween(from, localDate(b.check_out_at)) + 0.5) }))
+      .filter((x) => x.end > 0 && x.start < DAYS)
 
   return (
     <div className="flex flex-col gap-4">
@@ -385,6 +392,16 @@ function ReservationCalendar() {
                       {b.guest ?? b.code}
                     </Link>
                   ))}
+                  {blocksFor(row).map(({ b, start, end }) => (
+                    <span
+                      key={`ical${b.id}`}
+                      title={[b.source, b.summary].filter(Boolean).join(' · ')}
+                      className="absolute flex h-7 items-center overflow-hidden rounded-md border border-dashed border-ring-strong bg-sunken bg-[repeating-linear-gradient(135deg,transparent_0_6px,var(--color-border)_6px_8px)] px-2 text-xs font-medium whitespace-nowrap text-muted"
+                      style={{ left: `${(start / DAYS) * 100}%`, width: `${((end - start) / DAYS) * 100}%`, bottom: 4 }}
+                    >
+                      {t('calendarSync.onCalendar', { source: b.source ?? '' })}
+                    </span>
+                  ))}
                 </div>
               </div>
             )
@@ -404,7 +421,9 @@ function DayRooms({ day, data, branchId, onClose }: { day: string; data: Calenda
     const night = sleepingOn(mine, day)
     const leaving = mine.find((b) => localDate(b.check_out_at) === day && b !== night && b.status !== 'cancelled' && b.status !== 'no_show')
     const state = night ? (localDate(night.check_in_at) === day ? 'arriving' : 'staying') : 'free'
-    return { room, night, leaving, state }
+    // Held by another site (calendar sync) that night.
+    const held = (data.blocks ?? []).find((b) => b.room_id === room.id && localDate(b.check_in_at) <= day && day < localDate(b.check_out_at))
+    return { room, night, leaving, state: !night && held ? 'held' : state, held }
   })
   const free = rows.filter((r) => r.state === 'free').length
   const waiting = data.bookings.filter((b) => b.room_id === null && sleepingOn([b], day)).length
@@ -433,7 +452,7 @@ function DayRooms({ day, data, branchId, onClose }: { day: string; data: Calenda
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ room, night, leaving, state }) => (
+            {rows.map(({ room, night, leaving, state, held }) => (
               <tr key={room.id} className="border-t border-border">
                 <td className="px-3 py-1.5">
                   <Link to={`/rooms/${room.id}/calendar?branch=${branchId ?? ''}`} className="font-medium hover:text-accent-text hover:underline">
@@ -447,6 +466,8 @@ function DayRooms({ day, data, branchId, onClose }: { day: string; data: Calenda
                       <Badge tone={state === 'arriving' ? 'info' : 'accent'}>{t(`roomCal.states.${state}`)}</Badge>
                       <span className="truncate">{night.guest ?? night.code}</span>
                     </Link>
+                  ) : held ? (
+                    <Badge tone="grey">{t('calendarSync.onCalendar', { source: held.source ?? '' })}</Badge>
                   ) : (
                     <Badge tone="ok">{t('roomCal.states.free')}</Badge>
                   )}

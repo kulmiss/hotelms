@@ -9,6 +9,7 @@ export const SETTINGS_SECTIONS = [
   { key: 'room-types', permission: 'settings.rooms' },
   { key: 'rooms', permission: 'settings.rooms' },
   { key: 'import', permission: 'settings.rooms' },
+  { key: 'calendar-sync', permission: 'settings.rooms' },
   { key: 'rate-rules', permission: 'settings.pricing' },
   { key: 'holidays', permission: 'settings.pricing' },
   { key: 'guest-types', permission: 'settings.pricing' },
@@ -46,6 +47,7 @@ const SOURCES: Record<string, string[]> = {
   import: ['import'],
   'rate-rules': ['settings.rates'],
   holidays: ['settings.holidays'],
+  'calendar-sync': ['calendarSync'],
   'guest-types': ['settings.guestTypes'],
   currencies: ['settings.currencies'],
   taxes: ['settings.taxes'],
@@ -75,6 +77,7 @@ const SYNONYMS: Record<string, string> = {
   'booking-page': 'online booking website link guests request',
   'rate-rules': 'price weekend season discount corporate long stay early bird last minute minimum stay',
   holidays: 'holiday genna timket fasika meskel eid ethiopian calendar',
+  'calendar-sync': 'airbnb booking.com ical ics channel sync calendar link double booking',
   cancellation: 'no-show refund policy fee',
 }
 

@@ -171,6 +171,8 @@ export type CalendarData = {
   days: number
   rooms: { id: number; number: string; floor: string | null; status: string; room_type_id: number; room_type: string | null }[]
   bookings: { id: number; reservation_id: number; code: string; guest: string | null; status: ReservationStatus; stay_type: StayType; room_id: number | null; room_type_id: number; room_type: string | null; check_in_at: string; check_out_at: string }[]
+  /** Busy dates from Airbnb, Booking.com… (calendar sync): on a room, or on one room of a type (room_id null). */
+  blocks?: { id: number; source: string | null; summary: string | null; room_id: number | null; room_type_id: number | null; check_in_at: string; check_out_at: string }[]
 }
 
 /* ------------------------------------------------------------- hooks */

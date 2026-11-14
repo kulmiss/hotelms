@@ -8,6 +8,7 @@ use App\Http\Presenters\ReservationPresenter;
 use App\Models\CancellationPolicy;
 use App\Models\Guest;
 use App\Models\HotelCurrency;
+use App\Models\IcalBlock;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Reservation;
@@ -266,9 +267,21 @@ class ReservationController extends Controller
                 'check_in_at' => HotelClock::iso($rr->check_in_at, $hotel), 'check_out_at' => HotelClock::iso($rr->check_out_at, $hotel),
             ]);
 
+        // Busy dates from Airbnb, Booking.com… (calendar sync), on their room or on the room type.
+        $roomIds = $rooms->pluck('id');
+        $blocks = app(Availability::class)->blocks($from->copy()->utc(), $to->copy()->utc())->with('feed:id,name')
+            ->where(fn ($q) => $q->whereIn('room_id', $roomIds)->orWhere(fn ($w) => $w->whereNull('room_id')->whereIn('room_type_id', $rooms->pluck('room_type_id')->unique())))
+            ->when($data['room_id'] ?? null, fn ($q, $room) => $q->where('room_id', (int) $room))
+            ->get()
+            ->map(fn (IcalBlock $b) => [
+                'id' => $b->id, 'source' => $b->feed?->name, 'summary' => $b->summary, 'room_id' => $b->room_id, 'room_type_id' => $b->room_type_id,
+                'check_in_at' => HotelClock::iso($b->starts_at, $hotel), 'check_out_at' => HotelClock::iso($b->ends_at, $hotel),
+            ])->values();
+
         return response()->json([
             'from' => $from->toDateString(),
             'days' => $days,
+            'blocks' => $blocks,
             'rooms' => $rooms->map(fn (Room $r) => ['id' => $r->id, 'number' => $r->number, 'floor' => $r->floor, 'status' => $r->status, 'room_type_id' => $r->room_type_id, 'room_type' => $r->roomType?->name]),
             'bookings' => $bookings,
         ]);

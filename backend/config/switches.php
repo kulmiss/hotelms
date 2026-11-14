@@ -35,6 +35,7 @@ return [
     'limit.branches' => ['type' => 'int', 'group' => 'limits', 'default' => null],
     'limit.staff' => ['type' => 'int', 'group' => 'limits', 'default' => null],
     'limit.storage_mb' => ['type' => 'int', 'group' => 'limits', 'default' => null], // files: payment proofs, ID photos, logo
+    'limit.ical_rooms' => ['type' => 'int', 'group' => 'limits', 'default' => null], // rooms in calendar sync (iCal): Free 0, Starter 10, others all
 
     // Emergency
     'emergency.maintenance' => ['type' => 'bool', 'group' => 'emergency', 'default' => false],

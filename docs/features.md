@@ -171,6 +171,27 @@ lawyer"**: the hotel is the data controller for its guests and the platform the 
 and security log kept one year; 7-day removal of unconfirmed sign-ups; 90 days after closing. Change the date in
 `LandingController::LEGAL_UPDATED` when the texts change.
 
+## Calendar sync (Airbnb, Booking.com – iCal)
+
+Settings → Calendar sync (`settings.rooms`; `Settings/CalendarSyncController`, `pages/settings/CalendarSyncSections.tsx`).
+- **Import**: several links per room or per room type (`ical_feeds`, the link is stored encrypted and never sent back – the list shows
+  only the host). `ical:sync` runs every 15 minutes from cron (only links not read in the last 15 minutes, at most 200 per run);
+  "Sync now" at most once a minute. `Channels/IcalParser` reads VEVENT dates/UID/SUMMARY (folded lines, all-day and timed events,
+  cancelled events skipped). The busy dates (`ical_blocks`, from the branch's check-in time to its check-out time) **hold the room**
+  (or one room of the type) in `Booking/Availability`, so no double booking here. A link that fails keeps its old dates and shows the
+  error. Links go only to the internet (`SafeHost::isPublic`, also after redirects; https/http only, 2 MB, 15 s).
+- **Clash** with a booking (same room, or more rooms of a type held than exist): a **warning only** – nothing is cancelled (owner's
+  choice); saved on the link and told once to staff with `reservations.edit` (bell, `ical_conflict`).
+- **Export**: each room gets a secret link `/ical/{secret}.ics` (sha256 in `rooms.ical_token` to find it, the secret encrypted in
+  `rooms.ical_secret` to show it again; Reset makes a new one, Turn off removes it). Only dates ("Booked" / "Not available"), never
+  names or prices; our bookings of that room and the room's imported dates; no cookies, 60 reads an hour, `noindex`. Bookings without
+  a room number are not in a room's link: give them a room.
+- **Calendar**: blocks show as striped bars on the bookings calendar (room row, or the type's "Not assigned" row) and as "not
+  available" on the day view (`/reservations/calendar` → `blocks`).
+- **Plans**: `limit.ical_rooms` (rooms with a link or an export): Free 0, Starter 10, Pro and Business no limit. A hotel at 0 is
+  not synced and its export links answer 404 (nothing is deleted).
+- Tests: `Hotel/CalendarSyncTest`, `test/calendarSync.test.tsx`.
+
 ## Public booking page (online requests)
 
 Off until the hotel turns it on (Settings → Booking page, `settings.hotel`): link `/h/{booking_slug}`, a short note for guests.

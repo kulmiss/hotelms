@@ -580,6 +580,17 @@
         "Then add a price rule of the type Holidays, e.g. +20 %."
       ]
     },
+    "calendarSync": {
+      "title": "Airbnb and Booking.com calendars",
+      "steps": [
+        "Settings → Calendar sync. In Airbnb or Booking.com, copy the listing's calendar link (iCal).",
+        "Paste it, choose the room (or \"any room of a type\") and tap Add and read now.",
+        "Their bookings now block the room here. Striped bars on the bookings calendar show them.",
+        "Give the other site your room's link too (Make link → Copy), so it sees the bookings made here.",
+        "The sites read each other every 15 minutes to a few hours. For a booking today, close the dates on the other site by hand.",
+        "A clash? You get a message. Nothing is cancelled: move a guest or close the dates on the other site."
+      ]
+    },
     "activity": {
       "title": "Who did what (activity log)",
       "steps": [

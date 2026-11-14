@@ -1,4 +1,46 @@
 {
+  "calendarSync": {
+    "help": "ከAirbnb፣ ከBooking.com ወይም ከሌላ ጣቢያ የእያንዳንዱን ዝርዝር የቀን መቁጠሪያ (iCal) ሊንክ ይለጥፉ። የተያዙ ቀኖቻቸው እዚህ ክፍሉን ይዘጋሉ፣ ስለዚህ ሁለት ጊዜ አይያዝም። ሊንኮች በየ{{minutes}} ደቂቃው ይነበባሉ፣ ሌሎቹ ጣቢያዎችም የእኛን በየጥቂት ሰዓታት ያነባሉ፦ አንድ ማስያዣ በሌላው በኩል ለመታየት ያን ያህል ጊዜ ሊወስድ ይችላል።",
+    "bookingCom": "Booking.com የቀን መቁጠሪያ ሊንኮችን በአብዛኛው ለአፓርታማዎች፣ ለዕረፍት ቤቶችና ለእንግዳ ማረፊያዎች ይፈቅዳል (ለአብዛኞቹ ሆቴሎች አይደለም)። Airbnb እና VRBO ለእያንዳንዱ ዝርዝር ይፈቅዳሉ።",
+    "limit": "በቀን መቁጠሪያ ማመሳሰል ያሉ ክፍሎች፦ ከ{{max}} {{used}} (ፓኬጅዎ)።",
+    "notInPlan": "የቀን መቁጠሪያ ማመሳሰል ከStarter ፓኬጅ (እስከ 10 ክፍሎች) እና ከPro (ሁሉም ክፍሎች) ጋር ይመጣል። ለማሳደግ እገዛ → ይጠይቁን።",
+    "add": "የቀን መቁጠሪያ ሊንክ ጨምር",
+    "name": "ጣቢያ",
+    "url": "የቀን መቁጠሪያ ሊንክ (iCal / .ics)",
+    "urlHint": "Airbnb፦ Calendar → Availability → Connect calendars → Export። Booking.com፦ Rates & availability → Sync calendars።",
+    "for": "ለ",
+    "rooms": "ክፍሎች",
+    "roomTypes": "የአንድ ዓይነት ማንኛውም ክፍል",
+    "anyRoomOf": "ማንኛውም {{type}} ክፍል",
+    "room": "ክፍል {{number}}",
+    "addButton": "ጨምርና አሁን አንብብ",
+    "added_one": "ተቀምጧል። {{count}} የተያዘ ቀን ተነብቧል።",
+    "added_other": "ተቀምጧል። {{count}} የተያዙ ቀኖች ተነብበዋል።",
+    "status": {
+      "ok": "ተመሳስሏል",
+      "error": "ችግር",
+      "never": "ገና አልተነበበም"
+    },
+    "clashes_one": "{{count}} ግጭት",
+    "clashes_other": "{{count}} ግጭቶች",
+    "clashHelp": "ምንም አልተሰረዘም። ከእንግዶቹ አንዱን ወደ ሌላ ክፍል ያዛውሩ፣ ወይም ቀኖቹን በሌላው ጣቢያ ይዝጉ።",
+    "lastSync_one": "የተነበበው {{time}} · {{count}} የተያዘ ቀን",
+    "lastSync_other": "የተነበበው {{time}} · {{count}} የተያዙ ቀኖች",
+    "syncNow": "አሁን አመሳስል",
+    "pause": "ለአፍታ አቁም",
+    "resume": "አብራ",
+    "remove": "{{name}} አስወግድ",
+    "removeConfirm": "ይህ ሊንክ ይወገድ? የተያዙ ቀኖቹም ይወገዳሉ።",
+    "export": "የእርስዎ የቀን መቁጠሪያ ሊንኮች (ወደ ውጭ)",
+    "exportHelp": "የአንድን ክፍል ሊንክ ለAirbnb ወይም ለBooking.com ይስጡ (\"Import calendar\")፣ እዚህ የተያዙትን ቀኖች እንዲያዩ። ሊንኩ የተያዙ ቀኖችን ብቻ ያሳያል፣ የእንግዶችን ስም በፍጹም። በሚስጥር ይያዙት፤ ዳግም አስጀምር አዲስ ያደርጋል።",
+    "makeLink": "ሊንክ ፍጠር",
+    "copy": "ቅዳ",
+    "copied": "ተቀድቷል",
+    "reset": "ዳግም አስጀምር",
+    "resetConfirm": "አዲስ ሊንክ ይፈጠር? የድሮው መሥራት ያቆማል፦ አዲሱን ለሌሎቹ ጣቢያዎች ይስጡ።",
+    "stop": "አጥፋ",
+    "onCalendar": "{{source}} · አይገኝም"
+  },
   "pricing": {
     "override": {
       "label": "ዋጋ በሌሊት (በእጅ)",
@@ -804,6 +846,7 @@
       "none": "ምንም ቅንብር አልተገኘም።"
     },
     "sections": {
+      "calendar-sync": "የቀን መቁጠሪያ ማመሳሰል (Airbnb፣ Booking.com)",
       "holidays": "በዓላት",
       "profile": "የሆቴል መገለጫ",
       "branches": "ቅርንጫፎች",

@@ -151,7 +151,7 @@ Rules (money, dates, status changes) belong in services so tests, automations an
 | every minute | `reservations:expire` (unpaid pending bookings), `reports:automation` (scheduled reports + Telegram polling), `queue:work --stop-when-empty`, heartbeat |
 | every 5 min | `automations:run`, `stays:roll-open` (one more night for guests with no end date) |
 | every 10 min | `watchdog:run` (quick checks) |
-| every 15 min | `reports:automation --alerts` (smart alerts) |
+| every 15 min | `reports:automation --alerts` (smart alerts), `ical:sync` (Airbnb / Booking.com calendar links) |
 | hourly | `hotels:update-statuses`, backup `--small` (:40), `watchdog:run --data` (:17) |
 | daily | 01:15 full backup · 02:30 `demo:reset` · 03:20 old unused payment proofs · 03:30 `hotelms:purge-closed-hotels` · 03:40 old guest ID photos · 03:45 `hotelms:signup-cleanup` · 07:10 `subscriptions:invoices` |
 | monthly | backup `--check` (1st, 06:00) |
@@ -165,7 +165,7 @@ Rules (money, dates, status changes) belong in services so tests, automations an
 | `hotelms:reset-two-factor {email}` | Turn off two-step sign-in for someone who lost their phone |
 | `hotelms:purge-closed-hotels` | Delete hotels closed more than 90 days ago, with their files |
 | `watchdog:run {--data}` | Run the watchdog checks now |
-| `reports:automation {--alerts}`, `automations:run`, `reservations:expire`, `stays:roll-open`, `hotels:update-statuses`, `subscriptions:invoices` | The scheduled jobs, by hand |
+| `reports:automation {--alerts}`, `automations:run`, `reservations:expire`, `stays:roll-open`, `ical:sync`, `hotels:update-statuses`, `subscriptions:invoices` | The scheduled jobs, by hand |
 
 ## Conventions
 - **Lists** use `App\Support\ListQuery`: `sort` + `dir` (only the keys the list allows), `per_page` (25/50/100), and `format=xlsx|csv` for the same list as a file (all rows, max 5,000; needs `reports.export`, guests need `guests.export`, the activity log `activity_log.view`). Used by reservations, guests, bills, payments, cashier shifts and the activity log. Small lists (settings, staff, hotels) sort and download in the browser (`DataTable` client mode, CSV).

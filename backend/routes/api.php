@@ -53,6 +53,7 @@ use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\SecurityController;
 use App\Http\Controllers\Api\SecurityEventController;
 use App\Http\Controllers\Api\Settings\BranchSettingsController;
+use App\Http\Controllers\Api\Settings\CalendarSyncController;
 use App\Http\Controllers\Api\Settings\CancellationPolicyController;
 use App\Http\Controllers\Api\Settings\ChargeTypeController;
 use App\Http\Controllers\Api\Settings\CurrencyController;
@@ -385,6 +386,13 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
                     Route::delete('/cancellation-policies/{id}', [CancellationPolicyController::class, 'destroy']);
                 });
                 Route::middleware('permission:settings.rooms')->group(function () {
+                    Route::get('/calendar-sync', [CalendarSyncController::class, 'index']);
+                    Route::post('/calendar-sync', [CalendarSyncController::class, 'store']);
+                    Route::put('/calendar-sync/{id}', [CalendarSyncController::class, 'update']);
+                    Route::delete('/calendar-sync/{id}', [CalendarSyncController::class, 'destroy']);
+                    Route::post('/calendar-sync/{id}/sync', [CalendarSyncController::class, 'syncNow']);
+                    Route::post('/calendar-sync/rooms/{roomId}/export', [CalendarSyncController::class, 'export']);
+                    Route::delete('/calendar-sync/rooms/{roomId}/export', [CalendarSyncController::class, 'stopExport']);
                     Route::get('/room-types', [RoomTypeController::class, 'index']);
                     Route::post('/room-types', [RoomTypeController::class, 'store']);
                     Route::put('/room-types/{id}', [RoomTypeController::class, 'update']);
