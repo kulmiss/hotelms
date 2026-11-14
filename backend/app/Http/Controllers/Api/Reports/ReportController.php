@@ -11,8 +11,10 @@ use App\Models\Reservation;
 use App\Models\ReservationRoomRate;
 use App\Models\Room;
 use App\Services\Reports\Metrics;
+use App\Services\Switches;
 use App\Support\HotelClock;
 use App\Support\Money;
+use App\Support\PlanLimits;
 use App\Support\Spreadsheet;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -125,6 +127,10 @@ class ReportController extends Controller
             'compare' => ['nullable', 'in:prev,ly,none'], 'branch_id' => ['nullable', 'integer'], 'format' => ['nullable', 'in:json,csv,xlsx'],
         ]);
         $hotel = $user->hotel;
+        // Branch comparison and downloads belong to the full reports (Starter and up; owner, 14 Nov 2026).
+        if (($key === 'branches' || in_array($data['format'] ?? null, ['csv', 'xlsx'], true)) && ! app(Switches::class)->on($hotel, 'feature.full_reports')) {
+            abort(response()->json(['message' => PlanLimits::message('This report or download is part of the Starter plan and up'), 'code' => 'feature_off'], 403));
+        }
         $today = HotelClock::now($hotel)->toDateString();
         $from = $data['from'] ?? Carbon::parse($today)->startOfMonth()->toDateString();
         $to = $data['to'] ?? $today;

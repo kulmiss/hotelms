@@ -35,5 +35,9 @@ class PlatformSeeder extends Seeder
         if (! PlatformSetting::where('key', 'default_trial_plan_id')->exists()) {
             PlatformSetting::write('default_trial_plan_id', Plan::where('code', 'pro')->value('id'));
         }
+        // How hotels reach us to upgrade (no online billing yet) – both editable in Super Admin → Settings.
+        if (PlatformSetting::read('support_email') === null) {
+            PlatformSetting::write('support_email', 'info@kulmiss.com');
+        }
     }
 }

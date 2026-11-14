@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Front;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\PaymentProof;
+use App\Services\StorageQuota;
 use App\Support\SafeImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,6 +32,7 @@ class PaymentProofController extends Controller
             'application/pdf' => 'pdf', 'image/png' => 'png', 'image/webp' => 'webp', 'image/heic', 'image/heif' => 'heic', default => 'jpg',
         };
         [$bytes, $mime] = SafeImage::clean($file); // size limit, hidden data and metadata removed (SECURITY_REPORT L4)
+        app(StorageQuota::class)->check($hotel, strlen($bytes)); // the plan's file storage (owner, 14 Nov 2026)
         $path = "payment-proofs/{$hotel->id}/".Str::uuid().'.'.$ext;
         Storage::disk('local')->put($path, $bytes);
         $proof = PaymentProof::create([

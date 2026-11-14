@@ -121,6 +121,7 @@ function GeneralTab({ initial }: { initial: PlatformSettings }) {
   const [name, setName] = useState(initial.platform_name)
   const [email, setEmail] = useState(initial.support_email ?? '')
   const [phone, setPhone] = useState(initial.support_phone ?? '')
+  const [whatsapp, setWhatsapp] = useState(initial.whatsapp ?? '')
   const [demo, setDemo] = useState(initial.demo_public)
   const [demoMinutes, setDemoMinutes] = useState(String(initial.demo_minutes ?? 30))
   const [twoStep, setTwoStep] = useState(initial.two_factor_admins ?? true)
@@ -129,7 +130,7 @@ function GeneralTab({ initial }: { initial: PlatformSettings }) {
     <SettingsForm
       title={t('admin.settings.tabs.general')}
       description={t('admin.settings.generalHelp')}
-      onSave={() => ({ support_email: email || null, support_phone: phone || null, demo_public: demo, demo_minutes: Number(demoMinutes) || 30, ...(owner ? { platform_name: name, two_factor_admins: twoStep } : {}) })}
+      onSave={() => ({ support_email: email || null, support_phone: phone || null, whatsapp: whatsapp || null, demo_public: demo, demo_minutes: Number(demoMinutes) || 30, ...(owner ? { platform_name: name, two_factor_admins: twoStep } : {}) })}
     >
       {(error) => (
         <>
@@ -137,6 +138,7 @@ function GeneralTab({ initial }: { initial: PlatformSettings }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t('admin.settings.supportEmail')} type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={error?.field('support_email')} />
             <Field label={t('admin.settings.supportPhone')} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} error={error?.field('support_phone')} />
+            <Field label={t('admin.settings.whatsapp')} type="tel" placeholder="+251 9…" value={whatsapp} hint={t('admin.settings.whatsappHint')} onChange={(e) => setWhatsapp(e.target.value)} error={error?.field('whatsapp')} />
           </div>
           <label className="flex min-h-touch items-start gap-3 text-sm">
             <input type="checkbox" className="mt-0.5 size-4 rounded" checked={demo} onChange={(e) => setDemo(e.target.checked)} />

@@ -286,14 +286,14 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
             Route::get('/dashboard/trend', [ReportController::class, 'trend'])->middleware('permission:dashboard.view');
             Route::get('/reports/drilldown', [ReportController::class, 'drilldown']);
             Route::get('/reports/daily', [InsightController::class, 'daily'])->middleware('permission:reports.revenue');
-            Route::get('/reports/forecast', [InsightController::class, 'forecast'])->middleware('permission:reports.forecast');
+            Route::get('/reports/forecast', [InsightController::class, 'forecast'])->middleware(['switch:feature.full_reports', 'permission:reports.forecast']);
             Route::get('/reports/targets', [InsightController::class, 'targets'])->middleware('permission:reports.forecast,reports.targets_manage');
             Route::put('/reports/targets', [InsightController::class, 'saveTarget'])->middleware('permission:reports.targets_manage');
-            Route::get('/reports/audit', [InsightController::class, 'audit'])->middleware('permission:reports.audit');
-            Route::get('/reports/audit/{user}/timeline', [InsightController::class, 'timeline'])->middleware('permission:reports.audit');
+            Route::get('/reports/audit', [InsightController::class, 'audit'])->middleware(['switch:feature.full_reports', 'permission:reports.audit']);
+            Route::get('/reports/audit/{user}/timeline', [InsightController::class, 'timeline'])->middleware(['switch:feature.full_reports', 'permission:reports.audit']);
             Route::get('/reports/my-shift', [InsightController::class, 'myShift'])->middleware('permission:reports.my_shift');
             Route::get('/reports/my-work', [InsightController::class, 'myWork'])->middleware(['module:housekeeping', 'permission:reports.my_work']);
-            Route::get('/reports/accounting', [InsightController::class, 'accounting'])->middleware('permission:reports.accounting_export');
+            Route::get('/reports/accounting', [InsightController::class, 'accounting'])->middleware(['switch:feature.full_reports', 'permission:reports.accounting_export']);
             Route::get('/saved-views', [AutomationController::class, 'views']);
             Route::post('/saved-views', [AutomationController::class, 'saveView']);
             Route::put('/saved-views/{id}', [AutomationController::class, 'saveView']);

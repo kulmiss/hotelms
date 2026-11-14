@@ -347,7 +347,13 @@
       "other": "Other"
     },
     "plans": {
-      "subtitle": "Prices are per room per month, with a minimum. Changes apply to new invoices.",
+      "subtitle": "Prices per month (per room, with a minimum; the new plans use a flat price: 0 per room, minimum = price). Changes apply to new invoices. To change one hotel only, use Switches.",
+      "recommended": "Recommended",
+      "notOffered": "Not offered",
+      "storageLine": "Files: {{size}}",
+      "maxStorage": "Max files (MB)",
+      "is_public": "Show on the website and offer to new hotels",
+      "is_recommended": "Mark as recommended",
       "hidden": "Hidden",
       "customPrice": "Price agreed per hotel",
       "priceLine": "{{perRoom}} per room / month · minimum {{minimum}}",
@@ -388,6 +394,8 @@
       "platformName": "Platform name",
       "supportEmail": "Support email",
       "supportPhone": "Support phone",
+      "whatsapp": "WhatsApp number",
+      "whatsappHint": "Used for \"Upgrade\" and \"Contact us\" links. With country code, e.g. +251…",
       "trialsHelp": "How long new hotels can try HotelMS for free, and what happens when a subscription runs out.",
       "brandTitle": "Name and colour",
       "brandHelp": "Shown in the sidebar, sign-in page, browser tab and buttons, for every hotel.",
@@ -838,9 +846,14 @@
       "manualHint": "Managers fix or add times by hand."
     },
     "subscription": {
-      "help": "Your HotelMS plan. Contact HotelMS to change it.",
+      "help": "Your plan and what you use. Contact us to change it.",
       "rooms": "Rooms",
-      "unlimited": "{{used}} (unlimited)"
+      "storage": "Files (MB)",
+      "unlimited": "{{used}} (unlimited)",
+      "upgradeTitle": "Need more?",
+      "upgradeHelp": "Message us to move to a bigger plan. Nothing is lost when you change plans.",
+      "whatsapp": "Upgrade on WhatsApp",
+      "email": "Email us"
     },
     "roomTypes": {
       "help": "Each branch has its own room types and prices.",

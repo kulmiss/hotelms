@@ -6,6 +6,7 @@ use App\Models\Branch;
 use App\Models\CashierSession;
 use App\Models\Invoice;
 use App\Models\Reservation;
+use App\Support\PlanLimits;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -44,7 +45,7 @@ class BranchSettingsController extends ResourceController
     {
         $limit = $request->user()->hotel->limit('branches');
         if ($limit !== null && Branch::count() >= $limit) {
-            $this->refuse('name', "Your plan allows {$limit} branch(es). Upgrade the plan to add more.");
+            $this->refuse('name', PlanLimits::message("Your plan allows {$limit} propert".($limit === 1 ? 'y' : 'ies').' (branches)'));
         }
 
         return parent::store($request);

@@ -38,6 +38,8 @@ class GuestIdPhotos
             throw ValidationException::withMessages(['file' => 'ID photos are turned off for your hotel (Settings → Booking rules).']);
         }
         [$bytes, $mime] = SafeImage::clean($file); // size limit, hidden data and metadata (GPS) removed (SECURITY_REPORT L4)
+        $old = (int) GuestIdPhoto::where('guest_id', $guest->id)->value('size'); // a new photo replaces the old one
+        app(StorageQuota::class)->check($guest->hotel, max(0, strlen($bytes) - $old));
         $path = "guest-ids/{$guest->hotel_id}/".Str::uuid().'.bin';
         Storage::disk('local')->put($path, Crypt::encrypt($bytes, false));
 

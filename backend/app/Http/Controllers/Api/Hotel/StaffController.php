@@ -12,6 +12,8 @@ use App\Services\ActivityLogger;
 use App\Services\Security\EmailChanges;
 use App\Services\Security\SecurityLog;
 use App\Services\Security\TwoFactor;
+use App\Services\Switches;
+use App\Support\PlanLimits;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -205,7 +207,7 @@ class StaffController extends Controller
         $max = $actor->hotel->limit('staff');
         $used = User::where('hotel_id', $actor->hotel_id)->where('status', 'active')->count();
         if ($max !== null && $used >= $max) {
-            throw ValidationException::withMessages(['email' => "Your plan allows {$max} active staff accounts ({$used} used). Disable someone or upgrade the plan."]);
+            throw ValidationException::withMessages(['email' => PlanLimits::message("Your plan allows {$max} active staff accounts ({$used} used). Disable someone, or upgrade")]);
         }
     }
 
@@ -252,6 +254,10 @@ class StaffController extends Controller
 
         if ($role->isHotelAdmin() && ! $actor->isHotelAdmin()) {
             throw ValidationException::withMessages(['role_id' => 'Only a Hotel Admin can make someone a Hotel Admin.']);
+        }
+        // The Accountant role belongs to the bigger plans (owner, 14 Nov 2026); people who have it keep it.
+        if ($role->key === 'accountant' && ! app(Switches::class)->on($actor->hotel, 'feature.accountant_role')) {
+            throw ValidationException::withMessages(['role_id' => PlanLimits::message('The Accountant role is part of the Pro and Business plans')]);
         }
 
         if (array_diff($role->permissionKeys(), $actor->permissionKeys())) {

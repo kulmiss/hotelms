@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Services\HotelSettings;
+use App\Services\StorageQuota;
 use App\Support\SafeImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -53,6 +54,7 @@ class HotelProfileController extends Controller
         $path = null;
         if ($file = $request->file('logo')) {
             [$bytes] = SafeImage::clean($file); // drawn again: no hidden data (SECURITY_REPORT L4)
+            app(StorageQuota::class)->check($hotel, strlen($bytes), 'logo');
             $path = "hotels/{$hotel->id}/".$file->hashName();
             Storage::disk('public')->put($path, $bytes);
         }

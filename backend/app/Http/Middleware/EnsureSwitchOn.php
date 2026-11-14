@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Services\Switches;
+use App\Support\PlanLimits;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,7 +16,7 @@ class EnsureSwitchOn
     public function handle(Request $request, Closure $next, string $key): Response
     {
         if (! $this->switches->on($request->user()?->hotel, $key)) {
-            return response()->json(['message' => 'This feature is not available for your hotel.', 'code' => 'feature_off'], 403);
+            return response()->json(['message' => PlanLimits::message('This feature is not part of your plan'), 'code' => 'feature_off'], 403);
         }
 
         return $next($request);

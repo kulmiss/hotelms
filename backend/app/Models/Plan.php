@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 #[Fillable([
     'name', 'code', 'description', 'price_per_room', 'minimum_monthly', 'yearly_free_months',
-    'is_custom', 'currency', 'max_rooms', 'max_branches', 'max_staff', 'modules', 'is_active', 'sort',
+    'is_custom', 'currency', 'max_rooms', 'max_branches', 'max_staff', 'max_storage_mb', 'modules', 'is_active', 'is_public', 'is_recommended', 'sort',
 ])]
 class Plan extends Model
 {
@@ -32,6 +32,8 @@ class Plan extends Model
             'is_custom' => 'boolean',
             'modules' => 'array',
             'is_active' => 'boolean',
+            'is_public' => 'boolean',
+            'is_recommended' => 'boolean',
         ];
     }
 

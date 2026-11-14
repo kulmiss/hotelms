@@ -616,8 +616,37 @@ type Subscription = {
   billing_cycle: string
   trial_ends_at: string | null
   subscription_ends_at: string | null
-  usage: { branches: number; staff: number; rooms: number }
+  usage: { branches: number; staff: number; rooms: number; storage_mb?: number }
+  limits?: { rooms: number | null; branches: number | null; staff: number | null; storage_mb: number | null }
+  contact?: { whatsapp: string | null; email: string | null }
   invoices?: HotelInvoice[]
+}
+
+/** No online billing: upgrades go through WhatsApp or email (set in Super Admin → Settings). */
+function UpgradeCard({ contact }: { contact?: { whatsapp: string | null; email: string | null } }) {
+  const { t } = useTranslation()
+  const wa = contact?.whatsapp?.replace(/[^0-9]/g, '') ?? ''
+  if (!wa && !contact?.email) return null
+  return (
+    <Card className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col gap-1">
+        <h3 className="font-semibold">{t('settings.subscription.upgradeTitle')}</h3>
+        <p className="max-w-prose text-sm text-muted">{t('settings.subscription.upgradeHelp')}</p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {wa && (
+          <a className={buttonClass('primary')} href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer">
+            {t('settings.subscription.whatsapp')}
+          </a>
+        )}
+        {contact?.email && (
+          <a className={buttonClass('secondary')} href={`mailto:${contact.email}`}>
+            {t('settings.subscription.email')}
+          </a>
+        )}
+      </div>
+    </Card>
+  )
 }
 
 export function SubscriptionSettings() {
@@ -654,11 +683,13 @@ export function SubscriptionSettings() {
           <dd>{date(s.subscription_ends_at)}</dd>
         </dl>
         <div className="flex flex-col gap-4">
-          {meter(t('settings.subscription.rooms'), s.usage.rooms, s.plan?.max_rooms ?? null)}
-          {meter(t('admin.hotels.branches'), s.usage.branches, s.plan?.max_branches ?? null)}
-          {meter(t('nav.staff'), s.usage.staff, s.plan?.max_staff ?? null)}
+          {meter(t('settings.subscription.rooms'), s.usage.rooms, s.limits ? s.limits.rooms : (s.plan?.max_rooms ?? null))}
+          {meter(t('admin.hotels.branches'), s.usage.branches, s.limits ? s.limits.branches : (s.plan?.max_branches ?? null))}
+          {meter(t('nav.staff'), s.usage.staff, s.limits ? s.limits.staff : (s.plan?.max_staff ?? null))}
+          {s.usage.storage_mb !== undefined && meter(t('settings.subscription.storage'), s.usage.storage_mb, s.limits?.storage_mb ?? null)}
         </div>
       </Card>
+      <UpgradeCard contact={s.contact} />
       <MyInvoices rows={s.invoices ?? []} />
     </div>
   )

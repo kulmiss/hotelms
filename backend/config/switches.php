@@ -23,11 +23,17 @@ return [
     'feature.smart_hints' => ['type' => 'bool', 'group' => 'features', 'default' => true],
     'feature.automations' => ['type' => 'bool', 'group' => 'features', 'default' => true],
     'feature.beta' => ['type' => 'bool', 'group' => 'features', 'default' => false],
+    // Plan features (owner, 14 Nov 2026): on by default, switched off per plan for Free / Starter.
+    'feature.full_reports' => ['type' => 'bool', 'group' => 'features', 'default' => true], // forecast, staff audit, accounting, branch comparison, Excel/CSV downloads
+    'feature.accountant_role' => ['type' => 'bool', 'group' => 'features', 'default' => true], // the Accountant role can be given to staff
+    'feature.branding' => ['type' => 'bool', 'group' => 'features', 'default' => true], // no "Powered by" badge on the hotel's public pages
+    'feature.priority_support' => ['type' => 'bool', 'group' => 'features', 'default' => true],
 
     // Limits (empty = the plan's limit)
     'limit.rooms' => ['type' => 'int', 'group' => 'limits', 'default' => null],
     'limit.branches' => ['type' => 'int', 'group' => 'limits', 'default' => null],
     'limit.staff' => ['type' => 'int', 'group' => 'limits', 'default' => null],
+    'limit.storage_mb' => ['type' => 'int', 'group' => 'limits', 'default' => null], // files: payment proofs, ID photos, logo
 
     // Emergency
     'emergency.maintenance' => ['type' => 'bool', 'group' => 'emergency', 'default' => false],

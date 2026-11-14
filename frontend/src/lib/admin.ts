@@ -17,6 +17,11 @@ export type Plan = {
   max_rooms: number | null
   max_branches: number | null
   max_staff: number | null
+  /** Files (payment proofs, ID photos, logo) in MB; null = unlimited. */
+  max_storage_mb?: number | null
+  /** Shown on the landing page and offered to new hotels. */
+  is_public?: boolean
+  is_recommended?: boolean
   modules: string[]
   is_active: boolean
   hotels_count?: number
@@ -68,6 +73,8 @@ export type PlatformSettings = {
   platform_name: string
   support_email: string | null
   support_phone: string | null
+  /** WhatsApp number for "Upgrade" and "Contact us" links. */
+  whatsapp?: string | null
   demo_public: boolean
   /** How long one "Try the demo" visit lasts. */
   demo_minutes?: number

@@ -122,7 +122,7 @@ class ImportTest extends TestCase
     {
         $rows = array_map(fn ($n) => $this->row(['branch' => 'Bole', 'room_type' => 'Standard', 'room_number' => (string) (100 + $n), 'nightly_price' => '1']), range(1, 11));
         $this->actingAs($this->admin)->postJson('/api/v1/settings/import/check', ['rows' => $rows])
-            ->assertJsonPath('data.general.0', 'Your plan allows 10 rooms (0 used); this file adds 11. Upgrade the plan or import fewer rooms.');
+            ->assertJsonPath('data.general.0', 'Your plan allows 10 rooms (0 used); this file adds 11. Import fewer rooms. To upgrade your plan, contact us: info@kulmiss.com.');
     }
 
     public function test_imports_of_another_hotel_cannot_be_undone(): void

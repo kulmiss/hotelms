@@ -9,6 +9,7 @@ use App\Models\ReservationRoom;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\User;
+use App\Support\PlanLimits;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -203,7 +204,7 @@ class RoomImporter
         $max = $user->hotel->limit('rooms');
         $used = Room::count();
         if ($max !== null && $used + count($rooms) > $max) {
-            $general[] = "Your plan allows {$max} rooms ({$used} used); this file adds ".count($rooms).'. Upgrade the plan or import fewer rooms.';
+            $general[] = PlanLimits::message("Your plan allows {$max} rooms ({$used} used); this file adds ".count($rooms).'. Import fewer rooms');
         }
 
         return [

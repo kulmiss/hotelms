@@ -32,6 +32,7 @@ class PlatformSettingsController extends Controller
             'platform_name' => ['sometimes', 'required', 'string', 'max:40'],
             'support_email' => ['sometimes', 'nullable', 'email', 'max:120'],
             'support_phone' => ['sometimes', 'nullable', 'string', 'max:30'],
+            'whatsapp' => ['sometimes', 'nullable', 'string', 'max:30', 'regex:/^\+?[0-9 ]{6,20}$/'],
             'demo_public' => ['sometimes', 'boolean'],
             'demo_minutes' => ['sometimes', 'integer', 'between:5,480'],
             'two_factor_admins' => ['sometimes', 'boolean'],

@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\HotelInvoice;
 use App\Models\HotelModule;
+use App\Models\PlatformSetting;
 use App\Models\Room;
 use App\Services\HotelModules;
 use App\Services\HotelSettings;
+use App\Services\StorageQuota;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -95,7 +97,7 @@ class HotelSettingsController extends Controller
 
         return response()->json(['data' => [
             'status' => $hotel->status,
-            'plan' => $hotel->plan?->only(['name', 'max_rooms', 'max_branches', 'max_staff', 'modules']),
+            'plan' => $hotel->plan?->only(['name', 'max_rooms', 'max_branches', 'max_staff', 'max_storage_mb', 'modules']),
             'trial_plan' => $hotel->trialPlan?->only(['name']),
             'billing_cycle' => $hotel->billing_cycle,
             'trial_ends_at' => $hotel->trial_ends_at?->toDateString(),
@@ -104,9 +106,12 @@ class HotelSettingsController extends Controller
                 'branches' => $hotel->branches()->count(),
                 'staff' => $hotel->users()->where('status', 'active')->count(),
                 'rooms' => Room::count(),
+                'storage_mb' => app(StorageQuota::class)->summary($hotel)['used_mb'],
             ],
             // What really applies (a Super Admin switch can lift or lower the plan's limits).
-            'limits' => ['rooms' => $hotel->limit('rooms'), 'branches' => $hotel->limit('branches'), 'staff' => $hotel->limit('staff')],
+            'limits' => ['rooms' => $hotel->limit('rooms'), 'branches' => $hotel->limit('branches'), 'staff' => $hotel->limit('staff'), 'storage_mb' => $hotel->limit('storage_mb')],
+            // How to upgrade (no online billing yet): WhatsApp / email from Super Admin → Settings.
+            'contact' => ['whatsapp' => PlatformSetting::read('whatsapp'), 'email' => PlatformSetting::read('support_email')],
             // Invoices from HotelMS (emailed too).
             'invoices' => HotelInvoice::where('hotel_id', $hotel->id)->where('status', '!=', 'void')->with('plan:id,name')->latest('id')->limit(24)->get()->map->present()->values(),
         ]]);

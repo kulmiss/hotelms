@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Services\Switches;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -58,6 +59,10 @@ class ListQuery
     public static function file(Request $request, Builder $query, string $name, array $headers, \Closure $row, string $permission = 'reports.export'): Response
     {
         abort_unless($request->user()?->hasPermission($permission), 403, 'You cannot download this list.');
+        // Excel / CSV downloads belong to the full reports (Starter and up; owner, 14 Nov 2026).
+        if (! app(Switches::class)->on($request->user()->hotel, 'feature.full_reports')) {
+            abort(response()->json(['message' => PlanLimits::message('Downloading lists is part of the Starter plan and up'), 'code' => 'feature_off'], 403));
+        }
         $rows = $query->limit(self::EXPORT_LIMIT)->get()->map(fn ($r) => array_map(fn ($v) => $v === null ? '' : (string) $v, $row($r)))->all();
         $file = $name.'-'.now()->format('Y-m-d');
 

@@ -18,6 +18,7 @@ class PlatformSetting extends Model
         'platform_name' => 'HotelMS',
         'support_email' => null,
         'support_phone' => null,
+        'whatsapp' => null, // "Upgrade" and "Contact us" (landing page, plan limits), e.g. +2519…
         'demo_public' => false,
         'demo_minutes' => 30, // how long one "Try the demo" visit lasts
         // Trials and billing
@@ -53,7 +54,7 @@ class PlatformSetting extends Model
     ];
 
     /** Settings anyone may read (shown on the sign-in page before login). */
-    public const PUBLIC = ['platform_name', 'brand_color', 'login_message', 'support_email', 'support_phone', 'demo_public', 'demo_minutes'];
+    public const PUBLIC = ['platform_name', 'brand_color', 'login_message', 'support_email', 'support_phone', 'whatsapp', 'demo_public', 'demo_minutes'];
 
     protected function casts(): array
     {
