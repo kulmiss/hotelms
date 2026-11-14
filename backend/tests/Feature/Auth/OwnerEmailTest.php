@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Mail\EmailChangeMail;
+use App\Mail\SecurityNoticeMail;
 use App\Models\PlatformSetting;
 use App\Models\TelegramLink;
 use App\Models\User;
@@ -23,8 +25,18 @@ class OwnerEmailTest extends TestCase
 
         $this->putJson('/api/v1/me/email', ['email' => 'Me@Gmail.com', 'current_password' => 'wrong'])->assertJsonValidationErrors('current_password');
         $this->putJson('/api/v1/me/email', ['email' => 'taken@example.et', 'current_password' => 'password'])->assertJsonValidationErrors('email');
-        $this->putJson('/api/v1/me/email', ['email' => 'Me@Gmail.com', 'current_password' => 'password'])->assertOk()->assertJsonPath('user.email', 'me@gmail.com');
+        // The new address must confirm (SECURITY_REPORT M7): until then the old one stays.
+        $this->putJson('/api/v1/me/email', ['email' => 'Me@Gmail.com', 'current_password' => 'password'])->assertOk()
+            ->assertJsonPath('email_change', 'pending')->assertJsonPath('user.email', 'admin@hotelms.test');
+        $this->assertSame('me@gmail.com', $owner->fresh()->pending_email);
+        Mail::assertSent(EmailChangeMail::class, function ($m) {
+            preg_match('/token=([A-Za-z0-9]+)/', $m->link, $t);
+            $this->postJson('/api/v1/auth/confirm-email', ['token' => $t[1]])->assertOk();
+
+            return $m->hasTo('me@gmail.com');
+        });
         $this->assertSame('me@gmail.com', $owner->fresh()->email);
+        Mail::assertSent(SecurityNoticeMail::class, fn ($m) => $m->hasTo('admin@hotelms.test') && str_contains($m->text, 'me@gmail.com'));
     }
 
     public function test_nobody_else_changes_their_email_this_way(): void

@@ -6,6 +6,9 @@ DirectoryIndex app.html index.php
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-Frame-Options "DENY"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(self), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()"
+    # HTTPS only, for 2 years (sent only over HTTPS; the browser then never uses plain HTTP for this site).
+    Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains" "expr=%{HTTPS} == 'on'"
     # Files in assets/ have a hash in their name: cache them for a year. Other files keep their name when they
     # change (staff-guide pictures in guide/, icons), so they are not cached for a year.
     <If "%{REQUEST_URI} =~ m#^/assets/#">
@@ -14,6 +17,11 @@ DirectoryIndex app.html index.php
     # The app page and the offline copy (service worker): never cached, or staff keep an old version.
     <FilesMatch "^(app\.html|sw\.js)$">
         Header set Cache-Control "no-cache"
+    </FilesMatch>
+    # The app page: scripts only from this site (+ the one inline theme script, by its hash), no plugins, no framing.
+    # The hash must match the <script> in frontend/index.html (deploy/check-csp.sh checks it in CI).
+    <FilesMatch "^app\.html$">
+        Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-z/AEeak/K/SDD4clgB/AxZmh9ukx5WqWeS32LG/Ze8M='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; frame-src blob:; worker-src 'self'; manifest-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
     </FilesMatch>
     # Uploaded files (logos): shown as pictures only, never run as a page.
     <If "%{REQUEST_URI} =~ m#^/storage/#">

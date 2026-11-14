@@ -25,13 +25,13 @@ class PasswordChangeTest extends TestCase
 
         $this->putJson('/api/v1/me/password', [
             'current_password' => 'password',
-            'password' => 'NewPass-2026',
-            'password_confirmation' => 'NewPass-2026',
+            'password' => 'Blue-Nile-Kettle-42',
+            'password_confirmation' => 'Blue-Nile-Kettle-42',
         ])->assertOk();
 
         $user->refresh();
         $this->assertFalse($user->must_change_password);
-        $this->assertTrue(Hash::check('NewPass-2026', $user->password));
+        $this->assertTrue(Hash::check('Blue-Nile-Kettle-42', $user->password));
 
         $this->actingAs($user)->getJson('/api/v1/branches')->assertOk();
     }
@@ -42,8 +42,8 @@ class PasswordChangeTest extends TestCase
 
         $this->actingAs($user)->putJson('/api/v1/me/password', [
             'current_password' => 'wrong',
-            'password' => 'NewPass-2026',
-            'password_confirmation' => 'NewPass-2026',
+            'password' => 'Blue-Nile-Kettle-42',
+            'password_confirmation' => 'Blue-Nile-Kettle-42',
         ])->assertUnprocessable()->assertJsonValidationErrors('current_password');
     }
 
@@ -61,12 +61,18 @@ class PasswordChangeTest extends TestCase
             'current_password' => 'password',
             'password' => 'password1',
             'password_confirmation' => 'password1',
+        ])->assertUnprocessable()->assertJsonValidationErrors('password'); // too short and too common (14 Nov)
+
+        $this->putJson('/api/v1/me/password', [
+            'current_password' => 'password',
+            'password' => 'Blue-Nile-Kettle-42',
+            'password_confirmation' => 'Blue-Nile-Kettle-42',
         ])->assertOk();
 
         $this->putJson('/api/v1/me/password', [
-            'current_password' => 'password1',
-            'password' => 'password1',
-            'password_confirmation' => 'password1',
+            'current_password' => 'Blue-Nile-Kettle-42',
+            'password' => 'Blue-Nile-Kettle-42',
+            'password_confirmation' => 'Blue-Nile-Kettle-42',
         ])->assertUnprocessable()->assertJsonValidationErrors('password');
     }
 }

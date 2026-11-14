@@ -12,14 +12,16 @@ use App\Services\HotelModules;
 use App\Services\HotelSettings;
 use App\Services\HotelSetup;
 use App\Services\Impersonation;
+use App\Services\Security\EmailChanges;
+use App\Services\Security\SecurityLog;
+use App\Services\Security\SecurityNotices;
 use App\Services\Security\TwoFactor;
 use App\Services\Switches;
+use App\Support\PasswordRules;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class MeController extends Controller
@@ -99,6 +101,8 @@ class MeController extends Controller
             'two_factor_setup_required' => ! $supporting && ! $tf->enabled($user) && $tf->required($user),
             'screen_lock_minutes' => $supporting ? 0 : $lock,
             'has_pin' => $user->attendance_pin !== null,
+            // The password used at sign-in is weaker than today's rules: a note asks to change it (not forced).
+            'password_weak' => ! $supporting && $request->hasSession() && (bool) $request->session()->get(AuthController::WEAK),
         ];
     }
 
@@ -140,19 +144,16 @@ class MeController extends Controller
             throw ValidationException::withMessages(['current_password' => 'The current password is not correct.']);
         }
 
-        $old = $user->email;
-        $new = mb_strtolower(trim($data['email']));
-        if ($new !== $old) {
-            $user->forceFill(['email' => $new])->save();
-            $log->log('platform.email_changed', "Sign-in email changed from {$old} to {$new}", $user);
-            try {
-                Mail::raw("The sign-in email of your account was changed to {$new}. If this was not you, contact your hosting provider right away.", fn ($m) => $m->to($old)->subject('Your sign-in email was changed'));
-            } catch (\Throwable) {
-                // The change stands even when the old address cannot be reached.
-            }
+        // The new address must confirm it (a link, 24 hours); then the old address is told (SECURITY_REPORT M7).
+        $result = app(EmailChanges::class)->request($user, $data['email'], $user);
+        if ($result === 'pending') {
+            $log->log('platform.email_change_requested', "Sign-in email change to {$user->pending_email} asked (waits for the link)", $user);
+            app(SecurityLog::class)->record('email_change_requested', $user, $request, $user->pending_email);
         }
 
-        return $this->show($request);
+        $response = $this->show($request);
+
+        return $response->setData(array_merge($response->getData(true), ['email_change' => $result]));
     }
 
     public function updatePassword(Request $request): JsonResponse
@@ -161,7 +162,7 @@ class MeController extends Controller
 
         $data = $request->validate([
             'current_password' => ['required', 'string'],
-            'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
+            'password' => PasswordRules::forNew($user->email),
         ]);
 
         if (! Hash::check($data['current_password'], $user->password)) {
@@ -176,6 +177,9 @@ class MeController extends Controller
             'password' => $data['password'],
             'must_change_password' => false,
         ])->save();
+        $request->session()->forget(AuthController::WEAK);
+        app(SecurityNotices::class)->send($user, 'password_changed', $request);
+        app(SecurityLog::class)->record('password_changed', $user, $request);
 
         return response()->json(['message' => 'Password changed.']);
     }

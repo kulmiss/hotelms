@@ -12,7 +12,7 @@ lists the route groups; the file itself is the exact, complete list (with each r
 | **Who am I** | `GET /me`: user, hotel (modules, setup), branches, role, permissions, platform role, impersonation, switches, emergency, security |
 | **Hotel** | Always the signed-in person's hotel (never a `hotel_id` in the request). Records of another hotel answer **404**. |
 | **Branch** | Lists take `?branch_id=`; without it, all branches the person may see |
-| **Errors** | `422` `{message, errors: {field: [text]}}` – plain English, the field the screen shows; `403` not allowed; `404` not found (or another hotel's) – a missing record answers `{message: "Not found. …", code: "not_found"}`, never a class name; `423` locked (suspended/emergency) |
+| **Errors** | `422` `{message, errors: {field: [text]}}` – plain English, the field the screen shows; `403` not allowed; `404` not found (or another hotel's) – a missing record answers `{message: "Not found. …", code: "not_found"}`, never a class name; `423` locked (suspended/emergency, or `code: screen_locked`) |
 | **Money** | Strings with 2 decimals (`"4662.50"`) and a currency code |
 | **Dates** | ISO 8601 with the hotel's offset (`2026-11-12T14:00:00+03:00`); plain dates `YYYY-MM-DD` are hotel-local |
 | **Money actions** | Send `Idempotency-Key: <uuid>`; a repeat gets the first answer (`Idempotent-Replay: true`). Only successful answers are kept. |
@@ -24,7 +24,12 @@ lists the route groups; the file itself is the exact, complete list (with each r
 ## Route groups
 
 Public: `GET /health`, `GET /branding`, `GET /branding/manifest`, `POST /auth/login`, `/auth/two-factor`, `/auth/forgot-password`,
-`/auth/reset-password`, `/demo/login` (only when the public demo is on).
+`/auth/reset-password`, `/auth/confirm-email {token}` (the link sent to a new sign-in email), `/demo/login` (only when the public demo is on).
+Sign-in limits: 10 wrong passwords for one email pause it 15 → 30 → 60 min (`422`, same for unknown emails); a sign-in ends after
+12 hours (`401 code: session_expired`, not for "Remember me" – staff only, 30 days); a locked screen answers `423 code: screen_locked`
+to everything but `POST /auth/unlock`, `/auth/pin-switch`, `/auth/logout`, `/auth/lock` and `GET /me`.
+`PUT /me/email` and `PUT /staff/{id}` answer `email_change: "pending"` when the new email waits for its link.
+Security event log: `GET /security-events` (`activity_log.view`, own hotel) and `GET /admin/security-events` (`watchdog.view`), `?kind=&search=&page=&per_page=`.
 
 Signed in (everyone): `/me`, `/me/password`, `/me/email` (platform Owner), `/telegram` (status, link, test, unlink),
 `/impersonation/stop`, `/setup`, `/search`, `/smart/{place}`, `/whats-new`, `/notifications`, `/support` (Help → Ask us),

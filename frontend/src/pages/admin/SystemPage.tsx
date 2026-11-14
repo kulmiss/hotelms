@@ -23,8 +23,9 @@ export function SystemPage() {
     { key: 'cache', ok: c.cache.ok, detail: c.cache.driver, problem: c.cache.problem },
     { key: 'scheduler', ok: c.scheduler.ok, detail: t('system.lastRun', { when: when(c.scheduler.last_run) }), problem: c.scheduler.problem },
     { key: 'jobs', ok: c.jobs.ok, detail: t('system.jobsLine', { waiting: c.jobs.waiting, failed: c.jobs.failed }) },
-    { key: 'backups', ok: c.backups.ok, detail: c.backups.daily ? t('system.backupLine', { when: when(c.backups.daily.at), kb: c.backups.daily.size_kb, count: c.backups.daily.count }) : '', problem: c.backups.problem },
+    { key: 'backups', ok: c.backups.ok, detail: c.backups.daily ? `${t('system.backupLine', { when: when(c.backups.daily.at), kb: c.backups.daily.size_kb, count: c.backups.daily.count })} · ${t(c.backups.daily.encrypted ? 'system.backupEncrypted' : 'system.backupPlain')}` : '', problem: c.backups.problem },
     { key: 'disk', ok: c.disk.ok, detail: c.disk.free_mb !== null ? t('system.freeSpace', { size: megabytes(c.disk.free_mb) }) : '' },
+    ...(c.settings ? [{ key: 'settings', ok: c.settings.ok, detail: c.settings.ok ? t('system.settingsOk') : c.settings.problems.slice(1).join(' '), problem: c.settings.problem }] : []),
   ]
 
   return (

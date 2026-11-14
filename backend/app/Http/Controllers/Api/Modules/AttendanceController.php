@@ -7,6 +7,7 @@ use App\Models\Attendance as AttendanceRecord;
 use App\Models\User;
 use App\Services\HotelSettings;
 use App\Services\Modules\Attendance;
+use App\Services\Security\SecurityLog;
 use App\Support\HotelClock;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -52,6 +53,7 @@ class AttendanceController extends Controller
         }
         $staff = $this->attendance->findByPin($hotelId, $data['pin']);
         if (! $staff) {
+            app(SecurityLog::class)->record('pin_failed', $request->user(), $request, null, 'attendance kiosk');
             RateLimiter::hit($minute, 60);
             RateLimiter::hit($hour, 3600);
             throw ValidationException::withMessages(['pin' => 'Unknown PIN.']);

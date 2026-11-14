@@ -48,6 +48,7 @@ use App\Http\Controllers\Api\Reports\InsightController;
 use App\Http\Controllers\Api\Reports\ReportController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\SecurityController;
+use App\Http\Controllers\Api\SecurityEventController;
 use App\Http\Controllers\Api\Settings\BranchSettingsController;
 use App\Http\Controllers\Api\Settings\CancellationPolicyController;
 use App\Http\Controllers\Api\Settings\ChargeTypeController;
@@ -81,9 +82,11 @@ Route::post('/auth/two-factor', [AuthController::class, 'twoFactor'])->middlewar
 Route::post('/auth/forgot-password', [PasswordResetController::class, 'send'])->middleware('throttle:login');
 Route::post('/auth/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:login');
 Route::post('/auth/two-factor/resend', [AuthController::class, 'resendCode'])->middleware('throttle:two-factor');
+Route::post('/auth/confirm-email', [AuthController::class, 'confirmEmail'])->middleware('throttle:login');
 
-Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant', 'session.rules', 'heavy'])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::post('/auth/lock', [AuthController::class, 'lock']);
     Route::post('/auth/unlock', [AuthController::class, 'unlock'])->middleware('throttle:pin');
     Route::post('/auth/pin-switch', [AuthController::class, 'pinSwitch'])->middleware(['throttle:pin', 'not.impersonating']);
     Route::get('/me', [MeController::class, 'show']);
@@ -160,7 +163,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
             });
             Route::post('/guests/{id}/blacklist', [GuestController::class, 'blacklist'])->middleware('permission:guests.blacklist');
             // Photo of the guest's ID or passport (when the hotel turned it on).
-            Route::get('/guests/{id}/id-photo', [GuestController::class, 'idPhoto'])->middleware('permission:guests.view');
+            Route::get('/guests/{id}/id-photo', [GuestController::class, 'idPhoto'])->middleware('permission:guests.create_edit'); // owner Q5
             Route::post('/guests/{id}/id-photo', [GuestController::class, 'storeIdPhoto'])->middleware(['permission:guests.create_edit', 'throttle:30,1']);
             Route::delete('/guests/{id}/id-photo', [GuestController::class, 'destroyIdPhoto'])->middleware('permission:guests.create_edit');
 
@@ -318,6 +321,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
             Route::get('/reports/{key}', [ReportController::class, 'show']); // per-report permission checked inside
 
             Route::get('/activity-log', [ActivityLogController::class, 'index'])->middleware('permission:activity_log.view');
+            Route::get('/security-events', [SecurityEventController::class, 'hotel'])->middleware('permission:activity_log.view');
 
             // Settings (phase 2a)
             Route::prefix('settings')->group(function () {
@@ -426,6 +430,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant'])->group(functio
             Route::get('/dashboard', AdminDashboardController::class);
             Route::middleware('platform:watchdog.view')->group(function () {
                 Route::get('/watchdog', [WatchdogController::class, 'index']);
+                Route::get('/security-events', [SecurityEventController::class, 'platform']);
                 Route::post('/watchdog/run', [WatchdogController::class, 'run'])->middleware('throttle:6,1');
                 Route::post('/watchdog/{finding}/resolve', [WatchdogController::class, 'resolve']);
                 Route::post('/watchdog/{finding}/mute', [WatchdogController::class, 'mute']);

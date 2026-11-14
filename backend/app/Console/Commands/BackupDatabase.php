@@ -4,20 +4,35 @@ namespace App\Console\Commands;
 
 use App\Models\PlatformSetting;
 use App\Models\User;
+use App\Services\Backup\BackupCipher;
 use App\Services\Backup\Backups;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
+use RuntimeException;
 use Throwable;
 
 class BackupDatabase extends Command
 {
-    protected $signature = 'hotelms:backup {--small : hourly backup without logs} {--check : open the newest daily backup and confirm it is complete} {--restore= : put this backup file back (replaces ALL data)} {--force}';
+    protected $signature = 'hotelms:backup {--small : hourly backup without logs} {--check : open the newest daily backup and confirm it is complete} {--restore= : put this backup file back (replaces ALL data)} {--decrypt= : make a readable copy of an encrypted backup file} {--to= : where --decrypt writes the copy} {--force}';
 
-    protected $description = 'Back up the database (daily / hourly), check the newest backup, or restore one';
+    protected $description = 'Back up the database (daily / hourly, encrypted with BACKUP_KEY), check the newest backup, restore one, or decrypt one';
 
     public function handle(Backups $backups): int
     {
         try {
+            if ($file = $this->option('decrypt')) {
+                $to = (string) ($this->option('to') ?: preg_replace('/\.enc$/', '', $file).'.decrypted');
+                $key = BackupCipher::key() ?? throw new RuntimeException('Set BACKUP_KEY in .env first.');
+                $out = fopen($to, 'xb') ?: throw new RuntimeException("Cannot write {$to} (does it exist already?)");
+                @chmod($to, 0600);
+                foreach (BackupCipher::read($file, $key) as $piece) {
+                    fwrite($out, $piece);
+                }
+                fclose($out);
+                $this->info("Readable copy: {$to} (delete it when you are done – it is not encrypted).");
+
+                return self::SUCCESS;
+            }
             if ($file = $this->option('restore')) {
                 if (! $this->option('force') && ! $this->confirm("Replace ALL current data with {$file}?")) {
                     return self::FAILURE;
@@ -39,7 +54,7 @@ class BackupDatabase extends Command
                 return self::SUCCESS;
             }
             $r = $backups->make($this->option('small') ? 'hourly' : 'daily');
-            $this->info("Backup {$r['file']}: {$r['tables']} tables, {$r['rows']} rows, ".round($r['bytes'] / 1024).' KB'.($r['copied'] ? ', copied' : ''));
+            $this->info("Backup {$r['file']}: {$r['tables']} tables, {$r['rows']} rows, ".round($r['bytes'] / 1024).' KB'.($r['copied'] ? ', copied' : '').(str_ends_with($r['file'], BackupCipher::EXT) ? ', encrypted' : ', NOT encrypted (no BACKUP_KEY)'));
 
             return self::SUCCESS;
         } catch (Throwable $e) {

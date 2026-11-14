@@ -26,12 +26,13 @@ in the claude.ai Project.
 
 | Table | Important columns | Notes |
 |---|---|---|
-| `users` | hotel_id (null for the HotelMS team), role_id, is_super_admin, platform_role, status, must_change_password, attendance_pin, two_factor_* | **Not** hotel-scoped (sign-in is platform-wide) |
+| `users` | hotel_id (null for the HotelMS team), role_id, is_super_admin, platform_role, status, must_change_password, temporary_password_expires_at (7 days), pending_email + pending_email_token (sha256) + pending_email_expires_at (a new email waiting for its link), attendance_pin, two_factor_* | **Not** hotel-scoped (sign-in is platform-wide) |
 | `branch_user` | branch_id, user_id | Branches a person works in (Hotel Admins: all) |
 | `roles` **H**, `role_permissions` | key, name, is_locked, max_discount_percent; permission | Default roles from `config/permissions.php` |
 | `user_devices` | user_id, hotel_id, token_hash, name, ip, status (active, pending, blocked, signed_out) | Devices; "approved devices only" |
 | `sessions` | | Database sessions (shared hosting) |
 | `activity_logs` | hotel_id, user_id, event, subject, description, properties, ip | Who did what; never deleted by users |
+| `security_events` | kind, user_id, hotel_id, email, ip, device, detail, created_at | Security event log (SECURITY_REPORT M9): sign-ins, failures, pauses, password / email / two-step changes, 403 / 429, voids, refunds; kept 1 year (pruned daily 03:50), max 60 rows a minute per person or address |
 | `telegram_links` **H** | user_id, chat_id, code | A person's Telegram for reports and alerts |
 | `app_notifications` **H** | user_id, title, body, link, urgent, read_at | The bell |
 

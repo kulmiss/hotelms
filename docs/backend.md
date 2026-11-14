@@ -35,6 +35,7 @@ Order for hotel routes: `auth:sanctum` → `active` → `device` → `tenant` �
 | `tenant` | `SetTenantContext` | Sets the current hotel from the signed-in user (before route binding) |
 | `active` | `EnsureActiveUser` | A disabled account is signed out on its next request |
 | `device` | `EnsureDeviceActive` | A device signed out or blocked by the Hotel Admin loses access; "approved devices only" |
+| `session.rules` | `EnforceSessionRules` | Server-side screen lock (`POST /auth/lock` → 423 `screen_locked` for everything but unlock / PIN switch / sign out / `GET /me`); a sign-in ends after 12 hours (401 `session_expired`) unless it came from "Remember me" (staff only, 30 days; never Super Admin or Hotel Admin) – SECURITY_REPORT M3, M4 |
 | `password.changed` | `EnsurePasswordChanged` | First sign-in: choose your own password first |
 | `two.factor` | `EnsureTwoFactorSetUp` | Admins (and staff, if the hotel wants) must set up two-step sign-in |
 | `hotel.writable` | `EnsureHotelWritable` | A suspended hotel is read-only |
@@ -52,6 +53,55 @@ Order for hotel routes: `auth:sanctum` → `active` → `device` → `tenant` �
 
 Rate limits (`AppServiceProvider`): `login` (5/min per email+address, 30/min per address), `two-factor`
 (per session and per address; plus 10 wrong codes per person per 15 min in `AuthController`), `pin` (per hotel).
+**Secrets and checks** (SECURITY_REPORT M6, L5, L8, L9): `PlatformSetting::SECRETS` (`telegram_bot_token`, `mail_password`)
+are encrypted, read with `PlatformSetting::secret()` (a value saved before encryption still works; migration
+2026_11_25_000003 encrypts the token); `App\Support\SafeHost` refuses mail servers inside the server's network
+(`MAIL_ALLOW_PRIVATE_HOST`); `SystemController::settingsCheck()` (System + watchdog); `/health` shows the version only
+to the HotelMS team.
+
+**Two-step sign-in** (owner Q1): always required for the HotelMS team (`config('hotelms.two_factor_team')`, only
+development and tests turn it off with `HOTELMS_TWO_FACTOR_TEAM=false`); for Hotel Admins by the Owner's switch
+`two_factor_admins` (on by default); for staff by the hotel's own setting.
+
+**Uploads** (`App\Support\SafeImage`, SECURITY_REPORT L4): payment proofs, guest ID photos and logos – more than 40
+megapixels refused (header only); JPEG / PNG / WebP up to 16 MP drawn again with GD (hidden data and metadata such as
+GPS removed; turned by EXIF orientation; JPEG only when the `exif` extension is there), HEIC and PDF kept as they are;
+pictures are answered with `Content-Security-Policy: sandbox`. **Guest IDs** (owner Q5): the full number, the ID photo
+and the full number on the registration card only with `guests.create_edit`; other guest viewers (Accountant) see the
+end of the number.
+
+**General and heavy limits** (SECURITY_REPORT M5): every signed-in call `throttle:api` – 300 a minute per person;
+`LimitHeavyRequests` (`heavy`) – file downloads (`?format=xlsx|csv`, accounting export, hotel data export) 20 a minute,
+reports 60 a minute per person; then `429 code: too_many`. The counters live in `cache.limiter` (`CACHE_LIMITER`,
+default `file` – about 0.2 ms; the database cache would add ~5 ms to every call; `redis` on a VPS with Redis).
+
+**Per account** (`AuthController::countFailure`, SECURITY_REPORT M2): 10 wrong passwords for one email within an hour,
+from any address, pause signing in to that email for 15 minutes, then 30, then 60 (same day). The same happens for
+emails without an account, and an unknown email is checked against a dummy hash, so neither the answer nor its time
+tells whether an account exists. A pause is a `login_locked` watch event and sends the person a "Was this you?" email
+(`Security\SecurityNotices`, never from demo hotels).
+
+**New passwords** (`App\Support\PasswordRules::forNew`, owner Q2 14 Nov): at least 10 characters with letters and
+numbers, not on the list of the ~96,500 most common passwords (`resources/security/common-passwords.txt.gz`, from
+SecLists / NCSC, MIT – checked in about 20 ms without the internet), also not with numbers or signs added at the
+end, and not the person's email name + numbers. Existing passwords keep working: when the password used at sign-in
+is weaker than these rules, `/me` → `security.password_weak` is true and the app shows a note asking to change it.
+
+**Security event log** (`Security\SecurityLog`, table `security_events`, SECURITY_REPORT M9): `login_ok`, `login_failed`
+(also unknown emails), `login_locked`, `two_factor_failed`, `pin_failed` (screen lock and kiosk), `pin_switch`,
+`password_changed`, `password_reset`, `email_change_requested`, `email_changed`, `two_factor_on/off`, `recovery_codes`,
+`recovery_code_used`, `devices_signed_out`, `session_expired`, `denied` (403), `throttled` (429), `invoice_voided`,
+`refund`. Kept 1 year. `GET /security-events` (Hotel Admin, `activity_log.view`, own hotel only) and
+`GET /admin/security-events` (`watchdog.view`, everything) – shown under Activity log and Watchdog.
+
+**"Was this you?" emails** (`Security\SecurityNotices`, SECURITY_REPORT M7) go to the person for: a sign-in pause, a
+password change (also by reset link), two-step on / off, new recovery codes, a sign-in on a new device (staff; admins
+already got `NewDeviceMail`), and a changed sign-in email (to the **old** address). Never from demo hotels.
+**Email changes** (`Security\EmailChanges`): a new sign-in email – the Owner's own, or a staff member's changed by a
+manager – waits in `users.pending_email` until the link sent to it is opened (`POST /auth/confirm-email`, 24 hours,
+token stored as sha256); demo hotels change at once. **Temporary passwords** work for 7 days
+(`users.temporary_password_expires_at`, set by the `User` model whenever `must_change_password` is set; the Owner's own
+first password never runs out).
 
 ## Services map (`app/Services/`)
 
@@ -86,6 +136,7 @@ Rate limits (`AppServiceProvider`): `login` (5/min per email+address, 30/min per
 | `Notify/Notifier`, `Notify/Telegram`, `Notify/MailSettings` | In-app bell, email, Telegram bot (polling, link by code); SMTP from Super Admin settings |
 | `Watchdog/WatchEvents`, `Watchdog/Watchdog` | Super Admin watchdog: password guessing, snooping, errors, cron/backup, mixed hotel data, money mismatches, double bookings, fraud signs |
 | `Backup/Backups` | Database backups (daily full, hourly small, monthly check, restore) and upload mirroring |
+| `Backup/BackupCipher` | Encrypted backup files (libsodium secretstream + gzip, streamed in 64 KB chunks) with `BACKUP_KEY`; `hotelms:backup-key` makes a key, `hotelms:backup --decrypt=` makes a readable copy |
 | `ActivityLogger` | The activity log (who, what, when, before/after) |
 | `DemoHotel`, `Demo/*` | The demo hotel |
 

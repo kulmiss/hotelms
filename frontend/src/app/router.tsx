@@ -31,6 +31,7 @@ const HelpPage = lazy(() => pages.help().then((m) => ({ default: m.HelpPage })))
 const PlatformReportsPage = lazy(() => pages.platformReports().then((m) => ({ default: m.PlatformReportsPage })))
 const ForgotPasswordPage = lazy(() => import('@/pages/PasswordResetPages').then((m) => ({ default: m.ForgotPasswordPage })))
 const ResetPasswordPage = lazy(() => import('@/pages/PasswordResetPages').then((m) => ({ default: m.ResetPasswordPage })))
+const ConfirmEmailPage = lazy(() => import('@/pages/PasswordResetPages').then((m) => ({ default: m.ConfirmEmailPage })))
 const TwoStepPage = lazy(() => pages.twoStep().then((m) => ({ default: m.TwoStepPage })))
 const DevicesPage = lazy(() => pages.devices().then((m) => ({ default: m.DevicesPage })))
 const ProfilePage = lazy(() => pages.profile().then((m) => ({ default: m.ProfilePage })))
@@ -132,6 +133,7 @@ export const routes = [
       { path: '/login', element: <LoginPage /> },
       { path: '/forgot-password', element: page(<ForgotPasswordPage />) },
       { path: '/reset-password', element: page(<ResetPasswordPage />) },
+      { path: '/confirm-email', element: page(<ConfirmEmailPage />) },
       {
         element: <RequireAuth />,
         children: [

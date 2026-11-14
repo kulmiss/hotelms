@@ -7,6 +7,7 @@ use App\Models\GuestIdPhoto;
 use App\Models\Hotel;
 use App\Models\Reservation;
 use App\Models\User;
+use App\Support\SafeImage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
@@ -36,16 +37,17 @@ class GuestIdPhotos
         if (! $this->rules()['enabled']) {
             throw ValidationException::withMessages(['file' => 'ID photos are turned off for your hotel (Settings → Booking rules).']);
         }
+        [$bytes, $mime] = SafeImage::clean($file); // size limit, hidden data and metadata (GPS) removed (SECURITY_REPORT L4)
         $path = "guest-ids/{$guest->hotel_id}/".Str::uuid().'.bin';
-        Storage::disk('local')->put($path, Crypt::encrypt((string) file_get_contents($file->getRealPath()), false));
+        Storage::disk('local')->put($path, Crypt::encrypt($bytes, false));
 
-        return DB::transaction(function () use ($guest, $file, $user, $path) {
+        return DB::transaction(function () use ($guest, $bytes, $mime, $user, $path) {
             $old = GuestIdPhoto::where('guest_id', $guest->id)->first();
             if ($old) {
                 Storage::disk('local')->delete($old->path);
                 $old->delete();
             }
-            $photo = GuestIdPhoto::create(['guest_id' => $guest->id, 'path' => $path, 'mime' => (string) $file->getMimeType(), 'size' => (int) $file->getSize(), 'uploaded_by' => $user->id]);
+            $photo = GuestIdPhoto::create(['guest_id' => $guest->id, 'path' => $path, 'mime' => $mime, 'size' => strlen($bytes), 'uploaded_by' => $user->id]);
             $this->log->log('guest.id_photo', "ID photo added for {$guest->full_name}", $guest);
 
             return $photo;

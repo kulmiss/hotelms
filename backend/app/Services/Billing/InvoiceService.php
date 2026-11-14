@@ -11,6 +11,7 @@ use App\Models\Reservation;
 use App\Models\ReservationRoom;
 use App\Models\User;
 use App\Services\HotelSettings;
+use App\Services\Security\SecurityLog;
 use App\Support\HotelClock;
 use App\Support\Money;
 use Illuminate\Support\Facades\DB;
@@ -207,6 +208,7 @@ class InvoiceService
             throw ValidationException::withMessages(['invoice' => 'This bill is already cancelled.']);
         }
         $invoice->update(['status' => 'void', 'voided_by' => $user->id, 'voided_at' => now(), 'void_reason' => $reason]);
+        app(SecurityLog::class)->record('invoice_voided', $user, null, null, "{$invoice->number}: {$reason}");
 
         return $invoice->fresh();
     }

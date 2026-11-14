@@ -23,10 +23,12 @@
       "title": "Sign in and sign out",
       "steps": [
         "Open the app. Type your email and your password. Tap Sign in.",
-        "The first time, the app asks you to make a new password. Choose one only you know.",
+        "The first time, the app asks you to make a new password. Choose one only you know: at least 10 letters and numbers, not an easy one like Password123.",
         "If the app asks for a code, open your code app (or your email) and type the 6 numbers.",
         "Forgot your password? Tap \"Forgot password?\" on the sign-in page, or ask your manager.",
+        "Typed a wrong password 10 times? Signing in waits 15 minutes. Use Forgot password, or wait.",
         "To sign out: tap your picture at the top right, then Sign out.",
+        "After 12 hours the app asks you to sign in again. On your own device, tick \"Keep me signed in\" to stay signed in for 30 days (not for admins).",
         "A page says \"You can't open this page\"? Your role does not allow it. Tap Go to the start page, and ask your manager if you need it."
       ]
     },
@@ -73,7 +75,7 @@
       "steps": [
         "Tap your picture at the top right → My profile.",
         "Change your name or phone, then tap Save.",
-        "Tap Change password to choose a new password.",
+        "Tap Change password to choose a new password (at least 10 letters and numbers). A yellow note at the top says your password is easy to guess? Change it here.",
         "Link Telegram if you want to get reports and alerts on your phone.", "Light or dark screen: tap the sun button at the top right."
       ]
     },
@@ -465,7 +467,8 @@
       "steps": [
         "Staff → Add staff.",
         "Type the name and email. Choose the role (what they can do) and their branch.",
-        "Tap Add staff member. The app makes a first password. Give it to the person; they change it the first time.",
+        "Tap Add staff member. The app makes a first password. Give it to the person; they change it the first time. The first password works for 7 days; after that, use Reset password.",
+        "Changing someone's email? The app sends a link to the new email. The new email works once the person opens that link.",
         "Forgot password? Open the person → Reset password.",
         "Someone left the hotel? Open the person → Disable account. Do not share accounts."
       ]
@@ -502,6 +505,7 @@
       "title": "Who did what (activity log)",
       "steps": [
         "Open Activity log. Every important action is written here: who, what and when.",
+        "Below it, Sign-in and security shows sign-ins, wrong passwords and PINs, paused sign-ins and password or email changes of your staff. Many wrong passwords for one person? Talk to them.",
         "Search by person, or by word, for example \"refund\".",
         "Nobody can delete this list."
       ]

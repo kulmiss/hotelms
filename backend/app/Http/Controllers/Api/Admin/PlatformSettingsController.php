@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\PlatformSetting;
 use App\Services\ActivityLogger;
 use App\Services\Notify\MailSettings;
+use App\Support\SafeHost;
+use App\Support\SafeImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -42,7 +44,8 @@ class PlatformSettingsController extends Controller
             'email_footer' => ['sometimes', 'nullable', 'string', 'max:300'],
             'telegram_bot_token' => ['sometimes', 'nullable', 'string', 'max:100', 'regex:/^(\d+:[A-Za-z0-9_-]{20,}|•+.*)$/'],
             'telegram_bot_username' => ['sometimes', 'nullable', 'string', 'max:60', 'regex:/^@?[A-Za-z0-9_]{3,}$/'],
-            'mail_host' => ['sometimes', 'nullable', 'string', 'max:120', 'regex:/^[A-Za-z0-9.\-]+$/'],
+            'mail_host' => ['sometimes', 'nullable', 'string', 'max:120', 'regex:/^[A-Za-z0-9.\-]+$/',
+                fn ($attr, $value, $fail) => $value && ! SafeHost::allowed((string) $value) ? $fail('Use the mail server\'s internet address (not localhost or an address inside the server\'s network).') : null],
             'mail_port' => ['sometimes', 'integer', 'between:1,65535'],
             'mail_encryption' => ['sometimes', 'in:tls,ssl,none'],
             'mail_username' => ['sometimes', 'nullable', 'string', 'max:120'],
@@ -70,6 +73,9 @@ class PlatformSettingsController extends Controller
         // The token is shown masked; sending the masked value back keeps the saved one.
         if (array_key_exists('telegram_bot_token', $data) && is_string($data['telegram_bot_token']) && str_starts_with($data['telegram_bot_token'], '•')) {
             unset($data['telegram_bot_token']);
+        } elseif (array_key_exists('telegram_bot_token', $data)) {
+            // Saved encrypted like the mail password (SECURITY_REPORT M6).
+            $data['telegram_bot_token'] = is_string($data['telegram_bot_token']) && $data['telegram_bot_token'] !== '' ? Crypt::encryptString($data['telegram_bot_token']) : null;
         }
         if (! empty($data['telegram_bot_username'])) {
             $data['telegram_bot_username'] = ltrim($data['telegram_bot_username'], '@');
@@ -96,6 +102,10 @@ class PlatformSettingsController extends Controller
     {
         abort_unless($request->user()->platform_role === 'owner', 403, 'Only the Owner can test the mail server.');
         $to = $request->validate(['to' => ['nullable', 'email:rfc', 'max:190']])['to'] ?? $request->user()->email;
+        $host = PlatformSetting::read('mail_host');
+        if ($host && ! SafeHost::allowed((string) $host)) { // checked again now: a name can point somewhere else later
+            throw ValidationException::withMessages(['mail_host' => 'Use the mail server\'s internet address (not localhost or an address inside the server\'s network).']);
+        }
         MailSettings::apply();
         try {
             app('mail.manager')->forgetMailers();
@@ -118,7 +128,12 @@ class PlatformSettingsController extends Controller
             Storage::disk('public')->delete($old);
         }
 
-        $path = $request->file('logo')?->store('branding', 'public');
+        $path = null;
+        if ($file = $request->file('logo')) {
+            [$bytes] = SafeImage::clean($file); // drawn again: no hidden data (SECURITY_REPORT L4)
+            $path = 'branding/'.$file->hashName();
+            Storage::disk('public')->put($path, $bytes);
+        }
         PlatformSetting::write('brand_logo_path', $path);
 
         return response()->json(['data' => $this->present()]);
@@ -129,7 +144,7 @@ class PlatformSettingsController extends Controller
     {
         $values = PlatformSetting::allValues();
         $values['brand_logo_url'] = self::logoUrl($values['brand_logo_path'] ?? null);
-        $token = $values['telegram_bot_token'] ?? null;
+        $token = PlatformSetting::secret('telegram_bot_token');
         $values['telegram_bot_token'] = $token ? '••••••'.substr((string) $token, -4) : null; // never sent back in full
         $values['mail_password'] = ! empty($values['mail_password']) ? '••••••••' : null; // never sent back
 

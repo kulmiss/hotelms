@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\Backup\BackupCipher;
 use App\Services\Backup\Backups;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
@@ -58,6 +59,7 @@ class SystemController extends Controller
         ];
 
         $checks['backups'] = $this->backups($backups);
+        $checks['settings'] = self::settingsCheck();
         $disk = @disk_free_space(storage_path());
         $checks['disk'] = ['ok' => $disk === false || $disk > 500 * 1024 * 1024, 'free_mb' => $disk === false ? null : (int) ($disk / 1024 / 1024)];
 
@@ -69,18 +71,38 @@ class SystemController extends Controller
         ]]);
     }
 
+    /**
+     * The .env lines a live server must have (SECURITY_REPORT L8): no debug pages, production mode,
+     * HTTPS-only cookies and an https address. Also used by the watchdog.
+     *
+     * @return array{ok: bool, problems: list<string>, problem: ?string}
+     */
+    public static function settingsCheck(): array
+    {
+        $problems = array_values(array_filter([
+            config('app.debug') ? 'APP_DEBUG=true: error pages show internals. Set APP_DEBUG=false.' : null,
+            ! app()->isProduction() ? 'APP_ENV is "'.app()->environment().'": set APP_ENV=production on a live server.' : null,
+            ! config('session.secure') ? 'SESSION_SECURE_COOKIE is not true: the sign-in cookie could travel without HTTPS.' : null,
+            ! str_starts_with((string) config('app.url'), 'https://') ? 'APP_URL does not start with https://.' : null,
+        ]));
+
+        return ['ok' => $problems === [], 'problems' => $problems, 'problem' => $problems[0] ?? null];
+    }
+
     /** @return array<string, mixed> */
     private function backups(Backups $backups): array
     {
         $out = ['ok' => false];
-        foreach (['daily', 'small'] as $kind) {
-            $files = glob($backups->folder()."/{$kind}/*.sql.gz") ?: [];
-            rsort($files);
-            $newest = $files[0] ?? null;
-            $out[$kind] = $newest ? ['file' => basename($newest), 'at' => Carbon::createFromTimestamp((int) filemtime($newest))->toIso8601String(), 'size_kb' => (int) (filesize($newest) / 1024), 'count' => count($files)] : null;
+        // "small" = the hourly backups (folder hourly/).
+        foreach (['daily' => 'daily', 'small' => 'hourly'] as $kind => $folder) {
+            $files = $backups->files($folder);
+            $newest = $files ? end($files) : null;
+            $out[$kind] = $newest ? ['file' => basename($newest), 'at' => Carbon::createFromTimestamp((int) filemtime($newest))->toIso8601String(), 'size_kb' => (int) (filesize($newest) / 1024), 'count' => count($files), 'encrypted' => BackupCipher::isEncrypted($newest)] : null;
         }
-        $out['ok'] = $out['daily'] !== null && Carbon::parse($out['daily']['at'])->gt(now()->subHours(26));
-        $out['problem'] = $out['ok'] ? null : ($out['daily'] === null ? 'No daily backup yet.' : 'The newest daily backup is more than a day old.');
+        $out['key'] = (bool) config('hotelms.backups.key');
+        $noKey = ! $out['key'] && app()->isProduction();
+        $out['ok'] = ! $noKey && $out['daily'] !== null && Carbon::parse($out['daily']['at'])->gt(now()->subHours(26));
+        $out['problem'] = $out['ok'] ? null : ($noKey ? 'BACKUP_KEY is missing: no backups are made. Run php artisan hotelms:backup-key.' : ($out['daily'] === null ? 'No daily backup yet.' : 'The newest daily backup is more than a day old.'));
 
         return $out;
     }

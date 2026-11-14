@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SecurityEvents } from '@/components/security/SecurityEvents'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { ChevronDownIcon, RefreshCwIcon } from 'lucide-react'
@@ -61,6 +62,8 @@ export function WatchdogPage() {
           </li>
         ))}
       </ul>
+
+      <SecurityEvents scope="platform" />
     </div>
   )
 }

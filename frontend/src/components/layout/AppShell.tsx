@@ -9,6 +9,7 @@ import { HotelBanners } from './HotelBanners'
 import { Maintenance, ReadOnlyNotice } from './Maintenance'
 import { ScreenLock } from './ScreenLock'
 import { SessionBanner } from './SessionBanner'
+import { WeakPasswordBanner } from './WeakPasswordBanner'
 
 /** Keyboard users jump past the menu straight to the page (template). */
 function SkipToMain() {
@@ -38,6 +39,7 @@ export function AppShell() {
         <div className="flex flex-col overflow-hidden empty:hidden md:rounded-t-xl">
           <ConnectionBanner />
           <SessionBanner />
+          <WeakPasswordBanner />
           {me.data?.emergency?.read_only && !support && <ReadOnlyNotice />}
           <HotelBanners />
         </div>

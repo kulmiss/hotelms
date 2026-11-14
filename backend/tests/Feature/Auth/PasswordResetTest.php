@@ -29,11 +29,11 @@ class PasswordResetTest extends TestCase
         });
         parse_str((string) parse_url((string) $link, PHP_URL_QUERY), $q);
 
-        $new = ['token' => $q['token'], 'email' => 'meron@sheger.test', 'password' => 'NewPass-2026', 'password_confirmation' => 'NewPass-2026'];
+        $new = ['token' => $q['token'], 'email' => 'meron@sheger.test', 'password' => 'Blue-Nile-Kettle-42', 'password_confirmation' => 'Blue-Nile-Kettle-42'];
         $this->postJson('/api/v1/auth/reset-password', ['token' => 'wrong'] + $new)->assertJsonValidationErrors('email');
         $this->postJson('/api/v1/auth/reset-password', $new)->assertOk();
         $this->postJson('/api/v1/auth/reset-password', $new)->assertJsonValidationErrors('email'); // used up
 
-        $this->postJson('/api/v1/auth/login', ['email' => 'meron@sheger.test', 'password' => 'NewPass-2026'])->assertOk();
+        $this->postJson('/api/v1/auth/login', ['email' => 'meron@sheger.test', 'password' => 'Blue-Nile-Kettle-42'])->assertOk();
     }
 }

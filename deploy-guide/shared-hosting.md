@@ -29,6 +29,7 @@ Write your values here first. Replace every `<…>` in this guide with them (inc
 | `<DB_USER>` | Database user (also with the prefix) | `examplehot_hms` |
 | `<DB_PASSWORD>` | The database user's password (make a long random one) | – |
 | `<APP_KEY>` | Made by `php artisan key:generate` (starts with `base64:`) | – |
+| `<BACKUP_KEY>` | Made by `php artisan hotelms:backup-key` (starts with `base64:`) – backups are encrypted with it | – |
 | `<MAIL_HOST>` | Your outgoing mail server (Part H) | `mail.example.et` |
 | `<MAIL_PORT>` | `465` (SSL) or `587` (STARTTLS) | `465` |
 | `<MAIL_USER>` | The mailbox that sends emails | `no-reply@example.et` |
@@ -171,11 +172,13 @@ CI checks this whenever the app or the package script changes).
 ```sh
 cd build/hotelms
 php artisan key:generate --show
+php artisan hotelms:backup-key
 cd ../..
 ```
 
-**You should see:** one line that starts with `base64:` – this is your `<APP_KEY>`. Copy it into your password
-manager **now**. (This command does not save anything; it only shows a new key. Tested.)
+**You should see:** first one line that starts with `base64:` – this is your `<APP_KEY>`; then a line
+`BACKUP_KEY=base64:…` – the part after `=` is your `<BACKUP_KEY>` (backups are encrypted with it). Copy **both** into
+your password manager **now**. (These commands do not save anything; they only show new keys. Tested.)
 
 ### B6. Find the zip in Windows
 
@@ -360,6 +363,7 @@ Change the values on the right. Lines not shown here: leave them as they are.
 | `BACKUP_PATH=` | `/home/<CPANEL_USER>/hotelms-backups` | From D2. Outside the web. |
 | `BACKUP_COPY_PATH=` | empty, or a second folder/disk (CHECK what your host offers) | A second copy of each backup. |
 | `BACKUP_KEEP_DAYS=30` | keep | Daily backups kept 30 days (hourly ones 48 hours). |
+| `BACKUP_KEY=` | `<BACKUP_KEY>` | From B5. Backups are encrypted with it. **Empty = no backups at all** on a live server. Never lose it: without it the backups cannot be opened. |
 
 **Add this line** for port 465 only (SSL): `MAIL_SCHEME=smtps`. For port 587 do not add it.
 
@@ -539,7 +543,7 @@ If you changed `.env`, run `php artisan optimize` again (Terminal) – the setti
 5. **Edit `.env` once more:** delete the value of `SUPER_ADMIN_PASSWORD=` if you had put one (it is not needed after
    the first start). Run `php artisan optimize`.
 6. Make the first backup by hand (Terminal): `php artisan hotelms:backup` → **You should see**
-   `Backup /home/<CPANEL_USER>/hotelms-backups/daily/….sql.gz: … tables, … rows, … KB`.
+   `Backup /home/<CPANEL_USER>/hotelms-backups/daily/….sql.gz.enc: … tables, … rows, … KB, encrypted`.
 7. Do the [go-live checklist](#go-live-checklist).
 
 ---
@@ -557,7 +561,7 @@ about 2–5 of them. Every step: Terminal. (No Terminal? Run the commands throug
    cd ~/hotelms
    php artisan hotelms:backup
    ```
-   **You should see:** `Backup …sql.gz: … tables, … rows, … KB`. Write down the file name (`<BACKUP_FILE>`).
+   **You should see:** `Backup …sql.gz.enc: … tables, … rows, … KB, encrypted`. Write down the file name (`<BACKUP_FILE>`).
 3. **Optional but wise:** cPanel → **Backup** → "Download a Home Directory Backup" (all files) – keep it on your laptop.
 4. **Maintenance mode:**
    ```sh
@@ -610,7 +614,9 @@ about 2–5 of them. Every step: Terminal. (No Terminal? Run the commands throug
   copied to `BACKUP_PATH/files` (and to `BACKUP_COPY_PATH` if set).
 - On the 1st of every month the newest backup is opened and checked; if something is wrong, the HotelMS team gets an
   email.
-- **The backups are useless without the same `APP_KEY`.** Keep it safe, separately.
+- Every backup is **encrypted** with `BACKUP_KEY` (files end in `.enc`); a stolen backup file cannot be read.
+- **Restoring needs both keys:** `BACKUP_KEY` opens the file, `APP_KEY` the guest IDs and two-step secrets inside it.
+  Keep both safe, separately (password manager).
 
 ### K2. By hand
 
@@ -620,13 +626,13 @@ php artisan hotelms:backup          # make a full backup now
 php artisan hotelms:backup --check  # open the newest daily backup and confirm it is complete
 ```
 
-**You should see** for `--check`: `OK: … tables in /home/<CPANEL_USER>/hotelms-backups/daily/….sql.gz`.
+**You should see** for `--check`: `OK: … tables in /home/<CPANEL_USER>/hotelms-backups/daily/….sql.gz.enc`.
 
 ### K3. A second copy, away from the server
 
 The backups sit on the same server. If the server is lost, they are lost too. At least once a week:
 
-- File Manager → `hotelms-backups/daily` → right-click the newest `.sql.gz` → **Download**, and keep it on another
+- File Manager → `hotelms-backups/daily` → right-click the newest `.sql.gz.enc` → **Download**, and keep it on another
   computer or storage **in Ethiopia** (data law), **or**
 - cPanel → **Backup** / **Backup Wizard** → "Download a Home Directory Backup" (includes `hotelms-backups` and
   `hotelms/storage`), **or**
@@ -715,7 +721,7 @@ scroll to the end. The last lines say what went wrong.
 
 From `docs/hosting.md` – do it at the first launch and at every big update.
 
-1. **Backup first:** `php artisan hotelms:backup`, then `php artisan hotelms:backup --check`. Keep a copy of `APP_KEY`.
+1. **Backup first:** `php artisan hotelms:backup`, then `php artisan hotelms:backup --check`. `BACKUP_KEY` is set (System → Backups: "encrypted"). Keep copies of `APP_KEY` and `BACKUP_KEY`.
 2. **New code on the server** (Part D or J), then **migrate:** `php artisan migrate --force`, then `php artisan optimize`.
 3. **Cron:** the `schedule:run` line runs every minute (Part G). Super Admin → System: Scheduler green.
 4. **LICENSE:** the owner's name / company and email are filled in (no `[OWNER …]` placeholders) – before the final

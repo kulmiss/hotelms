@@ -356,12 +356,12 @@ Differences from §2: Restaurant / Bar still opens `/reports` by address ("Your 
 ### Notes
 - **Demo reset:** the two demo approvals had already been decided in part 1, so I reset the demo hotel once (Super Admin, demo only). The demo is now hotel 16; my part-1 test data is gone.
 - **Speed:** on the first load of the dashboard, `/dashboard` and `/smart/dashboard` sometimes took 2.5–5 s in the dev setup (Docker on your laptop, many requests at once). Alone they take about 0.3 s. Worth a look on the live server; not a code problem found.
-- The test announcement "hi the hi the…" is still live on the demo (§4 s9, your to-do).
+- ~~The test announcement "hi the hi the…" is still live on the demo~~ – removed 9 Nov.
 - "What's new" is still empty until you publish the draft (go-live checklist).
 
 ### Still open
-- LICENSE placeholders – must be filled before the final PR to `main`.
-- Restaurant / Bar → `/reports` by address (your call).
+- ~~LICENSE placeholders~~ – filled in 10 Nov.
+- ~~Restaurant / Bar → `/reports` by address~~ – shows "You can't open this page" (#120).
 - Things I cannot test (you check in person): password change, kiosk PIN, two-step sign-in, screen-lock unlock, session timeout, sign out / in. See the final report.
 
 ## 9. Dashboards (P18) – check (9 Nov, morning)

@@ -1,4 +1,5 @@
-# deploy/package.sh: builds hotelms.zip and checks it (guide pictures in, work-folder files out).
+# deploy/package.sh: builds hotelms.zip and checks it (guide pictures in, work-folder files out);
+# deploy/check-csp.sh: the app page's CSP hash still matches frontend/index.html.
 # Runs only when these files change in a pull request (saves GitHub Actions minutes), or by hand:
 # GitHub → Actions → "Package" → Run workflow.
 name: Package
@@ -11,6 +12,8 @@ on:
       - 'backend/composer.json'
       - 'backend/composer.lock'
       - 'backend/public/**'
+      - 'deploy-guide/files/**'
+      - 'docs/hosting.md'
       - '.github/workflows/package.yml'
   workflow_dispatch:
 
@@ -24,7 +27,7 @@ concurrency:
 jobs:
   package:
     name: Package (deploy/package.sh)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest moves to Ubuntu 26 (Oct 2026); move on purpose, after a test run
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,6 +40,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Content-Security-Policy matches the app page (hash of the inline theme script)
+        run: ./deploy/check-csp.sh
       - name: Plant files from a developer's work folder (must NOT end up in the package)
         run: |
           echo "DB_PASSWORD=dev-secret" > backend/.env
@@ -59,7 +64,7 @@ jobs:
           packed=$(grep -c '^hotelms/public/guide/.*\.webp$' list.txt || true)
           [ "$packed" -eq "$pictures" ] || fail "Staff-guide pictures: $packed of $pictures in the package"
           for f in hotelms/public/app.html hotelms/public/sw.js hotelms/public/.htaccess hotelms/public/index.php \
-                   hotelms/artisan hotelms/.env.production.example hotelms/vendor/autoload.php hotelms/docs/README.md hotelms/deploy-guide/pdf/index.pdf; do
+                   hotelms/artisan hotelms/.env.production.example hotelms/vendor/autoload.php hotelms/docs/README.md hotelms/deploy-guide/pdf/index.pdf hotelms/public/.well-known/security.txt; do
             grep -qx "$f" list.txt || fail "Missing: $f"
           done
           for d in app/public app/private framework/cache/data framework/sessions framework/views logs; do

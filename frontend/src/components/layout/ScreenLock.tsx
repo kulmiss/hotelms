@@ -1,17 +1,22 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { LockIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Field } from '@/components/ui/Field'
+import { LOCK_NOW_EVENT, post } from '@/lib/api'
 import { useLogout, useMe } from '@/lib/auth'
 import { errorText, usePinSwitch, useUnlock } from '@/lib/security'
 
 const KEY = 'hms_locked'
 
 /** "Lock screen" in the account menu: lock now, without waiting. */
-export const LOCK_NOW_EVENT = 'hms:lock-screen'
+export { LOCK_NOW_EVENT }
+
+/** The server locks the session too, so clearing the browser's storage does not open it (SECURITY_REPORT M3). */
+const lockOnServer = () => void post('/auth/lock').catch(() => undefined)
 
 function stored(): string | null {
   try {
@@ -39,6 +44,12 @@ export function ScreenLock() {
   const userId = me.data ? String(me.data.user.id) : null
   const [locked, setLocked] = useState(() => userId !== null && stored() === userId)
   const last = useRef(Date.now())
+  const queries = useQueryClient()
+
+  // Locked before a reload: make sure the server knows too.
+  useEffect(() => {
+    if (locked) lockOnServer()
+  }, [locked])
 
   useEffect(() => {
     if (!userId) return
@@ -78,6 +89,7 @@ export function ScreenLock() {
         store(null)
         last.current = Date.now()
         setLocked(false)
+        void queries.invalidateQueries() // screens asked while locked got "locked": load them again
       }}
     />
   )

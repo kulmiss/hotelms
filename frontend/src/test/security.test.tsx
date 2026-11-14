@@ -83,6 +83,17 @@ describe('shared devices', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
     await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Screen locked' })).not.toBeInTheDocument())
     expect(body(fetchMock, '/auth/pin-switch')).toEqual({ pin: '4821' })
+    expect(fetchMock.mock.calls.some(([u, i]) => String(u).endsWith('/auth/lock') && i?.method === 'POST')).toBe(true) // the server locks too
+  })
+
+  it('shows the lock screen when the server says the screen is locked (SECURITY_REPORT M3)', async () => {
+    mockApi({
+      'GET /me': { body: { ...makeMe(), role: { id: 2, name: 'Receptionist', is_hotel_admin: false, max_discount_percent: '5.00' }, security: security({ screen_lock_minutes: 15 }) } },
+      'GET /health': healthOk,
+      'GET /notifications': { status: 423, body: { message: 'The screen is locked.', code: 'screen_locked' } },
+    })
+    renderApp('/')
+    expect(await screen.findByRole('dialog', { name: 'Screen locked' })).toBeInTheDocument()
   })
 
   it('approves a device waiting in Team → Devices', async () => {
@@ -133,5 +144,17 @@ describe('forgot password', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Save new password' }))
     expect(await screen.findByText('Password changed. You can sign in now.')).toBeInTheDocument()
     expect(body(fetchMock, '/auth/reset-password')).toEqual({ token: 'abc', email: 'meron@sheger.test', password: 'NewPass-2026', password_confirmation: 'NewPass-2026' })
+  })
+})
+
+describe('weak password note (SECURITY_REPORT M2)', () => {
+  it('asks to change a password that is weaker than the new rules, and can be closed', async () => {
+    mockApi({ 'GET /me': { body: { ...makeMe(), security: security({ password_weak: true }) } }, 'GET /health': healthOk })
+    renderApp('/')
+    expect(await screen.findByText(/Your password is easier to guess/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Change password' })).toHaveAttribute('href', '/profile')
+    const note = screen.getByText(/Your password is easier to guess/).closest('[role="status"]') as HTMLElement
+    await userEvent.click(note.querySelector('button') as HTMLButtonElement)
+    expect(screen.queryByText(/Your password is easier to guess/)).not.toBeInTheDocument()
   })
 })

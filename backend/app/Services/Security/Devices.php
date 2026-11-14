@@ -76,6 +76,9 @@ class Devices
         $request->session()->put(self::SESSION_KEY, $device->id);
         if ($hadOthers) {
             $this->tellAdmins($user, $device, false); // the very first sign-in is not "new"
+            if ($user->hotel && ! $user->isHotelAdmin()) {
+                app(SecurityNotices::class)->send($user, 'new_device', $request); // the person too, not only the admins (M7)
+            }
         }
 
         return $device;

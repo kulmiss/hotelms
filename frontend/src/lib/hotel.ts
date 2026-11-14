@@ -30,6 +30,8 @@ export type StaffMember = {
   phone: string | null
   status: 'active' | 'disabled'
   must_change_password: boolean
+  /** A new sign-in email waiting for the link sent to it (SECURITY_REPORT M7). */
+  pending_email?: string | null
   last_login_at: string | null
   role: { id: number; name: string; is_locked: boolean } | null
   branches: { id: number; name: string }[]
@@ -79,7 +81,7 @@ export type StaffInput = { name: string; email: string; phone: string | null; ro
 export type NewStaffResult = { data: StaffMember; temporary_password: string; email_sent: boolean }
 export const useSaveStaff = (id?: number) =>
   useHotelMutation((input: StaffInput) =>
-    id ? put<{ data: StaffMember }>(`/staff/${id}`, input) : post<NewStaffResult>('/staff', input),
+    id ? put<{ data: StaffMember; email_change?: 'changed' | 'pending' | 'same' }>(`/staff/${id}`, input) : post<NewStaffResult>('/staff', input),
   )
 export const useSetStaffActive = (id: number) =>
   useHotelMutation((active: boolean) => post(`/staff/${id}/${active ? 'enable' : 'disable'}`))

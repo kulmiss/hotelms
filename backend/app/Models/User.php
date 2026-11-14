@@ -21,7 +21,7 @@ use Laravel\Sanctum\HasApiTokens;
  * so this model is not tenant-scoped. Staff lists must filter by hotel_id.
  */
 #[Fillable(['hotel_id', 'role_id', 'name', 'email', 'phone', 'password', 'status', 'must_change_password'])]
-#[Hidden(['password', 'remember_token', 'attendance_pin', 'two_factor_secret', 'two_factor_recovery_codes'])]
+#[Hidden(['password', 'remember_token', 'attendance_pin', 'two_factor_secret', 'two_factor_recovery_codes', 'pending_email_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -39,7 +39,29 @@ class User extends Authenticatable
             'is_super_admin' => 'boolean',
             'must_change_password' => 'boolean',
             'two_factor_confirmed_at' => 'datetime',
+            'pending_email_expires_at' => 'datetime',
+            'temporary_password_expires_at' => 'datetime',
         ];
+    }
+
+    /** Days a temporary password works (SECURITY_REPORT L6); then a manager sends a new one. */
+    public const TEMPORARY_PASSWORD_DAYS = 7;
+
+    protected static function booted(): void
+    {
+        // Every temporary password (new staff, a reset by a manager or HotelMS) works for 7 days only.
+        static::saving(function (User $user) {
+            if ($user->isDirty('must_change_password') || ($user->must_change_password && $user->isDirty('password'))) {
+                $user->temporary_password_expires_at = $user->must_change_password ? now()->addDays(self::TEMPORARY_PASSWORD_DAYS) : null;
+            }
+        });
+    }
+
+    /** A temporary password that is older than 7 days (the HotelMS Owner's own first password never runs out). */
+    public function temporaryPasswordExpired(): bool
+    {
+        return $this->must_change_password && $this->temporary_password_expires_at !== null && $this->temporary_password_expires_at->isPast()
+            && ! ($this->is_super_admin && $this->platform_role === 'owner');
     }
 
     /** @return BelongsTo<Hotel, $this> */

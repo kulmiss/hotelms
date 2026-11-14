@@ -10,6 +10,9 @@ const BASE = ROOT + '/api/v1'
 /** Full URL of an API path (for downloads in a link). */
 export const apiUrl = (path: string) => BASE + path
 
+/** Lock the screen now (the account menu, or the server says the screen is locked – SECURITY_REPORT M3). */
+export const LOCK_NOW_EVENT = 'hms:lock-screen'
+
 export class ApiError extends Error {
   readonly status: number
   readonly code?: string
@@ -124,6 +127,10 @@ async function send<T>(path: string, init: RequestInit = {}): Promise<T> {
     }
     throw new ApiError(422, i18n.t('payments.overpayCancelled'), { message: i18n.t('payments.overpayCancelled'), errors: { amount: [i18n.t('payments.overpayCancelled')] } })
   }
+  // The server keeps the screen lock too: a locked session answers 423 "screen_locked" (show the lock screen).
+  if (res.status === 423 && (body as { code?: string } | null)?.code === 'screen_locked' && typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(LOCK_NOW_EVENT))
+  }
   if (!res.ok) {
     const message =
       body && typeof body === 'object' && 'message' in body ? String(body.message) : res.statusText
@@ -168,7 +175,8 @@ export const put = <T>(path: string, data?: unknown) =>
 export type Health = {
   status: 'ok' | 'degraded'
   app: string
-  version: string
+  /** Only for the HotelMS team (SECURITY_REPORT L9). */
+  version: string | null
   time: string
   checks: { database: 'ok' | 'down' }
 }
@@ -196,5 +204,5 @@ export type Me = {
   switches?: Record<string, boolean>
   emergency?: { maintenance: boolean; read_only: boolean } | null
   banners?: { id: number; message: string; tone: 'info' | 'warn' | 'danger' }[]
-  security?: { two_factor: 'app' | 'email' | null; two_factor_setup_required: boolean; screen_lock_minutes: number; has_pin: boolean }
+  security?: { two_factor: 'app' | 'email' | null; two_factor_setup_required: boolean; screen_lock_minutes: number; has_pin: boolean; password_weak?: boolean }
 }

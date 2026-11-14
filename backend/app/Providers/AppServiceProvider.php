@@ -9,12 +9,14 @@ use App\Models\InvoiceItem;
 use App\Models\Payment;
 use App\Models\Reservation;
 use App\Models\Room;
+use App\Models\User;
 use App\Models\UserDevice;
 use App\Services\Automation\AutomationEvents;
 use App\Services\Automation\Automations;
 use App\Services\Modules\Housekeeping;
 use App\Services\Notify\MailSettings;
 use App\Services\PlatformPermissions;
+use App\Services\Security\SecurityLog;
 use App\Services\Switches;
 use App\Support\Tenancy\TenantContext;
 use App\Support\TrustedProxies;
@@ -56,6 +58,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Slow down password guessing: 5 tries a minute per email and device.
         // Per email + address, and per address alone (trying many emails from one place).
+        // General limit for every signed-in call (SECURITY_REPORT M5): a dashboard load is about 12 calls,
+        // live screens poll every few seconds – far below this. One stolen session cannot pull data endlessly.
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(300)->by('api|'.($request->user()?->id ?? $request->ip()))
+            ->response(fn () => response()->json(['message' => 'Too many requests in a short time. Wait a minute and try again.', 'code' => 'too_many'], 429)));
         RateLimiter::for('login', fn (Request $request) => [
             Limit::perMinute(5)->by(strtolower(is_string($request->input('email')) ? $request->input('email') : '').'|'.$request->ip()),
             Limit::perMinute(30)->by('login-ip|'.$request->ip()),
@@ -85,6 +91,12 @@ class AppServiceProvider extends ServiceProvider
         Reservation::created($after('reservationCreated'));
         Reservation::updated($after('reservationUpdated'));
         Payment::created($after('paymentCreated'));
+        // Refunds also go to the security event log (SECURITY_REPORT M9).
+        Payment::created(function (Payment $p) {
+            if ($p->type === 'refund') {
+                app(SecurityLog::class)->record('refund', User::find($p->received_by), null, null, "{$p->amount} {$p->currency}, booking #{$p->reservation_id}: {$p->refund_reason}");
+            }
+        });
         Invoice::updated($after('invoiceUpdated'));
         InvoiceItem::updated($after('invoiceItemUpdated'));
         CashierSession::updated($after('cashierUpdated'));
