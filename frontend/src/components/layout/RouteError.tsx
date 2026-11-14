@@ -49,7 +49,7 @@ export function RouteError() {
           >
             {t('routeError.reload')}
           </Button>
-          <Button variant="secondary" onClick={() => window.location.assign('/')}>
+          <Button variant="secondary" onClick={() => window.location.assign('/dashboard')}>
             {t('routeError.home')}
           </Button>
         </div>

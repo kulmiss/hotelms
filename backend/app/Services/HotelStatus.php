@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
  * Works out a hotel's status from its dates (decisions.md → Billing):
  * - manually suspended by the Super Admin → suspended
  * - paid until today or later → active
+ * - on a free plan (no trial running) → active
  * - in its free trial → trial
  * - unpaid for up to the grace days (default 3) → grace
  * - after that → suspended (read-only: sign in, view, export; nothing new)
@@ -26,6 +27,11 @@ class HotelStatus
         }
 
         if ($hotel->subscription_ends_at && $hotel->subscription_ends_at->gte($today)) {
+            return 'active';
+        }
+
+        // A free plan has nothing to pay, so it never runs out (after any trial of a bigger plan).
+        if ($hotel->plan?->isFree() && ! ($hotel->trial_ends_at && $hotel->trial_ends_at->gte($today))) {
             return 'active';
         }
 

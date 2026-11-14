@@ -26,12 +26,14 @@ export const GUIDE: GuideSection[] = [
     key: 'desk',
     topics: [
       { key: 'dashboard', perm: 'dashboard.view' },
+      { key: 'gettingStarted', perm: 'settings.hotel' },
       { key: 'roomBoard', pic: true, perm: 'frontdesk.view' },
       { key: 'todayLists', perm: 'frontdesk.view' },
       { key: 'walkIn', pic: true, perm: 'frontdesk.walk_in' },
       { key: 'noEndDate', perm: 'frontdesk.walk_in' },
       { key: 'quickCheckIn', perm: 'frontdesk.quick_check_in' },
       { key: 'newBooking', perm: 'reservations.create' },
+      { key: 'onlineRequests', perm: 'reservations.view' },
       { key: 'freeRooms', pic: true, perm: 'reservations.view' },
       { key: 'checkIn', pic: true, perm: 'frontdesk.check_in' },
       { key: 'moveExtend', pic: true, perm: 'frontdesk.room_move' },
@@ -94,6 +96,7 @@ export const GUIDE: GuideSection[] = [
       { key: 'devices', perm: 'staff.manage' },
       { key: 'settings', perm: ['settings.hotel', 'settings.rooms', 'settings.pricing', 'settings.policies', 'settings.money'] },
       { key: 'activity', perm: 'activity_log.view' },
+      { key: 'plan', perm: 'subscription.view' },
     ],
   },
 ]

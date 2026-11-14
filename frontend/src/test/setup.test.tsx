@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Me } from '@/lib/api'
@@ -97,5 +97,22 @@ describe('setup walkthrough', () => {
     renderApp('/')
     expect(await screen.findByText('Finish setting up your hotel')).toBeInTheDocument()
     expect(screen.getByText('4 steps left.')).toBeInTheDocument()
+  })
+
+  it('shows the Getting started checklist to a new hotel admin, and Hide hides it', async () => {
+    const items = ['setup', 'rooms', 'logo', 'staff', 'booking', 'check_in', 'payment', 'two_factor'].map((key, i) => ({ key, done: i < 2, link: '/setup' }))
+    const fetchMock = mockApi({
+      'GET /me': { body: meWithSetup({ started: true, completed: true }) },
+      'GET /health': healthOk,
+      'GET /getting-started': { body: { data: { items, done: 2, total: 8, dismissed: false } } },
+      'POST /getting-started/dismiss': { body: { data: { items, done: 2, total: 8, dismissed: true } } },
+    })
+    renderApp('/')
+    expect(await screen.findByText('Getting started')).toBeInTheDocument()
+    expect(screen.getByText('2 of 8 done')).toBeInTheDocument()
+    expect(screen.getByText('Make your first booking')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Hide' }))
+    await waitFor(() => expect(screen.queryByText('Make your first booking')).not.toBeInTheDocument())
+    expect(fetchMock.mock.calls.some(([u, init]) => String(u).includes('/getting-started/dismiss') && init?.method === 'POST')).toBe(true)
   })
 })

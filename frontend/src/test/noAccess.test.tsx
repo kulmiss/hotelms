@@ -15,7 +15,7 @@ describe('no access page', () => {
     renderApp('/staff')
     expect(await screen.findByRole('heading', { name: "You can't open this page" })).toBeInTheDocument()
     expect(screen.getByText(/Ask your manager/)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Go to the start page' })).toHaveAttribute('href', '/')
+    expect(screen.getByRole('link', { name: 'Go to the start page' })).toHaveAttribute('href', '/dashboard')
   })
 
   it('also for a settings section the role may not use, and for Super Admin pages', async () => {

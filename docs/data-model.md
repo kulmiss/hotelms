@@ -9,8 +9,9 @@ in the claude.ai Project.
 
 | Table | Important columns | Notes |
 |---|---|---|
-| `plans` | code, name, price_per_room, minimum_monthly, yearly_free_months, max_rooms, max_branches, max_staff, modules, is_custom | Basic / Standard / Pro / Custom (`plans.md`) |
-| `hotels` | name, status (trial, active, grace, suspended; a closed hotel is soft-deleted), plan_id, trial_ends_at, subscription_ends_at, timezone, default_currency, is_demo, legal_name, tin, vat_number, setup_steps, setup_completed_at | Closed hotels are purged after 90 days |
+| `booking_requests` | hotel_id, branch_id, room_type_id, check_in, check_out, adults, children, name, phone, email, note, status (new/accepted/declined), reservation_id, handled_by/at, ip | From the public booking page `/h/{hotels.booking_slug}` |
+| `plans` | code, name, price_per_room, minimum_monthly, yearly_free_months, max_rooms, max_branches, max_staff, max_storage_mb, modules, is_custom, is_public, is_recommended | Free / Starter / Pro / Business (flat price: 0 per room, minimum = price). Old Basic / Standard / Pro / Custom are "(classic)": kept for their hotels, not offered (`is_public` false). Plan features are plan-level rows in `feature_switches` |
+| `hotels` | name, status (trial, active, grace, suspended; a closed hotel is soft-deleted), plan_id, trial_ends_at, subscription_ends_at, timezone, default_currency, is_demo, legal_name, tin, vat_number, setup_steps, setup_completed_at, signup_status, signup (owner name, rooms, mode, terms accepted), signup_decided_at/by, signup_reason | Closed hotels are purged after 90 days. `users.email_verify_token` (sha256) for the sign-up link |
 | `subscription_payments` | hotel_id, amount, months, period_start/end, method, reference | Money a hotel paid HotelMS |
 | `hotel_invoices` | hotel_id, number, period, rooms, amount, status, due_date | HotelMS bills to hotels |
 | `platform_settings` | key, value (JSON) | Branding, support contacts, Telegram bot, SMTP (password encrypted), demo… (`PlatformSetting::read/write`) |

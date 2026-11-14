@@ -35,7 +35,8 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(req)
         .then((res) => {
-          if (res.ok) {
+          // The public website pages (/, /terms, /privacy) are not the app: never save them as the offline app.
+          if (res.ok && !/^\/(terms|privacy)?$/.test(url.pathname)) {
             const copy = res.clone()
             void caches.open(CACHE).then((c) => c.put(SHELL, copy))
           }

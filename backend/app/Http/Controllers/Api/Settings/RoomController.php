@@ -7,6 +7,7 @@ use App\Models\Reservation;
 use App\Models\ReservationRoom;
 use App\Models\Room;
 use App\Models\RoomType;
+use App\Support\PlanLimits;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -167,7 +168,7 @@ class RoomController extends Controller
     {
         $limit = $this->limitInfo($request);
         if ($limit['max'] !== null && $limit['max'] < $limit['used'] + $adding) {
-            throw ValidationException::withMessages(['limit' => "Your plan allows {$limit['max']} rooms ({$limit['used']} used). Upgrade the plan to add more."]);
+            throw ValidationException::withMessages(['limit' => PlanLimits::message("Your plan allows {$limit['max']} rooms ({$limit['used']} used)")]);
         }
     }
 

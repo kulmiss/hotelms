@@ -1,0 +1,72 @@
+# The public website must stay ultra fast and clean (owner, 14 Nov 2026):
+# Lighthouse (mobile) ≥ 95 in all four categories and the biggest picture shown within 1.5 s.
+# Runs when the website or this check changes in a pull request, or by hand: Actions → "Lighthouse" → Run workflow.
+name: Lighthouse
+
+on:
+  pull_request:
+    paths:
+      - 'backend/resources/views/landing/**'
+      - 'backend/public/landing/**'
+      - 'backend/app/Services/Landing/**'
+      - 'backend/app/Http/Controllers/Web/**'
+      - 'backend/routes/web.php'
+      - 'lighthouserc.json'
+      - '.github/workflows/lighthouse.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lighthouse-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lighthouse:
+    name: Website speed and quality (Lighthouse)
+    runs-on: ubuntu-24.04
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: hotelms
+          MYSQL_ROOT_PASSWORD: root
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=30
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: hotelms
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      APP_URL: http://127.0.0.1:8000
+      CACHE_STORE: file
+      SESSION_DRIVER: file
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, intl, bcmath, zip, gd
+          coverage: none
+      - name: Install and prepare the API
+        working-directory: backend
+        run: |
+          composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
+          cp .env.example .env && php artisan key:generate --force
+          php artisan migrate --force
+          php artisan optimize
+      - name: Start the server
+        working-directory: backend
+        run: |
+          PHP_CLI_SERVER_WORKERS=4 php artisan serve --host=127.0.0.1 --port=8000 --no-reload > /tmp/serve.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:8000/ > /dev/null && break; sleep 1; done
+          curl -sfI http://127.0.0.1:8000/ | head -20
+      - name: Lighthouse (3 runs, mobile)
+        run: npx --yes @lhci/cli@0.14.0 autorun --config=./lighthouserc.json

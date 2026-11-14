@@ -13,6 +13,7 @@ export const pages = {
   platformReports: () => import('@/pages/admin/PlatformReportsPage'),
   switches: () => import('@/pages/admin/SwitchesPage'),
   support: () => import('@/pages/admin/SupportInboxPage'),
+  signups: () => import('@/pages/admin/SignupsPage'),
   system: () => import('@/pages/admin/SystemPage'),
   team: () => import('@/pages/admin/TeamPage'),
   platformActivity: () => import('@/pages/admin/PlatformActivityPage'),
@@ -60,7 +61,7 @@ export const pages = {
 }
 
 const byPath: Record<string, () => Promise<unknown>> = {
-  '/': pages.dashboard,
+  '/dashboard': pages.dashboard,
   '/admin': pages.adminDashboard,
   '/admin/hotels': pages.hotels,
   '/admin/plans': pages.plans,
@@ -68,6 +69,7 @@ const byPath: Record<string, () => Promise<unknown>> = {
   '/admin/reports': pages.platformReports,
   '/admin/switches': pages.switches,
   '/admin/support': pages.support,
+  '/admin/signups': pages.signups,
   '/admin/system': pages.system,
   '/admin/team': pages.team,
   '/admin/activity': pages.platformActivity,

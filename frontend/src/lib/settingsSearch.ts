@@ -21,6 +21,7 @@ export const SETTINGS_SECTIONS = [
   { key: 'attendance', permission: 'settings.attendance', module: 'attendance' },
   { key: 'automations', permission: 'automations.manage' },
   { key: 'security', permission: 'settings.hotel' },
+  { key: 'booking-page', permission: 'settings.hotel' },
   { key: 'subscription', permission: 'subscription.view' },
 ] as const
 
@@ -55,6 +56,7 @@ const SOURCES: Record<string, string[]> = {
   automations: ['automations.items', 'automations.quiet'],
   security: ['settings.security'],
   subscription: ['settings.subscription'],
+  'booking-page': ['settings.bookingPage'],
 }
 
 /** Extra words people type that are not on the screen. */
@@ -67,7 +69,8 @@ const SYNONYMS: Record<string, string> = {
   security: 'two-step 2fa password lock pin devices backup export download',
   automations: 'telegram reminder notification bell quiet hours rule',
   modules: 'housekeeping cashier shifts attendance features',
-  subscription: 'plan pay paid until billing',
+  subscription: 'plan pay paid until billing upgrade',
+  'booking-page': 'online booking website link guests request',
   'rate-rules': 'price weekend season discount corporate',
   cancellation: 'no-show refund policy fee',
 }

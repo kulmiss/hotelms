@@ -15,7 +15,7 @@ import { onColor } from '@/lib/brand'
 import { inputClass } from '@/components/ui/formStyles'
 import { cn } from '@/lib/cn'
 
-const TABS = ['general', 'billing', 'branding', 'emails', 'telegram'] as const
+const TABS = ['general', 'signup', 'billing', 'branding', 'emails', 'telegram'] as const
 type Tab = (typeof TABS)[number]
 
 export function PlatformSettingsPage() {
@@ -36,6 +36,9 @@ export function PlatformSettingsPage() {
         <>
           <TabPanel id="general" active={tab}>
             <GeneralTab initial={settings.data.data} />
+          </TabPanel>
+          <TabPanel id="signup" active={tab}>
+            <SignupTab initial={settings.data.data} />
           </TabPanel>
           <TabPanel id="billing" active={tab}>
             <BillingTab initial={settings.data.data} />
@@ -121,6 +124,7 @@ function GeneralTab({ initial }: { initial: PlatformSettings }) {
   const [name, setName] = useState(initial.platform_name)
   const [email, setEmail] = useState(initial.support_email ?? '')
   const [phone, setPhone] = useState(initial.support_phone ?? '')
+  const [whatsapp, setWhatsapp] = useState(initial.whatsapp ?? '')
   const [demo, setDemo] = useState(initial.demo_public)
   const [demoMinutes, setDemoMinutes] = useState(String(initial.demo_minutes ?? 30))
   const [twoStep, setTwoStep] = useState(initial.two_factor_admins ?? true)
@@ -129,7 +133,7 @@ function GeneralTab({ initial }: { initial: PlatformSettings }) {
     <SettingsForm
       title={t('admin.settings.tabs.general')}
       description={t('admin.settings.generalHelp')}
-      onSave={() => ({ support_email: email || null, support_phone: phone || null, demo_public: demo, demo_minutes: Number(demoMinutes) || 30, ...(owner ? { platform_name: name, two_factor_admins: twoStep } : {}) })}
+      onSave={() => ({ support_email: email || null, support_phone: phone || null, whatsapp: whatsapp || null, demo_public: demo, demo_minutes: Number(demoMinutes) || 30, ...(owner ? { platform_name: name, two_factor_admins: twoStep } : {}) })}
     >
       {(error) => (
         <>
@@ -137,6 +141,7 @@ function GeneralTab({ initial }: { initial: PlatformSettings }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t('admin.settings.supportEmail')} type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={error?.field('support_email')} />
             <Field label={t('admin.settings.supportPhone')} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} error={error?.field('support_phone')} />
+            <Field label={t('admin.settings.whatsapp')} type="tel" placeholder="+251 9…" value={whatsapp} hint={t('admin.settings.whatsappHint')} onChange={(e) => setWhatsapp(e.target.value)} error={error?.field('whatsapp')} />
           </div>
           <label className="flex min-h-touch items-start gap-3 text-sm">
             <input type="checkbox" className="mt-0.5 size-4 rounded" checked={demo} onChange={(e) => setDemo(e.target.checked)} />
@@ -324,6 +329,43 @@ function EmailsTab({ initial }: { initial: PlatformSettings }) {
         <>
           <Field label={t('admin.settings.fromName')} value={from} hint={t('admin.settings.fromNameHint')} onChange={(e) => setFrom(e.target.value)} error={error?.field('email_from_name')} />
           <Field label={t('admin.settings.footer')} value={footer} hint={t('admin.settings.footerHint')} onChange={(e) => setFooter(e.target.value)} error={error?.field('email_footer')} />
+        </>
+      )}
+    </SettingsForm>
+  )
+}
+
+/** Hotel sign-up: off / approval / open, and an optional free trial (owner, 14 Nov 2026). Owner only. */
+function SignupTab({ initial }: { initial: PlatformSettings }) {
+  const { t } = useTranslation()
+  const [mode, setMode] = useState(initial.signup_mode ?? 'off')
+  const [trial, setTrial] = useState(initial.signup_trial ?? false)
+  const owner = useIsOwner()
+  if (!owner) return <OwnerOnly title={t('admin.settings.tabs.signup')} />
+  return (
+    <SettingsForm title={t('admin.settings.tabs.signup')} description={t('admin.settings.signupHelp')} onSave={() => ({ signup_mode: mode, signup_trial: trial })}>
+      {(error) => (
+        <>
+          <fieldset className="flex flex-col gap-1">
+            <legend className="mb-1 text-sm font-medium">{t('admin.settings.signupMode')}</legend>
+            {(['off', 'approval', 'open'] as const).map((m) => (
+              <label key={m} className="flex min-h-touch items-start gap-3 text-sm">
+                <input type="radio" name="signup_mode" className="mt-0.5 size-4" checked={mode === m} onChange={() => setMode(m)} />
+                <span className="flex flex-col">
+                  <span className="font-medium">{t(`admin.settings.signupModes.${m}`)}</span>
+                  <span className="text-muted">{t(`admin.settings.signupModes.${m}Hint`)}</span>
+                </span>
+              </label>
+            ))}
+            {error?.field('signup_mode') && <Alert>{error.field('signup_mode')}</Alert>}
+          </fieldset>
+          <label className="flex min-h-touch items-start gap-3 text-sm">
+            <input type="checkbox" className="mt-0.5 size-4 rounded" checked={trial} onChange={(e) => setTrial(e.target.checked)} />
+            <span className="flex flex-col">
+              <span className="font-medium">{t('admin.settings.signupTrial')}</span>
+              <span className="text-muted">{t('admin.settings.signupTrialHint')}</span>
+            </span>
+          </label>
         </>
       )}
     </SettingsForm>

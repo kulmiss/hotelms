@@ -24,8 +24,11 @@ class PlanResource extends JsonResource
             'max_rooms' => $this->max_rooms,
             'max_branches' => $this->max_branches,
             'max_staff' => $this->max_staff,
+            'max_storage_mb' => $this->max_storage_mb,
             'modules' => $this->modules ?? [],
             'is_active' => $this->is_active,
+            'is_public' => $this->is_public,
+            'is_recommended' => $this->is_recommended,
             'hotels_count' => $this->whenCounted('hotels'),
         ];
     }

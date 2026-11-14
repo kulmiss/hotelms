@@ -25,7 +25,7 @@ import { BranchSwitcher } from './BranchSwitcher'
 function NavEntry({ item }: { item: NavItem }) {
   const { t } = useTranslation()
   const { setOpenMobile } = useSidebar()
-  const end = item.path === '/' || item.path === '/admin'
+  const end = item.path === '/dashboard' || item.path === '/admin'
   const active = Boolean(useMatch({ path: item.path, end }))
   const label = t(`nav.${item.key}`)
   return (

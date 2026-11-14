@@ -42,6 +42,10 @@ class SecurityLog
         'throttled' => 'Too many requests',
         'invoice_voided' => 'Bill voided',
         'refund' => 'Refund given',
+        'signup' => 'Hotel registered',
+        'signup_verified' => 'Sign-up email confirmed',
+        'signup_approved' => 'Sign-up approved',
+        'signup_rejected' => 'Sign-up refused',
     ];
 
     public function record(string $kind, ?User $user = null, ?Request $request = null, ?string $email = null, ?string $detail = null): void

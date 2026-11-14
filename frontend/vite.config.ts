@@ -25,6 +25,9 @@ export default defineConfig({
       '/api': { target: apiTarget },
       '/sanctum': { target: apiTarget },
       '/storage': { target: apiTarget },
+      // The public website lives in Laravel too (the app itself starts at /dashboard).
+      '^/(terms|privacy|robots\\.txt|sitemap\\.xml)?$': { target: apiTarget },
+      '/landing/': { target: apiTarget },
     },
   },
   optimizeDeps: {

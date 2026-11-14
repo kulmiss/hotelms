@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PlatformSetting;
 use App\Services\ActivityLogger;
+use App\Services\Landing\LandingContent;
 use App\Services\Notify\MailSettings;
 use App\Support\SafeHost;
 use App\Support\SafeImage;
@@ -19,7 +20,7 @@ use Throwable;
 class PlatformSettingsController extends Controller
 {
     /** Settings only the Owner may change (besides the mail server). */
-    private const OWNER_ONLY = ['platform_name', 'brand_color', 'login_message', 'email_from_name', 'email_footer', 'telegram_bot_token', 'telegram_bot_username', 'two_factor_admins'];
+    private const OWNER_ONLY = ['platform_name', 'brand_color', 'login_message', 'email_from_name', 'email_footer', 'telegram_bot_token', 'telegram_bot_username', 'two_factor_admins', 'signup_mode', 'signup_trial'];
 
     public function show(): JsonResponse
     {
@@ -32,8 +33,11 @@ class PlatformSettingsController extends Controller
             'platform_name' => ['sometimes', 'required', 'string', 'max:40'],
             'support_email' => ['sometimes', 'nullable', 'email', 'max:120'],
             'support_phone' => ['sometimes', 'nullable', 'string', 'max:30'],
+            'whatsapp' => ['sometimes', 'nullable', 'string', 'max:30', 'regex:/^\+?[0-9 ]{6,20}$/'],
             'demo_public' => ['sometimes', 'boolean'],
             'demo_minutes' => ['sometimes', 'integer', 'between:5,480'],
+            'signup_mode' => ['sometimes', 'in:off,approval,open'],
+            'signup_trial' => ['sometimes', 'boolean'],
             'two_factor_admins' => ['sometimes', 'boolean'],
             'default_trial_days' => ['sometimes', 'integer', 'between:0,365'],
             'default_trial_plan_id' => ['sometimes', 'nullable', 'exists:plans,id'],
@@ -93,6 +97,8 @@ class PlatformSettingsController extends Controller
                 'new' => $hide(array_intersect_key($data, array_flip($changed))),
             ]);
         }
+
+        LandingContent::forget(); // name, colour, contacts and sign-up mode show on the website
 
         return response()->json(['data' => $this->present()]);
     }

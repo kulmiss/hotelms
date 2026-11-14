@@ -38,6 +38,7 @@ import {
 } from '@/lib/front'
 import { useCan } from '@/lib/hotel'
 import { useDebounced } from '@/lib/useDebounced'
+import { useBookingRequest, useHandleBookingRequest, type BookingRequest } from '@/lib/bookingRequests'
 import { GuestForm } from '@/pages/guests/GuestForm'
 
 const SOURCES = ['phone', 'walk_in', 'email', 'agent', 'other'] as const
@@ -61,10 +62,19 @@ export function ReservationFormPage() {
       </div>
     )
   }
-  return <BookingForm key={id ?? 'new'} existing={r} />
+  return <FromRequest existing={r} id={id} />
 }
 
-function BookingForm({ existing }: { existing?: ReservationDetail }) {
+/** "Book it" from an online request: the form starts with the guest's dates, room and message. */
+function FromRequest({ existing, id }: { existing?: ReservationDetail; id?: string }) {
+  const [params] = useSearchParams()
+  const requestId = id ? 0 : Number(params.get('request') ?? 0)
+  const request = useBookingRequest(requestId)
+  if (requestId && !request.data && !request.isError) return null
+  return <BookingForm key={id ?? `new-${requestId}`} existing={existing} fromRequest={request.data?.status === 'new' ? request.data : undefined} />
+}
+
+function BookingForm({ existing, fromRequest }: { existing?: ReservationDetail; fromRequest?: BookingRequest }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [params] = useSearchParams()
@@ -75,17 +85,25 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
   const { branches, current: workingIn } = useCurrentBranch(me.data)
 
   // A new booking starts in the branch chosen in the top bar.
-  const [branchId, setBranchId] = useState<number>(existing?.branch?.id ?? workingIn?.id ?? 0)
+  const [branchId, setBranchId] = useState<number>(existing?.branch?.id ?? fromRequest?.branch?.id ?? workingIn?.id ?? 0)
+  const handleRequest = useHandleBookingRequest()
   const [stayType, setStayType] = useState<StayType>(existing?.stay_type ?? 'nightly')
-  const [checkIn, setCheckIn] = useState(() => (existing ? (existing.stay_type === 'nightly' ? localDate(existing.check_in_at) : existing.check_in_at.slice(0, 16)) : today()))
-  const [checkOut, setCheckOut] = useState(() => (existing ? (existing.stay_type === 'nightly' ? localDate(existing.check_out_at) : existing.check_out_at.slice(0, 16)) : addDays(today(), 1)))
+  const [checkIn, setCheckIn] = useState(() => (existing ? (existing.stay_type === 'nightly' ? localDate(existing.check_in_at) : existing.check_in_at.slice(0, 16)) : (fromRequest?.check_in ?? today())))
+  const [checkOut, setCheckOut] = useState(() => (existing ? (existing.stay_type === 'nightly' ? localDate(existing.check_out_at) : existing.check_out_at.slice(0, 16)) : (fromRequest?.check_out ?? addDays(today(), 1))))
   const [hours, setHours] = useState(() => (existing?.stay_type === 'hourly' ? Math.round((Date.parse(existing.check_out_at) - Date.parse(existing.check_in_at)) / 3_600_000) : 3))
-  const [rooms, setRooms] = useState<RoomInput[]>(() => existing?.rooms.map((r) => ({ room_type_id: r.room_type_id, room_id: r.room_id, adults: r.adults, children: r.children })) ?? [])
+  const [rooms, setRooms] = useState<RoomInput[]>(
+    () =>
+      existing?.rooms.map((r) => ({ room_type_id: r.room_type_id, room_id: r.room_id, adults: r.adults, children: r.children })) ??
+      (fromRequest?.room_type ? [{ room_type_id: fromRequest.room_type.id, adults: fromRequest.adults, children: fromRequest.children }] : []),
+  )
   const [guest, setGuest] = useState<Guest | null>(existing?.guest ?? null)
   const [discount, setDiscount] = useState(existing && Number(existing.discount_percent) > 0 ? String(Number(existing.discount_percent)) : '')
   const [policyId, setPolicyId] = useState<number | null>(existing?.cancellation_policy_id ?? null)
-  const [source, setSource] = useState(existing?.source ?? 'phone')
-  const [notes, setNotes] = useState(existing?.notes ?? '')
+  const [source, setSource] = useState(existing?.source ?? (fromRequest ? 'other' : 'phone'))
+  const [notes, setNotes] = useState(
+    existing?.notes ??
+      (fromRequest ? [`${t('bookingRequests.fromWeb')}: ${fromRequest.name}, ${fromRequest.phone}${fromRequest.email ? `, ${fromRequest.email}` : ''}`, fromRequest.note].filter(Boolean).join('\n') : ''),
+  )
   const [pickBy, setPickBy] = useState<'types' | 'rooms'>('types') // choose room types, or the actual rooms
   const preset = useGuest(Number(params.get('guest') ?? 0))
   const chosenGuest = guest ?? (preset.data && !preset.data.data.is_blacklisted ? preset.data.data : null)
@@ -125,7 +143,13 @@ function BookingForm({ existing }: { existing?: ReservationDetail }) {
 
   function submit() {
     if (!input || !chosenGuest) return
-    save.mutate({ ...input, guest_id: chosenGuest.id, ...(!existing && payLater ? { pay_later: true } : {}) }, { onSuccess: (res) => navigate(`/reservations/${res.data.id}`, { replace: true }) })
+    save.mutate({ ...input, guest_id: chosenGuest.id, ...(!existing && payLater ? { pay_later: true } : {}) }, {
+        onSuccess: (res) => {
+          const go = () => navigate(`/reservations/${res.data.id}`, { replace: true })
+          if (fromRequest) handleRequest.mutate({ id: fromRequest.id, action: 'accept', reservation_id: res.data.id }, { onSettled: go })
+          else go()
+        },
+      })
   }
 
   const title = existing ? t('reservations.editTitle', { code: existing.code }) : t('reservations.new')

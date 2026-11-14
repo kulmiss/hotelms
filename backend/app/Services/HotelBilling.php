@@ -107,6 +107,9 @@ class HotelBilling
             ->where(fn ($q) => $q->where(fn ($a) => $a->where('status', '!=', 'trial')->whereDate('subscription_ends_at', '<=', now()->addDays(7)))
                 ->orWhere(fn ($t) => $t->where('status', 'trial')->whereDate('trial_ends_at', '<=', now()->addDays(7))))
             ->get()->each(function (Hotel $hotel) use (&$count) {
+                if ($hotel->plan?->isFree()) {
+                    return; // nothing to bill
+                }
                 try {
                     $invoice = $this->issue($hotel);
                     $count += $invoice->wasRecentlyCreated ? 1 : 0;

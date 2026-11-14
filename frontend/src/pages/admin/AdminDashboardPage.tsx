@@ -270,6 +270,19 @@ export function AdminDashboardPage() {
             </ChartCard>
           </WidgetBoundary>
         )}
+        {(d?.pending_signups ?? 0) > 0 && (
+          <Card className="flex flex-wrap items-center justify-between gap-3">
+            <span className="text-sm font-medium">{t('admin.dash.pendingSignups', { count: d?.pending_signups ?? 0 })}</span>
+            <Link to="/admin/signups" className={buttonClass('secondary')}>{t('nav.signups')}</Link>
+          </Card>
+        )}
+        {(d?.inactive_free?.length ?? 0) > 0 && (
+          <HotelList
+            title={t('admin.dash.inactiveFree')}
+            empty={t('admin.dash.none')}
+            items={(d?.inactive_free ?? []).map((h) => ({ id: h.id, name: h.name, right: <span className="text-sm text-muted">{t('admin.dash.lastUsed', { date: date(h.inactive_since) })}</span> }))}
+          />
+        )}
         <HotelList
           title={t('admin.dash.trialsEnding')}
           empty={t('admin.dash.none')}

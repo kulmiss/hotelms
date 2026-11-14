@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Hotel;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\GettingStarted;
 use App\Services\HotelSetup;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -45,6 +46,22 @@ class SetupController extends Controller
         $this->setup->finish($user->hotel, $user);
 
         return response()->json(['data' => $this->setup->overview($user->hotel->refresh(), $user)]);
+    }
+
+    /** "Getting started" checklist on the dashboard. */
+    public function gettingStarted(Request $request, GettingStarted $list): JsonResponse
+    {
+        $user = $this->admin($request);
+
+        return response()->json(['data' => $list->for($user->hotel, $user)]);
+    }
+
+    public function dismissGettingStarted(Request $request, GettingStarted $list): JsonResponse
+    {
+        $user = $this->admin($request);
+        $list->dismiss();
+
+        return response()->json(['data' => $list->for($user->hotel, $user)]);
     }
 
     private function admin(Request $request): User

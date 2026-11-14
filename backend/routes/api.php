@@ -6,11 +6,13 @@ use App\Http\Controllers\Api\Admin\HotelController as AdminHotelController;
 use App\Http\Controllers\Api\Admin\HotelInsightController;
 use App\Http\Controllers\Api\Admin\HotelUserController;
 use App\Http\Controllers\Api\Admin\ImpersonationController;
+use App\Http\Controllers\Api\Admin\LandingContentController;
 use App\Http\Controllers\Api\Admin\PlanController as AdminPlanController;
 use App\Http\Controllers\Api\Admin\PlatformActivityController;
 use App\Http\Controllers\Api\Admin\PlatformContentController;
 use App\Http\Controllers\Api\Admin\PlatformReportController;
 use App\Http\Controllers\Api\Admin\PlatformSettingsController;
+use App\Http\Controllers\Api\Admin\SignupController as AdminSignupController;
 use App\Http\Controllers\Api\Admin\SubscriptionPaymentController;
 use App\Http\Controllers\Api\Admin\SupportController as AdminSupportController;
 use App\Http\Controllers\Api\Admin\SwitchController;
@@ -24,6 +26,7 @@ use App\Http\Controllers\Api\Automation\NotificationController;
 use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\BrandingController;
 use App\Http\Controllers\Api\DemoController;
+use App\Http\Controllers\Api\Front\BookingRequestController;
 use App\Http\Controllers\Api\Front\FrontDeskController;
 use App\Http\Controllers\Api\Front\GuestController;
 use App\Http\Controllers\Api\Front\InvoiceController;
@@ -63,6 +66,7 @@ use App\Http\Controllers\Api\Settings\RateRuleController;
 use App\Http\Controllers\Api\Settings\RoomController;
 use App\Http\Controllers\Api\Settings\RoomTypeController;
 use App\Http\Controllers\Api\Settings\TaxController;
+use App\Http\Controllers\Api\SignupController;
 use App\Http\Controllers\Api\SmartController;
 use App\Http\Controllers\Api\SupportController;
 use App\Http\Controllers\Api\WhatsNewController;
@@ -83,6 +87,11 @@ Route::post('/auth/forgot-password', [PasswordResetController::class, 'send'])->
 Route::post('/auth/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:login');
 Route::post('/auth/two-factor/resend', [AuthController::class, 'resendCode'])->middleware('throttle:two-factor');
 Route::post('/auth/confirm-email', [AuthController::class, 'confirmEmail'])->middleware('throttle:login');
+// Hotels register themselves (Super Admin → Settings → Sign-up).
+Route::get('/signup', [SignupController::class, 'form']);
+Route::post('/signup', [SignupController::class, 'store'])->middleware('throttle:signup');
+Route::post('/signup/verify', [SignupController::class, 'verify'])->middleware('throttle:login');
+Route::post('/signup/resend', [SignupController::class, 'resend'])->middleware('throttle:login');
 
 Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant', 'session.rules', 'heavy'])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
@@ -130,6 +139,8 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
             Route::get('/branches', [BranchController::class, 'index']);
             Route::put('/setup/steps/{step}', [SetupController::class, 'mark']);
             Route::post('/setup/finish', [SetupController::class, 'finish']);
+            Route::get('/getting-started', [SetupController::class, 'gettingStarted']);
+            Route::post('/getting-started/dismiss', [SetupController::class, 'dismissGettingStarted']);
 
             Route::middleware('permission:roles.manage')->group(function () {
                 Route::get('/permissions', [PermissionController::class, 'index']);
@@ -175,6 +186,8 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
             // Reservations.
             Route::middleware('permission:reservations.view')->group(function () {
                 Route::get('/reservations', [ReservationController::class, 'index']);
+                Route::get('/booking-requests', [BookingRequestController::class, 'index']);
+                Route::get('/booking-requests/{id}', [BookingRequestController::class, 'show']);
                 Route::get('/reservations/calendar', [ReservationController::class, 'calendar']);
                 Route::get('/reservations/lookups', [ReservationController::class, 'lookups']);
                 Route::get('/reservations/availability', [ReservationController::class, 'availability']);
@@ -185,6 +198,8 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
                 Route::post('/reservations/{id}/payments', [ReservationController::class, 'payment'])->middleware(['idempotent', 'one.at.a.time:reservation']); // payments.take / payments.refund checked inside
             });
             Route::post('/reservations', [ReservationController::class, 'store'])->middleware(['permission:reservations.create', 'idempotent']);
+            Route::post('/booking-requests/{id}/accept', [BookingRequestController::class, 'accept'])->middleware('permission:reservations.create');
+            Route::post('/booking-requests/{id}/decline', [BookingRequestController::class, 'decline'])->middleware('permission:reservations.create');
             Route::put('/reservations/{id}', [ReservationController::class, 'update'])->middleware(['permission:reservations.edit', 'one.at.a.time:reservation']);
             Route::post('/reservations/{id}/pay-later', [ReservationController::class, 'payLater'])->middleware(['permission:reservations.edit', 'idempotent', 'one.at.a.time:reservation']);
             Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->middleware(['permission:reservations.cancel', 'idempotent', 'one.at.a.time:reservation']);
@@ -286,14 +301,14 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
             Route::get('/dashboard/trend', [ReportController::class, 'trend'])->middleware('permission:dashboard.view');
             Route::get('/reports/drilldown', [ReportController::class, 'drilldown']);
             Route::get('/reports/daily', [InsightController::class, 'daily'])->middleware('permission:reports.revenue');
-            Route::get('/reports/forecast', [InsightController::class, 'forecast'])->middleware('permission:reports.forecast');
+            Route::get('/reports/forecast', [InsightController::class, 'forecast'])->middleware(['switch:feature.full_reports', 'permission:reports.forecast']);
             Route::get('/reports/targets', [InsightController::class, 'targets'])->middleware('permission:reports.forecast,reports.targets_manage');
             Route::put('/reports/targets', [InsightController::class, 'saveTarget'])->middleware('permission:reports.targets_manage');
-            Route::get('/reports/audit', [InsightController::class, 'audit'])->middleware('permission:reports.audit');
-            Route::get('/reports/audit/{user}/timeline', [InsightController::class, 'timeline'])->middleware('permission:reports.audit');
+            Route::get('/reports/audit', [InsightController::class, 'audit'])->middleware(['switch:feature.full_reports', 'permission:reports.audit']);
+            Route::get('/reports/audit/{user}/timeline', [InsightController::class, 'timeline'])->middleware(['switch:feature.full_reports', 'permission:reports.audit']);
             Route::get('/reports/my-shift', [InsightController::class, 'myShift'])->middleware('permission:reports.my_shift');
             Route::get('/reports/my-work', [InsightController::class, 'myWork'])->middleware(['module:housekeeping', 'permission:reports.my_work']);
-            Route::get('/reports/accounting', [InsightController::class, 'accounting'])->middleware('permission:reports.accounting_export');
+            Route::get('/reports/accounting', [InsightController::class, 'accounting'])->middleware(['switch:feature.full_reports', 'permission:reports.accounting_export']);
             Route::get('/saved-views', [AutomationController::class, 'views']);
             Route::post('/saved-views', [AutomationController::class, 'saveView']);
             Route::put('/saved-views/{id}', [AutomationController::class, 'saveView']);
@@ -326,6 +341,8 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
             // Settings (phase 2a)
             Route::prefix('settings')->group(function () {
                 Route::middleware('permission:settings.hotel')->group(function () {
+                    Route::get('/booking-page', [BookingRequestController::class, 'settings']);
+                    Route::put('/booking-page', [BookingRequestController::class, 'saveSettings']);
                     Route::get('/hotel', [HotelProfileController::class, 'show']);
                     Route::put('/hotel', [HotelProfileController::class, 'update']);
                     Route::post('/hotel/logo', [HotelProfileController::class, 'logo']);
@@ -486,6 +503,9 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
             Route::middleware('platform:content.manage')->group(function () {
                 Route::get('/content', [PlatformContentController::class, 'content']);
                 Route::put('/content', [PlatformContentController::class, 'saveContent']);
+                Route::get('/landing', [LandingContentController::class, 'show']);
+                Route::put('/landing', [LandingContentController::class, 'update']);
+                Route::post('/landing/picture', [LandingContentController::class, 'picture']);
             });
             Route::middleware('platform:team.manage')->group(function () {
                 Route::get('/team', [TeamController::class, 'index']);
@@ -497,6 +517,9 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
             Route::get('/settings', [PlatformSettingsController::class, 'show']);
 
             Route::middleware('platform:hotels.create')->group(function () {
+                Route::get('/signups', [AdminSignupController::class, 'index']);
+                Route::post('/signups/{id}/approve', [AdminSignupController::class, 'approve']);
+                Route::post('/signups/{id}/reject', [AdminSignupController::class, 'reject']);
                 Route::post('/hotels', [AdminHotelController::class, 'store']);
                 Route::put('/hotels/{hotel}', [AdminHotelController::class, 'update']);
                 Route::post('/hotels/{hotel}/trial', [AdminHotelController::class, 'setTrial']);

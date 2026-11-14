@@ -120,6 +120,7 @@ first password never runs out).
 | `Modules/Attendance` | Clock in/out, kiosk PIN, manual entries, lateness against the roster |
 | `HotelSettings` | Per-hotel settings (key/value with defaults: `BOOKING_DEFAULTS`, `INVOICE_DEFAULTS`, `SECURITY_DEFAULTS`…) |
 | `HotelModules`, `Switches` | Optional modules; Super Admin switches |
+| `StorageQuota` | Files a hotel stores (payment proofs, ID photos, logo) against the plan's `max_storage_mb` / `limit.storage_mb` |
 | `HotelDefaults`, `DefaultRoles` | What a new hotel starts with (roles, currencies, taxes, payment methods, policies) |
 | `HotelOnboarding`, `HotelSetup` | Creating a hotel; the 12-step setup walkthrough |
 | `HotelStatus`, `HotelBilling`, `Subscriptions` | Trial → active → grace → suspended; HotelMS invoices to hotels; subscription payments |
@@ -152,7 +153,7 @@ Rules (money, dates, status changes) belong in services so tests, automations an
 | every 10 min | `watchdog:run` (quick checks) |
 | every 15 min | `reports:automation --alerts` (smart alerts) |
 | hourly | `hotels:update-statuses`, backup `--small` (:40), `watchdog:run --data` (:17) |
-| daily | 01:15 full backup · 02:30 `demo:reset` · 03:20 old unused payment proofs · 03:30 `hotelms:purge-closed-hotels` · 03:40 old guest ID photos · 07:10 `subscriptions:invoices` |
+| daily | 01:15 full backup · 02:30 `demo:reset` · 03:20 old unused payment proofs · 03:30 `hotelms:purge-closed-hotels` · 03:40 old guest ID photos · 03:45 `hotelms:signup-cleanup` · 07:10 `subscriptions:invoices` |
 | monthly | backup `--check` (1st, 06:00) |
 
 ## Commands

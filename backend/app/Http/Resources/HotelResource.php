@@ -23,6 +23,8 @@ class HotelResource extends JsonResource
             'timezone' => $this->timezone,
             'status' => $this->status,
             'is_demo' => $this->is_demo,
+            'signup_status' => $this->signup_status,
+            'inactive_since' => $this->inactive_since?->toIso8601String(),
             'plan' => $this->whenLoaded('plan', fn () => $this->plan ? ['id' => $this->plan->id, 'name' => $this->plan->name] : null),
             'trial_plan' => $this->whenLoaded('trialPlan', fn () => $this->trialPlan ? ['id' => $this->trialPlan->id, 'name' => $this->trialPlan->name] : null),
             'billing_cycle' => $this->billing_cycle,

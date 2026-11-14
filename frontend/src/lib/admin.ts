@@ -17,6 +17,11 @@ export type Plan = {
   max_rooms: number | null
   max_branches: number | null
   max_staff: number | null
+  /** Files (payment proofs, ID photos, logo) in MB; null = unlimited. */
+  max_storage_mb?: number | null
+  /** Shown on the landing page and offered to new hotels. */
+  is_public?: boolean
+  is_recommended?: boolean
   modules: string[]
   is_active: boolean
   hotels_count?: number
@@ -68,6 +73,10 @@ export type PlatformSettings = {
   platform_name: string
   support_email: string | null
   support_phone: string | null
+  /** WhatsApp number for "Upgrade" and "Contact us" links. */
+  whatsapp?: string | null
+  signup_mode?: 'off' | 'approval' | 'open'
+  signup_trial?: boolean
   demo_public: boolean
   /** How long one "Try the demo" visit lasts. */
   demo_minutes?: number
@@ -96,6 +105,9 @@ export type AdminDashboard = {
   hotels: { total: number; by_status: Record<string, number> }
   income_this_month: Record<string, string>
   trials_ending_soon: { id: number; name: string; trial_ends_at: string }[]
+  /** Free hotels nobody signed in to for 90 days (flagged daily; nothing is deleted). */
+  inactive_free?: { id: number; name: string; inactive_since: string }[]
+  pending_signups?: number
   needs_attention: { id: number; name: string; status: string; subscription_ends_at: string | null; trial_ends_at: string | null }[]
   today?: { bookings: number; money: Record<string, string>; occupancy: number; occupied: number; rooms: number; staff_online: number; open_support: number }
   top_hotels?: { id: number; name: string; currency: string; total: string; payments: number }[]
@@ -274,3 +286,28 @@ export type HotelHealth = {
 }
 export const usePlatformReport = () => useQuery({ queryKey: ['admin', 'reports', 'platform'], queryFn: () => api<{ data: PlatformReport }>('/admin/reports/platform') })
 export const useHotelHealth = () => useQuery({ queryKey: ['admin', 'reports', 'health'], queryFn: () => api<{ data: HotelHealth[]; counts: Record<string, number> | [] }>('/admin/reports/hotel-health') })
+
+/** Hotels that registered themselves (Super Admin → Pending hotels). */
+export type Signup = {
+  id: number
+  name: string
+  city: string | null
+  phone: string | null
+  email: string | null
+  owner_name: string | null
+  rooms: number | null
+  signup_status: 'unverified' | 'pending' | 'approved' | 'rejected'
+  created_at: string | null
+  email_confirmed: boolean | null
+  decided_at: string | null
+  reason: string | null
+}
+export const useSignups = (status: string) =>
+  useQuery({
+    queryKey: ['admin', 'signups', status],
+    queryFn: () => api<{ data: Signup[]; counts: Record<string, number>; mode: string }>(`/admin/signups?status=${status}`),
+  })
+export const useDecideSignup = () =>
+  useAdminMutation(({ id, approve, reason }: { id: number; approve: boolean; reason?: string }) =>
+    post<{ message: string }>(`/admin/signups/${id}/${approve ? 'approve' : 'reject'}`, approve ? {} : { reason }),
+  )

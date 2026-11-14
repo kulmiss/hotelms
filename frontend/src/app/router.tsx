@@ -24,6 +24,8 @@ const PlansPage = lazy(() => pages.plans().then((m) => ({ default: m.PlansPage }
 const PlatformSettingsPage = lazy(() => pages.platformSettings().then((m) => ({ default: m.PlatformSettingsPage })))
 const SwitchesPage = lazy(() => pages.switches().then((m) => ({ default: m.SwitchesPage })))
 const SupportInboxPage = lazy(() => pages.support().then((m) => ({ default: m.SupportInboxPage })))
+const BookingRequestsPage = lazy(() => import('@/pages/reservations/BookingRequestsPage').then((m) => ({ default: m.BookingRequestsPage })))
+const SignupsPage = lazy(() => pages.signups().then((m) => ({ default: m.SignupsPage })))
 const SystemPage = lazy(() => pages.system().then((m) => ({ default: m.SystemPage })))
 const TeamPage = lazy(() => pages.team().then((m) => ({ default: m.TeamPage })))
 const PlatformActivityPage = lazy(() => pages.platformActivity().then((m) => ({ default: m.PlatformActivityPage })))
@@ -31,6 +33,8 @@ const HelpPage = lazy(() => pages.help().then((m) => ({ default: m.HelpPage })))
 const PlatformReportsPage = lazy(() => pages.platformReports().then((m) => ({ default: m.PlatformReportsPage })))
 const ForgotPasswordPage = lazy(() => import('@/pages/PasswordResetPages').then((m) => ({ default: m.ForgotPasswordPage })))
 const ResetPasswordPage = lazy(() => import('@/pages/PasswordResetPages').then((m) => ({ default: m.ResetPasswordPage })))
+const RegisterPage = lazy(() => import('@/pages/SignupPages').then((m) => ({ default: m.RegisterPage })))
+const VerifyEmailPage = lazy(() => import('@/pages/SignupPages').then((m) => ({ default: m.VerifyEmailPage })))
 const ConfirmEmailPage = lazy(() => import('@/pages/PasswordResetPages').then((m) => ({ default: m.ConfirmEmailPage })))
 const TwoStepPage = lazy(() => pages.twoStep().then((m) => ({ default: m.TwoStepPage })))
 const DevicesPage = lazy(() => pages.devices().then((m) => ({ default: m.DevicesPage })))
@@ -90,6 +94,7 @@ const SETTINGS_PAGES: Record<string, ReturnType<typeof section>> = {
   modules: section('ModulesSettings'),
   attendance: section('AttendanceSettings'),
   subscription: section('SubscriptionSettings'),
+  'booking-page': section('BookingPageSettings'),
 }
 const DesignSystemPage = lazy(() => pages.designSystem().then((m) => ({ default: m.DesignSystemPage })))
 
@@ -97,6 +102,12 @@ const DesignSystemPage = lazy(() => pages.designSystem().then((m) => ({ default:
 const page = (node: ReactNode) => <Suspense fallback={<ProgressBar />}>{node}</Suspense>
 
 /** The HotelMS team goes to the Super Admin area; hotel staff to their hotel. */
+/** "/" inside the app: the dashboard, keeping ?tab=… and other choices. */
+function ToDashboard() {
+  const { search } = useLocation()
+  return <Navigate to={`/dashboard${search}`} replace />
+}
+
 function HomeRedirect() {
   const me = useMe()
   const can = useCan()
@@ -134,6 +145,8 @@ export const routes = [
       { path: '/forgot-password', element: page(<ForgotPasswordPage />) },
       { path: '/reset-password', element: page(<ResetPasswordPage />) },
       { path: '/confirm-email', element: page(<ConfirmEmailPage />) },
+      { path: '/register', element: page(<RegisterPage />) },
+      { path: '/verify-email', element: page(<VerifyEmailPage />) },
       {
         element: <RequireAuth />,
         children: [
@@ -164,7 +177,9 @@ export const routes = [
             path: '/',
             element: <AppShell />,
             children: [
-              { index: true, element: <HomeRedirect /> },
+              // "/" is the public website on the server; inside the app it opens the dashboard.
+              { index: true, element: <ToDashboard /> },
+              { path: 'dashboard', element: <HomeRedirect /> },
               ...mainNav
                 .filter((item) => !item.built)
                 .map((item) => ({ path: item.path.slice(1), element: <PlaceholderPage item={item} /> })),
@@ -228,6 +243,7 @@ export const routes = [
                 children: [
                   { path: 'reservations', element: page(<ReservationsPage />) },
                   { path: 'reservations/:id', element: page(<ReservationPage />) },
+                  { path: 'booking-requests', element: page(<BookingRequestsPage />) },
                 ],
               },
               {
@@ -286,6 +302,7 @@ export const routes = [
                   { path: 'reports', element: page(<PlatformReportsPage />) },
                   { path: 'switches', element: page(<SwitchesPage />) },
                   { path: 'support', element: page(<SupportInboxPage />) },
+                  { path: 'signups', element: page(<SignupsPage />) },
                   { path: 'system', element: page(<SystemPage />) },
                   { path: 'team', element: page(<TeamPage />) },
                   { path: 'activity', element: page(<PlatformActivityPage />) },

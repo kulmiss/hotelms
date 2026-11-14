@@ -490,6 +490,34 @@
         "Lost a phone? Tap Sign out next to it."
       ]
     },
+    "onlineRequests": {
+      "title": "Online requests (booking page)",
+      "steps": [
+        "Guests can ask for a room on your booking page. The admin turns it on in Settings → Booking page.",
+        "A new request shows in the bell and in Online requests.",
+        "Call the guest. Then tap \"Book it\": the booking form opens with their dates and room.",
+        "Choose or add the guest and save. The request becomes \"Booked\".",
+        "If you have no room, tap \"Decline\" (call the guest to tell them)."
+      ]
+    },
+    "gettingStarted": {
+      "title": "Getting started (new hotel)",
+      "steps": [
+        "A new hotel first goes through the setup: rooms, prices, payments.",
+        "Then the dashboard shows \"Getting started\": a short list of first things to do.",
+        "Tap a line to open that page. A done line gets a tick.",
+        "Tap \"Hide\" when you don't need the list any more."
+      ]
+    },
+    "plan": {
+      "title": "Your plan and limits",
+      "steps": [
+        "Open Settings → Subscription. You see your plan and what you use: rooms, branches, staff and files.",
+        "Daily work is in every plan: bookings, check-in and check-out, bills, guests, cleaning.",
+        "When you reach a limit, the app tells you. Nothing is deleted.",
+        "To get more, tap \"Upgrade on WhatsApp\" or \"Email us\"."
+      ]
+    },
     "settings": {
       "title": "Hotel settings",
       "steps": [

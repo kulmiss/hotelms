@@ -17,7 +17,11 @@ class PlatformSetting extends Model
         // General
         'platform_name' => 'HotelMS',
         'support_email' => null,
+        // Sign-up (owner, 14 Nov 2026): off / approval / open; a free trial of a bigger plan only when switched on.
+        'signup_mode' => 'off',
+        'signup_trial' => false,
         'support_phone' => null,
+        'whatsapp' => null, // "Upgrade" and "Contact us" (landing page, plan limits), e.g. +2519…
         'demo_public' => false,
         'demo_minutes' => 30, // how long one "Try the demo" visit lasts
         // Trials and billing
@@ -53,7 +57,7 @@ class PlatformSetting extends Model
     ];
 
     /** Settings anyone may read (shown on the sign-in page before login). */
-    public const PUBLIC = ['platform_name', 'brand_color', 'login_message', 'support_email', 'support_phone', 'demo_public', 'demo_minutes'];
+    public const PUBLIC = ['platform_name', 'brand_color', 'login_message', 'support_email', 'support_phone', 'whatsapp', 'demo_public', 'demo_minutes', 'signup_mode'];
 
     protected function casts(): array
     {

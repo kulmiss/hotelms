@@ -58,7 +58,7 @@ server {
     listen 80;
     server_name app.example.et;
     root /var/www/hotelms/public;
-    index app.html index.php;
+    index index.php;
     add_header X-Content-Type-Options nosniff always;
     add_header X-Frame-Options DENY always;
     add_header Referrer-Policy strict-origin-when-cross-origin always;
@@ -70,6 +70,8 @@ server {
     gzip_types text/plain text/css application/javascript application/json application/manifest+json image/svg+xml;
 
     location ~ ^/(api|sanctum|up)(/|$) { try_files $uri /index.php?$query_string; }
+    # The public website (home page, terms, privacy, robots.txt, sitemap): Laravel, no cookies. The app starts at /dashboard.
+    location ~ ^/(terms|privacy|robots\.txt|sitemap\.xml)?$ { try_files /index.php?$query_string; }
     location /assets/ { expires 1y; add_header Cache-Control "public, immutable" always; add_header X-Content-Type-Options nosniff always; }
     # The app page and the offline copy (service worker): never cached, or staff keep an old version (as .htaccess does).
     # + the Content-Security-Policy (its hash must match the <script> in frontend/index.html; deploy/check-csp.sh checks it).
@@ -97,6 +99,11 @@ php artisan up
 A backup is taken every hour, so you can always go back (see below).
 When a new version adds tables, the `migrate` step is **required** (for example the saved-once update adds `idempotency_keys`).
 Development (Docker): `docker compose exec backend php artisan migrate`.
+
+## Public website at "/"
+Since 14 Nov 2026 the home page `/` (and `/terms`, `/privacy`, `/robots.txt`, `/sitemap.xml`) is made by Laravel; the app starts at
+`/dashboard`. `public/.htaccess` and the Nginx example above send these addresses to `index.php`. **Updating an existing Nginx
+server:** change `index app.html index.php;` to `index index.php;` and add the `location ~ ^/(terms|privacy|robots…` line.
 
 ## Speed
 - **PHP OPcache on** (cPanel → *Select PHP Version* → *Extensions*: tick `opcache`; *Options*: `opcache.memory_consumption` 128 or more, `opcache.max_accelerated_files` 20000). On a VPS it is on by default with `php8.3-fpm`.

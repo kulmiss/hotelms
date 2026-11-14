@@ -107,6 +107,66 @@ Code: `Reports/Metrics`, `Reports/Insights`, `Reports/CustomReportEngine`, `Repo
 - Notifications: bell (`app_notifications`), email (SMTP from Super Admin → Settings → Emails, or `.env`), Telegram bot
   (link with a code from My profile; polled every minute). `Notify/*`.
 
+## Plans and limits
+
+Free / Starter / Pro (recommended) / Business (migration `2026_11_26_000001_add_balanced_plans`). Core work is in every plan.
+Limits: rooms, branches, staff, files (`max_storage_mb`; `StorageQuota` counts payment proofs, ID photos and the logo).
+Plan features are Super Admin switches at plan level: `feature.telegram`, `feature.multi_currency`, `feature.full_reports`
+(forecast, staff audit, accounting, branch comparison, CSV/Excel and list downloads), `feature.accountant_role` (new Accountant
+staff only; people who have it keep it), `feature.custom_reports`, `feature.branding` (no "Powered by"), `feature.priority_support`.
+A hotel switch or `limit.*` switch overrides the plan for one hotel. Over a limit = refusal with `PlanLimits::message` (WhatsApp /
+email from platform settings `whatsapp`, `support_email`); nothing is removed. No online billing. Tests: `Admin/BalancedPlansTest`.
+
+## Public website
+
+`/` is a page made by Laravel (`Web/LandingController`, `resources/views/landing/*`, `Services/Landing/LandingContent`): plain
+HTML + inline CSS, **no script, no cookies, no tracking, no outside files**, its own CSP (`default-src 'none'`). Light/dark from the
+device. Sections: hero (real demo screenshot in a device frame), short true promises, features, how it works, screens, plan cards
+from the database (`is_public` plans; Pro highlighted; monthly/yearly toggle in CSS; comparison table from the plans' real limits and
+switches), security and privacy, questions, hidden reviews, final invitation, footer (WhatsApp, email, Terms, Privacy, security.txt).
+"Register" only when sign-up is not Off, else "Contact us" (WhatsApp / email). Super Admin → Content → Website edits headline,
+subline, sections, questions, real reviews and pictures (`/api/v1/admin/landing`, `platform:content.manage`). A visitor who is
+signed in (read from their session cookie, no new cookie) goes to `/dashboard`. The app's dashboard moved to `/dashboard`; `/` inside
+the app opens it. `/robots.txt`, `/sitemap.xml`, Open Graph picture `public/landing/og.png`. Pictures in `public/landing/` are real
+screens of the demo hotel (WebP, 640/960/1280 wide). Speed budget checked in CI (`.github/workflows/lighthouse.yml`,
+`lighthouserc.json`): Lighthouse mobile ≥ 95 in all four categories, LCP ≤ 1.5 s. Tests: `Web/LandingPageTest`.
+Legal pages `/terms` and `/privacy` (`landing/terms.blade.php`, `landing/privacy.blade.php`), marked **"Draft – to be checked by a
+lawyer"**: the hotel is the data controller for its guests and the platform the processor; Free plan terms; security emails; sign-in
+and security log kept one year; 7-day removal of unconfirmed sign-ups; 90 days after closing. Change the date in
+`LandingController::LEGAL_UPDATED` when the texts change.
+
+## Public booking page (online requests)
+
+Off until the hotel turns it on (Settings → Booking page, `settings.hotel`): link `/h/{booking_slug}`, a short note for guests.
+Server-made like the website (`Web/BookingPageController`, `landing/booking.blade.php`, `Services/BookingPage`): room types and nightly
+prices per branch and a request form – no script, no cookies, hidden field + form time + 10 requests an hour per address. A request
+(`booking_requests`) never books or charges anything: reception is told (bell, Telegram if on) and sees it in **Online requests**
+(`/booking-requests`, `reservations.view`, own branches only); "Book it" opens the normal booking form filled with the dates, room
+and message (`?request=ID`), and saving links the booking (`accept`); or "Decline". "Powered by" shows unless `feature.branding`
+(Pro and Business). No page for hotels that are suspended or not confirmed/approved. Tests: `Web/BookingPageTest`.
+
+## Getting started (new hotels)
+
+After the first sign-in a Hotel Admin goes through the setup walkthrough (`/setup`, `HotelSetup`). Then the dashboard shows a
+"Getting started" checklist (`GettingStarted`: setup, rooms, logo, a staff member, first booking, first check-in, first payment,
+two-step sign-in), each known from the hotel's own data. "Hide" stores `getting_started_dismissed` in the hotel settings; it also goes
+away when all is done. `GET /getting-started`, `POST /getting-started/dismiss` (Hotel Admin only). Tests: `Hotel/GettingStartedTest`.
+
+## Hotel sign-up
+
+Super Admin → Settings → Sign-up (Owner only): **Off** (default; the website says "Contact us") / **Approval** / **Open**.
+A new hotel gets the Free plan (a trial only when "Give new hotels a free trial" is on), one branch and the owner as Hotel Admin
+with their own password. `hotels.signup_status`: `unverified` → (`pending` →) `approved`, or `rejected`; `null` = made by the team.
+Sign-in is refused until the email is confirmed (`email_unverified`, with "Send the link again"), while waiting (`signup_pending`)
+and when refused (`signup_rejected`). Pending hotels: approve, or refuse with a reason; both are emailed. Security log:
+`signup`, `signup_verified`, `signup_approved`, `signup_rejected`. No captcha, no cookies before the form is sent: hidden field +
+form time + rate limit. Safety: no email or Telegram for a hotel until it is confirmed (and approved) – `Hotel::maySendMessages()` in `Notifier` and
+`AutomationEvents::mail`. Daily `hotelms:signup-cleanup` (03:45, `Signup/SignupCleanup`): removes sign-ups not confirmed in 7 days
+(never one with guests or bookings), flags Free hotels nobody signed in to for 90 days (`hotels.inactive_since`; Command center +
+Hotels `?inactive=1`; cleared at the next sign-in). Guest data is never deleted automatically.
+Code: `Services/Signup/SelfSignup`, `SignupController`, `pages/SignupPages.tsx`,
+`pages/admin/SignupsPage.tsx`. Tests: `Auth/SelfSignupTest`, `Auth/SignupSafetyTest`.
+
 ## Super Admin (HotelMS team)
 
 Command center, hotels (create with plan/trial, suspend, close, reopen, notes, live data with a reason, log in as hotel),

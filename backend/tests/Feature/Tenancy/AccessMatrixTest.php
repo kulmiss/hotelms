@@ -30,7 +30,7 @@ class AccessMatrixTest extends TestCase
     private const PUBLIC = [
         'GET api/v1/health', 'GET api/v1/branding', 'GET api/v1/branding/manifest', 'POST api/v1/auth/login', 'POST api/v1/demo/login',
         'POST api/v1/auth/two-factor', 'POST api/v1/auth/forgot-password', 'POST api/v1/auth/reset-password', 'POST api/v1/auth/two-factor/resend',
-        'POST api/v1/auth/confirm-email',
+        'POST api/v1/auth/confirm-email', 'GET api/v1/signup', 'POST api/v1/signup', 'POST api/v1/signup/verify', 'POST api/v1/signup/resend',
     ];
 
     /** Signed in, and the controller decides (own data, or a permission checked inside – each has its own test). */
@@ -40,7 +40,7 @@ class AccessMatrixTest extends TestCase
         'GET api/v1/me/security', 'POST api/v1/me/security/devices/sign-out-others', 'POST api/v1/me/security/devices/{id}/sign-out', 'PUT api/v1/me/security/pin',
         'POST api/v1/me/security/recovery-codes', 'POST api/v1/me/security/two-factor', 'POST api/v1/me/security/two-factor/confirm', 'POST api/v1/me/security/two-factor/disable',
         'GET api/v1/telegram', 'POST api/v1/telegram/link', 'DELETE api/v1/telegram/link', 'POST api/v1/telegram/test',
-        'POST api/v1/impersonation/stop', 'GET api/v1/setup', 'POST api/v1/setup/finish', 'PUT api/v1/setup/steps/{step}',
+        'POST api/v1/impersonation/stop', 'GET api/v1/setup', 'POST api/v1/setup/finish', 'PUT api/v1/setup/steps/{step}', 'GET api/v1/getting-started', 'POST api/v1/getting-started/dismiss',
         'GET api/v1/search', 'GET api/v1/smart/{place}', 'GET api/v1/whats-new', 'GET api/v1/notifications', 'POST api/v1/notifications/read',
         'GET api/v1/support', 'POST api/v1/support', 'GET api/v1/support/{id}', 'POST api/v1/support/{id}/messages',
         'GET api/v1/branches', 'GET api/v1/alert-events', 'POST api/v1/alert-events/{id}/ack',

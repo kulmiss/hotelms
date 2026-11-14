@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 #[Fillable([
     'name', 'code', 'description', 'price_per_room', 'minimum_monthly', 'yearly_free_months',
-    'is_custom', 'currency', 'max_rooms', 'max_branches', 'max_staff', 'modules', 'is_active', 'sort',
+    'is_custom', 'currency', 'max_rooms', 'max_branches', 'max_staff', 'max_storage_mb', 'modules', 'is_active', 'is_public', 'is_recommended', 'sort',
 ])]
 class Plan extends Model
 {
@@ -32,6 +32,8 @@ class Plan extends Model
             'is_custom' => 'boolean',
             'modules' => 'array',
             'is_active' => 'boolean',
+            'is_public' => 'boolean',
+            'is_recommended' => 'boolean',
         ];
     }
 
@@ -44,6 +46,12 @@ class Plan extends Model
     /**
      * Price for one month: rooms × price per room, but never below the minimum.
      */
+    /** The Free plan (or any plan that costs nothing): never billed, never runs out (owner, 14 Nov 2026). */
+    public function isFree(): bool
+    {
+        return ! $this->is_custom && (float) $this->price_per_room == 0.0 && (float) $this->minimum_monthly == 0.0;
+    }
+
     public function monthlyPrice(int $rooms): string
     {
         return Money::max(Money::mul($this->price_per_room, (string) $rooms), $this->minimum_monthly);

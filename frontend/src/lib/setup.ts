@@ -34,3 +34,13 @@ function useSetupMutation<V>(fn: (v: V) => Promise<unknown>) {
 
 export const useMarkStep = () => useSetupMutation((v: { step: SetupStepKey; state: 'done' | 'skipped' }) => put(`/setup/steps/${v.step}`, { state: v.state }))
 export const useFinishSetup = () => useSetupMutation(() => post('/setup/finish'))
+
+/** The "Getting started" checklist on the Hotel Admin's dashboard. */
+export type GettingStarted = { items: { key: string; done: boolean; link: string }[]; done: number; total: number; dismissed: boolean }
+const GS_KEY = ['getting-started'] as const
+export const useGettingStarted = (enabled: boolean) =>
+  useQuery({ queryKey: GS_KEY, queryFn: () => api<{ data: GettingStarted }>('/getting-started').then((r) => r.data), enabled, retry: false, meta: SILENT })
+export function useDismissGettingStarted() {
+  const qc = useQueryClient()
+  return useMutation({ meta: SILENT, mutationFn: () => post<{ data: GettingStarted }>('/getting-started/dismiss'), onSuccess: (r) => qc.setQueryData(GS_KEY, r.data) })
+}

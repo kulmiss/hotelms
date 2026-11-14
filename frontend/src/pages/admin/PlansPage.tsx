@@ -31,7 +31,11 @@ export function PlansPage() {
                   <h2 className="text-lg font-semibold">{plan.name}</h2>
                   <p className="text-sm text-muted">{plan.description}</p>
                 </div>
-                {!plan.is_active && <Badge tone="grey">{t('admin.plans.hidden')}</Badge>}
+                <div className="flex flex-wrap justify-end gap-1">
+                  {plan.is_recommended && <Badge tone="accent">{t('admin.plans.recommended')}</Badge>}
+                  {plan.is_public === false && plan.is_active && <Badge tone="grey">{t('admin.plans.notOffered')}</Badge>}
+                  {!plan.is_active && <Badge tone="grey">{t('admin.plans.hidden')}</Badge>}
+                </div>
               </div>
               <p className="text-sm">
                 {plan.is_custom
@@ -47,6 +51,7 @@ export function PlansPage() {
                   branches: plan.max_branches ?? t('admin.plans.unlimited'),
                   staff: plan.max_staff ?? t('admin.plans.unlimited'),
                 })}
+                {plan.max_storage_mb !== undefined && ` · ${t('admin.plans.storageLine', { size: plan.max_storage_mb === null ? t('admin.plans.unlimited') : `${Math.round((plan.max_storage_mb / 1024) * 10) / 10} GB` })}`}
               </p>
               <div className="flex flex-wrap gap-1">
                 {plan.modules.map((m) => (
@@ -83,8 +88,11 @@ function PlanForm({ plan, onDone }: { plan: Plan; onDone: () => void }) {
     max_rooms: plan.max_rooms === null ? '' : String(plan.max_rooms),
     max_branches: plan.max_branches === null ? '' : String(plan.max_branches),
     max_staff: plan.max_staff === null ? '' : String(plan.max_staff),
+    max_storage_mb: plan.max_storage_mb == null ? '' : String(plan.max_storage_mb),
     modules: plan.modules,
     is_active: plan.is_active,
+    is_public: plan.is_public ?? false,
+    is_recommended: plan.is_recommended ?? false,
   })
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((s) => ({ ...s, [k]: e.target.value }))
   const error = save.error instanceof ApiError ? save.error : null
@@ -105,8 +113,11 @@ function PlanForm({ plan, onDone }: { plan: Plan; onDone: () => void }) {
         max_rooms: numOrNull(f.max_rooms),
         max_branches: numOrNull(f.max_branches),
         max_staff: numOrNull(f.max_staff),
+        max_storage_mb: numOrNull(f.max_storage_mb),
         modules: f.modules,
         is_active: f.is_active,
+        is_public: f.is_public,
+        is_recommended: f.is_recommended,
       },
       { onSuccess: onDone },
     )
@@ -124,6 +135,15 @@ function PlanForm({ plan, onDone }: { plan: Plan; onDone: () => void }) {
         <Field label={t('admin.plans.maxRooms')} type="number" inputMode="numeric" min={1} value={f.max_rooms} hint={t('admin.plans.emptyUnlimited')} onChange={set('max_rooms')} />
         <Field label={t('admin.plans.maxBranches')} type="number" inputMode="numeric" min={1} value={f.max_branches} hint={t('admin.plans.emptyUnlimited')} onChange={set('max_branches')} />
         <Field label={t('admin.plans.maxStaff')} type="number" inputMode="numeric" min={1} value={f.max_staff} hint={t('admin.plans.emptyUnlimited')} onChange={set('max_staff')} />
+        <Field label={t('admin.plans.maxStorage')} type="number" inputMode="numeric" min={1} value={f.max_storage_mb} hint={t('admin.plans.emptyUnlimited')} onChange={set('max_storage_mb')} error={error?.field('max_storage_mb')} />
+        <div className="flex flex-col gap-1 sm:col-span-2">
+          {(['is_public', 'is_recommended'] as const).map((k) => (
+            <label key={k} className="flex min-h-touch items-center gap-3 text-sm">
+              <input type="checkbox" className="size-5" checked={f[k]} onChange={(e) => setF((s) => ({ ...s, [k]: e.target.checked }))} />
+              {t(`admin.plans.${k}`)}
+            </label>
+          ))}
+        </div>
         <fieldset className="flex flex-col gap-2 sm:col-span-2">
           <legend className="mb-1 text-sm font-medium text-muted">{t('admin.plans.modules')}</legend>
           <div className="flex flex-wrap gap-x-6">

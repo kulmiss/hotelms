@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PlanResource;
 use App\Models\Plan;
+use App\Services\Landing\LandingContent;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Validation\Rule;
@@ -19,6 +20,7 @@ class PlanController extends Controller
     public function store(Request $request): PlanResource
     {
         $plan = Plan::create($this->validated($request));
+        LandingContent::forget(); // the website's plan cards
 
         return new PlanResource($plan);
     }
@@ -26,6 +28,7 @@ class PlanController extends Controller
     public function update(Request $request, Plan $plan): PlanResource
     {
         $plan->update($this->validated($request, $plan));
+        LandingContent::forget();
 
         return new PlanResource($plan);
     }
@@ -45,6 +48,9 @@ class PlanController extends Controller
             'max_rooms' => ['nullable', 'integer', 'min:1'],
             'max_branches' => ['nullable', 'integer', 'min:1'],
             'max_staff' => ['nullable', 'integer', 'min:1'],
+            'max_storage_mb' => ['nullable', 'integer', 'min:1'],
+            'is_public' => ['boolean'],
+            'is_recommended' => ['boolean'],
             'modules' => ['array'],
             'modules.*' => [Rule::in(Plan::MODULES)],
             'is_active' => ['boolean'],
