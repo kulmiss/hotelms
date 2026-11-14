@@ -490,6 +490,15 @@
         "Lost a phone? Tap Sign out next to it."
       ]
     },
+    "plan": {
+      "title": "Your plan and limits",
+      "steps": [
+        "Open Settings → Subscription. You see your plan and what you use: rooms, branches, staff and files.",
+        "Daily work is in every plan: bookings, check-in and check-out, bills, guests, cleaning.",
+        "When you reach a limit, the app tells you. Nothing is deleted.",
+        "To get more, tap \"Upgrade on WhatsApp\" or \"Email us\"."
+      ]
+    },
     "settings": {
       "title": "Hotel settings",
       "steps": [

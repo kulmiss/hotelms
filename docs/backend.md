@@ -120,6 +120,7 @@ first password never runs out).
 | `Modules/Attendance` | Clock in/out, kiosk PIN, manual entries, lateness against the roster |
 | `HotelSettings` | Per-hotel settings (key/value with defaults: `BOOKING_DEFAULTS`, `INVOICE_DEFAULTS`, `SECURITY_DEFAULTS`…) |
 | `HotelModules`, `Switches` | Optional modules; Super Admin switches |
+| `StorageQuota` | Files a hotel stores (payment proofs, ID photos, logo) against the plan's `max_storage_mb` / `limit.storage_mb` |
 | `HotelDefaults`, `DefaultRoles` | What a new hotel starts with (roles, currencies, taxes, payment methods, policies) |
 | `HotelOnboarding`, `HotelSetup` | Creating a hotel; the 12-step setup walkthrough |
 | `HotelStatus`, `HotelBilling`, `Subscriptions` | Trial → active → grace → suspended; HotelMS invoices to hotels; subscription payments |

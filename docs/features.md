@@ -107,6 +107,16 @@ Code: `Reports/Metrics`, `Reports/Insights`, `Reports/CustomReportEngine`, `Repo
 - Notifications: bell (`app_notifications`), email (SMTP from Super Admin → Settings → Emails, or `.env`), Telegram bot
   (link with a code from My profile; polled every minute). `Notify/*`.
 
+## Plans and limits
+
+Free / Starter / Pro (recommended) / Business (migration `2026_11_26_000001_add_balanced_plans`). Core work is in every plan.
+Limits: rooms, branches, staff, files (`max_storage_mb`; `StorageQuota` counts payment proofs, ID photos and the logo).
+Plan features are Super Admin switches at plan level: `feature.telegram`, `feature.multi_currency`, `feature.full_reports`
+(forecast, staff audit, accounting, branch comparison, CSV/Excel and list downloads), `feature.accountant_role` (new Accountant
+staff only; people who have it keep it), `feature.custom_reports`, `feature.branding` (no "Powered by"), `feature.priority_support`.
+A hotel switch or `limit.*` switch overrides the plan for one hotel. Over a limit = refusal with `PlanLimits::message` (WhatsApp /
+email from platform settings `whatsapp`, `support_email`); nothing is removed. No online billing. Tests: `Admin/BalancedPlansTest`.
+
 ## Super Admin (HotelMS team)
 
 Command center, hotels (create with plan/trial, suspend, close, reopen, notes, live data with a reason, log in as hotel),

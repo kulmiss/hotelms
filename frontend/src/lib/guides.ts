@@ -94,6 +94,7 @@ export const GUIDE: GuideSection[] = [
       { key: 'devices', perm: 'staff.manage' },
       { key: 'settings', perm: ['settings.hotel', 'settings.rooms', 'settings.pricing', 'settings.policies', 'settings.money'] },
       { key: 'activity', perm: 'activity_log.view' },
+      { key: 'plan', perm: 'subscription.view' },
     ],
   },
 ]
