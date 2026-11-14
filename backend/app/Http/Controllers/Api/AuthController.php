@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\EnforceSessionRules;
 use App\Models\User;
 use App\Services\ActivityLogger;
 use App\Services\Impersonation;
@@ -34,6 +35,9 @@ class AuthController extends Controller
     private const LOCK = 'login-lock|';
 
     private const LOCKS_TODAY = 'login-locks|';
+
+    /** "Remember me" for staff lasts at most this long (owner Q3). */
+    private const REMEMBER_DAYS = 30;
 
     /** A bcrypt hash of a random text: checked when the email has no account, so both answers take as long. */
     private const DUMMY_HASH = '$2y$12$9RM3L172I0KbTCFkkUXT6uvh4GkqX.pXACNSX3Q0TUx.NbIcRWapq';
@@ -162,6 +166,8 @@ class AuthController extends Controller
             throw ValidationException::withMessages(['pin' => 'This PIN cannot be used here. Sign in with your password.']);
         }
         if ($user->id === $current->id) {
+            $request->session()->forget(EnforceSessionRules::LOCKED);
+
             return response()->json(['message' => 'Unlocked.']);
         }
         // A PIN a manager set (for the attendance kiosk) never lets anyone take over the device as that person.
@@ -176,6 +182,16 @@ class AuthController extends Controller
         return $this->complete($request, $user, false, $token);
     }
 
+    /** The app locked the screen (idle or "Lock screen"): from now on the server answers only the lock screen. */
+    public function lock(Request $request): JsonResponse
+    {
+        if (! $request->session()->has(Impersonation::SESSION_KEY)) {
+            $request->session()->put(EnforceSessionRules::LOCKED, true);
+        }
+
+        return response()->json(['message' => 'Locked.']);
+    }
+
     /** Unlock your own locked screen with your password (anyone, including admins). */
     public function unlock(Request $request): JsonResponse
     {
@@ -183,6 +199,7 @@ class AuthController extends Controller
         if (! Hash::check($data['password'], $request->user()->password)) {
             throw ValidationException::withMessages(['password' => 'That password is not right.']);
         }
+        $request->session()->forget(EnforceSessionRules::LOCKED);
 
         return response()->json(['message' => 'Unlocked.']);
     }
@@ -199,8 +216,14 @@ class AuthController extends Controller
 
     private function complete(Request $request, User $user, bool $remember, string $token): JsonResponse
     {
+        // "Remember me" (owner Q3): at most 30 days, and never for Super Admins and Hotel Admins.
+        $remember = $remember && ! $user->is_super_admin && ! $user->isHotelAdmin();
+        Auth::guard('web')->setRememberDuration(self::REMEMBER_DAYS * 24 * 60);
         Auth::guard('web')->login($user, $remember);
         $request->session()->regenerate();
+        $request->session()->put(EnforceSessionRules::SIGNED_IN_AT, now()->timestamp);
+        $request->session()->put(EnforceSessionRules::REMEMBERED, $remember);
+        $request->session()->forget(EnforceSessionRules::LOCKED);
         $request->session()->forget(self::PENDING);
         // The session belongs to this person now (also after a PIN switch from someone else).
         $request->session()->put('password_hash_web', $user->getAuthPassword());

@@ -109,7 +109,7 @@
     "email": "Email",
     "password": "Password",
     "submit": "Sign in",
-    "remember": "Keep me signed in on this device",
+    "remember": "Keep me signed in on this device (30 days; not for admins)",
     "signingIn": "Signing in…",
     "tooManyAttempts": "Too many tries. Please wait a minute and try again.",
     "codeApp": "Enter the 6-digit code from your authenticator app.",

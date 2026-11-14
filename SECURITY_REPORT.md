@@ -227,6 +227,7 @@ What's missing is mostly **defence in depth**: the extra layers that limit the d
 | S1 Encrypted backups | H1 | done – `BACKUP_KEY`, `.sql.gz.enc`, no backup on a live server without the key, upload copies encrypted, `--decrypt`, System + watchdog warnings |
 | S2 Security headers | M1, L2, L3, L10 | done – strict CSP on the app page (hash checked in CI, checked in headless Chrome on 16 screens incl. prints: no violations), CSP on API answers, HSTS 2 years + Permissions-Policy on every file, strict CORS, `security.txt` |
 | S3 Sign-in hardening | M2, L1 | done – per-account pause after 10 wrong passwords (15 → 30 → 60 min, same answer for unknown emails, email to the person), dummy hash for unknown emails, new passwords ≥ 10 characters and not common (local list), weak old passwords keep working with a note (Q2) |
+| S4 Screen lock and session limits | M3, M4 | done – the server keeps the screen lock (423 until unlocked), a sign-in ends after 12 hours, "Remember me" 30 days for staff only and never for Super Admin / Hotel Admin (Q3) |
 
 ## Proposed fix PRs (step 2, after your OK)
 In order of importance. Each one is small, with tests, and speed measured before and after (page load, API time, first download).

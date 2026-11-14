@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\BlockDuringImpersonation;
 use App\Http\Middleware\DemoTimeLimit;
+use App\Http\Middleware\EnforceSessionRules;
 use App\Http\Middleware\EnsureActiveUser;
 use App\Http\Middleware\EnsureDeviceActive;
 use App\Http\Middleware\EnsureHotelPermission;
@@ -55,6 +56,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'tenant' => SetTenantContext::class,
+            'session.rules' => EnforceSessionRules::class,
             'active' => EnsureActiveUser::class,
             'device' => EnsureDeviceActive::class,
             'two.factor' => EnsureTwoFactorSetUp::class,

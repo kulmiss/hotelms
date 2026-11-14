@@ -10,6 +10,9 @@ const BASE = ROOT + '/api/v1'
 /** Full URL of an API path (for downloads in a link). */
 export const apiUrl = (path: string) => BASE + path
 
+/** Lock the screen now (the account menu, or the server says the screen is locked – SECURITY_REPORT M3). */
+export const LOCK_NOW_EVENT = 'hms:lock-screen'
+
 export class ApiError extends Error {
   readonly status: number
   readonly code?: string
@@ -123,6 +126,10 @@ async function send<T>(path: string, init: RequestInit = {}): Promise<T> {
       return api<T>(path, { ...init, body: JSON.stringify({ ...data, confirm_overpay: true, ...(payment ? { payment } : {}) }) })
     }
     throw new ApiError(422, i18n.t('payments.overpayCancelled'), { message: i18n.t('payments.overpayCancelled'), errors: { amount: [i18n.t('payments.overpayCancelled')] } })
+  }
+  // The server keeps the screen lock too: a locked session answers 423 "screen_locked" (show the lock screen).
+  if (res.status === 423 && (body as { code?: string } | null)?.code === 'screen_locked' && typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(LOCK_NOW_EVENT))
   }
   if (!res.ok) {
     const message =

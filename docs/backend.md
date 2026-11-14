@@ -35,6 +35,7 @@ Order for hotel routes: `auth:sanctum` → `active` → `device` → `tenant` �
 | `tenant` | `SetTenantContext` | Sets the current hotel from the signed-in user (before route binding) |
 | `active` | `EnsureActiveUser` | A disabled account is signed out on its next request |
 | `device` | `EnsureDeviceActive` | A device signed out or blocked by the Hotel Admin loses access; "approved devices only" |
+| `session.rules` | `EnforceSessionRules` | Server-side screen lock (`POST /auth/lock` → 423 `screen_locked` for everything but unlock / PIN switch / sign out / `GET /me`); a sign-in ends after 12 hours (401 `session_expired`) unless it came from "Remember me" (staff only, 30 days; never Super Admin or Hotel Admin) – SECURITY_REPORT M3, M4 |
 | `password.changed` | `EnsurePasswordChanged` | First sign-in: choose your own password first |
 | `two.factor` | `EnsureTwoFactorSetUp` | Admins (and staff, if the hotel wants) must set up two-step sign-in |
 | `hotel.writable` | `EnsureHotelWritable` | A suspended hotel is read-only |
