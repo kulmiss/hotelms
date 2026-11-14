@@ -484,6 +484,16 @@
         "The person who asked is told at once."
       ]
     },
+    "feedback": {
+      "title": "Guest feedback",
+      "steps": [
+        "At check-in or booking, ask the guest if they want a short feedback form after the stay. Tick the box only when they say yes.",
+        "At check-out they get a thank-you with a secure link. They give stars and a comment (no account, no cookies).",
+        "Open Guest feedback to read the answers. 3 stars or less? Managers get a message at once.",
+        "Add a reply note for your team (e.g. what you fixed). The guest's words can never be changed.",
+        "Settings → Booking page: show guests' stars on your booking page (only comments the guests allowed)."
+      ]
+    },
     "staff": {
       "title": "Add staff",
       "steps": [

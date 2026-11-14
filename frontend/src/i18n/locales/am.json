@@ -1,4 +1,42 @@
 {
+  "feedback": {
+    "subtitle": "እንግዶች ከቆይታቸው በኋላ የሚሉት – በራሳቸው ቃላት፣ በፍጹም አይቀየርም።",
+    "answers": "መልሶች",
+    "answersN_one": "{{count}} መልስ",
+    "answersN_other": "{{count}} መልሶች",
+    "ratings": {
+      "overall": "በአጠቃላይ",
+      "cleanliness": "ንጽሕና",
+      "staff": "ሠራተኞች",
+      "comfort": "ምቾት",
+      "value": "ዋጋ"
+    },
+    "dashboardPlan": "አዝማሚያዎች፣ በክፍልና በሠራተኛ ከStarter ፓኬጅ ጀምሮ ይገኛሉ።",
+    "list": "መልሶች",
+    "onlyLow_one": "3 ኮከብ ወይም ያነሰ ብቻ ({{count}})",
+    "onlyLow_other": "3 ኮከብ ወይም ያነሰ ብቻ ({{count}})",
+    "none": "እስካሁን አስተያየት የለም።",
+    "low": "ዝቅተኛ ደረጃ",
+    "room": "ክፍል {{number}}",
+    "publicOk": "ሊታይ ይችላል",
+    "checkedInBy": "ያስገባው {{name}}",
+    "replyBy": "የ{{name}} ማስታወሻ፦",
+    "reply": "የምላሽ ማስታወሻ",
+    "replyHint": "ለቡድንዎ (ለምሳሌ \"እንግዳውን ደወልን፣ ሻወሩን አስተካከልን\")። የእንግዳው ቃላት እንዳሉ ይቆያሉ።",
+    "addReply": "የምላሽ ማስታወሻ ጨምር",
+    "editReply": "የምላሽ ማስታወሻውን ቀይር",
+    "trend": "በወር",
+    "perRoom": "በክፍል",
+    "roomCol": "ክፍል",
+    "perStaff": "በሠራተኛ",
+    "person": "ሰው",
+    "roles": {
+      "check_in": "መግቢያ",
+      "check_out": "መውጫ"
+    },
+    "showOnPage": "የእንግዶችን ኮከቦች በማስያዣ ገጹ ላይ አሳይ",
+    "showOnPageHint": "የሁሉም መልሶች አማካይ፣ እና የፈቀዱ እንግዶች የቅርብ ጊዜ አስተያየቶች (የመጀመሪያ ስም ብቻ፣ እንደጻፉት)።"
+  },
   "messages": {
     "title": "ለእንግዳው መልዕክቶች",
     "which": "መልዕክት",
@@ -178,6 +216,7 @@
     "removedToast": "ተወግዷል"
   },
   "nav": {
+    "feedback": "የእንግዳ አስተያየት",
     "main": "ዋና",
     "dashboard": "ዳሽቦርድ",
     "roomBoard": "የክፍሎች ሰሌዳ",
@@ -2321,6 +2360,7 @@
         "attendance": "መገኘት"
       },
       "feature": {
+        "feedback_dashboard": "የእንግዳ አስተያየት ዳሽቦርድ",
         "smart_pricing": "የረጅም ቆይታ፣ የቀድሞና የመጨረሻ ደቂቃ ዋጋዎች፣ አነስተኛ ቆይታ",
         "auto_sms": "ለእንግዶች ራስ-ሰር ኤስኤምኤስ",
         "hourly_stays": "በሰዓት ቆይታዎች",
@@ -2345,6 +2385,7 @@
         "read_only": "ማንበብ ብቻ (ለውጦች አይቀመጡም)"
       },
       "automation": {
+        "low_rating": "ዝቅተኛ የእንግዳ ደረጃ",
         "guest_welcome": "በመግቢያ ጊዜ የእንኳን ደህና መጡ መልዕክት",
         "guest_thank_you": "በመውጫ ጊዜ የምስጋና መልዕክት",
         "booking_confirmation": "ለእንግዳው የማስያዣ ማረጋገጫ",
@@ -2714,6 +2755,10 @@
       "percent": "በመቶ"
     },
     "items": {
+      "low_rating": {
+        "name": "ዝቅተኛ የእንግዳ ደረጃ",
+        "what": "እንግዳ 3 ኮከብ ወይም ያነሰ ሲሰጥ፦ ኃላፊዎች ከአስተያየቱ ጋር ወዲያውኑ ይነገራቸዋል።"
+      },
       "guest_welcome": {
         "name": "ለእንግዳው የእንኳን ደህና መጡ መልዕክት",
         "what": "በመግቢያ ጊዜ እንግዳው ዋይፋይ፣ ቁርስ፣ ምናሌና የእንግዳ መቀበያ ዋትስአፕ ያገኛል (ቅንብሮች → የእንግዳ መልዕክቶች)።"

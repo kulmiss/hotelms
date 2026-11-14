@@ -15,7 +15,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ $title }}</title>
 <meta name="description" content="{{ $description }}">
-<link rel="canonical" href="{{ $url }}{{ $u($here) }}">
+@if ($noindex ?? false)<meta name="robots" content="noindex">
+@endif<link rel="canonical" href="{{ $url }}{{ $u($here) }}">
 <link rel="alternate" hreflang="en" href="{{ $url }}{{ \App\Support\PublicLocale::switchTo($here, 'en') }}">
 <link rel="alternate" hreflang="am" href="{{ $url }}{{ \App\Support\PublicLocale::switchTo($here, 'am') }}">
 <link rel="alternate" hreflang="x-default" href="{{ $url }}{{ $here }}">

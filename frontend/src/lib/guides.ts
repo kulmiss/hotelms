@@ -95,6 +95,7 @@ export const GUIDE: GuideSection[] = [
       { key: 'reports', perm: ['reports.revenue', 'reports.occupancy', 'reports.payments', 'reports.tax', 'reports.outstanding'] },
       { key: 'myReport', perm: ['reports.my_shift', 'reports.my_work'] },
       { key: 'approvals', perm: 'approvals.decide' },
+      { key: 'feedback', perm: 'feedback.view' },
       { key: 'staff', perm: 'staff.manage' },
       { key: 'roles', perm: 'roles.manage' },
       { key: 'devices', perm: 'staff.manage' },

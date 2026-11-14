@@ -44,7 +44,7 @@ class LandingController extends Controller
     {
         $base = $this->base();
 
-        return response("User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nDisallow: /ical/\nSitemap: {$base}/sitemap.xml\n", 200, ['Content-Type' => 'text/plain; charset=UTF-8', 'Cache-Control' => 'public, max-age=3600']);
+        return response("User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nDisallow: /ical/\nDisallow: /f/\nSitemap: {$base}/sitemap.xml\n", 200, ['Content-Type' => 'text/plain; charset=UTF-8', 'Cache-Control' => 'public, max-age=3600']);
     }
 
     public function sitemap(): Response

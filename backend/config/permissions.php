@@ -110,6 +110,7 @@ return [
             'alerts.manage' => [],
             'automations.manage' => [],
             'approvals.decide' => [$BM],
+            'feedback.view' => [$BM], // guest feedback: read, reply note, low-rating alerts
             'reports.accounting_export' => [$AC],
         ],
         'settings' => [

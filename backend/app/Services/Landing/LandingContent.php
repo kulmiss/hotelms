@@ -174,6 +174,8 @@ class LandingContent
                 $row('Long-stay, early-bird and last-minute prices, minimum stay', fn (Plan $p) => $yes($this->on($p, 'feature.smart_pricing'))),
                 $row('Guest messages: email, WhatsApp and SMS by a tap', fn () => '✓'),
                 $row('Automatic SMS (your own SMS account)', fn (Plan $p) => $yes($this->on($p, 'feature.auto_sms'))),
+                $row('Guest feedback page and low-rating alert', fn () => '✓'),
+                $row('Feedback dashboard (trends, per room and staff)', fn (Plan $p) => $yes($this->on($p, 'feature.feedback_dashboard'))),
                 $row('Calendar sync (Airbnb, Booking.com)', function (Plan $p) {
                     $n = $this->number($p, 'limit.ical_rooms');
 

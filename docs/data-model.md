@@ -53,6 +53,7 @@ in the claude.ai Project.
 | `rooms` **H** | branch_id, room_type_id, number, floor, status (available, occupied, dirty, cleaning, maintenance, out_of_order) | |
 | `guest_types` **H**, `rate_rules` **H** | rule_type (weekend, season, holiday, guest_type; long_stay, early_bird, last_minute), dates, days_of_week, min_nights, days_before, min_stay, adjustment, value, priority | Prices |
 | `message_templates` **H**, `guest_messages` **H** | templates: key, language, subject, body; log: reservation_id / booking_request_id, guest_id, key, channel (email, sms, whatsapp, sms_app), language, to, status (sent, failed, opened), error, sent_by (null = automatic) | Guest messages |
+| `guest_feedback` **H** | reservation_id (unique), guest, branch, room, checked_in_by / checked_out_by, token (sha256) + secret (encrypted), overall, cleanliness, staff, comfort, value (1–5), comment, public_ok, language, submitted_at, reply, replied_by/at, expires_at | One per stay; the guest's part never changes |
 | `ical_feeds` **H**, `ical_blocks` **H** | feeds: branch_id, room_id or room_type_id, name, url (encrypted), is_active, last_synced_at, last_status, last_error, events_count, conflicts; blocks: feed, room_id / room_type_id, uid, starts_on, ends_on, starts_at, ends_at (UTC), summary | Calendar sync; blocks hold rooms like bookings |
 | `holidays` **H** | name, date, kind (fixed, calculated, expected, own), is_active | The hotel's holiday list ("holiday" rules) |
 | `imports` **H** | type, rows_count, created_ids, undone_at | Excel/CSV imports (undo possible) |

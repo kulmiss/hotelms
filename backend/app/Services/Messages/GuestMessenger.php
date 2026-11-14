@@ -9,6 +9,7 @@ use App\Models\GuestMessage;
 use App\Models\Hotel;
 use App\Models\Reservation;
 use App\Models\User;
+use App\Services\Feedback\FeedbackLinks;
 use App\Services\HotelSettings;
 use App\Services\Switches;
 use App\Support\EthiopianDate;
@@ -72,7 +73,7 @@ class GuestMessenger
         }
         $lang = $this->language($guest);
         $auto = $this->auto()[$key] ?? ['email' => false, 'sms' => false];
-        $msg = $this->templates->render($key, $lang, $this->vars($hotel, $r));
+        $msg = $this->templates->render($key, $lang, $this->vars($hotel, $r, $key));
         if ($auto['email'] && $guest?->email && ! $this->already($r, $key, 'email')) {
             $this->email($hotel, $r, null, $guest, $key, $lang, $guest->email, $msg, null);
         }
@@ -111,7 +112,7 @@ class GuestMessenger
             throw new RuntimeException($guest?->messages_opt_out ? 'This guest asked for no messages.' : 'The guest did not say yes to this message.');
         }
         $lang = in_array($lang, MessageTemplates::LANGUAGES, true) ? $lang : $this->language($guest);
-        $msg = $this->templates->render($key, $lang, $this->vars($hotel, $r));
+        $msg = $this->templates->render($key, $lang, $this->vars($hotel, $r, $key));
         $text = $msg['body'];
         $phone = preg_replace('/\D+/', '', (string) $guest?->phone);
 
@@ -129,11 +130,11 @@ class GuestMessenger
     {
         $lang = in_array($lang, MessageTemplates::LANGUAGES, true) ? $lang : $this->language($r->guest);
 
-        return $this->templates->render($key, $lang, $this->vars($hotel, $r)) + ['language' => $lang];
+        return $this->templates->render($key, $lang, $this->vars($hotel, $r, $key)) + ['language' => $lang];
     }
 
     /** @return array<string, string|null> */
-    public function vars(Hotel $hotel, Reservation $r): array
+    public function vars(Hotel $hotel, Reservation $r, string $key = ''): array
     {
         $lang = $this->language($r->guest);
         $in = HotelClock::local($r->check_in_at, $hotel);
@@ -153,14 +154,14 @@ class GuestMessenger
             'hotel_phone' => $branch?->phone ?: $hotel->phone, 'address' => trim(($branch?->address ?: $hotel->address).' '.($branch?->city ?: $hotel->city)) ?: null,
             'wifi_name' => $info['wifi_name'], 'wifi_password' => $info['wifi_password'], 'breakfast' => $info['breakfast'],
             'whatsapp' => $info['whatsapp'], 'menu_link' => $info['menu_url'],
-            'feedback_link' => $this->feedbackLink($r),
+            'feedback_link' => $key === 'thank_you' ? $this->feedbackLink($r) : null,
         ];
     }
 
-    /** The secure feedback link of the stay (guest feedback); none yet. */
+    /** The secure feedback link of the stay (only when the guest said yes). */
     public function feedbackLink(Reservation $r): ?string
     {
-        return null;
+        return app(FeedbackLinks::class)->linkFor($r);
     }
 
     /** @return array<string, string|null> */

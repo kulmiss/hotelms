@@ -196,6 +196,22 @@ booking's **Messages** card (`Front/ReservationMessageController`, `components/m
   switches like the others).
 - Tests: `Hotel/GuestMessagesTest`, `test/guestMessages.test.tsx`.
 
+## Guest feedback
+
+- One per stay (`guest_feedback`, unique `reservation_id`), only for a stay whose guest said yes (`feedback_consent`). The link
+  `/f/{secret}` is made when the thank-you message is written (sha256 in `token`, the secret encrypted to send it again), open
+  60 days. The page (`Web/FeedbackPageController`, `landing/feedback.blade.php`): stars (CSS only, no script) for overall
+  (needed), cleanliness, staff, comfort, value, a comment and "the hotel may show this" (unticked); EN/AM; **no account, no
+  cookies**, `noindex`, limit per network (hashed). One answer: a second post changes nothing.
+- Saved with who checked the guest in and out and the room, for "per staff" / "per room".
+- **Overall 3 or less** → managers with `feedback.view` are told at once (automation `low_rating`, urgent).
+- Staff (`feedback.view`: Hotel Admin + Branch Manager; `Front/FeedbackController`, `pages/feedback/FeedbackPage.tsx`): the
+  answers and a **reply note** – the guest's stars and words can never be changed. Averages for every plan; **dashboard** (by
+  month, per room, per staff) on Starter and up (`feature.feedback_dashboard`).
+- Booking page (Settings → Booking page → "Show guest stars"): the average of **all** answers (never only good ones) and the
+  latest comments the guests allowed, as written, first name only.
+- Tests: `Hotel/GuestFeedbackTest`.
+
 ## Calendar sync (Airbnb, Booking.com – iCal)
 
 Settings → Calendar sync (`settings.rooms`; `Settings/CalendarSyncController`, `pages/settings/CalendarSyncSections.tsx`).

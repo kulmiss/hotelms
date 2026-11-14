@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\BrandingController;
 use App\Http\Controllers\Api\DemoController;
 use App\Http\Controllers\Api\Front\BookingRequestController;
+use App\Http\Controllers\Api\Front\FeedbackController;
 use App\Http\Controllers\Api\Front\FrontDeskController;
 use App\Http\Controllers\Api\Front\GuestController;
 use App\Http\Controllers\Api\Front\InvoiceController;
@@ -186,6 +187,13 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
             Route::post('/payment-proofs', [PaymentProofController::class, 'store'])->middleware('throttle:30,1');
             Route::get('/payment-proofs/{id}', [PaymentProofController::class, 'show']);
             Route::put('/payments/{payment}/proof', [PaymentProofController::class, 'attach']);
+
+            // Guest feedback (the guest's words are never changed).
+            Route::middleware('permission:feedback.view')->group(function () {
+                Route::get('/feedback', [FeedbackController::class, 'index']);
+                Route::get('/feedback/summary', [FeedbackController::class, 'summary']);
+                Route::put('/feedback/{id}/reply', [FeedbackController::class, 'reply']);
+            });
 
             // Reservations.
             Route::middleware('permission:reservations.view')->group(function () {

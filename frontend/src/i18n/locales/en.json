@@ -1,4 +1,42 @@
 {
+  "feedback": {
+    "subtitle": "What guests say after their stay – in their own words, never changed.",
+    "answers": "Answers",
+    "answersN_one": "{{count}} answer",
+    "answersN_other": "{{count}} answers",
+    "ratings": {
+      "overall": "Overall",
+      "cleanliness": "Cleanliness",
+      "staff": "Staff",
+      "comfort": "Comfort",
+      "value": "Value"
+    },
+    "dashboardPlan": "Trends, per room and per staff come with the Starter plan and up.",
+    "list": "Answers",
+    "onlyLow_one": "Only 3 stars or less ({{count}})",
+    "onlyLow_other": "Only 3 stars or less ({{count}})",
+    "none": "No feedback yet.",
+    "low": "Low rating",
+    "room": "room {{number}}",
+    "publicOk": "May be shown",
+    "checkedInBy": "checked in by {{name}}",
+    "replyBy": "Note by {{name}}:",
+    "reply": "Reply note",
+    "replyHint": "For your team (e.g. \"Called the guest, fixed the shower\"). The guest's words stay as they are.",
+    "addReply": "Add a reply note",
+    "editReply": "Change the reply note",
+    "trend": "By month",
+    "perRoom": "Per room",
+    "roomCol": "Room",
+    "perStaff": "Per staff",
+    "person": "Person",
+    "roles": {
+      "check_in": "check-in",
+      "check_out": "check-out"
+    },
+    "showOnPage": "Show guest stars on the booking page",
+    "showOnPageHint": "The average of all answers, and the latest comments of guests who allowed it (first name only, as they wrote them)."
+  },
   "messages": {
     "title": "Messages to the guest",
     "which": "Message",
@@ -174,6 +212,7 @@
     "removedToast": "Removed"
   },
   "nav": {
+    "feedback": "Guest feedback",
     "main": "Main",
     "dashboard": "Dashboard",
     "roomBoard": "Room board",
@@ -2259,6 +2298,7 @@
         "attendance": "Attendance"
       },
       "feature": {
+        "feedback_dashboard": "Guest feedback dashboard",
         "smart_pricing": "Long-stay, early and last-minute prices, minimum stay",
         "auto_sms": "Automatic SMS to guests",
         "hourly_stays": "Hourly stays",
@@ -2283,6 +2323,7 @@
         "read_only": "Read only (no changes saved)"
       },
       "automation": {
+        "low_rating": "Low guest rating",
         "guest_welcome": "Welcome message at check-in",
         "guest_thank_you": "Thank-you message at check-out",
         "booking_confirmation": "Booking confirmation to the guest",
@@ -2652,6 +2693,10 @@
       "percent": "Percent"
     },
     "items": {
+      "low_rating": {
+        "name": "Low guest rating",
+        "what": "A guest gives 3 stars or less: managers are told at once, with the comment."
+      },
       "guest_welcome": {
         "name": "Welcome message to the guest",
         "what": "At check-in the guest gets Wi-Fi, breakfast, the menu and reception's WhatsApp (Settings → Guest messages)."

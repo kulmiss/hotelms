@@ -64,6 +64,7 @@ const ContentPage = lazy(() => pages.content().then((m) => ({ default: m.Content
 const WhatsNewPage = lazy(() => pages.whatsNew().then((m) => ({ default: m.WhatsNewPage })))
 const SubscriptionInvoicePage = lazy(() => pages.subscriptionInvoice().then((m) => ({ default: m.SubscriptionInvoicePage })))
 const ApprovalsPage = lazy(() => pages.approvals().then((m) => ({ default: m.ApprovalsPage })))
+const FeedbackPage = lazy(() => pages.feedback().then((m) => ({ default: m.FeedbackPage })))
 const FrontDeskModePage = lazy(() => pages.frontDeskMode().then((m) => ({ default: m.FrontDeskModePage })))
 const CashierPage = lazy(() => pages.cashier().then((m) => ({ default: m.CashierPage })))
 const HousekeepingPage = lazy(() => pages.housekeeping().then((m) => ({ default: m.HousekeepingPage })))
@@ -323,6 +324,10 @@ export const routes = [
               {
                 element: <RequirePermission permission="approvals.decide" />,
                 children: [{ path: 'approvals', element: page(<ApprovalsPage />) }],
+              },
+              {
+                element: <RequirePermission permission="feedback.view" />,
+                children: [{ path: 'feedback', element: page(<FeedbackPage />) }],
               },
               // Developer page: only while developing, never on a hotel's live site.
               ...(import.meta.env.DEV ? [{ path: 'design-system', element: page(<DesignSystemPage />) }] : []),

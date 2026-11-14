@@ -29,6 +29,7 @@ return [
     'feature.branding' => ['type' => 'bool', 'group' => 'features', 'default' => true], // no "Powered by" badge on the hotel's public pages
     'feature.priority_support' => ['type' => 'bool', 'group' => 'features', 'default' => true],
     'feature.auto_sms' => ['type' => 'bool', 'group' => 'features', 'default' => true], // guest messages by SMS without a tap (the hotel's own SMS account; off on Free)
+    'feature.feedback_dashboard' => ['type' => 'bool', 'group' => 'features', 'default' => true], // guest feedback: averages, trends, per room / staff (off on Free)
     'feature.smart_pricing' => ['type' => 'bool', 'group' => 'features', 'default' => true], // long-stay, early-bird, last-minute prices and minimum stay (off on Free)
 
     // Limits (empty = the plan's limit)

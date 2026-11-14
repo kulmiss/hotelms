@@ -43,6 +43,18 @@
     </div>
   @endif
 
+  @if (! empty($p['reviews']) && $p['reviews']['count'] > 0)
+    <h2 class="title" style="font-size:22px;margin-top:40px">{{ __('What guests say') }}</h2>
+    <p class="muted" style="margin-top:6px"><span style="color:#f59e0b" aria-hidden="true">★</span> {{ __(':avg of 5 from :n guests', ['avg' => number_format((float) $p['reviews']['average'], 1), 'n' => $p['reviews']['count']]) }}</p>
+    @if ($p['reviews']['items'])
+      <div class="grid" style="margin-top:12px">
+        @foreach ($p['reviews']['items'] as $rv)
+          <blockquote class="card quote" style="margin:0"><p><span style="color:#f59e0b" aria-label="{{ trans_choice('{1} :n star|[2,*] :n stars', (int) $rv['overall'], ['n' => $rv['overall']]) }}">{{ str_repeat('★', (int) $rv['overall']) }}</span>@if ($rv['comment']) “{{ $rv['comment'] }}”@endif</p><footer>{{ $rv['name'] }} · {{ $rv['month'] }}</footer></blockquote>
+        @endforeach
+      </div>
+    @endif
+  @endif
+
   @if ($types->isNotEmpty())
     <h2 class="title" style="font-size:22px;margin-top:40px" id="prices">{{ __('Price for your dates') }}</h2>
     {{-- A GET form with dates and room only: no personal data in the link. --}}

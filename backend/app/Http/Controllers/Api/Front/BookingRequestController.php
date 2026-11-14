@@ -75,6 +75,7 @@ class BookingRequestController extends Controller
             'enabled' => ['required', 'boolean'],
             'slug' => ['nullable', 'string', 'max:50', 'regex:/^[a-zA-Z0-9 -]+$/'],
             'note' => ['nullable', 'string', 'max:300'],
+            'reviews' => ['sometimes', 'boolean'],
         ]);
         $hotel = $request->user()->hotel;
         $pages->save($hotel, $data);

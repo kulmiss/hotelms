@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\BookingRequest;
 use App\Models\Branch;
+use App\Models\GuestFeedback;
 use App\Models\Hotel;
 use App\Models\RoomType;
 use App\Models\User;
@@ -26,6 +27,9 @@ class BookingPage
     public const ENABLED = 'booking_page_enabled';
 
     public const NOTE = 'booking_page_note';
+
+    /** Show guests' stars and the comments they allowed (owner, 14 Nov 2026: only with the guest's permission). */
+    public const REVIEWS = 'booking_page_reviews';
 
     public const MAX_NIGHTS = 60;
 
@@ -50,6 +54,7 @@ class BookingPage
             'slug' => $hotel->booking_slug,
             'url' => $hotel->booking_slug ? rtrim((string) config('app.url'), '/').'/h/'.$hotel->booking_slug : null,
             'note' => $this->settings->get(self::NOTE),
+            'reviews' => (bool) $this->settings->get(self::REVIEWS, false),
             'powered_by' => ! $this->switches->on($hotel, 'feature.branding'),
         ];
     }
@@ -68,7 +73,7 @@ class BookingPage
             $slug .= '-'.$hotel->id;
         }
         $hotel->forceFill(['booking_slug' => $slug])->save();
-        $this->settings->put([self::ENABLED => (bool) $data['enabled'], self::NOTE => $data['note'] ?? null]);
+        $this->settings->put([self::ENABLED => (bool) $data['enabled'], self::NOTE => $data['note'] ?? null, self::REVIEWS => (bool) ($data['reviews'] ?? false)]);
     }
 
     /** What the public page shows: branches with their room types and prices. @return array<string, mixed> */
@@ -91,8 +96,22 @@ class BookingPage
                 'note' => $this->settings->get(self::NOTE),
                 'powered_by' => ! $this->switches->on($hotel, 'feature.branding'),
                 'language' => (string) $this->settings->get('language', 'en'), // the hotel's default; ?lang= changes it
+                'reviews' => $this->settings->get(self::REVIEWS, false) ? $this->reviews() : null,
             ];
         });
+    }
+
+    /**
+     * Guest stars: the average of every answer (never only the good ones) and the latest comments the guests allowed,
+     * as they wrote them, with the first name only. @return array{count: int, average: ?float, items: list<array<string, mixed>>}
+     */
+    private function reviews(): array
+    {
+        $all = GuestFeedback::whereNotNull('submitted_at');
+        $items = (clone $all)->with('guest:id,first_name')->where('public_ok', true)->orderByDesc('submitted_at')->limit(5)->get()
+            ->map(fn (GuestFeedback $f) => ['name' => $f->guest?->first_name, 'overall' => $f->overall, 'comment' => $f->comment, 'month' => $f->submitted_at->translatedFormat('F Y')])->all();
+
+        return ['count' => (clone $all)->count(), 'average' => ($a = (clone $all)->avg('overall')) !== null ? round((float) $a, 1) : null, 'items' => $items];
     }
 
     /**
