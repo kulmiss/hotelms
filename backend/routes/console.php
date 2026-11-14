@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Admin\SystemController;
 use App\Models\Hotel;
 use App\Models\PaymentProof;
 use App\Services\GuestIdPhotos;
+use App\Services\Security\SecurityLog;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -58,5 +59,7 @@ Schedule::call(function () {
 })->name('guest-id-photos:cleanup')->dailyAt('03:40')->withoutOverlapping();
 
 // Super Admin watchdog: security, bugs and data leaks (quick checks every 10 minutes, data checks every hour).
+// Security event log: kept 1 year (SECURITY_REPORT M9).
+Schedule::call(fn () => app(SecurityLog::class)->prune())->name('security-events:prune')->dailyAt('03:50')->withoutOverlapping();
 Schedule::command('watchdog:run')->everyTenMinutes()->withoutOverlapping();
 Schedule::command('watchdog:run --data')->hourlyAt(17)->withoutOverlapping();

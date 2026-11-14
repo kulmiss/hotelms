@@ -7,6 +7,7 @@ use App\Mail\PasswordResetMail;
 use App\Models\User;
 use App\Models\UserDevice;
 use App\Services\ActivityLogger;
+use App\Services\Security\SecurityLog;
 use App\Services\Security\SecurityNotices;
 use App\Support\PasswordRules;
 use App\Support\Tenancy\TenantContext;
@@ -54,6 +55,7 @@ class PasswordResetController extends Controller
             DB::table('sessions')->where('user_id', $user->id)->delete();
             UserDevice::where('user_id', $user->id)->where('status', 'active')->update(['status' => 'signed_out']);
             app(SecurityNotices::class)->send($user, 'password_changed', request());
+            app(SecurityLog::class)->record('password_reset', $user);
             if ($user->hotel_id) {
                 app(TenantContext::class)->runAs($user->hotel, fn () => app(ActivityLogger::class)->log('security.password_reset', "{$user->name} set a new password with an email link", $user));
             }

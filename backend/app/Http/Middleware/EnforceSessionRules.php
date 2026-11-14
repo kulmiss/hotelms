@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Services\Impersonation;
+use App\Services\Security\SecurityLog;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,6 +41,7 @@ class EnforceSessionRules
         // without that time – from before this rule, or brought back by "Remember me" – are not cut off.
         $since = $session->get(self::SIGNED_IN_AT);
         if ($since !== null && ! $session->get(self::REMEMBERED) && now()->timestamp - (int) $since > self::MAX_HOURS * 3600) {
+            app(SecurityLog::class)->record('session_expired', $request->user(), $request);
             $impersonation = app(Impersonation::class);
             $impersonation->stop($request);
             Auth::guard('web')->logout();

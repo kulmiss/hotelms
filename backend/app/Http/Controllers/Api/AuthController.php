@@ -10,6 +10,7 @@ use App\Services\Impersonation;
 use App\Services\Modules\Attendance;
 use App\Services\Security\Devices;
 use App\Services\Security\EmailChanges;
+use App\Services\Security\SecurityLog;
 use App\Services\Security\SecurityNotices;
 use App\Services\Security\TwoFactor;
 use App\Services\Watchdog\WatchEvents;
@@ -57,6 +58,7 @@ class AuthController extends Controller
         $minutes = min(60, 15 * 2 ** ($locks - 1));
         RateLimiter::hit(self::LOCK.$email, $minutes * 60);
         app(WatchEvents::class)->record('login_locked', $request, 429, $email);
+        app(SecurityLog::class)->record('login_locked', $user, $request, $email, "{$minutes} minutes");
         if ($user) {
             app(SecurityNotices::class)->send($user, 'locked', $request, ['minutes' => $minutes]);
         }
@@ -90,6 +92,7 @@ class AuthController extends Controller
                 Hash::check($credentials['password'], self::DUMMY_HASH); // as slow as a real check (SECURITY_REPORT L1)
             }
             app(WatchEvents::class)->record('login_failed', $request, 422, $email);
+            app(SecurityLog::class)->record('login_failed', $user, $request, $email);
             $this->countFailure($request, $email, $user);
             throw ValidationException::withMessages(['email' => __('auth.failed')]);
         }
@@ -134,12 +137,14 @@ class AuthController extends Controller
         }
         if (! $this->twoFactor->verify($user, $data['code'])) {
             RateLimiter::hit($key, 15 * 60);
+            app(SecurityLog::class)->record('two_factor_failed', $user, $request);
             throw ValidationException::withMessages(['code' => 'That code is not right, or it expired.']);
         }
         RateLimiter::clear($key);
         $pending = $request->session()->pull(self::PENDING);
         if (str_contains($data['code'], '-')) {
             app(ActivityLogger::class)->log('security.recovery_code_used', "{$user->name} signed in with a recovery code", $user);
+            app(SecurityLog::class)->record('recovery_code_used', $user, $request);
         }
 
         return $this->complete($request, $user, (bool) $pending['remember'], $this->devices->token($request));
@@ -167,6 +172,7 @@ class AuthController extends Controller
 
         $user = app(Attendance::class)->findByPin((int) $current->hotel_id, $data['pin']);
         if (! $user || $user->isHotelAdmin() || ($this->twoFactor->enabled($user) && $user->id !== $current->id)) {
+            app(SecurityLog::class)->record('pin_failed', $current, $request, null, 'screen lock');
             throw ValidationException::withMessages(['pin' => 'This PIN cannot be used here. Sign in with your password.']);
         }
         if ($user->id === $current->id) {
@@ -182,6 +188,7 @@ class AuthController extends Controller
         $this->devices->check($user, $token, $request);
         app(ActivityLogger::class)->log('security.pin_switch', "{$user->name} took over the device from {$current->name}", $user);
         $request->session()->forget(self::WEAK); // the note was about the other person's password
+        app(SecurityLog::class)->record('pin_switch', $user, $request, null, "took over the device from {$current->name}");
 
         return $this->complete($request, $user, false, $token);
     }
@@ -242,6 +249,7 @@ class AuthController extends Controller
         $request->session()->put('password_hash_web', $user->getAuthPassword());
         $user->forceFill(['last_login_at' => now()])->save();
         $this->devices->signedIn($user, $token, $request);
+        app(SecurityLog::class)->record('login_ok', $user, $request);
 
         return response()->json(['message' => 'Signed in.'])->withCookie($this->devices->cookie($token));
     }

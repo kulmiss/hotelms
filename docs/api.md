@@ -29,6 +29,7 @@ Sign-in limits: 10 wrong passwords for one email pause it 15 → 30 → 60 min (
 12 hours (`401 code: session_expired`, not for "Remember me" – staff only, 30 days); a locked screen answers `423 code: screen_locked`
 to everything but `POST /auth/unlock`, `/auth/pin-switch`, `/auth/logout`, `/auth/lock` and `GET /me`.
 `PUT /me/email` and `PUT /staff/{id}` answer `email_change: "pending"` when the new email waits for its link.
+Security event log: `GET /security-events` (`activity_log.view`, own hotel) and `GET /admin/security-events` (`watchdog.view`), `?kind=&search=&page=&per_page=`.
 
 Signed in (everyone): `/me`, `/me/password`, `/me/email` (platform Owner), `/telegram` (status, link, test, unlink),
 `/impersonation/stop`, `/setup`, `/search`, `/smart/{place}`, `/whats-new`, `/notifications`, `/support` (Help → Ask us),

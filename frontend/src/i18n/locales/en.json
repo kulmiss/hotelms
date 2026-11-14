@@ -2716,6 +2716,19 @@
     "button": "Confirm this email",
     "done": "Done. Sign in with {{email}} from now on."
   },
+  "securityEvents": {
+    "title": "Sign-in and security",
+    "subtitle": "Sign-ins, wrong passwords and PINs, paused sign-ins, password, email and two-step changes, refused actions, voided bills and refunds. Kept for one year.",
+    "kind": "What",
+    "allKinds": "Everything",
+    "search": "Person, email or address",
+    "searchHint": "e.g. Hana",
+    "hotel": "Hotel",
+    "team": "HotelMS team / unknown",
+    "from": "From",
+    "detail": "Detail",
+    "empty": "Nothing yet."
+  },
   "weakPassword": {
     "message": "Your password is easier to guess than our new rules allow. It still works, but please change it.",
     "change": "Change password"

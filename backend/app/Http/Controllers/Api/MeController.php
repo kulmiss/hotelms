@@ -13,6 +13,7 @@ use App\Services\HotelSettings;
 use App\Services\HotelSetup;
 use App\Services\Impersonation;
 use App\Services\Security\EmailChanges;
+use App\Services\Security\SecurityLog;
 use App\Services\Security\SecurityNotices;
 use App\Services\Security\TwoFactor;
 use App\Services\Switches;
@@ -147,6 +148,7 @@ class MeController extends Controller
         $result = app(EmailChanges::class)->request($user, $data['email'], $user);
         if ($result === 'pending') {
             $log->log('platform.email_change_requested', "Sign-in email change to {$user->pending_email} asked (waits for the link)", $user);
+            app(SecurityLog::class)->record('email_change_requested', $user, $request, $user->pending_email);
         }
 
         $response = $this->show($request);
@@ -177,6 +179,7 @@ class MeController extends Controller
         ])->save();
         $request->session()->forget(AuthController::WEAK);
         app(SecurityNotices::class)->send($user, 'password_changed', $request);
+        app(SecurityLog::class)->record('password_changed', $user, $request);
 
         return response()->json(['message' => 'Password changed.']);
     }

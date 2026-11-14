@@ -63,6 +63,7 @@ class EmailChanges
         $log = fn () => app(ActivityLogger::class)->log($user->is_super_admin ? 'platform.email_changed' : 'security.email_changed', "Sign-in email changed from {$old} to {$user->email} (confirmed by the new address)", $user);
         $user->hotel ? app(TenantContext::class)->runAs($user->hotel, $log) : $log();
         app(SecurityNotices::class)->send($user, 'email_changed', null, ['new' => $user->email], $old);
+        app(SecurityLog::class)->record('email_changed', $user, null, $user->email, "from {$old}");
 
         return $user;
     }

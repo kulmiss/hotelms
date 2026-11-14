@@ -48,6 +48,7 @@ use App\Http\Controllers\Api\Reports\InsightController;
 use App\Http\Controllers\Api\Reports\ReportController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\SecurityController;
+use App\Http\Controllers\Api\SecurityEventController;
 use App\Http\Controllers\Api\Settings\BranchSettingsController;
 use App\Http\Controllers\Api\Settings\CancellationPolicyController;
 use App\Http\Controllers\Api\Settings\ChargeTypeController;
@@ -320,6 +321,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant', 'session.rules'
             Route::get('/reports/{key}', [ReportController::class, 'show']); // per-report permission checked inside
 
             Route::get('/activity-log', [ActivityLogController::class, 'index'])->middleware('permission:activity_log.view');
+            Route::get('/security-events', [SecurityEventController::class, 'hotel'])->middleware('permission:activity_log.view');
 
             // Settings (phase 2a)
             Route::prefix('settings')->group(function () {
@@ -428,6 +430,7 @@ Route::middleware(['auth:sanctum', 'active', 'device', 'tenant', 'session.rules'
             Route::get('/dashboard', AdminDashboardController::class);
             Route::middleware('platform:watchdog.view')->group(function () {
                 Route::get('/watchdog', [WatchdogController::class, 'index']);
+                Route::get('/security-events', [SecurityEventController::class, 'platform']);
                 Route::post('/watchdog/run', [WatchdogController::class, 'run'])->middleware('throttle:6,1');
                 Route::post('/watchdog/{finding}/resolve', [WatchdogController::class, 'resolve']);
                 Route::post('/watchdog/{finding}/mute', [WatchdogController::class, 'mute']);

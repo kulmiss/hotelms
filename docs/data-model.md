@@ -32,6 +32,7 @@ in the claude.ai Project.
 | `user_devices` | user_id, hotel_id, token_hash, name, ip, status (active, pending, blocked, signed_out) | Devices; "approved devices only" |
 | `sessions` | | Database sessions (shared hosting) |
 | `activity_logs` | hotel_id, user_id, event, subject, description, properties, ip | Who did what; never deleted by users |
+| `security_events` | kind, user_id, hotel_id, email, ip, device, detail, created_at | Security event log (SECURITY_REPORT M9): sign-ins, failures, pauses, password / email / two-step changes, 403 / 429, voids, refunds; kept 1 year (pruned daily 03:50), max 60 rows a minute per person or address |
 | `telegram_links` **H** | user_id, chat_id, code | A person's Telegram for reports and alerts |
 | `app_notifications` **H** | user_id, title, body, link, urgent, read_at | The bell |
 

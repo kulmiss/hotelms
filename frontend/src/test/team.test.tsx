@@ -89,10 +89,19 @@ describe('team', () => {
           last_page: 1,
         },
       },
+      'GET /security-events': {
+        body: {
+          data: [{ id: 9, kind: 'login_locked', label: 'Sign-in paused (too many wrong passwords)', who: 'Hana', email: 'hana@sheger.test', ip: '10.0.0.4', device: 'Safari on iPad', detail: '15 minutes', hotel: null, at: '2026-11-14T09:00:00+03:00' }],
+          current_page: 1, last_page: 1, total: 1, kinds: { login_locked: 'Sign-in paused (too many wrong passwords)' },
+        },
+      },
     })
     renderApp('/activity-log')
     expect(await screen.findByText('Staff member changed: Abebe')).toBeInTheDocument()
     expect(screen.getByText('Meron')).toBeInTheDocument()
     expect(screen.getByText(/→ \+251911/)).toBeInTheDocument()
+    // The security event log below it (SECURITY_REPORT M9).
+    expect(screen.getByRole('heading', { name: 'Sign-in and security' })).toBeInTheDocument()
+    expect(await screen.findByText('10.0.0.4 · Safari on iPad')).toBeInTheDocument()
   })
 })

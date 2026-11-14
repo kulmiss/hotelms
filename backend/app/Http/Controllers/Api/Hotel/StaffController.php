@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\UserDevice;
 use App\Services\ActivityLogger;
 use App\Services\Security\EmailChanges;
+use App\Services\Security\SecurityLog;
 use App\Services\Security\TwoFactor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -121,6 +122,7 @@ class StaffController extends Controller
         $emailChange = app(EmailChanges::class)->request($user->fresh(), $data['email'], $actor);
         if ($emailChange === 'pending') {
             $this->log->log('staff.email_change_requested', "Sign-in email change asked: {$user->name} → {$data['email']} (waits for the link)", $user);
+            app(SecurityLog::class)->record('email_change_requested', $user, $request, $data['email'], "by {$actor->name}");
         }
 
         return response()->json(['data' => $this->present($user->fresh()->load(['role', 'branches'])), 'email_change' => $emailChange]);

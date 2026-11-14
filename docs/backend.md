@@ -65,6 +65,13 @@ SecLists / NCSC, MIT – checked in about 20 ms without the internet), also not 
 end, and not the person's email name + numbers. Existing passwords keep working: when the password used at sign-in
 is weaker than these rules, `/me` → `security.password_weak` is true and the app shows a note asking to change it.
 
+**Security event log** (`Security\SecurityLog`, table `security_events`, SECURITY_REPORT M9): `login_ok`, `login_failed`
+(also unknown emails), `login_locked`, `two_factor_failed`, `pin_failed` (screen lock and kiosk), `pin_switch`,
+`password_changed`, `password_reset`, `email_change_requested`, `email_changed`, `two_factor_on/off`, `recovery_codes`,
+`recovery_code_used`, `devices_signed_out`, `session_expired`, `denied` (403), `throttled` (429), `invoice_voided`,
+`refund`. Kept 1 year. `GET /security-events` (Hotel Admin, `activity_log.view`, own hotel only) and
+`GET /admin/security-events` (`watchdog.view`, everything) – shown under Activity log and Watchdog.
+
 **"Was this you?" emails** (`Security\SecurityNotices`, SECURITY_REPORT M7) go to the person for: a sign-in pause, a
 password change (also by reset link), two-step on / off, new recovery codes, a sign-in on a new device (staff; admins
 already got `NewDeviceMail`), and a changed sign-in email (to the **old** address). Never from demo hotels.

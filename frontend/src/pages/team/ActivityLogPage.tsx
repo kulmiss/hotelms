@@ -8,6 +8,7 @@ import { DateRangeFilter } from '@/components/ui/DateRangeFilter'
 import { listFileUrl } from '@/lib/front'
 import { rangeChip, type DateRange } from '@/lib/dateRange'
 import { ToolbarSearch } from '@/components/ui/CollapsibleToolbar'
+import { SecurityEvents } from '@/components/security/SecurityEvents'
 
 const when = (iso: string) =>
   new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -100,6 +101,7 @@ export function ActivityLogPage() {
           },
         ]}
       />
+      <SecurityEvents scope="hotel" />
     </div>
   )
 }

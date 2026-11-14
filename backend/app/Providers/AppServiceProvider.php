@@ -9,12 +9,14 @@ use App\Models\InvoiceItem;
 use App\Models\Payment;
 use App\Models\Reservation;
 use App\Models\Room;
+use App\Models\User;
 use App\Models\UserDevice;
 use App\Services\Automation\AutomationEvents;
 use App\Services\Automation\Automations;
 use App\Services\Modules\Housekeeping;
 use App\Services\Notify\MailSettings;
 use App\Services\PlatformPermissions;
+use App\Services\Security\SecurityLog;
 use App\Services\Switches;
 use App\Support\Tenancy\TenantContext;
 use App\Support\TrustedProxies;
@@ -85,6 +87,12 @@ class AppServiceProvider extends ServiceProvider
         Reservation::created($after('reservationCreated'));
         Reservation::updated($after('reservationUpdated'));
         Payment::created($after('paymentCreated'));
+        // Refunds also go to the security event log (SECURITY_REPORT M9).
+        Payment::created(function (Payment $p) {
+            if ($p->type === 'refund') {
+                app(SecurityLog::class)->record('refund', User::find($p->received_by), null, null, "{$p->amount} {$p->currency}, booking #{$p->reservation_id}: {$p->refund_reason}");
+            }
+        });
         Invoice::updated($after('invoiceUpdated'));
         InvoiceItem::updated($after('invoiceItemUpdated'));
         CashierSession::updated($after('cashierUpdated'));

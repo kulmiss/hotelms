@@ -505,6 +505,7 @@
       "title": "Who did what (activity log)",
       "steps": [
         "Open Activity log. Every important action is written here: who, what and when.",
+        "Below it, Sign-in and security shows sign-ins, wrong passwords and PINs, paused sign-ins and password or email changes of your staff. Many wrong passwords for one person? Talk to them.",
         "Search by person, or by word, for example \"refund\".",
         "Nobody can delete this list."
       ]
