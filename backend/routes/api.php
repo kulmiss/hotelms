@@ -163,7 +163,7 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'active', 'device', 'tenant',
             });
             Route::post('/guests/{id}/blacklist', [GuestController::class, 'blacklist'])->middleware('permission:guests.blacklist');
             // Photo of the guest's ID or passport (when the hotel turned it on).
-            Route::get('/guests/{id}/id-photo', [GuestController::class, 'idPhoto'])->middleware('permission:guests.view');
+            Route::get('/guests/{id}/id-photo', [GuestController::class, 'idPhoto'])->middleware('permission:guests.create_edit'); // owner Q5
             Route::post('/guests/{id}/id-photo', [GuestController::class, 'storeIdPhoto'])->middleware(['permission:guests.create_edit', 'throttle:30,1']);
             Route::delete('/guests/{id}/id-photo', [GuestController::class, 'destroyIdPhoto'])->middleware('permission:guests.create_edit');
 

@@ -59,6 +59,13 @@ are encrypted, read with `PlatformSetting::secret()` (a value saved before encry
 (`MAIL_ALLOW_PRIVATE_HOST`); `SystemController::settingsCheck()` (System + watchdog); `/health` shows the version only
 to the HotelMS team.
 
+**Uploads** (`App\Support\SafeImage`, SECURITY_REPORT L4): payment proofs, guest ID photos and logos – more than 40
+megapixels refused (header only); JPEG / PNG / WebP up to 16 MP drawn again with GD (hidden data and metadata such as
+GPS removed; turned by EXIF orientation; JPEG only when the `exif` extension is there), HEIC and PDF kept as they are;
+pictures are answered with `Content-Security-Policy: sandbox`. **Guest IDs** (owner Q5): the full number, the ID photo
+and the full number on the registration card only with `guests.create_edit`; other guest viewers (Accountant) see the
+end of the number.
+
 **General and heavy limits** (SECURITY_REPORT M5): every signed-in call `throttle:api` – 300 a minute per person;
 `LimitHeavyRequests` (`heavy`) – file downloads (`?format=xlsx|csv`, accounting export, hotel data export) 20 a minute,
 reports 60 a minute per person; then `429 code: too_many`. The counters live in `cache.limiter` (`CACHE_LIMITER`,

@@ -96,8 +96,8 @@ class ReservationController extends Controller
             'guest' => $guest ? [
                 'name' => $guest->full_name, 'phone' => $guest->phone, 'email' => $guest->email, 'nationality' => $guest->nationality,
                 'id_type' => $guest->id_type,
-                // The ID number only for people who may see guest details.
-                'id_number' => $request->user()->hasPermission('guests.view') ? $guest->id_number : null,
+                // The full ID number only for people who check guests in (owner Q5); guest viewers see its end.
+                'id_number' => $request->user()->hasPermission('guests.create_edit') ? $guest->id_number : ($request->user()->hasPermission('guests.view') ? Guest::maskId($guest->id_number) : null),
                 'date_of_birth' => $guest->date_of_birth?->toDateString(),
             ] : null,
             'hotel' => InvoicePresenter::printHeader($hotel),

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Front;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\PaymentProof;
+use App\Support\SafeImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -29,9 +30,11 @@ class PaymentProofController extends Controller
         $ext = match ($file->getMimeType()) {
             'application/pdf' => 'pdf', 'image/png' => 'png', 'image/webp' => 'webp', 'image/heic', 'image/heif' => 'heic', default => 'jpg',
         };
-        $path = $file->storeAs("payment-proofs/{$hotel->id}", Str::uuid().'.'.$ext, 'local');
+        [$bytes, $mime] = SafeImage::clean($file); // size limit, hidden data and metadata removed (SECURITY_REPORT L4)
+        $path = "payment-proofs/{$hotel->id}/".Str::uuid().'.'.$ext;
+        Storage::disk('local')->put($path, $bytes);
         $proof = PaymentProof::create([
-            'path' => $path, 'mime' => (string) $file->getMimeType(), 'size' => (int) $file->getSize(), 'uploaded_by' => $request->user()->id,
+            'path' => $path, 'mime' => $mime, 'size' => strlen($bytes), 'uploaded_by' => $request->user()->id,
         ]);
 
         return response()->json(['data' => ['id' => $proof->id, 'mime' => $proof->mime]], 201);
@@ -48,8 +51,8 @@ class PaymentProofController extends Controller
         abort_unless(Storage::disk('local')->exists($proof->path), 404);
 
         return Storage::disk('local')->response($proof->path, 'payment-proof-'.$proof->id.'.'.pathinfo($proof->path, PATHINFO_EXTENSION), [
-            'Content-Type' => $proof->mime, 'Cache-Control' => 'private, max-age=3600', 'X-Content-Type-Options' => 'nosniff',
-        ]);
+            'Content-Type' => $proof->mime, 'Cache-Control' => 'private, max-age=3600',
+        ] + SafeImage::headers($proof->mime));
     }
 
     /** Add (or replace) the proof of a payment already recorded. */

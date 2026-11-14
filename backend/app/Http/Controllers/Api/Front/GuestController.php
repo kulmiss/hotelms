@@ -11,6 +11,7 @@ use App\Models\Reservation;
 use App\Services\GuestIdPhotos;
 use App\Support\HotelClock;
 use App\Support\ListQuery;
+use App\Support\SafeImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -66,8 +67,12 @@ class GuestController extends Controller
             ]);
 
         $photo = GuestIdPhoto::where('guest_id', $guest->id)->first(['id', 'mime', 'created_at']);
+        // The full ID number and the ID photo only for people who check guests in (owner Q5, 14 Nov);
+        // everyone else (e.g. the Accountant) sees the end of the number, like in lists.
+        $full = $request->user()->hasPermission('guests.create_edit');
+        $data = $full ? $guest->toArray() : ['id_number' => Guest::maskId($guest->id_number)] + $guest->toArray();
 
-        return response()->json(['data' => $guest, 'stays' => $stays, 'id_photo' => $photo ? ['mime' => $photo->mime, 'at' => HotelClock::iso($photo->created_at, $hotel)] : null]);
+        return response()->json(['data' => $data, 'stays' => $stays, 'id_full' => $full, 'id_photo' => $photo && $full ? ['mime' => $photo->mime, 'at' => HotelClock::iso($photo->created_at, $hotel)] : null]);
     }
 
     /** Take or upload a photo of the guest's ID or passport (replaces the old one). */
@@ -88,7 +93,7 @@ class GuestController extends Controller
         $body = $photos->contents($photo);
         abort_if($body === null, 404);
 
-        return response($body, 200, ['Content-Type' => $photo->mime, 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff', 'Content-Disposition' => 'inline']);
+        return response($body, 200, ['Content-Type' => $photo->mime, 'Cache-Control' => 'private, no-store', 'Content-Disposition' => 'inline'] + SafeImage::headers($photo->mime));
     }
 
     public function destroyIdPhoto(string $id, GuestIdPhotos $photos): JsonResponse

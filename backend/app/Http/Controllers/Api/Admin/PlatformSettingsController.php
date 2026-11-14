@@ -7,6 +7,7 @@ use App\Models\PlatformSetting;
 use App\Services\ActivityLogger;
 use App\Services\Notify\MailSettings;
 use App\Support\SafeHost;
+use App\Support\SafeImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -127,7 +128,12 @@ class PlatformSettingsController extends Controller
             Storage::disk('public')->delete($old);
         }
 
-        $path = $request->file('logo')?->store('branding', 'public');
+        $path = null;
+        if ($file = $request->file('logo')) {
+            [$bytes] = SafeImage::clean($file); // drawn again: no hidden data (SECURITY_REPORT L4)
+            $path = 'branding/'.$file->hashName();
+            Storage::disk('public')->put($path, $bytes);
+        }
         PlatformSetting::write('brand_logo_path', $path);
 
         return response()->json(['data' => $this->present()]);

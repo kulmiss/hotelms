@@ -973,7 +973,9 @@ class FrontDeskTest extends TestCase
         $stored = Storage::disk('local')->allFiles('guest-ids');
         $this->assertCount(1, $stored);
         $this->assertNotSame($original, Storage::disk('local')->get($stored[0]));
-        $this->assertSame($original, $this->get("/api/v1/guests/{$this->guest->id}/id-photo")->assertOk()->getContent());
+        // Shown as a picture of the same size (drawn again on upload, without hidden data – SECURITY_REPORT L4).
+        $shown = (string) $this->get("/api/v1/guests/{$this->guest->id}/id-photo")->assertOk()->getContent();
+        $this->assertSame(array_slice(getimagesizefromstring($original), 0, 2), array_slice(getimagesizefromstring($shown), 0, 2));
         $this->getJson("/api/v1/guests/{$this->guest->id}")->assertJsonPath('id_photo.mime', 'image/jpeg');
         $this->checkIn($id, ['101'])->assertOk();
 
